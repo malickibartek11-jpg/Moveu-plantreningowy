@@ -164,6 +164,10 @@
   .athlete-wrap{padding:24px;max-width:900px;margin:0 auto;}
   .athlete-select{margin-bottom:20px;display:flex;gap:10px;align-items:center;}
   .athlete-select input{width:100%;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:11px 14px;font-size:14px;}
+  .search-suggestions{position:absolute;top:100%;left:0;right:0;background:var(--surface);border:1px solid var(--line);border-radius:8px;margin-top:4px;max-height:240px;overflow-y:auto;z-index:30;box-shadow:0 8px 24px rgba(0,0,0,.12);}
+  .search-suggestion-item{padding:12px 14px;font-size:14px;cursor:pointer;border-bottom:1px solid var(--line);}
+  .search-suggestion-item:last-child{border-bottom:none;}
+  .search-suggestion-item:hover, .search-suggestion-item:active{background:var(--surface-2);}
   .athlete-select select{background:var(--surface-2);border:1px solid var(--line);border-radius:7px;color:var(--text);padding:9px 12px;font-size:13.5px;flex:1;}
   .picker-crumb{font-size:12.5px;color:var(--muted);cursor:pointer;margin-bottom:12px;display:inline-block;}
   .tree-org-label{padding:9px 8px;font-weight:600;font-size:13.5px;cursor:pointer;border-radius:6px;color:var(--text);}
@@ -244,7 +248,7 @@
   .brand{font-size:13px;}
 
   .athlete-wrap{padding:12px;}
-  .a-shell{position:relative;}
+  .a-shell{position:relative;flex-direction:column;}
   .icon-rail{flex-direction:row;width:100%;margin-right:0;margin-bottom:10px;justify-content:center;}
   .icon-tab{flex:1;max-width:70px;}
   .a-flyout{width:100%;margin-right:0;}
@@ -295,9 +299,9 @@
 
 <div id="sportowiecView" style="display:none;">
   <div class="athlete-wrap">
-    <div class="athlete-select">
-      <input type="text" id="aClientSearch" list="aClientNamesList" placeholder="🔍 Wpisz imię i nazwisko klienta…">
-      <datalist id="aClientNamesList"></datalist>
+    <div class="athlete-select" style="position:relative;">
+      <input type="text" id="aClientSearch" placeholder="🔍 Wpisz imię i nazwisko klienta…" autocomplete="off">
+      <div id="aSearchSuggestions" class="search-suggestions" style="display:none;"></div>
     </div>
     <div id="athleteBody"><div class="empty-state">Zacznij pisać imię klienta powyżej.</div></div>
   </div>
@@ -1847,20 +1851,32 @@ let expandedOrgs = new Set();
 let expandedSubs = new Set();
 
 function renderAthleteGroupOptions(){
-  renderAthleteNameDatalist();
+  // lista klientow nie jest juz potrzebna do datalist - podpowiedzi liczone na biezaco z 'clients'
 }
 function renderAthleteSidebar(){
-  renderAthleteNameDatalist();
-}
-function renderAthleteNameDatalist(){
-  const dl = $('aClientNamesList');
-  if(!dl) return;
-  dl.innerHTML = clients.map(c => `<option value="${escapeHtml(c.name)}">`).join('');
 }
 $('aClientSearch').addEventListener('input', () => {
-  const name = $('aClientSearch').value.trim();
-  const match = clients.find(c => c.name === name);
-  if(match) selectAthleteClient(match.id);
+  const query = $('aClientSearch').value.trim().toLowerCase();
+  const box = $('aSearchSuggestions');
+  if(!query){ box.style.display = 'none'; box.innerHTML = ''; return; }
+  const matches = clients.filter(c => c.name.toLowerCase().includes(query)).slice(0, 8);
+  if(matches.length === 0){ box.style.display = 'none'; box.innerHTML = ''; return; }
+  box.innerHTML = matches.map(c => `<div class="search-suggestion-item" data-id="${c.id}">${escapeHtml(c.name)}</div>`).join('');
+  box.style.display = 'block';
+  box.querySelectorAll('.search-suggestion-item').forEach(item => {
+    item.onclick = () => {
+      $('aClientSearch').value = clients.find(c => c.id === item.dataset.id).name;
+      box.style.display = 'none';
+      box.innerHTML = '';
+      selectAthleteClient(item.dataset.id);
+    };
+  });
+});
+document.addEventListener('click', (e) => {
+  if(!e.target.closest('.athlete-select')){
+    const box = $('aSearchSuggestions');
+    if(box) box.style.display = 'none';
+  }
 });
 function renderAthleteTree(){
   const el = $('athleteTree');
