@@ -310,7 +310,7 @@
     </div>
     <div id="loginStep2" style="display:none;">
       <p class="login-sub" style="margin-bottom:14px;">Wysłaliśmy 6-cyfrowy kod na <b id="loginStep2Email"></b>. Wpisz go poniżej.</p>
-      <input type="text" id="loginCode" placeholder="123456" inputmode="numeric" maxlength="6" style="text-align:center;font-size:20px;letter-spacing:4px;font-family:'Space Grotesk';">
+      <input type="text" id="loginCode" placeholder="Kod z maila" inputmode="numeric" maxlength="10" style="text-align:center;font-size:20px;letter-spacing:4px;font-family:'Space Grotesk';">
       <button class="btn" id="verifyCodeBtn" style="width:100%;padding:12px;">Zaloguj się</button>
       <div style="margin-top:12px;font-size:12px;">
         <span id="backToEmailBtn" style="color:var(--muted);cursor:pointer;text-decoration:underline;">← Zmień e-mail</span>
@@ -494,7 +494,7 @@ $('sendMagicLinkBtn').onclick = async () => {
 };
 
 $('verifyCodeBtn').onclick = async () => {
-  const code = $('loginCode').value.trim();
+  const code = $('loginCode').value.replace(/\D/g, '');
   const statusEl = $('loginStatus');
   statusEl.className = 'login-status';
   if(!code){ statusEl.textContent = 'Wpisz kod z maila.'; statusEl.className = 'login-status error'; return; }
