@@ -648,6 +648,80 @@ async function removeFromSharedList(key, localArray, predicate){
 function escapeHtml(s){
   return (s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 }
+
+/* ============ BEZPIECZNE TABELE: app_clients / app_plans (chronione RLS w Supabase) ============ */
+function clientRowToJs(row){
+  return {
+    id: row.id, name: row.name, email: row.email,
+    groupId: row.group_id, subgroupId: row.subgroup_id,
+    dob: row.dob, height: row.height,
+    weightLog: row.weight_log || [], measurementsLog: row.measurements_log || []
+  };
+}
+function clientJsToRow(c){
+  return {
+    id: c.id, name: c.name, email: c.email || null,
+    group_id: c.groupId || null, subgroup_id: c.subgroupId || null,
+    dob: c.dob || null, height: c.height || null,
+    weight_log: c.weightLog || [], measurements_log: c.measurementsLog || []
+  };
+}
+async function loadClientsFromDB(){
+  try{
+    const { data, error } = await sbClient.from('app_clients').select('*');
+    if(error){ console.error('Blad wczytywania klientow:', error); return []; }
+    return (data || []).map(clientRowToJs);
+  }catch(e){ console.error('Wyjatek wczytywania klientow:', e); return []; }
+}
+/* Zapisuje JEDNEGO klienta (jeden wiersz) - nie nadpisuje calej tabeli, wiec dwie karty
+   edytujace dwoch roznych klientow jednoczesnie nigdy sobie nie przeszkadzaja. */
+async function saveClientRow(c){
+  setStatus('Zapisywanie…');
+  const { error } = await sbClient.from('app_clients').upsert(clientJsToRow(c));
+  if(error){
+    console.error('Blad zapisu klienta:', error);
+    setStatus('❌ BŁĄD ZAPISU');
+    alert('Nie udało się zapisać zmian w bazie danych!\n\nSprawdź połączenie z internetem i spróbuj tę zmianę jeszcze raz — w tej chwili NIE została ona zapisana i zniknie po odświeżeniu strony.');
+    return false;
+  }
+  setStatus('Zapisano');
+  setTimeout(()=>setStatus(''), 1200);
+  return true;
+}
+async function deleteClientRow(id){
+  setStatus('Usuwanie…');
+  const { error } = await sbClient.from('app_clients').delete().eq('id', id);
+  if(error){
+    console.error('Blad usuwania klienta:', error);
+    setStatus('❌ BŁĄD USUWANIA');
+    alert('Nie udało się usunąć klienta z bazy danych! Spróbuj jeszcze raz.');
+    return false;
+  }
+  setStatus('Zapisano');
+  setTimeout(()=>setStatus(''), 1200);
+  return true;
+}
+async function loadPlanFromDB(clientId){
+  try{
+    const { data, error } = await sbClient.from('app_plans').select('plan').eq('client_id', clientId).maybeSingle();
+    if(error){ console.error('Blad wczytywania planu:', error); return {}; }
+    return (data && data.plan) || {};
+  }catch(e){ console.error('Wyjatek wczytywania planu:', e); return {}; }
+}
+async function savePlanRow(clientId, plan){
+  setStatus('Zapisywanie…');
+  const { error } = await sbClient.from('app_plans').upsert({ client_id: clientId, plan, updated_at: new Date().toISOString() });
+  if(error){
+    console.error('Blad zapisu planu:', error);
+    setStatus('❌ BŁĄD ZAPISU');
+    alert('Nie udało się zapisać zmian w bazie danych!\n\nSprawdź połączenie z internetem i spróbuj tę zmianę jeszcze raz — w tej chwili NIE została ona zapisana i zniknie po odświeżeniu strony.');
+    return false;
+  }
+  setStatus('Zapisano');
+  setTimeout(()=>setStatus(''), 1200);
+  return true;
+}
+
 function fmtDate(y,m,d){
   return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
 }
@@ -757,20 +831,20 @@ function ensureLog(ex){
 async function ensurePlanLoaded(clientId){
   if(!clientId) return {};
   if(!(clientId in plansCache)){
-    const plan = (await safeGet('plan:' + clientId)) || {};
+    const plan = await loadPlanFromDB(clientId);
     backfillLibraryIds(plan);
     plansCache[clientId] = plan;
   }
   return plansCache[clientId];
 }
 async function persistPlan(clientId){
-  return persistWithFeedback('plan:' + clientId, plansCache[clientId] || {});
+  return savePlanRow(clientId, plansCache[clientId] || {});
 }
 
 /* ============ INIT ============ */
 async function init(){
   setStatus('Ładowanie danych…');
-  clients = (await safeGet('clients')) || [];
+  clients = await loadClientsFromDB();
   library = (await safeGet('exercise_library')) || [];
   libraryGroups = (await safeGet('library_groups')) || [];
   const loadedClientGroups = await safeGet('client_groups');
@@ -846,7 +920,7 @@ function startEditClientName(nameEl, c){
   input.select();
   const commit = async () => {
     const val = input.value.trim();
-    if(val){ c.name = val; await persistWithFeedback('clients', clients); }
+    if(val){ c.name = val; await saveClientRow(c); }
     renderClientList();
     if(selectedClientId === c.id) renderMain();
   };
@@ -856,17 +930,17 @@ function startEditClientName(nameEl, c){
 
 async function addNewClient(name, groupId, subgroupId, email){
   const id = 'c_' + Date.now();
-  const newClient = {id, name, groupId: groupId || null, subgroupId: subgroupId || null, email: email || null};
-  const {data} = await addToSharedList('clients', clients, newClient);
-  clients = data;
+  const newClient = {id, name, groupId: groupId || null, subgroupId: subgroupId || null, email: email || null, weightLog:[], measurementsLog:[]};
+  const ok = await saveClientRow(newClient);
+  if(ok) clients.push(newClient);
   renderClientList();
   return id;
 }
 
 async function deleteClient(id){
   if(!confirm('Usunąć tego klienta i jego plan?')) return;
-  const {data} = await removeFromSharedList('clients', clients, c => c.id === id);
-  clients = data;
+  const ok = await deleteClientRow(id);
+  if(ok) clients = clients.filter(c => c.id !== id);
   delete plansCache[id];
   if(selectedClientId === id){ selectedClientId = null; $('main').innerHTML = '<div class="empty-state">Wybierz klienta z listy po lewej, albo przejdź do "Klienci", żeby dodać nowego.</div>'; }
   renderClientList();
@@ -1692,12 +1766,12 @@ function renderRosterRows(){
     tr.querySelector('.roster-org').onchange = async function(){
       c.groupId = this.value || null;
       c.subgroupId = null; // zmiana organizacji czyści wybraną podgrupę
-      await persistWithFeedback('clients', clients);
+      await saveClientRow(c);
       renderRosterRows(); renderClientList();
     };
     tr.querySelector('.roster-sub').onchange = async function(){
       c.subgroupId = this.value || null;
-      await persistWithFeedback('clients', clients);
+      await saveClientRow(c);
       renderRosterRows();
     };
     tr.querySelector('.roster-email-edit').onclick = function(){
@@ -1711,7 +1785,7 @@ function renderRosterRows(){
       input.onblur = async () => {
         const val = input.value.trim();
         c.email = val || null;
-        await persistWithFeedback('clients', clients);
+        await saveClientRow(c);
         renderRosterRows();
       };
       input.onkeydown = e => { if(e.key==='Enter') input.blur(); };
@@ -1829,11 +1903,11 @@ function renderClientProfile(clientId){
   $('profName').onchange = async () => {
     const val = $('profName').value.trim();
     if(val) c.name = val;
-    await persistWithFeedback('clients', clients);
+    await saveClientRow(c);
     renderClientList();
   };
-  $('profDob').onchange = async () => { c.dob = $('profDob').value; await persistWithFeedback('clients', clients); };
-  $('profHeight').onchange = async () => { c.height = $('profHeight').value; await persistWithFeedback('clients', clients); };
+  $('profDob').onchange = async () => { c.dob = $('profDob').value; await saveClientRow(c); };
+  $('profHeight').onchange = async () => { c.height = $('profHeight').value; await saveClientRow(c); };
 
   $('addWeightTile').onclick = () => {
     $('weightAddForm').innerHTML = `
@@ -1847,7 +1921,7 @@ function renderClientProfile(clientId){
       const val = parseFloat($('newWeightVal').value);
       if(!date || isNaN(val)) return;
       c.weightLog.push({date, value: val});
-      await persistWithFeedback('clients', clients);
+      await saveClientRow(c);
       $('weightAddForm').innerHTML = '';
       renderWeightSection(c);
     };
@@ -1871,7 +1945,7 @@ function renderClientProfile(clientId){
         entry[inp.dataset.key] = isNaN(v) ? null : v;
       });
       c.measurementsLog.push(entry);
-      await persistWithFeedback('clients', clients);
+      await saveClientRow(c);
       $('measureAddForm').innerHTML = '';
       renderMeasureSection(c);
     };
@@ -1892,7 +1966,7 @@ function renderWeightSection(c){
   tbody.querySelectorAll('.rm-btn').forEach(btn => {
     btn.onclick = async () => {
       c.weightLog.splice(parseInt(btn.dataset.idx), 1);
-      await persistWithFeedback('clients', clients);
+      await saveClientRow(c);
       renderWeightSection(c);
     };
   });
@@ -1909,7 +1983,7 @@ function renderMeasureSection(c){
   tbody.querySelectorAll('.rm-btn').forEach(btn => {
     btn.onclick = async () => {
       c.measurementsLog.splice(parseInt(btn.dataset.idx), 1);
-      await persistWithFeedback('clients', clients);
+      await saveClientRow(c);
       renderMeasureSection(c);
     };
   });
@@ -2543,13 +2617,13 @@ async function handleImportFile(e){
     setStatus('Importuję…');
     clients = backup.clients || [];
     library = backup.library || [];
-    await persistWithFeedback('clients', clients);
+    for(const c of clients){ await saveClientRow(c); }
     await persistWithFeedback('exercise_library', library);
     const plans = backup.plans || {};
     plansCache = {};
     for(const clientId of Object.keys(plans)){
       plansCache[clientId] = plans[clientId];
-      await persistWithFeedback('plan:' + clientId, plans[clientId]);
+      await savePlanRow(clientId, plans[clientId]);
     }
     renderClientList();
     selectedClientId = null;
