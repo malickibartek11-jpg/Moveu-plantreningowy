@@ -132,6 +132,15 @@
   .day-panel-actions{display:flex;gap:8px;align-items:center;}
 
   .section-label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;font-weight:600;margin:16px 0 8px;}
+  .day-title-card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:16px;text-align:center;}
+  .day-title-input{width:100%;text-align:center;border:none;background:transparent;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:20px;color:var(--text);padding:2px 0;outline:none;border-bottom:1px dashed transparent;}
+  .day-title-input:hover, .day-title-input:focus{border-bottom:1px dashed var(--line);}
+  .day-title-input::placeholder{color:#C8C4BB;}
+  .day-subtitle-input{width:100%;text-align:center;border:none;background:transparent;font-size:13px;color:var(--muted);padding:4px 0 0;outline:none;border-bottom:1px dashed transparent;}
+  .day-subtitle-input:hover, .day-subtitle-input:focus{border-bottom:1px dashed var(--line);}
+  .day-subtitle-input::placeholder{color:#C8C4BB;}
+  .day-title-display{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:19px;color:var(--text);}
+  .day-subtitle-display{font-size:13px;color:var(--muted);margin-top:3px;}
 
   table.exlist{width:100%;border-collapse:collapse;margin-bottom:10px;}
   table.exlist th{text-align:left;font-size:10.5px;color:var(--muted);font-weight:600;padding:6px 6px;border-bottom:1px solid var(--line);}
@@ -1091,6 +1100,11 @@ function renderDayPanel(){
       </div>
 
       <div id="planTabBody">
+        <div class="day-title-card">
+          <input class="day-title-input" id="dayTitleInput" value="${escapeHtml(day.title||'')}" placeholder="Tytuł dnia (np. Akumulacja #1)">
+          <input class="day-subtitle-input" id="daySubtitleInput" value="${escapeHtml(day.subtitle||'')}" placeholder="Podtytuł / założenia dnia">
+        </div>
+
         <div class="section-label">Rozgrzewka</div>
         <table class="exlist">
           <thead><tr><th></th><th>Ćwiczenie</th><th>Serie</th><th>Powt.</th><th>Tempo</th><th>Przerwa</th><th>Sugerowany kg</th><th></th><th></th></tr></thead>
@@ -1118,6 +1132,8 @@ function renderDayPanel(){
     </div>
   `;
   $('saveDayBtn').onclick = async () => { await persistPlan(selectedClientId); toast('Plan zapisany'); };
+  $('dayTitleInput').onchange = async () => { day.title = $('dayTitleInput').value; await persistPlan(selectedClientId); };
+  $('daySubtitleInput').onchange = async () => { day.subtitle = $('daySubtitleInput').value; await persistPlan(selectedClientId); };
 
   $('dupDayBtn').onclick = () => {
     const p = $('dupPanel');
@@ -2464,8 +2480,15 @@ function renderAthleteDay(){
       </div>`;
   };
 
+  const titleCardHtml = (day.title || day.subtitle) ? `
+    <div class="day-title-card">
+      ${day.title ? `<div class="day-title-display">${escapeHtml(day.title)}</div>` : ''}
+      ${day.subtitle ? `<div class="day-subtitle-display">${escapeHtml(day.subtitle)}</div>` : ''}
+    </div>` : '';
+
   holder.innerHTML = `
     <div class="a-daylabel"><h2>${aSelectedDateStr}</h2>${day.exercises.some(e=>e.isTest) ? '<span class="badge-test">TEST</span>':''}</div>
+    ${titleCardHtml}
     ${sectionHtml('warmup','Rozgrzewka')}
     ${sectionHtml('main','Ćwiczenia główne')}
   `;
