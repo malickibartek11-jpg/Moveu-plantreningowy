@@ -129,6 +129,10 @@
   .day-panel-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;}
   .day-panel-head h3{font-size:16px;}
   .test-toggle{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted);cursor:pointer;}
+  .interval-subrow td{background:var(--surface-2);padding:10px 12px !important;border-top:none !important;}
+  .interval-fields{display:flex;gap:16px;flex-wrap:wrap;}
+  .interval-fields label{display:flex;flex-direction:column;gap:3px;font-size:10.5px;color:var(--muted);font-weight:600;}
+  .interval-fields input{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 8px;font-size:12.5px;width:110px;}
   .test-toggle input{accent-color:var(--warn);}
   .badge-test{background:var(--warn);color:#FAF6EF;font-size:11px;font-weight:700;padding:4px 10px;border-radius:6px;}
   .day-panel-actions{display:flex;gap:8px;align-items:center;}
@@ -243,6 +247,28 @@
   .target-box .t{font-size:10px;color:var(--muted);}
   .target-box .v{font-size:16px;font-weight:700;font-family:'Space Grotesk';margin-top:3px;}
   .suggested-label{font-size:11.5px;color:rgba(156,122,78,.7);margin:2px 0 12px;font-style:italic;}
+  .iv-sets-row{display:flex;justify-content:center;gap:28px;margin:16px 0 14px;}
+  .iv-sets-item{text-align:center;}
+  .iv-sets-item .iv-num{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:24px;color:var(--text);}
+  .iv-sets-item .iv-lbl{font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-top:1px;}
+  .iv-sets-divider{width:1px;background:var(--line);}
+  .iv-flow-card{background:var(--surface);border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:0 4px 16px rgba(0,0,0,.05);}
+  .iv-flow-row{display:flex;align-items:center;gap:8px;}
+  .iv-flow-pill{flex:1;border-radius:14px;padding:16px 10px;text-align:center;}
+  .iv-flow-pill.iv-work{background:linear-gradient(155deg, #EE6F4F, #E8604A);}
+  .iv-flow-pill.iv-rest{background:linear-gradient(155deg, #38B36A, #2E9E5B);}
+  .iv-flow-pill .iv-t{font-size:9px;font-weight:700;letter-spacing:.4px;color:rgba(255,255,255,.85);}
+  .iv-flow-pill .iv-v{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:22px;color:#fff;margin-top:3px;}
+  .iv-flow-connector{width:22px;height:22px;border-radius:50%;background:var(--surface-2);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:11px;flex-shrink:0;}
+  .iv-between-card{display:flex;align-items:center;gap:10px;background:var(--surface);border-radius:14px;padding:13px 16px;margin-bottom:14px;box-shadow:0 4px 16px rgba(0,0,0,.04);}
+  .iv-between-txt{flex:1;font-size:11.5px;color:var(--muted);}
+  .iv-between-val{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16px;color:var(--text);}
+  .iv-round-label{text-align:center;font-size:12px;color:var(--muted);font-weight:600;margin:6px 0 14px;}
+  .iv-ring-wrap{position:relative;width:190px;height:190px;margin:0 auto 18px;}
+  .iv-ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+  .iv-ring-center .iv-phase{font-size:11px;font-weight:700;letter-spacing:.5px;}
+  .iv-ring-center .iv-count{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:40px;line-height:1;margin-top:4px;}
+  .iv-controls{display:flex;gap:8px;}
   .hist-icon{position:relative;cursor:help;font-size:14px;display:inline-block;outline:none;}
   .hist-tip{
     display:none;position:absolute;bottom:130%;left:50%;transform:translateX(-50%);
@@ -1180,7 +1206,7 @@ function renderDayPanel(){
 
         <div class="section-label">Rozgrzewka</div>
         <table class="exlist">
-          <thead><tr><th></th><th>Ćwiczenie</th><th>Serie</th><th>Powt.</th><th>Tempo</th><th>Przerwa</th><th>Sugerowany kg</th><th></th><th>Bez ciężaru</th><th></th></tr></thead>
+          <thead><tr><th></th><th>Ćwiczenie</th><th>Serie</th><th>Powt.</th><th>Tempo</th><th>Przerwa</th><th>Sugerowany kg</th><th></th><th>Bez ciężaru</th><th>Interwał</th><th></th></tr></thead>
           <tbody id="exRows-warmup"></tbody>
         </table>
         <div class="add-ex-row">
@@ -1191,7 +1217,7 @@ function renderDayPanel(){
 
         <div class="section-label">Ćwiczenia główne</div>
         <table class="exlist">
-          <thead><tr><th></th><th>Ćwiczenie</th><th>Serie</th><th>Powt.</th><th>Tempo</th><th>Przerwa</th><th>Sugerowany kg</th><th></th><th>Bez ciężaru</th><th>Test</th><th></th></tr></thead>
+          <thead><tr><th></th><th>Ćwiczenie</th><th>Serie</th><th>Powt.</th><th>Tempo</th><th>Przerwa</th><th>Sugerowany kg</th><th></th><th>Bez ciężaru</th><th>Interwał</th><th>Test</th><th></th></tr></thead>
           <tbody id="exRows-main"></tbody>
         </table>
         <div class="add-ex-row">
@@ -1273,7 +1299,8 @@ function renderDayPanel(){
       day.exercises.push({
         id: 'e_'+Date.now(), name: libEx.name, videoUrl: libEx.videoUrl, libraryId: libEx.id,
         category: cat, sets:defaults.sets, reps:defaults.reps, tempo:defaults.tempo, rest:defaults.rest,
-        labelManual:false, suggestedWeight:'', suggestedManual:false, isTest:false, noWeight:false, log:[]
+        labelManual:false, suggestedWeight:'', suggestedManual:false, isTest:false, noWeight:false,
+        isInterval:false, workTime:'', restTime:'', effortPercent:'', restBetweenSets:'', log:[]
       });
       relabelExercises(day);
       sel.value = '';
@@ -1323,11 +1350,17 @@ function renderExRows(day, category){
       <td>${isTestEx ? '<span style="color:var(--warn);font-size:11px;">to jest test</span>' : `<input class="pill-input" data-f="suggestedWeight" value="${displayVal}" placeholder="kg">`}</td>
       ${lastIconCell}
       <td><label class="test-toggle"><input type="checkbox" class="noweight-check" ${ex.noWeight?'checked':''}></label></td>
+      <td><label class="test-toggle"><input type="checkbox" class="interval-check" ${ex.isInterval?'checked':''}></label></td>
       ${testCell}
       <td><button class="rm-btn" title="Usuń">✕</button></td>
     `;
     tr.querySelector('.noweight-check').onchange = async (e) => {
       ex.noWeight = e.target.checked;
+      await persistPlan(selectedClientId);
+      renderDayPanel();
+    };
+    tr.querySelector('.interval-check').onchange = async (e) => {
+      ex.isInterval = e.target.checked;
       await persistPlan(selectedClientId);
       renderDayPanel();
     };
@@ -1414,6 +1447,29 @@ function renderExRows(day, category){
       renderCalendar();
     });
     tbody.appendChild(tr);
+
+    if(ex.isInterval){
+      const trI = document.createElement('tr');
+      trI.className = 'interval-subrow';
+      trI.innerHTML = `
+        <td></td>
+        <td colspan="9">
+          <div class="interval-fields">
+            <label>Czas pracy<input class="pill-input" data-if="workTime" value="${escapeHtml(ex.workTime||'')}" placeholder="np. 20&quot;"></label>
+            <label>Czas przerwy<input class="pill-input" data-if="restTime" value="${escapeHtml(ex.restTime||'')}" placeholder="np. 10&quot;"></label>
+            <label>% wysiłku maks.<input class="pill-input" data-if="effortPercent" value="${escapeHtml(ex.effortPercent||'')}" placeholder="np. 80%"></label>
+            <label>Przerwa między seriami (s)<input class="pill-input" data-if="restBetweenSets" value="${escapeHtml(ex.restBetweenSets||'')}" placeholder="np. 90"></label>
+          </div>
+        </td>
+      `;
+      trI.querySelectorAll('input[data-if]').forEach(inp => {
+        inp.onchange = async () => {
+          ex[inp.dataset.if] = inp.value;
+          await persistPlan(selectedClientId);
+        };
+      });
+      tbody.appendChild(trI);
+    }
   });
 }
 
@@ -2595,7 +2651,13 @@ function openExerciseModal(exId, day){
   $('aExerciseModal').style.display = 'flex';
   renderAthleteDetail(day);
 }
+let ivTimer = null;
+function stopIvTimer(){
+  if(ivTimer && ivTimer.handle){ clearInterval(ivTimer.handle); }
+  ivTimer = null;
+}
 function closeExerciseModal(){
+  stopIvTimer();
   aDetailExId = null;
   $('aExerciseModal').style.display = 'none';
 }
@@ -2607,12 +2669,205 @@ function renderTestHistoryBlock(clientId, exerciseName){
   return `<div class="suggested-label">Wcześniejsze testy: ${escapeHtml(items)}</div>`;
 }
 
+function parseSecs(s){
+  const n = parseInt(String(s||'').replace(/\D/g,''), 10);
+  return isNaN(n) ? 0 : n;
+}
+
+function ivBeep(freq){
+  try{
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.15, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+    osc.start(); osc.stop(ctx.currentTime + 0.25);
+  }catch(e){}
+}
+
+function renderIntervalExerciseModal(ex, exName){
+  const holder = $('aExerciseModalContent');
+  const exVideo = resolveExVideo(ex);
+  const vid = getYoutubeId(exVideo);
+  const videoInner = vid
+    ? `<img id="aVidThumb" src="https://img.youtube.com/vi/${vid}/hqdefault.jpg"><div class="a-play-center" id="aPlayBtn"><div class="tri"></div></div>`
+    : `<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);font-size:12px;">Brak filmu</div>`;
+
+  const alreadyDone = (ex.log||[]).some(l => l.weight || l.reps);
+  const totalSeries = parseInt(ex.sets) || 1;
+  const totalRounds = parseInt(ex.reps) || 1;
+  const workSecs = parseSecs(ex.workTime) || 1;
+  const restSecs = parseSecs(ex.restTime);
+  const betweenSecs = parseSecs(ex.restBetweenSets);
+
+  function wireVideo(){
+    if(vid){
+      $('aPlayBtn').onclick = () => {
+        const head = document.querySelector('.a-video-head');
+        const iframe = document.createElement('iframe');
+        iframe.src = `https://www.youtube.com/embed/${vid}?autoplay=1`;
+        iframe.style.cssText = 'width:100%;height:100%;border:0;';
+        iframe.allow = 'autoplay; encrypted-media';
+        iframe.allowFullscreen = true;
+        iframe.referrerPolicy = 'strict-origin-when-cross-origin';
+        head.appendChild(iframe);
+      };
+    }
+  }
+
+  function renderPreview(){
+    stopIvTimer();
+    holder.innerHTML = `
+      <span class="modal-close" id="aModalCloseBtn">✕</span>
+      <div class="a-video-head">${videoInner}
+        <div class="a-video-overlay"><div class="exname">${escapeHtml(exName)}</div></div>
+      </div>
+      <div class="iv-sets-row">
+        <div class="iv-sets-item"><div class="iv-num">${totalSeries}</div><div class="iv-lbl">Serie</div></div>
+        <div class="iv-sets-divider"></div>
+        <div class="iv-sets-item"><div class="iv-num">${totalRounds}</div><div class="iv-lbl">Rund</div></div>
+      </div>
+      <div class="iv-flow-card">
+        <div class="iv-flow-row">
+          <div class="iv-flow-pill iv-work"><div class="iv-t">PRACA</div><div class="iv-v">${workSecs}″</div></div>
+          <div class="iv-flow-connector">→</div>
+          <div class="iv-flow-pill iv-rest"><div class="iv-t">PRZERWA</div><div class="iv-v">${restSecs}″</div></div>
+        </div>
+      </div>
+      ${betweenSecs ? `<div class="iv-between-card"><div class="iv-between-txt">Przerwa między seriami</div><div class="iv-between-val">${betweenSecs}″</div></div>` : ''}
+      ${ex.effortPercent ? `<div class="suggested-label" style="text-align:center;">Wysiłek: ${escapeHtml(ex.effortPercent)}</div>` : ''}
+      ${alreadyDone ? '<div class="suggested-label" style="text-align:center;color:#2E9E5B;font-weight:700;">✓ Wcześniej ukończono</div>' : ''}
+      <button class="btn" id="ivStartBtn" style="width:100%;margin-top:14px;padding:14px;font-size:14px;background:#E8604A;">▶ ${alreadyDone ? 'Powtórz interwał' : 'Rozpocznij interwał'}</button>
+      <button class="btn" id="aDoneBtn" style="width:100%;margin-top:10px;padding:12px;font-size:13px;background:var(--surface-2);color:var(--text);">Zamknij</button>
+    `;
+    $('aModalCloseBtn').onclick = closeExerciseModal;
+    $('aDoneBtn').onclick = closeExerciseModal;
+    $('ivStartBtn').onclick = startRun;
+    wireVideo();
+  }
+
+  function phaseColor(phase){ return phase === 'work' ? '#E8604A' : (phase === 'rest' ? '#2E9E5B' : '#3E7CB1'); }
+  function phaseLabel(phase){ return phase === 'work' ? 'PRACA' : (phase === 'rest' ? 'PRZERWA' : 'PRZERWA MIĘDZY SERIAMI'); }
+
+  function renderRunning(){
+    const remainingSec = Math.max(0, Math.ceil((ivTimer.endTs - Date.now())/1000));
+    const seriesPart = totalSeries > 1 ? `Seria ${ivTimer.series} z ${totalSeries} · ` : '';
+    holder.innerHTML = `
+      <span class="modal-close" id="aModalCloseBtn">✕</span>
+      <div style="text-align:center;font-family:'Space Grotesk';font-weight:700;font-size:14px;margin-bottom:2px;">${escapeHtml(exName)}</div>
+      <div class="iv-round-label">${seriesPart}Runda ${ivTimer.round} z ${totalRounds}</div>
+      <div class="iv-ring-wrap">
+        <svg viewBox="0 0 100 100" width="190" height="190">
+          <circle cx="50" cy="50" r="42" fill="none" stroke="#E1DFDA" stroke-width="10"/>
+          <circle id="ivRingProgress" cx="50" cy="50" r="42" fill="none" stroke="${phaseColor(ivTimer.phase)}" stroke-width="10"
+            stroke-dasharray="264" stroke-dashoffset="0" stroke-linecap="round" transform="rotate(-90 50 50)" style="transition:stroke-dashoffset .25s linear;"/>
+        </svg>
+        <div class="iv-ring-center">
+          <div class="iv-phase" style="color:${phaseColor(ivTimer.phase)};">${phaseLabel(ivTimer.phase)}</div>
+          <div class="iv-count" id="ivCountNum">${remainingSec}</div>
+        </div>
+      </div>
+      <div class="iv-controls">
+        <button class="btn" id="ivResetBtn" style="flex:1;background:var(--surface-2);color:var(--text);">↺ Od nowa</button>
+        <button class="btn" id="ivPauseBtn" style="flex:1;">${ivTimer.running ? '⏸ Pauza' : '▶ Wznów'}</button>
+      </div>
+    `;
+    $('aModalCloseBtn').onclick = closeExerciseModal;
+    $('ivResetBtn').onclick = () => { renderPreview(); };
+    $('ivPauseBtn').onclick = () => {
+      if(!ivTimer) return;
+      if(ivTimer.running){
+        ivTimer.pausedRemainingMs = ivTimer.endTs - Date.now();
+        ivTimer.running = false;
+      } else {
+        ivTimer.endTs = Date.now() + ivTimer.pausedRemainingMs;
+        ivTimer.running = true;
+      }
+      renderRunning();
+    };
+    updateRingDisplay(remainingSec);
+  }
+
+  function updateRingDisplay(remainingSec){
+    const numEl = document.getElementById('ivCountNum');
+    const ringEl = document.getElementById('ivRingProgress');
+    if(!numEl || !ringEl || !ivTimer) return;
+    numEl.textContent = remainingSec;
+    const frac = ivTimer.phaseSecs > 0 ? remainingSec / ivTimer.phaseSecs : 0;
+    ringEl.setAttribute('stroke-dashoffset', String(264 * (1 - frac)));
+  }
+
+  function tick(){
+    if(!ivTimer || !ivTimer.running) return;
+    const remainingMs = ivTimer.endTs - Date.now();
+    if(remainingMs > 150){
+      updateRingDisplay(Math.max(0, Math.ceil(remainingMs/1000)));
+      return;
+    }
+    if(ivTimer.phase === 'work'){
+      if(ivTimer.round < totalRounds){
+        ivTimer.phase = 'rest'; ivTimer.phaseSecs = restSecs; ivTimer.endTs = Date.now() + restSecs*1000;
+        ivBeep(440); renderRunning();
+      } else if(ivTimer.series < totalSeries){
+        ivTimer.phase = 'between'; ivTimer.phaseSecs = betweenSecs; ivTimer.endTs = Date.now() + betweenSecs*1000;
+        ivBeep(440); renderRunning();
+      } else {
+        finish();
+      }
+    } else if(ivTimer.phase === 'rest'){
+      ivTimer.round++;
+      ivTimer.phase = 'work'; ivTimer.phaseSecs = workSecs; ivTimer.endTs = Date.now() + workSecs*1000;
+      ivBeep(440); renderRunning();
+    } else if(ivTimer.phase === 'between'){
+      ivTimer.series++; ivTimer.round = 1;
+      ivTimer.phase = 'work'; ivTimer.phaseSecs = workSecs; ivTimer.endTs = Date.now() + workSecs*1000;
+      ivBeep(440); renderRunning();
+    }
+  }
+
+  function startRun(){
+    stopIvTimer();
+    ivTimer = { series:1, round:1, phase:'work', phaseSecs: workSecs, endTs: Date.now() + workSecs*1000, pausedRemainingMs:null, running:true, handle:null };
+    renderRunning();
+    ivTimer.handle = setInterval(tick, 250);
+  }
+
+  async function finish(){
+    stopIvTimer();
+    ivBeep(660);
+    ex.log = [{weight:'', reps: String(totalRounds)}];
+    await persistPlan(aClientId);
+    renderAthleteDay();
+    holder.innerHTML = `
+      <span class="modal-close" id="aModalCloseBtn">✕</span>
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px 10px;text-align:center;">
+        <div style="width:64px;height:64px;border-radius:50%;background:#2E9E5B;color:#fff;display:flex;align-items:center;justify-content:center;font-size:30px;margin-bottom:14px;">✓</div>
+        <h3 style="font-family:'Space Grotesk';margin:0 0 6px;">Ukończono!</h3>
+        <p style="color:var(--muted);font-size:12.5px;margin:0 0 20px;">${escapeHtml(exName)} zostało automatycznie<br>oznaczone jako wykonane.</p>
+        <button class="btn" id="ivAgainBtn" style="width:100%;">↺ Zrób jeszcze raz</button>
+      </div>
+    `;
+    $('aModalCloseBtn').onclick = closeExerciseModal;
+    $('ivAgainBtn').onclick = () => renderPreview();
+  }
+
+  renderPreview();
+}
+
 function renderAthleteDetail(day){
   const holder = $('aExerciseModalContent');
   const ex = day.exercises.find(e => e.id === aDetailExId);
   if(!ex){ closeExerciseModal(); return; }
   ensureLog(ex);
   const exName = resolveExName(ex);
+
+  if(ex.isInterval){
+    renderIntervalExerciseModal(ex, exName);
+    return;
+  }
+
   const exVideo = resolveExVideo(ex);
 
   const vid = getYoutubeId(exVideo);
@@ -2651,14 +2906,21 @@ function renderAthleteDetail(day){
       ${videoInner}
       <div class="a-video-overlay">
         <div class="exname">${escapeHtml(exName)}</div>
-        <div class="tempo">Tempo: ${escapeHtml(ex.tempo)}</div>
+        <div class="tempo">${ex.isInterval ? `Praca: ${escapeHtml(ex.workTime||'—')}` : `Tempo: ${escapeHtml(ex.tempo)}`}</div>
       </div>
     </div>
     <div class="target-box">
       <div><div class="t">SERIE</div><div class="v">${escapeHtml(ex.sets)}</div></div>
       <div><div class="t">POWT.</div><div class="v">${escapeHtml(ex.reps)}</div></div>
-      <div><div class="t">TEMPO</div><div class="v">${escapeHtml(ex.tempo)}</div></div>
-      <div><div class="t">PRZERWA</div><div class="v">${escapeHtml(ex.rest)}</div></div>
+      ${ex.isInterval ? `
+        <div><div class="t">CZAS PRACY</div><div class="v">${escapeHtml(ex.workTime||'—')}</div></div>
+        <div><div class="t">CZAS PRZERWY</div><div class="v">${escapeHtml(ex.restTime||'—')}</div></div>
+        <div><div class="t">% MAKS.</div><div class="v">${escapeHtml(ex.effortPercent||'—')}</div></div>
+        <div><div class="t">PRZERWA MIĘDZY SERIAMI</div><div class="v">${escapeHtml(ex.restBetweenSets||'—')}s</div></div>
+      ` : `
+        <div><div class="t">TEMPO</div><div class="v">${escapeHtml(ex.tempo)}</div></div>
+        <div><div class="t">PRZERWA</div><div class="v">${escapeHtml(ex.rest)}</div></div>
+      `}
     </div>
     ${(ex.category==='main' && ex.isTest) ? renderTestHistoryBlock(aClientId, exName) : (suggestedDisplay ? `<div class="suggested-label">Sugerowany ciężar (z testu): ${escapeHtml(suggestedDisplay)} kg</div>` : '')}
     <table class="set-table">
