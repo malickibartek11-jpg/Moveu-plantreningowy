@@ -260,9 +260,9 @@
   .iv-flow-pill .iv-t{font-size:9px;font-weight:700;letter-spacing:.4px;color:rgba(255,255,255,.85);}
   .iv-flow-pill .iv-v{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:22px;color:#fff;margin-top:3px;}
   .iv-flow-connector{width:22px;height:22px;border-radius:50%;background:var(--surface-2);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:11px;flex-shrink:0;}
-  .iv-between-card{display:flex;align-items:center;gap:10px;background:var(--surface);border-radius:14px;padding:13px 16px;margin-bottom:14px;box-shadow:0 4px 16px rgba(0,0,0,.04);}
-  .iv-between-txt{flex:1;font-size:11.5px;color:var(--muted);}
-  .iv-between-val{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16px;color:var(--text);}
+  .iv-info-card{display:flex;align-items:center;gap:10px;background:var(--surface);border-radius:14px;padding:13px 16px;margin-bottom:12px;box-shadow:0 4px 16px rgba(0,0,0,.04);}
+  .iv-info-card .iv-info-txt{flex:1;font-size:11.5px;color:var(--muted);}
+  .iv-info-card .iv-info-val{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16px;color:var(--text);}
   .iv-round-label{text-align:center;font-size:12px;color:var(--muted);font-weight:600;margin:6px 0 14px;}
   .iv-ring-wrap{position:relative;width:190px;height:190px;margin:0 auto 18px;}
   .iv-ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
@@ -2736,8 +2736,8 @@ function renderIntervalExerciseModal(ex, exName){
           <div class="iv-flow-pill iv-rest"><div class="iv-t">PRZERWA</div><div class="iv-v">${restSecs}″</div></div>
         </div>
       </div>
-      ${betweenSecs ? `<div class="iv-between-card"><div class="iv-between-txt">Przerwa między seriami</div><div class="iv-between-val">${betweenSecs}″</div></div>` : ''}
-      ${ex.effortPercent ? `<div class="suggested-label" style="text-align:center;">Wysiłek: ${escapeHtml(ex.effortPercent)}</div>` : ''}
+      ${ex.effortPercent ? `<div class="iv-info-card"><div class="iv-info-txt">% maksymalnego wysiłku</div><div class="iv-info-val">${escapeHtml(String(ex.effortPercent).replace(/%/g,'').trim())}%</div></div>` : ''}
+      ${betweenSecs ? `<div class="iv-info-card"><div class="iv-info-txt">Przerwa między seriami</div><div class="iv-info-val">${betweenSecs}″</div></div>` : ''}
       ${alreadyDone ? '<div class="suggested-label" style="text-align:center;color:#2E9E5B;font-weight:700;">✓ Wcześniej ukończono</div>' : ''}
       <button class="btn" id="ivStartBtn" style="width:100%;margin-top:14px;padding:14px;font-size:14px;background:#E8604A;">▶ ${alreadyDone ? 'Powtórz interwał' : 'Rozpocznij interwał'}</button>
       <button class="btn" id="aDoneBtn" style="width:100%;margin-top:10px;padding:12px;font-size:13px;background:var(--surface-2);color:var(--text);">Zamknij</button>
