@@ -27,6 +27,8 @@
   .switcher{display:flex;gap:4px;background:rgba(255,255,255,.08);padding:4px;border-radius:8px;margin-left:8px;}
   .switcher button{border:none;background:transparent;color:var(--topbar-text);opacity:.65;padding:7px 15px;border-radius:6px;font-family:'IBM Plex Sans';font-weight:600;font-size:13px;cursor:pointer;}
   .switcher button.active{background:var(--accent);color:var(--on-accent);opacity:1;}
+  .install-chip{display:flex;align-items:center;gap:5px;background:#E8604A;color:#fff;border-radius:20px;padding:6px 12px;font-size:11px;font-weight:700;white-space:nowrap;cursor:pointer;margin-left:8px;}
+  .install-chip svg{width:14px;height:14px;flex-shrink:0;}
   .status{margin-left:auto;font-size:12px;color:rgba(245,244,241,.55);}
   .backup-btns{display:flex;gap:6px;}
   .backup-btns button{background:transparent;border:1px solid rgba(245,244,241,.25);color:rgba(245,244,241,.75);border-radius:6px;padding:6px 10px;font-size:11.5px;cursor:pointer;}
@@ -348,6 +350,10 @@
     <button id="tabSportowiec">Panel sportowca</button>
   </div>
   <div class="status" id="status">Ładowanie…</div>
+  <div class="install-chip" id="installChip" style="display:none;">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg>
+    <span>Zainstaluj</span>
+  </div>
   <button class="btn ghost" id="logoutBtn" style="background:transparent;border:1px solid rgba(245,244,241,.25);color:rgba(245,244,241,.75);padding:6px 12px;font-size:11.5px;">Wyloguj</button>
 </div>
 
@@ -359,6 +365,7 @@
       <div id="clientList"></div>
       <button class="add-client-btn" id="showLibraryBtn" style="margin-top:14px;">📚 Biblioteka ćwiczeń</button>
       <button class="add-client-btn" id="showRosterBtn">👥 Klienci</button>
+      <button class="add-client-btn" id="copyAppLinkBtn">🔗 Skopiuj link aplikacji</button>
     </div>
     <div class="main" id="main">
       <div class="empty-state">Wybierz klienta z listy po lewej, albo przejdź do "Klienci", żeby dodać nowego.</div>
@@ -379,6 +386,12 @@
 
 <div class="modal-overlay" id="aExerciseModal" style="display:none;">
   <div class="modal-content" id="aExerciseModalContent"></div>
+</div>
+
+<div class="modal-overlay" id="installInstructionsModal" style="display:none;">
+  <div class="modal-content" id="installInstructionsContent" style="max-width:340px;text-align:center;">
+    <span class="modal-close" id="installModalCloseBtn">✕</span>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -544,10 +557,12 @@ window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredInstallPrompt = e;
   renderPwaBanner();
+  renderInstallChip();
 });
 window.addEventListener('appinstalled', () => {
   deferredInstallPrompt = null;
   renderPwaBanner();
+  renderInstallChip();
 });
 
 function isStandaloneMode(){
@@ -559,6 +574,50 @@ function isIOS(){
 function isNarrowScreen(){
   return window.innerWidth <= 600;
 }
+function renderInstallChip(){
+  const chip = $('installChip');
+  if(!chip) return;
+  if(currentTab !== 'sportowiec' || isStandaloneMode() || !isNarrowScreen()){
+    chip.style.display = 'none';
+    return;
+  }
+  chip.style.display = 'flex';
+}
+function showInstallInstructionsModal(){
+  const content = $('installInstructionsContent');
+  content.innerHTML = `
+    <span class="modal-close" id="installModalCloseBtn">✕</span>
+    <div style="width:52px;height:52px;border-radius:14px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:22px;">📲</div>
+    <h3 style="font-family:'Space Grotesk';font-size:16px;margin:0 0 14px;">Dodaj MoveU do ekranu głównego</h3>
+    <div style="text-align:left;">
+      <div style="display:flex;align-items:center;gap:9px;margin-bottom:10px;font-size:12.5px;"><div style="width:20px;height:20px;border-radius:50%;background:var(--text);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:700;flex-shrink:0;">1</div><div>Stuknij ikonę <b>Udostępnij</b> na dole ekranu</div></div>
+      <div style="display:flex;align-items:center;gap:9px;margin-bottom:10px;font-size:12.5px;"><div style="width:20px;height:20px;border-radius:50%;background:var(--text);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:700;flex-shrink:0;">2</div><div>Wybierz <b>"Dodaj do ekranu początkowego"</b></div></div>
+      <div style="display:flex;align-items:center;gap:9px;margin-bottom:16px;font-size:12.5px;"><div style="width:20px;height:20px;border-radius:50%;background:var(--text);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:700;flex-shrink:0;">3</div><div>Gotowe — ikona pojawi się na Twoim telefonie</div></div>
+    </div>
+    <button class="btn" style="width:100%;padding:12px;" id="installModalOkBtn">Rozumiem</button>
+  `;
+  $('installInstructionsModal').style.display = 'flex';
+  $('installModalCloseBtn').onclick = () => { $('installInstructionsModal').style.display = 'none'; };
+  $('installModalOkBtn').onclick = () => { $('installInstructionsModal').style.display = 'none'; };
+}
+$('installChip').onclick = async () => {
+  if(isIOS()){
+    showInstallInstructionsModal();
+    return;
+  }
+  if(deferredInstallPrompt){
+    deferredInstallPrompt.prompt();
+    await deferredInstallPrompt.userChoice;
+    deferredInstallPrompt = null;
+    renderInstallChip();
+  } else {
+    showInstallInstructionsModal();
+  }
+};
+$('installInstructionsModal').addEventListener('click', (e) => {
+  if(e.target.id === 'installInstructionsModal') $('installInstructionsModal').style.display = 'none';
+});
+
 function renderPwaBanner(){
   const el = $('pwaInstallBanner');
   if(!el) return;
@@ -877,11 +936,14 @@ async function init(){
 /* ============ TABS ============ */
 $('tabTrener').onclick = () => switchTab('trener');
 $('tabSportowiec').onclick = () => switchTab('sportowiec');
+let currentTab = 'trener';
 async function switchTab(tab){
+  currentTab = tab;
   $('tabTrener').classList.toggle('active', tab==='trener');
   $('tabSportowiec').classList.toggle('active', tab==='sportowiec');
   $('trenerView').style.display = tab==='trener' ? '' : 'none';
   $('sportowiecView').style.display = tab==='sportowiec' ? '' : 'none';
+  renderInstallChip();
   if(tab === 'sportowiec'){
     renderPwaBanner();
     if(selectedClientId){
@@ -977,6 +1039,17 @@ $('showRosterBtn').onclick = () => {
   selectedClientId = null;
   renderClientList();
   renderRosterView();
+};
+
+$('copyAppLinkBtn').onclick = async () => {
+  const link = window.location.origin + window.location.pathname;
+  try{
+    await navigator.clipboard.writeText(link);
+    toast('Link skopiowany: ' + link);
+  }catch(e){
+    // awaryjnie, jesli przegladarka nie pozwoli na clipboard API (np. brak https)
+    alert('Nie udało się skopiować automatycznie. Skopiuj ręcznie:\n\n' + link);
+  }
 };
 
 /* ============ TRENER: MAIN ============ */
@@ -1107,7 +1180,7 @@ function renderDayPanel(){
 
         <div class="section-label">Rozgrzewka</div>
         <table class="exlist">
-          <thead><tr><th></th><th>Ćwiczenie</th><th>Serie</th><th>Powt.</th><th>Tempo</th><th>Przerwa</th><th>Sugerowany kg</th><th></th><th></th></tr></thead>
+          <thead><tr><th></th><th>Ćwiczenie</th><th>Serie</th><th>Powt.</th><th>Tempo</th><th>Przerwa</th><th>Sugerowany kg</th><th></th><th>Bez ciężaru</th><th></th></tr></thead>
           <tbody id="exRows-warmup"></tbody>
         </table>
         <div class="add-ex-row">
@@ -1118,7 +1191,7 @@ function renderDayPanel(){
 
         <div class="section-label">Ćwiczenia główne</div>
         <table class="exlist">
-          <thead><tr><th></th><th>Ćwiczenie</th><th>Serie</th><th>Powt.</th><th>Tempo</th><th>Przerwa</th><th>Sugerowany kg</th><th></th><th>Test</th><th></th></tr></thead>
+          <thead><tr><th></th><th>Ćwiczenie</th><th>Serie</th><th>Powt.</th><th>Tempo</th><th>Przerwa</th><th>Sugerowany kg</th><th></th><th>Bez ciężaru</th><th>Test</th><th></th></tr></thead>
           <tbody id="exRows-main"></tbody>
         </table>
         <div class="add-ex-row">
@@ -1194,10 +1267,13 @@ function renderDayPanel(){
       const sel = $('exSelect-' + cat);
       const libEx = library.find(l => l.name === sel.value.trim());
       if(!libEx){ toast('Wybierz ćwiczenie z podpowiedzi listy'); return; }
+      const defaults = cat === 'warmup'
+        ? {sets:'1', reps:'10', tempo:'3010', rest:'30"'}
+        : {sets:'3', reps:'10', tempo:'2010', rest:'60"'};
       day.exercises.push({
         id: 'e_'+Date.now(), name: libEx.name, videoUrl: libEx.videoUrl, libraryId: libEx.id,
-        category: cat, sets:'3', reps:'10', tempo:'2010', rest:'60"',
-        labelManual:false, suggestedWeight:'', suggestedManual:false, isTest:false, log:[]
+        category: cat, sets:defaults.sets, reps:defaults.reps, tempo:defaults.tempo, rest:defaults.rest,
+        labelManual:false, suggestedWeight:'', suggestedManual:false, isTest:false, noWeight:false, log:[]
       });
       relabelExercises(day);
       sel.value = '';
@@ -1246,9 +1322,15 @@ function renderExRows(day, category){
       <td><input class="pill-input" data-f="rest" value="${ex.rest}"></td>
       <td>${isTestEx ? '<span style="color:var(--warn);font-size:11px;">to jest test</span>' : `<input class="pill-input" data-f="suggestedWeight" value="${displayVal}" placeholder="kg">`}</td>
       ${lastIconCell}
+      <td><label class="test-toggle"><input type="checkbox" class="noweight-check" ${ex.noWeight?'checked':''}></label></td>
       ${testCell}
       <td><button class="rm-btn" title="Usuń">✕</button></td>
     `;
+    tr.querySelector('.noweight-check').onchange = async (e) => {
+      ex.noWeight = e.target.checked;
+      await persistPlan(selectedClientId);
+      renderDayPanel();
+    };
     if(category === 'main'){
       tr.querySelector('.test-ex-check').onchange = async (e) => {
         ex.isTest = e.target.checked;
@@ -2539,9 +2621,9 @@ function renderAthleteDetail(day){
     : `<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);font-size:12px;">Brak filmu</div>`;
 
   const isThisATest = ex.category === 'main' && ex.isTest;
-  const autoVal = isThisATest ? null : computeSuggestedWeight(aClientId, exName, ex.reps);
+  const autoVal = (isThisATest || ex.noWeight) ? null : computeSuggestedWeight(aClientId, exName, ex.reps);
   let suggestedDisplay = '';
-  if(!isThisATest){
+  if(!isThisATest && !ex.noWeight){
     if(ex.suggestedManual && ex.suggestedWeight){
       suggestedDisplay = ex.suggestedWeight;
     } else if(autoVal !== null){
@@ -2552,7 +2634,11 @@ function renderAthleteDetail(day){
     }
   }
 
-  const setRows = ex.log.map((l, i) => `
+  const setRows = ex.log.map((l, i) => ex.noWeight ? `
+    <tr>
+      <td style="font-weight:700;font-family:'Space Grotesk';">${i+1}</td>
+      <td><input class="set-input" data-i="${i}" data-f="reps" value="${escapeHtml(l.reps)}" placeholder="${escapeHtml(ex.reps)}"></td>
+    </tr>` : `
     <tr>
       <td style="font-weight:700;font-family:'Space Grotesk';">${i+1}</td>
       <td><input class="set-input" data-i="${i}" data-f="weight" value="${escapeHtml(l.weight)}" placeholder="${suggestedDisplay ? suggestedDisplay+' kg' : '—'}"></td>
@@ -2576,7 +2662,7 @@ function renderAthleteDetail(day){
     </div>
     ${(ex.category==='main' && ex.isTest) ? renderTestHistoryBlock(aClientId, exName) : (suggestedDisplay ? `<div class="suggested-label">Sugerowany ciężar (z testu): ${escapeHtml(suggestedDisplay)} kg</div>` : '')}
     <table class="set-table">
-      <thead><tr><th>Seria</th><th>Ciężar (kg)</th><th>Powt.</th></tr></thead>
+      <thead><tr><th>Seria</th>${ex.noWeight ? '' : '<th>Ciężar (kg)</th>'}<th>Powt.</th></tr></thead>
       <tbody>${setRows}</tbody>
     </table>
     <button class="btn" id="aDoneBtn" style="width:100%;margin-top:18px;padding:14px;font-size:14px;">✓ Gotowe</button>
