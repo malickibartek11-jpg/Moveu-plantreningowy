@@ -234,6 +234,18 @@
   .a-empty{padding:16px;font-size:12.5px;color:var(--muted);text-align:center;}
 
   .back-link{font-size:14px;font-weight:600;color:var(--text);cursor:pointer;margin-bottom:14px;display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;}
+  .add-client-btn.completed-has-new{background:#2E9E5B;color:#fff;border:1px solid #2E9E5B;font-weight:700;}
+  .completed-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#fff;margin-right:6px;vertical-align:middle;}
+  .completed-row{display:flex;align-items:center;gap:12px;padding:13px 15px;background:var(--surface);border:1px solid var(--line);border-radius:10px;margin-bottom:8px;cursor:pointer;}
+  .completed-row:hover{box-shadow:0 4px 12px rgba(0,0,0,.06);}
+  .completed-nm{font-weight:600;font-size:13.5px;flex:1;}
+  .completed-time{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--muted);}
+  .completed-chev{color:var(--muted);}
+  .exlist-card{background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:16px;}
+  .completed-ex-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--line);font-size:13px;cursor:pointer;}
+  .completed-ex-row:last-child{border-bottom:none;}
+  .completed-ex-row:hover{background:var(--surface-2);}
+  .completed-log-count{margin-left:auto;color:var(--muted);font-size:11.5px;}
   .back-link:hover{border-color:var(--accent-dim);}
   .a-video-head{position:relative;border-radius:10px;overflow:hidden;background:var(--surface-2);aspect-ratio:16/9;margin-bottom:16px;border:1px solid var(--line);}
   .a-video-head img, .a-video-head iframe{width:100%;height:100%;object-fit:cover;border:0;display:block;}
@@ -269,6 +281,15 @@
   .iv-ring-center .iv-phase{font-size:11px;font-weight:700;letter-spacing:.5px;}
   .iv-ring-center .iv-count{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:40px;line-height:1;margin-top:4px;}
   .iv-controls{display:flex;gap:8px;}
+  .lr-cols-wrap{display:flex;gap:8px;}
+  .lr-col{flex:1;border-radius:12px;overflow:hidden;border:1px solid var(--line);}
+  .lr-col-header{padding:8px 6px;text-align:center;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:11.5px;color:#fff;}
+  .lr-col.lr-side-p .lr-col-header{background:#E8604A;}
+  .lr-col.lr-side-l .lr-col-header{background:#3E7CB1;}
+  .lr-col-table{width:100%;border-collapse:collapse;background:var(--surface);font-size:11px;}
+  .lr-col-table th{background:var(--surface-2);color:var(--muted);font-size:8.5px;text-transform:uppercase;padding:6px 4px;text-align:center;}
+  .lr-col-table td{padding:6px 4px;border-top:1px solid var(--line);text-align:center;}
+  .lr-col-table input{width:100%;background:var(--surface-2);border:1px solid var(--line);border-radius:4px;padding:4px 3px;font-size:11px;text-align:center;}
   .hist-icon{position:relative;cursor:help;font-size:14px;display:inline-block;outline:none;}
   .hist-tip{
     display:none;position:absolute;bottom:130%;left:50%;transform:translateX(-50%);
@@ -389,6 +410,7 @@
       <h3>Klienci</h3>
       <input type="text" id="clientSearchInput" placeholder="🔍 Szukaj klienta…" style="width:100%;background:var(--surface-2);border:1px solid var(--line);border-radius:7px;padding:8px 10px;font-size:12.5px;margin-bottom:10px;">
       <div id="clientList"></div>
+      <button class="add-client-btn" id="completedTrainingsBtn">📋 Ukończone treningi</button>
       <button class="add-client-btn" id="showLibraryBtn" style="margin-top:14px;">📚 Biblioteka ćwiczeń</button>
       <button class="add-client-btn" id="showRosterBtn">👥 Klienci</button>
       <button class="add-client-btn" id="copyAppLinkBtn">🔗 Skopiuj link aplikacji</button>
@@ -412,6 +434,10 @@
 
 <div class="modal-overlay" id="aExerciseModal" style="display:none;">
   <div class="modal-content" id="aExerciseModalContent"></div>
+</div>
+
+<div class="modal-overlay" id="completedExModal" style="display:none;">
+  <div class="modal-content" id="completedExModalContent" style="max-width:400px;"></div>
 </div>
 
 <div class="modal-overlay" id="installInstructionsModal" style="display:none;">
@@ -506,6 +532,7 @@ async function handleAuthResult(session){
 
   if(email === TRAINER_EMAIL.toLowerCase()){
     showAppShell();
+    renderCompletedTrainingsButton();
     return;
   }
 
@@ -749,7 +776,8 @@ function clientRowToJs(row){
     id: row.id, name: row.name, email: row.email,
     groupId: row.group_id, subgroupId: row.subgroup_id,
     dob: row.dob, height: row.height,
-    weightLog: row.weight_log || [], measurementsLog: row.measurements_log || []
+    weightLog: row.weight_log || [], measurementsLog: row.measurements_log || [],
+    pendingCompletions: row.pending_completions || []
   };
 }
 function clientJsToRow(c){
@@ -757,7 +785,8 @@ function clientJsToRow(c){
     id: c.id, name: c.name, email: c.email || null,
     group_id: c.groupId || null, subgroup_id: c.subgroupId || null,
     dob: c.dob || null, height: c.height || null,
-    weight_log: c.weightLog || [], measurements_log: c.measurementsLog || []
+    weight_log: c.weightLog || [], measurements_log: c.measurementsLog || [],
+    pending_completions: c.pendingCompletions || []
   };
 }
 async function loadClientsFromDB(){
@@ -878,6 +907,15 @@ function getDayDotClass(day){
   if(hasTest) return 'dot-test';
   let totalSlots = 0, filledSlots = 0;
   day.exercises.forEach(ex => {
+    if(ex.splitLR){
+      const nR = Math.max(1, parseInt(ex.setsRight)||1);
+      const nL = Math.max(1, parseInt(ex.setsLeft)||1);
+      totalSlots += nR + nL;
+      const logR = ex.logRight || [], logL = ex.logLeft || [];
+      for(let i=0;i<nR;i++){ const e=logR[i]; if(e && (e.weight||e.reps)) filledSlots++; }
+      for(let i=0;i<nL;i++){ const e=logL[i]; if(e && (e.weight||e.reps)) filledSlots++; }
+      return;
+    }
     const numSets = Math.max(1, parseInt(ex.sets)||1);
     totalSlots += numSets;
     const log = ex.log || [];
@@ -889,7 +927,136 @@ function getDayDotClass(day){
   if(filledSlots === 0) return 'dot-planned';
   return (filledSlots/totalSlots) >= 0.5 ? 'dot-done' : 'dot-incomplete';
 }
-/* Kolory serii łączonych (A1/A2 ten sam kolor, B1/B2/B3 ten sam itd.) w widoku sportowca */
+/* Wywolywane po kazdym zapisie wyniku przez sportowca - sprawdza czy dzien
+   przekroczyl prog 50% PIERWSZY RAZ, i jesli tak, dopisuje powiadomienie
+   dla trenera do lekkiego pola na kliencie (bez trzeba ladowac calego planu). */
+async function checkAndMarkCompletion(clientId, dateStr, day){
+  if(day.completedNotified) return;
+  if(getDayDotClass(day) !== 'dot-done') return;
+  day.completedNotified = true;
+  await persistPlan(clientId);
+  const c = clients.find(cl => cl.id === clientId);
+  if(!c) return;
+  const now = new Date();
+  const time = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+  c.pendingCompletions = (c.pendingCompletions || []).concat([{date: dateStr, time}]);
+  await saveClientRow(c);
+  renderInstallChip(); // no-op tu, ale odswieza ogolny stan gornego paska bez szkody
+  const btn = document.getElementById('completedTrainingsBtn');
+  if(btn) renderCompletedTrainingsButton();
+}
+
+function renderCompletedTrainingsButton(){
+  const btn = document.getElementById('completedTrainingsBtn');
+  if(!btn) return;
+  const count = clients.reduce((sum, c) => sum + (c.pendingCompletions||[]).length, 0);
+  if(count > 0){
+    btn.className = 'add-client-btn completed-has-new';
+    btn.innerHTML = `<span class="completed-dot"></span>Ukończone treningi (${count})`;
+  } else {
+    btn.className = 'add-client-btn';
+    btn.innerHTML = `📋 Ukończone treningi`;
+  }
+}
+
+function renderCompletedTrainingsList(){
+  trainerViewMode = 'completed';
+  selectedClientId = null;
+  renderClientList();
+  const main = $('main');
+  const rows = [];
+  clients.forEach(c => {
+    (c.pendingCompletions||[]).forEach(pc => rows.push({clientId: c.id, clientName: c.name, date: pc.date, time: pc.time}));
+  });
+  rows.sort((a,b) => (b.date+b.time).localeCompare(a.date+a.time));
+  if(rows.length === 0){
+    main.innerHTML = `<div class="empty-state">Brak nowych ukończonych treningów.</div>`;
+    return;
+  }
+  main.innerHTML = `
+    <h2 style="font-family:'Space Grotesk';margin-bottom:16px;">Ukończone treningi</h2>
+    <div id="completedRows"></div>
+  `;
+  const holder = $('completedRows');
+  rows.forEach(r => {
+    const row = document.createElement('div');
+    row.className = 'completed-row';
+    row.innerHTML = `<div class="completed-nm">${escapeHtml(r.clientName)}</div><div class="completed-time">${escapeHtml(r.date)} · ${escapeHtml(r.time)}</div><div class="completed-chev">›</div>`;
+    row.onclick = () => openCompletedDay(r.clientId, r.date);
+    holder.appendChild(row);
+  });
+}
+
+async function openCompletedDay(clientId, dateStr){
+  const c = clients.find(cl => cl.id === clientId);
+  if(!c) return;
+  // wyswietlenie = zaakceptowanie: usuwamy wpis z listy oczekujacych
+  c.pendingCompletions = (c.pendingCompletions||[]).filter(pc => !(pc.date === dateStr));
+  await saveClientRow(c);
+  renderCompletedTrainingsButton();
+
+  await ensurePlanLoaded(clientId);
+  const day = plansCache[clientId][dateStr];
+  const main = $('main');
+  if(!day){
+    main.innerHTML = `<div class="empty-state">Nie znaleziono tego dnia w planie.</div>`;
+    return;
+  }
+  main.innerHTML = `
+    <span class="back-link" id="backToCompletedList">← Wróć do listy</span>
+    <h2 style="font-family:'Space Grotesk';margin:6px 0 2px;">${escapeHtml(c.name)}</h2>
+    <div style="color:var(--muted);font-size:12.5px;margin-bottom:16px;">${escapeHtml(dateStr)} — plan dnia (podgląd, jak w panelu sportowca)</div>
+    <div class="section-label">Rozgrzewka</div>
+    <div id="completedWarmupList" class="exlist-card"></div>
+    <div class="section-label">Ćwiczenia główne</div>
+    <div id="completedMainList" class="exlist-card"></div>
+  `;
+  $('backToCompletedList').onclick = renderCompletedTrainingsList;
+  renderCompletedDayExList('warmup', day, clientId, dateStr);
+  renderCompletedDayExList('main', day, clientId, dateStr);
+}
+
+function renderCompletedDayExList(category, day, clientId, dateStr){
+  const holder = $(category === 'warmup' ? 'completedWarmupList' : 'completedMainList');
+  const exs = day.exercises.filter(e => e.category === category);
+  if(exs.length === 0){ holder.innerHTML = '<div style="padding:10px;color:var(--muted);font-size:12px;">— brak —</div>'; return; }
+  holder.innerHTML = exs.map(ex => `
+    <div class="completed-ex-row" data-exid="${ex.id}">
+      <div class="badge-mini" style="background:${ex.label && ex.label[0]==='B' ? '#3E7CB1' : '#E8604A'};">${escapeHtml(ex.label||'')}</div>
+      <div>${escapeHtml(resolveExName(ex))}<div style="color:var(--muted);font-size:11px;">${escapeHtml(ex.sets)} x ${escapeHtml(ex.reps)}</div></div>
+      <div class="completed-log-count">${(ex.log||[]).length} serie</div>
+      <div class="completed-chev">›</div>
+    </div>
+  `).join('');
+  holder.querySelectorAll('.completed-ex-row').forEach(row => {
+    row.onclick = () => openCompletedExerciseDetail(row.dataset.exid, day, clientId, dateStr);
+  });
+}
+
+function openCompletedExerciseDetail(exId, day, clientId, dateStr){
+  const ex = day.exercises.find(e => e.id === exId);
+  if(!ex) return;
+  const exName = resolveExName(ex);
+  const rowsHtml = (ex.log||[]).map((l,i) => `<tr><td>${i+1}</td>${ex.noWeight?'':'<td>'+escapeHtml(l.weight||'—')+' kg</td>'}<td>${escapeHtml(l.reps||'—')}</td></tr>`).join('');
+  $('completedExModalContent').innerHTML = `
+    <span class="modal-close" id="completedExModalCloseBtn">✕</span>
+    <h3 style="font-family:'Space Grotesk';margin:0 0 12px;">${escapeHtml(exName)}</h3>
+    <div class="target-box" style="margin-bottom:14px;">
+      <div><div class="t">SERIE</div><div class="v">${escapeHtml(ex.sets)}</div></div>
+      <div><div class="t">POWT.</div><div class="v">${escapeHtml(ex.reps)}</div></div>
+      <div><div class="t">TEMPO</div><div class="v">${escapeHtml(ex.tempo||'—')}</div></div>
+      <div><div class="t">PRZERWA</div><div class="v">${escapeHtml(ex.rest||'—')}</div></div>
+    </div>
+    <table class="set-table">
+      <thead><tr><th>Seria</th>${ex.noWeight?'':'<th>Ciężar</th>'}<th>Powt.</th></tr></thead>
+      <tbody>${rowsHtml}</tbody>
+    </table>
+  `;
+  $('completedExModal').style.display = 'flex';
+  $('completedExModalCloseBtn').onclick = () => { $('completedExModal').style.display = 'none'; };
+}
+
+
 const SERIES_COLORS = {
   A: {bg:'#E8604A', text:'#FFFFFF'},
   B: {bg:'#3E7CB1', text:'#FFFFFF'},
@@ -918,6 +1085,14 @@ function ensureLog(ex){
   const n = Math.max(1, parseInt(ex.sets) || 1);
   if(!ex.log) ex.log = [];
   while(ex.log.length < n) ex.log.push({weight:'', reps:''});
+  if(ex.splitLR){
+    const nR = Math.max(1, parseInt(ex.setsRight) || 1);
+    const nL = Math.max(1, parseInt(ex.setsLeft) || 1);
+    if(!ex.logRight) ex.logRight = [];
+    if(!ex.logLeft) ex.logLeft = [];
+    while(ex.logRight.length < nR) ex.logRight.push({weight:'', reps:''});
+    while(ex.logLeft.length < nL) ex.logLeft.push({weight:'', reps:''});
+  }
   return ex.log;
 }
 
@@ -970,6 +1145,9 @@ async function switchTab(tab){
   $('trenerView').style.display = tab==='trener' ? '' : 'none';
   $('sportowiecView').style.display = tab==='sportowiec' ? '' : 'none';
   renderInstallChip();
+  if(tab === 'trener'){
+    renderCompletedTrainingsButton();
+  }
   if(tab === 'sportowiec'){
     renderPwaBanner();
     if(selectedClientId){
@@ -1066,6 +1244,7 @@ $('showRosterBtn').onclick = () => {
   renderClientList();
   renderRosterView();
 };
+$('completedTrainingsBtn').onclick = renderCompletedTrainingsList;
 
 $('copyAppLinkBtn').onclick = async () => {
   const link = window.location.origin + window.location.pathname;
@@ -1206,7 +1385,7 @@ function renderDayPanel(){
 
         <div class="section-label">Rozgrzewka</div>
         <table class="exlist">
-          <thead><tr><th></th><th>Ćwiczenie</th><th>Serie</th><th>Powt.</th><th>Tempo</th><th>Przerwa</th><th>Sugerowany kg</th><th></th><th>Bez ciężaru</th><th>Interwał</th><th></th></tr></thead>
+          <thead><tr><th></th><th>Ćwiczenie</th><th>Serie</th><th>Powt.</th><th>Tempo</th><th>Przerwa</th><th>Sugerowany kg</th><th></th><th>Bez ciężaru</th><th>Interwał</th><th>Podział P/L</th><th></th></tr></thead>
           <tbody id="exRows-warmup"></tbody>
         </table>
         <div class="add-ex-row">
@@ -1217,7 +1396,7 @@ function renderDayPanel(){
 
         <div class="section-label">Ćwiczenia główne</div>
         <table class="exlist">
-          <thead><tr><th></th><th>Ćwiczenie</th><th>Serie</th><th>Powt.</th><th>Tempo</th><th>Przerwa</th><th>Sugerowany kg</th><th></th><th>Bez ciężaru</th><th>Interwał</th><th>Test</th><th></th></tr></thead>
+          <thead><tr><th></th><th>Ćwiczenie</th><th>Serie</th><th>Powt.</th><th>Tempo</th><th>Przerwa</th><th>Sugerowany kg</th><th></th><th>Bez ciężaru</th><th>Interwał</th><th>Podział P/L</th><th>Test</th><th></th></tr></thead>
           <tbody id="exRows-main"></tbody>
         </table>
         <div class="add-ex-row">
@@ -1300,7 +1479,8 @@ function renderDayPanel(){
         id: 'e_'+Date.now(), name: libEx.name, videoUrl: libEx.videoUrl, libraryId: libEx.id,
         category: cat, sets:defaults.sets, reps:defaults.reps, tempo:defaults.tempo, rest:defaults.rest,
         labelManual:false, suggestedWeight:'', suggestedManual:false, isTest:false, noWeight:false,
-        isInterval:false, workTime:'', restTime:'', effortPercent:'', restBetweenSets:'', log:[]
+        isInterval:false, workTime:'', restTime:'', effortPercent:'', restBetweenSets:'',
+        splitLR:false, setsRight:'', setsLeft:'', log:[]
       });
       relabelExercises(day);
       sel.value = '';
@@ -1343,7 +1523,7 @@ function renderExRows(day, category){
     tr.innerHTML = `
       <td><span class="drag-handle" title="Przeciągnij, żeby zmienić kolejność">⠿</span></td>
       <td><span class="ex-label">${escapeHtml(ex.label || '')}</span> ${escapeHtml(exName)}${relinkIcon}</td>
-      <td><input class="pill-input" data-f="sets" value="${ex.sets}"></td>
+      <td><input class="pill-input" data-f="sets" value="${ex.sets}" ${ex.splitLR?'disabled':''}></td>
       <td><input class="pill-input" data-f="reps" value="${ex.reps}"></td>
       <td><input class="pill-input" data-f="tempo" value="${ex.tempo}"></td>
       <td><input class="pill-input" data-f="rest" value="${ex.rest}"></td>
@@ -1351,6 +1531,7 @@ function renderExRows(day, category){
       ${lastIconCell}
       <td><label class="test-toggle"><input type="checkbox" class="noweight-check" ${ex.noWeight?'checked':''}></label></td>
       <td><label class="test-toggle"><input type="checkbox" class="interval-check" ${ex.isInterval?'checked':''}></label></td>
+      <td><label class="test-toggle"><input type="checkbox" class="splitlr-check" ${ex.splitLR?'checked':''}></label></td>
       ${testCell}
       <td><button class="rm-btn" title="Usuń">✕</button></td>
     `;
@@ -1361,6 +1542,14 @@ function renderExRows(day, category){
     };
     tr.querySelector('.interval-check').onchange = async (e) => {
       ex.isInterval = e.target.checked;
+      await persistPlan(selectedClientId);
+      renderDayPanel();
+    };
+    tr.querySelector('.splitlr-check').onchange = async (e) => {
+      ex.splitLR = e.target.checked;
+      if(ex.splitLR){
+        ensureLog(ex);
+      }
       await persistPlan(selectedClientId);
       renderDayPanel();
     };
@@ -1469,6 +1658,28 @@ function renderExRows(day, category){
         };
       });
       tbody.appendChild(trI);
+    }
+
+    if(ex.splitLR){
+      const trS = document.createElement('tr');
+      trS.className = 'interval-subrow';
+      trS.innerHTML = `
+        <td></td>
+        <td colspan="10">
+          <div class="interval-fields">
+            <label>Serie — prawa strona<input class="pill-input" data-sf="setsRight" value="${escapeHtml(ex.setsRight||'')}" placeholder="np. 3"></label>
+            <label>Serie — lewa strona<input class="pill-input" data-sf="setsLeft" value="${escapeHtml(ex.setsLeft||'')}" placeholder="np. 1"></label>
+          </div>
+        </td>
+      `;
+      trS.querySelectorAll('input[data-sf]').forEach(inp => {
+        inp.onchange = async () => {
+          ex[inp.dataset.sf] = inp.value;
+          ensureLog(ex);
+          await persistPlan(selectedClientId);
+        };
+      });
+      tbody.appendChild(trS);
     }
   });
 }
@@ -2687,7 +2898,7 @@ function ivBeep(freq){
   }catch(e){}
 }
 
-function renderIntervalExerciseModal(ex, exName){
+function renderIntervalExerciseModal(ex, exName, day){
   const holder = $('aExerciseModalContent');
   const exVideo = resolveExVideo(ex);
   const vid = getYoutubeId(exVideo);
@@ -2839,6 +3050,7 @@ function renderIntervalExerciseModal(ex, exName){
     ivBeep(660);
     ex.log = [{weight:'', reps: String(totalRounds)}];
     await persistPlan(aClientId);
+    await checkAndMarkCompletion(aClientId, aSelectedDateStr, day);
     renderAthleteDay();
     holder.innerHTML = `
       <span class="modal-close" id="aModalCloseBtn">✕</span>
@@ -2864,7 +3076,7 @@ function renderAthleteDetail(day){
   const exName = resolveExName(ex);
 
   if(ex.isInterval){
-    renderIntervalExerciseModal(ex, exName);
+    renderIntervalExerciseModal(ex, exName, day);
     return;
   }
 
@@ -2900,6 +3112,12 @@ function renderAthleteDetail(day){
       <td><input class="set-input" data-i="${i}" data-f="reps" value="${escapeHtml(l.reps)}" placeholder="${escapeHtml(ex.reps)}"></td>
     </tr>`).join('');
 
+  const lrRows = (log, side) => log.map((l, i) => `
+    <tr>
+      <td><input class="lr-set-input" data-side="${side}" data-i="${i}" data-f="weight" value="${escapeHtml(l.weight)}" placeholder="kg"></td>
+      <td><input class="lr-set-input" data-side="${side}" data-i="${i}" data-f="reps" value="${escapeHtml(l.reps)}" placeholder="${escapeHtml(ex.reps)}"></td>
+    </tr>`).join('');
+
   holder.innerHTML = `
     <span class="modal-close" id="aModalCloseBtn">✕</span>
     <div class="a-video-head">
@@ -2910,7 +3128,10 @@ function renderAthleteDetail(day){
       </div>
     </div>
     <div class="target-box">
-      <div><div class="t">SERIE</div><div class="v">${escapeHtml(ex.sets)}</div></div>
+      ${ex.splitLR ? `
+        <div><div class="t">SERIE PRAWA</div><div class="v" style="color:#E8604A;">${escapeHtml(ex.setsRight||'—')}</div></div>
+        <div><div class="t">SERIE LEWA</div><div class="v" style="color:#3E7CB1;">${escapeHtml(ex.setsLeft||'—')}</div></div>
+      ` : `<div><div class="t">SERIE</div><div class="v">${escapeHtml(ex.sets)}</div></div>`}
       <div><div class="t">POWT.</div><div class="v">${escapeHtml(ex.reps)}</div></div>
       ${ex.isInterval ? `
         <div><div class="t">CZAS PRACY</div><div class="v">${escapeHtml(ex.workTime||'—')}</div></div>
@@ -2923,10 +3144,29 @@ function renderAthleteDetail(day){
       `}
     </div>
     ${(ex.category==='main' && ex.isTest) ? renderTestHistoryBlock(aClientId, exName) : (suggestedDisplay ? `<div class="suggested-label">Sugerowany ciężar (z testu): ${escapeHtml(suggestedDisplay)} kg</div>` : '')}
+    ${ex.splitLR ? `
+      <div class="lr-cols-wrap">
+        <div class="lr-col lr-side-p">
+          <div class="lr-col-header">PRAWA</div>
+          <table class="lr-col-table">
+            <thead><tr><th>Kg</th><th>Pw</th></tr></thead>
+            <tbody>${lrRows(ex.logRight, 'right')}</tbody>
+          </table>
+        </div>
+        <div class="lr-col lr-side-l">
+          <div class="lr-col-header">LEWA</div>
+          <table class="lr-col-table">
+            <thead><tr><th>Kg</th><th>Pw</th></tr></thead>
+            <tbody>${lrRows(ex.logLeft, 'left')}</tbody>
+          </table>
+        </div>
+      </div>
+    ` : `
     <table class="set-table">
       <thead><tr><th>Seria</th>${ex.noWeight ? '' : '<th>Ciężar (kg)</th>'}<th>Powt.</th></tr></thead>
       <tbody>${setRows}</tbody>
     </table>
+    `}
     <button class="btn" id="aDoneBtn" style="width:100%;margin-top:18px;padding:14px;font-size:14px;">✓ Gotowe</button>
   `;
 
@@ -2953,6 +3193,16 @@ function renderAthleteDetail(day){
       const i = parseInt(inp.dataset.i);
       ex.log[i][inp.dataset.f] = inp.value;
       await persistPlan(aClientId);
+      await checkAndMarkCompletion(aClientId, aSelectedDateStr, day);
+    };
+  });
+  holder.querySelectorAll('.lr-set-input').forEach(inp => {
+    inp.onchange = async () => {
+      const i = parseInt(inp.dataset.i);
+      const arr = inp.dataset.side === 'right' ? ex.logRight : ex.logLeft;
+      arr[i][inp.dataset.f] = inp.value;
+      await persistPlan(aClientId);
+      await checkAndMarkCompletion(aClientId, aSelectedDateStr, day);
     };
   });
 }
