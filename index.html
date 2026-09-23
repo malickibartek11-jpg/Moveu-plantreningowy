@@ -466,10 +466,6 @@
   <div class="modal-content" id="aExerciseModalContent"></div>
 </div>
 
-<div class="modal-overlay" id="completedExModal" style="display:none;">
-  <div class="modal-content" id="completedExModalContent" style="max-width:400px;"></div>
-</div>
-
 <div class="modal-overlay" id="applyConflictModal" style="display:none;">
   <div class="modal-content" id="applyConflictModalContent" style="max-width:380px;"></div>
 </div>
@@ -1036,63 +1032,18 @@ async function openCompletedDay(clientId, dateStr){
 
   await ensurePlanLoaded(clientId);
   const day = plansCache[clientId][dateStr];
-  const main = $('main');
   if(!day){
-    main.innerHTML = `<div class="empty-state">Nie znaleziono tego dnia w planie.</div>`;
+    $('main').innerHTML = `<div class="empty-state">Nie znaleziono tego dnia w planie.</div>`;
     return;
   }
-  main.innerHTML = `
-    <span class="back-link" id="backToCompletedList">← Wróć do listy</span>
-    <h2 style="font-family:'Space Grotesk';margin:6px 0 2px;">${escapeHtml(c.name)}</h2>
-    <div style="color:var(--muted);font-size:12.5px;margin-bottom:16px;">${escapeHtml(dateStr)} — plan dnia (podgląd, jak w panelu sportowca)</div>
-    <div class="section-label">Rozgrzewka</div>
-    <div id="completedWarmupList" class="exlist-card"></div>
-    <div class="section-label">Ćwiczenia główne</div>
-    <div id="completedMainList" class="exlist-card"></div>
-  `;
-  $('backToCompletedList').onclick = renderCompletedTrainingsList;
-  renderCompletedDayExList('warmup', day, clientId, dateStr);
-  renderCompletedDayExList('main', day, clientId, dateStr);
-}
-
-function renderCompletedDayExList(category, day, clientId, dateStr){
-  const holder = $(category === 'warmup' ? 'completedWarmupList' : 'completedMainList');
-  const exs = day.exercises.filter(e => e.category === category);
-  if(exs.length === 0){ holder.innerHTML = '<div style="padding:10px;color:var(--muted);font-size:12px;">— brak —</div>'; return; }
-  holder.innerHTML = exs.map(ex => `
-    <div class="completed-ex-row" data-exid="${ex.id}">
-      <div class="badge-mini" style="background:${ex.label && ex.label[0]==='B' ? '#3E7CB1' : '#E8604A'};">${escapeHtml(ex.label||'')}</div>
-      <div>${escapeHtml(resolveExName(ex))}<div style="color:var(--muted);font-size:11px;">${escapeHtml(ex.sets)} x ${escapeHtml(ex.reps)}</div></div>
-      <div class="completed-log-count">${(ex.log||[]).length} serie</div>
-      <div class="completed-chev">›</div>
-    </div>
-  `).join('');
-  holder.querySelectorAll('.completed-ex-row').forEach(row => {
-    row.onclick = () => openCompletedExerciseDetail(row.dataset.exid, day, clientId, dateStr);
-  });
-}
-
-function openCompletedExerciseDetail(exId, day, clientId, dateStr){
-  const ex = day.exercises.find(e => e.id === exId);
-  if(!ex) return;
-  const exName = resolveExName(ex);
-  const rowsHtml = (ex.log||[]).map((l,i) => `<tr><td>${i+1}</td>${ex.noWeight?'':'<td>'+escapeHtml(l.weight||'—')+' kg</td>'}<td>${escapeHtml(l.reps||'—')}</td></tr>`).join('');
-  $('completedExModalContent').innerHTML = `
-    <span class="modal-close" id="completedExModalCloseBtn">✕</span>
-    <h3 style="font-family:'Space Grotesk';margin:0 0 12px;">${escapeHtml(exName)}</h3>
-    <div class="target-box" style="margin-bottom:14px;">
-      <div><div class="t">SERIE</div><div class="v">${escapeHtml(ex.sets)}</div></div>
-      <div><div class="t">POWT.</div><div class="v">${escapeHtml(ex.reps)}</div></div>
-      <div><div class="t">TEMPO</div><div class="v">${escapeHtml(ex.tempo||'—')}</div></div>
-      <div><div class="t">PRZERWA</div><div class="v">${escapeHtml(ex.rest||'—')}</div></div>
-    </div>
-    <table class="set-table">
-      <thead><tr><th>Seria</th>${ex.noWeight?'':'<th>Ciężar</th>'}<th>Powt.</th></tr></thead>
-      <tbody>${rowsHtml}</tbody>
-    </table>
-  `;
-  $('completedExModal').style.display = 'flex';
-  $('completedExModalCloseBtn').onclick = () => { $('completedExModal').style.display = 'none'; };
+  // Pokazujemy DOKLADNIE ten sam, prawdziwy widok co panel sportowca -
+  // te same odznaki, ten sam modal cwiczenia (wideo/notatki/interwal/podzial P/L).
+  selectedClientId = null; // zeby nie nadpisalo aClientId przy przelaczeniu zakladki
+  aClientId = clientId;
+  aSelectedDateStr = dateStr;
+  aDetailExId = null;
+  aFlyoutOpen = false;
+  await switchTab('sportowiec');
 }
 
 
@@ -2525,6 +2476,7 @@ function renderTemplateEditorShell(){
     </div>
     <div class="day-tabs-tpl" id="tplDayTabs"></div>
     <div id="dayPanelHolder"></div>
+    <datalist id="libNamesList"></datalist>
   `;
   $('tplBackBtn').onclick = () => {
     editingTemplateMode = false;
@@ -2538,6 +2490,7 @@ function renderTemplateEditorShell(){
   };
   renderTplDayTabs();
   renderDayPanel();
+  renderLibraryList();
 }
 
 function renderTplDayTabs(){
@@ -3200,11 +3153,10 @@ function renderAthleteDay(){
     const rows = items.map(ex => {
       const done = (ex.log||[]).some(l => l.weight || l.reps);
       const seriesStyle = getSeriesStyle(ex.label);
-      const letterOnly = (ex.label||'').replace(/[0-9]/g,'');
       return `
         <div class="a-item" data-exid="${ex.id}">
           <div class="a-badge" style="background:${seriesStyle.bg};color:${seriesStyle.text};">
-            ${escapeHtml(letterOnly)}
+            ${escapeHtml(ex.label||'')}
             ${done ? '<span class="badge-check">✓</span>' : ''}
           </div>
           <div>
@@ -3267,6 +3219,7 @@ function closeExerciseModal(){
   stopIvTimer();
   aDetailExId = null;
   $('aExerciseModal').style.display = 'none';
+  renderAthleteDay();
 }
 
 function renderTestHistoryBlock(clientId, exerciseName){
