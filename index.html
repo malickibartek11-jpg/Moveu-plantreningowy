@@ -133,6 +133,11 @@
   .interval-fields{display:flex;gap:16px;flex-wrap:wrap;}
   .interval-fields label{display:flex;flex-direction:column;gap:3px;font-size:10.5px;color:var(--muted);font-weight:600;}
   .interval-fields input{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 8px;font-size:12.5px;width:110px;}
+  .note-label{font-size:10px;color:var(--muted);font-weight:700;margin-bottom:5px;display:block;}
+  .note-input{width:100%;background:var(--surface);border:1px solid var(--line);border-radius:7px;padding:8px 10px;font-size:12.5px;color:var(--text);}
+  .a-note-card{display:flex;gap:9px;background:var(--surface);border:1px solid var(--line);border-left:3px solid #E8604A;border-radius:10px;padding:11px 13px;margin-bottom:14px;}
+  .a-note-card .icon{font-size:14px;flex-shrink:0;line-height:1.3;}
+  .a-note-card .txt{font-size:12.5px;color:var(--text);line-height:1.4;}
   .test-toggle input{accent-color:var(--warn);}
   .badge-test{background:var(--warn);color:#FAF6EF;font-size:11px;font-weight:700;padding:4px 10px;border-radius:6px;}
   .day-panel-actions{display:flex;gap:8px;align-items:center;}
@@ -152,6 +157,10 @@
   table.exlist th{text-align:left;font-size:10.5px;color:var(--muted);font-weight:600;padding:6px 6px;border-bottom:1px solid var(--line);}
   table.exlist td{padding:7px 6px;border-bottom:1px solid var(--line);font-size:12.5px;}
   table.exlist tr:last-child td{border-bottom:none;}
+  .yt-hover-wrap{position:relative;display:inline-block;}
+  .yt-hover-thumb{display:none;position:absolute;top:100%;left:0;z-index:60;margin-top:6px;border-radius:8px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.25);border:1px solid var(--line);}
+  .yt-hover-wrap:hover .yt-hover-thumb{display:block;}
+  .yt-hover-thumb img{width:200px;height:auto;display:block;}
   .record-badge{display:inline-flex;align-items:center;gap:4px;background:rgba(214,69,69,.12);color:#D64545;font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:9px;margin-left:8px;vertical-align:middle;}
   .record-badge .record-dot{width:5px;height:5px;border-radius:50%;background:#D64545;}
   .pill-input{width:100%;background:var(--surface-2);border:1px solid var(--line);border-radius:5px;color:var(--text);font-size:12px;padding:6px;text-align:center;}
@@ -248,6 +257,24 @@
   .completed-ex-row:last-child{border-bottom:none;}
   .completed-ex-row:hover{background:var(--surface-2);}
   .completed-log-count{margin-left:auto;color:var(--muted);font-size:11.5px;}
+  .tpl-row{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:13px 15px;margin-bottom:8px;}
+  .tpl-nm{font-weight:700;font-family:'Space Grotesk',sans-serif;font-size:14px;flex:1;}
+  .tpl-days{font-size:11.5px;color:var(--muted);}
+  .tpl-row .btn.small{padding:6px 11px;font-size:11.5px;}
+  .tpl-title-row{margin-bottom:16px;}
+  .tpl-title-row input{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:14px;}
+  .day-tabs-tpl{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;}
+  .day-tab-tpl{padding:8px 14px;border-radius:8px;font-size:12px;font-weight:600;background:var(--surface-2);border:1px solid var(--line);color:var(--muted);cursor:pointer;}
+  .day-tab-tpl.active{background:#1C1C1C;color:#fff;border-color:#1C1C1C;}
+  .day-tab-tpl.add{background:transparent;border-style:dashed;}
+  .group-chip-apply{display:inline-flex;align-items:center;gap:6px;background:var(--surface);border:1.5px solid #E8604A;color:#E8604A;border-radius:20px;padding:7px 14px;margin:0 6px 8px 0;font-size:12.5px;font-weight:700;cursor:pointer;}
+  .client-chip-apply{display:inline-flex;align-items:center;gap:6px;background:#2E9E5B;color:#fff;border:1px solid #2E9E5B;border-radius:20px;padding:6px 12px;margin:0 6px 6px 0;font-size:12.5px;cursor:pointer;font-weight:600;}
+  .client-chip-apply .via{font-size:9.5px;opacity:.8;margin-left:2px;font-weight:400;}
+  .date-row-apply{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--line);}
+  .date-row-apply:last-child{border-bottom:none;}
+  .date-row-apply .day-lbl{font-weight:700;font-family:'Space Grotesk',sans-serif;font-size:13px;width:110px;}
+  .date-row-apply input[type=date]{flex:1;padding:7px 10px;border:1px solid var(--line);border-radius:7px;font-size:12.5px;max-width:200px;}
+  .coral-btn{background:#E8604A !important;}
   .back-link:hover{border-color:var(--accent-dim);}
   .a-video-head{position:relative;border-radius:10px;overflow:hidden;background:var(--surface-2);aspect-ratio:16/9;margin-bottom:16px;border:1px solid var(--line);}
   .a-video-head img, .a-video-head iframe{width:100%;height:100%;object-fit:cover;border:0;display:block;}
@@ -413,6 +440,7 @@
       <input type="text" id="clientSearchInput" placeholder="🔍 Szukaj klienta…" style="width:100%;background:var(--surface-2);border:1px solid var(--line);border-radius:7px;padding:8px 10px;font-size:12.5px;margin-bottom:10px;">
       <div id="clientList"></div>
       <button class="add-client-btn" id="completedTrainingsBtn">📋 Ukończone treningi</button>
+      <button class="add-client-btn" id="showTemplatesBtn">🗂️ Szablony planów</button>
       <button class="add-client-btn" id="showLibraryBtn" style="margin-top:14px;">📚 Biblioteka ćwiczeń</button>
       <button class="add-client-btn" id="showRosterBtn">👥 Klienci</button>
       <button class="add-client-btn" id="copyAppLinkBtn">🔗 Skopiuj link aplikacji</button>
@@ -442,6 +470,10 @@
   <div class="modal-content" id="completedExModalContent" style="max-width:400px;"></div>
 </div>
 
+<div class="modal-overlay" id="applyConflictModal" style="display:none;">
+  <div class="modal-content" id="applyConflictModalContent" style="max-width:380px;"></div>
+</div>
+
 <div class="modal-overlay" id="installInstructionsModal" style="display:none;">
   <div class="modal-content" id="installInstructionsContent" style="max-width:340px;text-align:center;">
     <span class="modal-close" id="installModalCloseBtn">✕</span>
@@ -462,6 +494,11 @@ let libraryGroups = []; // {id, name} - kategorie cwiczen w bibliotece
 let plansCache = {}; // clientId -> { "YYYY-MM-DD": day }
 
 let selectedClientId = null;
+let editingTemplateMode = false;
+let currentTemplateId = null;
+let currentTemplateDayIdx = 0;
+let templates = [];
+let persistCurrentDayFn = () => persistPlan(selectedClientId);
 let viewDate = new Date();
 let selectedDateStr = null;
 let trainerViewMode = 'clients'; // 'clients' | 'library' | 'roster' | 'profile'
@@ -1130,6 +1167,7 @@ async function init(){
     clientGroups = loadedClientGroups;
   }
   clientSubgroups = (await safeGet('client_subgroups')) || [];
+  templates = (await safeGet('plan_templates')) || [];
   renderClientList();
   renderAthleteGroupOptions();
   setStatus('Zapisano');
@@ -1234,6 +1272,14 @@ async function selectClient(id){
   renderMain();
 }
 
+$('showTemplatesBtn').onclick = () => {
+  trainerViewMode = 'templates';
+  selectedClientId = null;
+  editingTemplateMode = false;
+  renderClientList();
+  renderTemplatesListView();
+};
+
 $('showLibraryBtn').onclick = () => {
   trainerViewMode = 'library';
   selectedClientId = null;
@@ -1314,6 +1360,7 @@ function renderMain(){
 }
 
 function renderCalendar(){
+  if(editingTemplateMode) return;
   const plan = plansCache[selectedClientId] || {};
   const y = viewDate.getFullYear(), m = viewDate.getMonth();
   const monthNames = ['Styczeń','Luty','Marzec','Kwiecień','Maj','Czerwiec','Lipiec','Sierpień','Wrzesień','Październik','Listopad','Grudzień'];
@@ -1352,18 +1399,21 @@ function getDay(clientId, dateStr, createIfMissing){
 
 function renderDayPanel(){
   const holder = $('dayPanelHolder');
-  if(!selectedDateStr){ holder.innerHTML = '<div class="empty-state">Wybierz dzień w kalendarzu z lewej.</div>'; return; }
-  const day = getDay(selectedClientId, selectedDateStr, true);
+  if(!editingTemplateMode && !selectedDateStr){ holder.innerHTML = '<div class="empty-state">Wybierz dzień w kalendarzu z lewej.</div>'; return; }
+  const tpl = editingTemplateMode ? templates.find(t => t.id === currentTemplateId) : null;
+  const day = editingTemplateMode ? tpl.days[currentTemplateDayIdx] : getDay(selectedClientId, selectedDateStr, true);
+  const headTitle = editingTemplateMode ? escapeHtml(tpl.days[currentTemplateDayIdx].label || ('Dzień ' + (currentTemplateDayIdx+1))) : selectedDateStr;
 
   holder.innerHTML = `
     <div class="day-panel">
       <div class="day-panel-head">
-        <h3>${selectedDateStr}</h3>
+        <h3>${headTitle}</h3>
         <div class="day-panel-actions">
-          <button class="btn ghost" id="dupDayBtn">📋 Duplikuj dzień</button>
+          ${editingTemplateMode ? '' : '<button class="btn ghost" id="dupDayBtn">📋 Duplikuj dzień</button>'}
           <button class="btn" id="saveDayBtn">💾 Zapisz</button>
         </div>
       </div>
+      ${editingTemplateMode ? '' : `
       <div id="dupPanel" style="display:none;" class="tools-panel">
         <h4>Skopiuj ten dzień na inne daty</h4>
         <div id="dupDatesHolder"></div>
@@ -1372,9 +1422,9 @@ function renderDayPanel(){
           <button class="btn" id="dupConfirm">Kopiuj</button>
           <button class="btn ghost" id="dupCancel">Anuluj</button>
         </div>
-      </div>
+      </div>`}
 
-      <div class="day-tabs">
+      <div class="day-tabs" ${editingTemplateMode ? 'style="display:none;"' : ''}>
         <button id="tabPlan" class="active">Plan</button>
         <button id="tabRaport">Raport</button>
       </div>
@@ -1411,10 +1461,11 @@ function renderDayPanel(){
       <div id="raportTabBody" style="display:none;"></div>
     </div>
   `;
-  $('saveDayBtn').onclick = async () => { await persistPlan(selectedClientId); toast('Plan zapisany'); };
-  $('dayTitleInput').onchange = async () => { day.title = $('dayTitleInput').value; await persistPlan(selectedClientId); };
-  $('daySubtitleInput').onchange = async () => { day.subtitle = $('daySubtitleInput').value; await persistPlan(selectedClientId); };
+  $('saveDayBtn').onclick = async () => { await persistCurrentDayFn(); toast('Plan zapisany'); };
+  $('dayTitleInput').onchange = async () => { day.title = $('dayTitleInput').value; await persistCurrentDayFn(); };
+  $('daySubtitleInput').onchange = async () => { day.subtitle = $('daySubtitleInput').value; await persistCurrentDayFn(); };
 
+  if(!editingTemplateMode){
   $('dupDayBtn').onclick = () => {
     const p = $('dupPanel');
     const show = p.style.display === 'none';
@@ -1443,11 +1494,12 @@ function renderDayPanel(){
       }));
       plan[dateStr] = { exercises: clonedExercises };
     });
-    await persistPlan(selectedClientId);
+    await persistCurrentDayFn();
     $('dupPanel').style.display = 'none';
     renderCalendar();
     toast(`Skopiowano dzień na ${targets.length} ${targets.length===1?'datę':'daty/dat'}`);
   };
+  } // koniec if(!editingTemplateMode)
 
   $('tabPlan').onclick = () => {
     $('tabPlan').classList.add('active'); $('tabRaport').classList.remove('active');
@@ -1482,12 +1534,12 @@ function renderDayPanel(){
         category: cat, sets:defaults.sets, reps:defaults.reps, tempo:defaults.tempo, rest:defaults.rest,
         labelManual:false, suggestedWeight:'', suggestedManual:false, isTest:false, noWeight:false,
         isInterval:false, workTime:'', restTime:'', effortPercent:'', restBetweenSets:'',
-        splitLR:false, setsRight:'', setsLeft:'', log:[]
+        splitLR:false, setsRight:'', setsLeft:'', note:'', log:[]
       });
       relabelExercises(day);
       sel.value = '';
       $('exHint-' + cat).textContent = '';
-      await persistPlan(selectedClientId);
+      await persistCurrentDayFn();
       renderDayPanel();
       renderCalendar();
     };
@@ -1539,12 +1591,12 @@ function renderExRows(day, category){
     `;
     tr.querySelector('.noweight-check').onchange = async (e) => {
       ex.noWeight = e.target.checked;
-      await persistPlan(selectedClientId);
+      await persistCurrentDayFn();
       renderDayPanel();
     };
     tr.querySelector('.interval-check').onchange = async (e) => {
       ex.isInterval = e.target.checked;
-      await persistPlan(selectedClientId);
+      await persistCurrentDayFn();
       renderDayPanel();
     };
     tr.querySelector('.splitlr-check').onchange = async (e) => {
@@ -1552,13 +1604,13 @@ function renderExRows(day, category){
       if(ex.splitLR){
         ensureLog(ex);
       }
-      await persistPlan(selectedClientId);
+      await persistCurrentDayFn();
       renderDayPanel();
     };
     if(category === 'main'){
       tr.querySelector('.test-ex-check').onchange = async (e) => {
         ex.isTest = e.target.checked;
-        await persistPlan(selectedClientId);
+        await persistCurrentDayFn();
         renderDayPanel();
         renderCalendar();
       };
@@ -1571,14 +1623,14 @@ function renderExRows(day, category){
           ex.suggestedManual = inp.value.trim() !== '';
           if(!ex.suggestedManual) ex.suggestedWeight = '';
         }
-        await persistPlan(selectedClientId);
+        await persistCurrentDayFn();
         renderDayPanel();
       };
     });
     tr.querySelector('.rm-btn').onclick = async () => {
       day.exercises.splice(day.exercises.indexOf(ex),1);
       relabelExercises(day);
-      await persistPlan(selectedClientId);
+      await persistCurrentDayFn();
       renderDayPanel();
       renderCalendar();
     };
@@ -1595,7 +1647,7 @@ function renderExRows(day, category){
           const libEx = library.find(l => l.name === input.value.trim());
           if(libEx){
             ex.libraryId = libEx.id;
-            await persistPlan(selectedClientId);
+            await persistCurrentDayFn();
           }
           renderDayPanel();
         };
@@ -1613,7 +1665,7 @@ function renderExRows(day, category){
       const commit = async () => {
         const val = input.value.trim().toUpperCase();
         if(val){ ex.label = val; ex.labelManual = true; }
-        await persistPlan(selectedClientId);
+        await persistCurrentDayFn();
         renderDayPanel();
       };
       input.onblur = commit;
@@ -1633,7 +1685,7 @@ function renderExRows(day, category){
       day.exercises.splice(day.exercises.indexOf(ex), 0, moved);
       relabelExercises(day);
       dragFromIdx = null;
-      await persistPlan(selectedClientId);
+      await persistCurrentDayFn();
       renderDayPanel();
       renderCalendar();
     });
@@ -1656,7 +1708,7 @@ function renderExRows(day, category){
       trI.querySelectorAll('input[data-if]').forEach(inp => {
         inp.onchange = async () => {
           ex[inp.dataset.if] = inp.value;
-          await persistPlan(selectedClientId);
+          await persistCurrentDayFn();
         };
       });
       tbody.appendChild(trI);
@@ -1678,11 +1730,26 @@ function renderExRows(day, category){
         inp.onchange = async () => {
           ex[inp.dataset.sf] = inp.value;
           ensureLog(ex);
-          await persistPlan(selectedClientId);
+          await persistCurrentDayFn();
         };
       });
       tbody.appendChild(trS);
     }
+
+    const trN = document.createElement('tr');
+    trN.className = 'interval-subrow';
+    trN.innerHTML = `
+      <td></td>
+      <td colspan="10">
+        <span class="note-label">Notatka dla klienta (widoczna w jego widoku)</span>
+        <input class="note-input" data-nf="note" value="${escapeHtml(ex.note||'')}" placeholder="np. Trzymaj plecy w neutralu...">
+      </td>
+    `;
+    trN.querySelector('.note-input').onchange = async (e) => {
+      ex.note = e.target.value;
+      await persistCurrentDayFn();
+    };
+    tbody.appendChild(trN);
   });
 }
 
@@ -2387,6 +2454,327 @@ async function exportMeasurementData(c, kind){
   URL.revokeObjectURL(url);
 }
 
+/* ============ SZABLONY PLANÓW ============ */
+function renderTemplatesListView(){
+  const main = $('main');
+  main.innerHTML = `
+    <div class="section-title"><div class="bar"></div><h2>Szablony planów</h2></div>
+    <div class="section-desc">Gotowe układy dni treningowych, do szybkiego zastosowania u jednego lub kilku klientów naraz.</div>
+    <div class="tools-panel">
+      <div class="lib-row">
+        <input id="newTplName" placeholder="Nazwa nowego szablonu (np. Blok siłowy — 3 dni)">
+        <button class="btn" id="addTplBtn">+ Nowy szablon</button>
+      </div>
+    </div>
+    <div id="tplListRows"></div>
+  `;
+  renderTplListRows();
+  $('addTplBtn').onclick = async () => {
+    const name = $('newTplName').value.trim();
+    if(!name) return;
+    const newTpl = { id:'tpl_'+Date.now(), name, days: [ {id:'d_'+Date.now(), title:'', subtitle:'', label:'Dzień 1', exercises:[]} ] };
+    templates.push(newTpl);
+    await persistWithFeedback('plan_templates', templates);
+    openTemplateEditor(newTpl.id);
+  };
+}
+
+function renderTplListRows(){
+  const holder = $('tplListRows');
+  if(templates.length === 0){
+    holder.innerHTML = '<div class="empty-state">Nie masz jeszcze żadnego szablonu.</div>';
+    return;
+  }
+  holder.innerHTML = templates.map(t => `
+    <div class="tpl-row" data-tid="${t.id}">
+      <div class="tpl-nm">${escapeHtml(t.name)}</div>
+      <div class="tpl-days">${t.days.length} ${t.days.length===1?'dzień':'dni'} · ${t.days.map(d=>escapeHtml(d.label||'Dzień')).join(', ')}</div>
+      <button class="btn ghost small tpl-edit-btn">Edytuj</button>
+      <button class="btn small tpl-apply-btn">Zastosuj</button>
+      <button class="rm-btn tpl-rm-btn" title="Usuń szablon">✕</button>
+    </div>
+  `).join('');
+  holder.querySelectorAll('.tpl-row').forEach(row => {
+    const tid = row.dataset.tid;
+    row.querySelector('.tpl-edit-btn').onclick = () => openTemplateEditor(tid);
+    row.querySelector('.tpl-apply-btn').onclick = () => openApplyTemplateView(tid);
+    row.querySelector('.tpl-rm-btn').onclick = async () => {
+      if(!confirm('Usunąć ten szablon? Nie usunie planów już zastosowanych u klientów.')) return;
+      templates = templates.filter(t => t.id !== tid);
+      await persistWithFeedback('plan_templates', templates);
+      renderTplListRows();
+    };
+  });
+}
+
+function openTemplateEditor(templateId){
+  editingTemplateMode = true;
+  currentTemplateId = templateId;
+  currentTemplateDayIdx = 0;
+  persistCurrentDayFn = async () => { await persistWithFeedback('plan_templates', templates); };
+  renderTemplateEditorShell();
+}
+
+function renderTemplateEditorShell(){
+  const tpl = templates.find(t => t.id === currentTemplateId);
+  const main = $('main');
+  main.innerHTML = `
+    <span class="back-link" id="tplBackBtn">← Wróć do listy szablonów</span>
+    <div class="tpl-title-row">
+      <input id="tplNameInput" value="${escapeHtml(tpl.name)}" placeholder="Nazwa szablonu">
+    </div>
+    <div class="day-tabs-tpl" id="tplDayTabs"></div>
+    <div id="dayPanelHolder"></div>
+  `;
+  $('tplBackBtn').onclick = () => {
+    editingTemplateMode = false;
+    currentTemplateId = null;
+    persistCurrentDayFn = () => persistPlan(selectedClientId);
+    renderTemplatesListView();
+  };
+  $('tplNameInput').onchange = async () => {
+    tpl.name = $('tplNameInput').value.trim() || tpl.name;
+    await persistWithFeedback('plan_templates', templates);
+  };
+  renderTplDayTabs();
+  renderDayPanel();
+}
+
+function renderTplDayTabs(){
+  const tpl = templates.find(t => t.id === currentTemplateId);
+  const holder = $('tplDayTabs');
+  holder.innerHTML = tpl.days.map((d,i) => `
+    <button class="day-tab-tpl ${i===currentTemplateDayIdx?'active':''}" data-idx="${i}">${escapeHtml(d.label||('Dzień '+(i+1)))}</button>
+  `).join('') + `<button class="day-tab-tpl add" id="tplAddDayBtn">+ Dodaj dzień</button>`;
+  holder.querySelectorAll('.day-tab-tpl[data-idx]').forEach(btn => {
+    btn.onclick = () => {
+      currentTemplateDayIdx = parseInt(btn.dataset.idx);
+      renderTplDayTabs();
+      renderDayPanel();
+    };
+  });
+  $('tplAddDayBtn').onclick = async () => {
+    const n = tpl.days.length + 1;
+    tpl.days.push({id:'d_'+Date.now(), title:'', subtitle:'', label:'Dzień '+n, exercises:[]});
+    currentTemplateDayIdx = tpl.days.length - 1;
+    await persistWithFeedback('plan_templates', templates);
+    renderTplDayTabs();
+    renderDayPanel();
+  };
+}
+
+let currentApplyTemplateId = null;
+let applySelectedClientIds = new Set();
+let applyOverrides = []; // {clientId, dayId, date}
+
+function openApplyTemplateView(templateId){
+  currentApplyTemplateId = templateId;
+  applySelectedClientIds = new Set();
+  applyOverrides = [];
+  renderApplyTemplateView();
+}
+
+function renderApplyTemplateView(){
+  const tpl = templates.find(t => t.id === currentApplyTemplateId);
+  const main = $('main');
+  main.innerHTML = `
+    <span class="back-link" id="applyBackBtn">← Wróć do listy szablonów</span>
+    <h2 style="font-family:'Space Grotesk';margin:6px 0 4px;">Zastosuj: ${escapeHtml(tpl.name)}</h2>
+    <div class="tools-panel">
+      <h4>Cała grupa naraz</h4>
+      <div id="applyGroupChips"></div>
+    </div>
+    <div class="tools-panel">
+      <h4>Dodaj pojedynczo</h4>
+      <div class="lib-row">
+        <input type="text" id="applyClientSearch" list="allClientNamesList" placeholder="Zacznij pisać imię i nazwisko…">
+        <button class="btn ghost" id="applyAddClientBtn">+ Dodaj</button>
+      </div>
+      <datalist id="allClientNamesList">${clients.map(c=>`<option value="${escapeHtml(c.name)}">`).join('')}</datalist>
+    </div>
+    <div class="tools-panel">
+      <h4 id="applySelectedCountLabel">Zaznaczeni (0)</h4>
+      <div id="applyClientChips"></div>
+    </div>
+    <div class="tools-panel" id="applyDatesPanel">
+      <h4>Które daty (te same dla wszystkich zaznaczonych, chyba że ustawisz inaczej)</h4>
+      <div id="applyDateRows"></div>
+    </div>
+    <button class="btn coral-btn" id="applyConfirmBtn">Zastosuj</button>
+  `;
+  $('applyBackBtn').onclick = renderTemplatesListView;
+  renderApplyGroupChips();
+  renderApplyClientChips();
+  $('applyAddClientBtn').onclick = () => {
+    const name = $('applyClientSearch').value.trim();
+    const c = clients.find(cl => cl.name === name);
+    if(!c){ toast('Wybierz klienta z podpowiedzi'); return; }
+    applySelectedClientIds.add(c.id);
+    $('applyClientSearch').value = '';
+    renderApplyClientChips();
+  };
+  $('applyConfirmBtn').onclick = () => confirmApplyTemplate();
+}
+
+function renderApplyGroupChips(){
+  const holder = $('applyGroupChips');
+  holder.innerHTML = clientGroups.map(g => `<span class="group-chip-apply" data-gid="${g.id}">${escapeHtml(g.name)}</span>`).join('');
+  holder.querySelectorAll('.group-chip-apply').forEach(chip => {
+    chip.onclick = () => {
+      const gid = chip.dataset.gid;
+      clients.filter(c => c.groupId === gid).forEach(c => applySelectedClientIds.add(c.id));
+      renderApplyClientChips();
+    };
+  });
+}
+
+function renderApplyClientChips(){
+  const holder = $('applyClientChips');
+  const ids = [...applySelectedClientIds];
+  $('applySelectedCountLabel').textContent = `Zaznaczeni (${ids.length})`;
+  if(ids.length === 0){
+    holder.innerHTML = '<div style="color:var(--muted);font-size:12px;">Nikt jeszcze nie wybrany.</div>';
+  } else {
+    holder.innerHTML = ids.map(id => {
+      const c = clients.find(cl => cl.id === id);
+      if(!c) return '';
+      const orgName = (clientGroups.find(g=>g.id===c.groupId)||{}).name || '';
+      return `<span class="client-chip-apply" data-cid="${id}">${escapeHtml(c.name)} <span class="via">${escapeHtml(orgName)}</span></span>`;
+    }).join('');
+    holder.querySelectorAll('.client-chip-apply').forEach(chip => {
+      chip.onclick = () => {
+        applySelectedClientIds.delete(chip.dataset.cid);
+        renderApplyClientChips();
+      };
+    });
+  }
+  renderApplyDateRows();
+}
+
+function renderApplyDateRows(){
+  const tpl = templates.find(t => t.id === currentApplyTemplateId);
+  const holder = $('applyDateRows');
+  const ids = [...applySelectedClientIds];
+  holder.innerHTML = tpl.days.map(d => `
+    <div class="date-row-apply">
+      <div class="day-lbl">${escapeHtml(d.label||'Dzień')}</div>
+      <input type="date" class="apply-date-input" data-did="${d.id}">
+    </div>
+  `).join('') + `
+    <div style="margin-top:14px;">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:8px;">Chcesz dać komuś inną datę niż reszta? Wybierz osobę, dzień szablonu i nową datę:</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+        <select id="ovClientSel">${ids.map(id => { const c = clients.find(cl=>cl.id===id); return c ? `<option value="${id}">${escapeHtml(c.name)}</option>` : ''; }).join('')}</select>
+        <select id="ovDaySel">${tpl.days.map(d=>`<option value="${d.id}">${escapeHtml(d.label||'Dzień')}</option>`).join('')}</select>
+        <input type="date" id="ovDateInput">
+        <button class="btn ghost small" id="ovAddBtn">+ Ustaw inną datę</button>
+      </div>
+      <div id="ovList" style="margin-top:8px;"></div>
+    </div>
+  `;
+  $('ovAddBtn').onclick = () => {
+    const clientId = $('ovClientSel').value;
+    const dayId = $('ovDaySel').value;
+    const date = $('ovDateInput').value;
+    if(!clientId || !date){ toast('Wybierz osobę i datę'); return; }
+    applyOverrides = applyOverrides.filter(o => !(o.clientId===clientId && o.dayId===dayId));
+    applyOverrides.push({clientId, dayId, date});
+    renderOverridesList();
+  };
+  renderOverridesList();
+}
+
+function renderOverridesList(){
+  const tpl = templates.find(t => t.id === currentApplyTemplateId);
+  const holder = $('ovList');
+  if(!holder) return;
+  if(applyOverrides.length === 0){ holder.innerHTML = ''; return; }
+  holder.innerHTML = applyOverrides.map((o,i) => {
+    const c = clients.find(cl=>cl.id===o.clientId);
+    const d = tpl.days.find(dd=>dd.id===o.dayId);
+    return `<div style="font-size:12px;color:var(--text);margin-bottom:4px;">${escapeHtml(c?c.name:'?')} — ${escapeHtml(d?d.label:'?')} → <b>${escapeHtml(o.date)}</b> <span style="color:var(--warn);cursor:pointer;" data-i="${i}" class="ov-rm">✕</span></div>`;
+  }).join('');
+  holder.querySelectorAll('.ov-rm').forEach(el => {
+    el.onclick = () => { applyOverrides.splice(parseInt(el.dataset.i),1); renderOverridesList(); };
+  });
+}
+
+function copyTemplateDayToPlan(plan, date, templateDay){
+  const clonedExercises = templateDay.exercises.map(ex => ({
+    ...ex,
+    id: 'e_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),
+    log: [],
+    logRight: ex.splitLR ? [] : undefined,
+    logLeft: ex.splitLR ? [] : undefined,
+    suggestedWeight:'', suggestedManual:false, isTest:false, completedNotified:false
+  }));
+  plan[date] = { title: templateDay.title||'', subtitle: templateDay.subtitle||'', exercises: clonedExercises };
+}
+
+function showApplyConflictModal(clientName, date, callback){
+  $('applyConflictModalContent').innerHTML = `
+    <div style="text-align:center;padding:6px;">
+      <div style="width:38px;height:38px;border-radius:10px;background:rgba(180,71,46,.12);color:#B4472E;display:flex;align-items:center;justify-content:center;font-size:18px;margin:0 auto 10px;">⚠</div>
+      <h4 style="font-family:'Space Grotesk';margin:0 0 6px;">${escapeHtml(clientName)} ma już plan na ${escapeHtml(date)}</h4>
+      <p style="font-size:12.5px;color:var(--muted);margin:0 0 16px;line-height:1.5;">Ten dzień nie jest pusty. Co zrobić?</p>
+      <div style="display:flex;gap:8px;">
+        <button class="btn ghost" id="applySkipBtn" style="flex:1;">Pomiń tę osobę</button>
+        <button class="btn" id="applyOverwriteBtn" style="flex:1;background:#B4472E;">Nadpisz</button>
+      </div>
+    </div>
+  `;
+  $('applyConflictModal').style.display = 'flex';
+  $('applySkipBtn').onclick = () => { $('applyConflictModal').style.display='none'; callback('skip'); };
+  $('applyOverwriteBtn').onclick = () => { $('applyConflictModal').style.display='none'; callback('overwrite'); };
+}
+
+async function confirmApplyTemplate(){
+  const tpl = templates.find(t => t.id === currentApplyTemplateId);
+  const sharedDates = {};
+  document.querySelectorAll('.apply-date-input').forEach(inp => { if(inp.value) sharedDates[inp.dataset.did] = inp.value; });
+  const clientIds = [...applySelectedClientIds];
+  if(clientIds.length === 0){ toast('Wybierz przynajmniej jednego klienta'); return; }
+
+  const tasks = [];
+  clientIds.forEach(clientId => {
+    tpl.days.forEach(day => {
+      const override = applyOverrides.find(o => o.clientId===clientId && o.dayId===day.id);
+      const date = override ? override.date : sharedDates[day.id];
+      if(date) tasks.push({clientId, day, date});
+    });
+  });
+  if(tasks.length === 0){ toast('Ustaw przynajmniej jedną datę'); return; }
+
+  await runApplyTasks(tasks, 0);
+}
+
+async function runApplyTasks(tasks, idx){
+  if(idx >= tasks.length){
+    toast('Szablon zastosowany');
+    renderTemplatesListView();
+    return;
+  }
+  const {clientId, day, date} = tasks[idx];
+  await ensurePlanLoaded(clientId);
+  const plan = plansCache[clientId];
+  const existing = plan[date];
+  const hasContent = existing && existing.exercises && existing.exercises.length > 0;
+  if(hasContent){
+    const c = clients.find(cl=>cl.id===clientId);
+    showApplyConflictModal(c ? c.name : '?', date, async (action) => {
+      if(action === 'overwrite'){
+        copyTemplateDayToPlan(plan, date, day);
+        await savePlanRow(clientId, plan);
+      }
+      await runApplyTasks(tasks, idx+1);
+    });
+  } else {
+    copyTemplateDayToPlan(plan, date, day);
+    await savePlanRow(clientId, plan);
+    await runApplyTasks(tasks, idx+1);
+  }
+}
+
 function renderLibraryView(){
   const main = $('main');
   main.innerHTML = `
@@ -2480,7 +2868,7 @@ function renderLibFullTable(){
     const grp = libraryGroups.find(g => g.id === ex.groupId);
     tr.innerHTML = `
       <td><span class="ex-edit-name" style="cursor:text;">${escapeHtml(ex.name)}</span>${ex.notMoveU ? '<span class="record-badge"><span class="record-dot"></span>DO NAGRANIA</span>' : ''}</td>
-      <td><span class="ex-edit-video" style="cursor:text;color:var(--muted);font-size:12px;">${ex.videoUrl?escapeHtml(ex.videoUrl):'— brak linku —'}</span></td>
+      <td><span class="yt-hover-wrap"><span class="ex-edit-video" style="cursor:text;color:var(--muted);font-size:12px;">${ex.videoUrl?escapeHtml(ex.videoUrl):'— brak linku —'}</span>${getYoutubeId(ex.videoUrl) ? `<span class="yt-hover-thumb"><img src="https://img.youtube.com/vi/${getYoutubeId(ex.videoUrl)}/hqdefault.jpg" loading="lazy"></span>` : ''}</span></td>
       <td></td>
       <td style="text-align:center;"><input type="checkbox" class="notmoveu-check" ${ex.notMoveU?'checked':''}></td>
       <td><button class="rm-btn" title="Usuń">✕</button></td>
@@ -2943,6 +3331,7 @@ function renderIntervalExerciseModal(ex, exName, day){
       <div class="a-video-head">${videoInner}
         <div class="a-video-overlay"><div class="exname">${escapeHtml(exName)}</div></div>
       </div>
+      ${ex.note ? `<div class="a-note-card"><div class="icon">💡</div><div class="txt">${escapeHtml(ex.note)}</div></div>` : ''}
       <div class="iv-sets-row">
         <div class="iv-sets-item"><div class="iv-num">${totalSeries}</div><div class="iv-lbl">Serie</div></div>
         <div class="iv-sets-divider"></div>
@@ -3135,6 +3524,7 @@ function renderAthleteDetail(day){
         <div class="tempo">${ex.isInterval ? `Praca: ${escapeHtml(ex.workTime||'—')}` : `Tempo: ${escapeHtml(ex.tempo)}`}</div>
       </div>
     </div>
+    ${ex.note ? `<div class="a-note-card"><div class="icon">💡</div><div class="txt">${escapeHtml(ex.note)}</div></div>` : ''}
     <div class="target-box">
       ${ex.splitLR ? `
         <div><div class="t">SERIE PRAWA</div><div class="v" style="color:#E8604A;">${escapeHtml(ex.setsRight||'—')}</div></div>
