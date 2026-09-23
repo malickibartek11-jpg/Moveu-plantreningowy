@@ -275,6 +275,7 @@
   .date-row-apply .day-lbl{font-weight:700;font-family:'Space Grotesk',sans-serif;font-size:13px;width:110px;}
   .date-row-apply input[type=date]{flex:1;padding:7px 10px;border:1px solid var(--line);border-radius:7px;font-size:12.5px;max-width:200px;}
   .coral-btn{background:#E8604A !important;}
+  .apply-rm-date-btn{color:var(--warn);cursor:pointer;font-size:14px;padding:0 4px;}
   .back-link:hover{border-color:var(--accent-dim);}
   .a-video-head{position:relative;border-radius:10px;overflow:hidden;background:var(--surface-2);aspect-ratio:16/9;margin-bottom:16px;border:1px solid var(--line);}
   .a-video-head img, .a-video-head iframe{width:100%;height:100%;object-fit:cover;border:0;display:block;}
@@ -2519,11 +2520,13 @@ function renderTplDayTabs(){
 let currentApplyTemplateId = null;
 let applySelectedClientIds = new Set();
 let applyOverrides = []; // {clientId, dayId, date}
+let applyDayDates = {}; // dayId -> [dateStr, dateStr, ...]
 
 function openApplyTemplateView(templateId){
   currentApplyTemplateId = templateId;
   applySelectedClientIds = new Set();
   applyOverrides = [];
+  applyDayDates = {};
   renderApplyTemplateView();
 }
 
@@ -2604,16 +2607,35 @@ function renderApplyClientChips(){
   renderApplyDateRows();
 }
 
+function addDaysToDateStr(dateStr, days){
+  const d = new Date(dateStr + 'T00:00:00');
+  d.setDate(d.getDate() + days);
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const dd = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${dd}`;
+}
+
 function renderApplyDateRows(){
   const tpl = templates.find(t => t.id === currentApplyTemplateId);
   const holder = $('applyDateRows');
   const ids = [...applySelectedClientIds];
-  holder.innerHTML = tpl.days.map(d => `
-    <div class="date-row-apply">
-      <div class="day-lbl">${escapeHtml(d.label||'Dzień')}</div>
-      <input type="date" class="apply-date-input" data-did="${d.id}">
-    </div>
-  `).join('') + `
+
+  tpl.days.forEach(d => { if(!applyDayDates[d.id]) applyDayDates[d.id] = ['']; });
+
+  const dayDatesHtml = tpl.days.map(d => {
+    const dates = applyDayDates[d.id];
+    return dates.map((dateVal, i) => `
+      <div class="date-row-apply">
+        <div class="day-lbl">${i===0 ? escapeHtml(d.label||'Dzień') : ''}</div>
+        <input type="date" class="apply-date-input" data-did="${d.id}" data-idx="${i}" value="${dateVal}">
+        ${i === dates.length-1 ? `<button class="btn ghost small apply-add-date-btn" data-did="${d.id}" title="Dodaj kolejną datę (za tydzień)">+ za tydzień</button>` : ''}
+        ${dates.length > 1 ? `<span class="apply-rm-date-btn" data-did="${d.id}" data-idx="${i}" title="Usuń tę datę">✕</span>` : ''}
+      </div>
+    `).join('');
+  }).join('');
+
+  holder.innerHTML = dayDatesHtml + `
     <div style="margin-top:14px;">
       <div style="font-size:11px;color:var(--muted);margin-bottom:8px;">Chcesz dać komuś inną datę niż reszta? Wybierz osobę, dzień szablonu i nową datę:</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
@@ -2625,6 +2647,28 @@ function renderApplyDateRows(){
       <div id="ovList" style="margin-top:8px;"></div>
     </div>
   `;
+
+  holder.querySelectorAll('.apply-date-input').forEach(inp => {
+    inp.onchange = () => { applyDayDates[inp.dataset.did][parseInt(inp.dataset.idx)] = inp.value; };
+  });
+  holder.querySelectorAll('.apply-add-date-btn').forEach(btn => {
+    btn.onclick = () => {
+      const dayId = btn.dataset.did;
+      const arr = applyDayDates[dayId];
+      const lastVal = arr[arr.length-1];
+      arr.push(lastVal ? addDaysToDateStr(lastVal, 7) : '');
+      renderApplyDateRows();
+    };
+  });
+  holder.querySelectorAll('.apply-rm-date-btn').forEach(el => {
+    el.onclick = () => {
+      const dayId = el.dataset.did;
+      applyDayDates[dayId].splice(parseInt(el.dataset.idx), 1);
+      if(applyDayDates[dayId].length === 0) applyDayDates[dayId] = [''];
+      renderApplyDateRows();
+    };
+  });
+
   $('ovAddBtn').onclick = () => {
     const clientId = $('ovClientSel').value;
     const dayId = $('ovDaySel').value;
@@ -2683,8 +2727,6 @@ function showApplyConflictModal(clientName, date, callback){
 
 async function confirmApplyTemplate(){
   const tpl = templates.find(t => t.id === currentApplyTemplateId);
-  const sharedDates = {};
-  document.querySelectorAll('.apply-date-input').forEach(inp => { if(inp.value) sharedDates[inp.dataset.did] = inp.value; });
   const clientIds = [...applySelectedClientIds];
   if(clientIds.length === 0){ toast('Wybierz przynajmniej jednego klienta'); return; }
 
@@ -2692,8 +2734,13 @@ async function confirmApplyTemplate(){
   clientIds.forEach(clientId => {
     tpl.days.forEach(day => {
       const override = applyOverrides.find(o => o.clientId===clientId && o.dayId===day.id);
-      const date = override ? override.date : sharedDates[day.id];
-      if(date) tasks.push({clientId, day, date});
+      if(override){
+        tasks.push({clientId, day, date: override.date});
+      } else {
+        (applyDayDates[day.id]||[]).filter(d => d).forEach(date => {
+          tasks.push({clientId, day, date});
+        });
+      }
     });
   });
   if(tasks.length === 0){ toast('Ustaw przynajmniej jedną datę'); return; }
