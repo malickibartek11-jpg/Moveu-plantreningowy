@@ -77,6 +77,15 @@
   .dot-planned{background:#1C1C1C;}
   .dot-done{background:#2E9E5B;}
   .dot-incomplete{background:#D64545;}
+  .dot-overdue{background:#C9682E;box-shadow:0 0 0 2px rgba(201,104,46,.25);}
+  .overdue-alert{background:rgba(201,104,46,.08);border:1px solid #C9682E;border-radius:10px;padding:14px;margin-bottom:16px;}
+  .overdue-txt{font-size:12.5px;color:var(--text);margin-bottom:12px;}
+  .overdue-txt b{color:#C9682E;}
+  .overdue-btns{display:flex;flex-direction:column;gap:8px;}
+  .overdue-btns button{border:none;border-radius:8px;padding:11px 14px;font-size:12px;font-weight:700;cursor:pointer;text-align:left;display:flex;flex-direction:column;align-items:flex-start;gap:1px;}
+  .overdue-btns button .sub{font-weight:400;font-size:10.5px;opacity:.8;}
+  .btn-resolve-agreed{background:rgba(90,107,142,.12);color:#5A6B8E;}
+  .btn-resolve-clientskip{background:rgba(180,71,46,.1);color:#B4472E;}
 
   .day-view-grid{display:grid;grid-template-columns:220px 1fr;gap:20px;align-items:start;}
   .a-shell{display:flex;gap:0;align-items:flex-start;}
@@ -403,6 +412,7 @@
 .ios-banner .ib-close{position:absolute;top:12px;right:14px;color:var(--muted);font-size:16px;cursor:pointer;}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
@@ -967,6 +977,15 @@ function backfillLibraryIds(plan){
 }
 /* Status dnia do kropki na kalendarzu: test (pomaranczowy) > rozpisany-pusty (czarny) >
    uzupelniony >=50% (zielony) > uzupelniony <50% (czerwony) */
+function isDayOverdue(day, dateStr){
+  if(!day || !day.exercises || day.exercises.length === 0) return false;
+  if(day.resolution) return false; // juz rozwiazane (ustalone razem / pominiete przez klienta)
+  const todayStr = fmtDate(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
+  if(dateStr >= todayStr) return false; // dzis lub przyszlosc - jeszcze nie zalegle
+  const cls = getDayDotClass(day);
+  return cls !== 'dot-done' && cls !== 'dot-test';
+}
+
 function getDayDotClass(day){
   if(!day || !day.exercises || day.exercises.length === 0) return null;
   const hasTest = day.exercises.some(ex => ex.category === 'main' && ex.isTest);
@@ -1320,16 +1339,11 @@ function renderMain(){
     <div class="section-desc">Kalendarz, plan treningowy, testy i raport postępów.</div>
 
     <div class="tools-panel">
-      <h4>📤 Eksport / import Excela</h4>
+      <h4>📄 Generuj plan jako PDF</h4>
       <div class="tools-row">
         <label>Od:</label><input type="date" id="exportFrom">
         <label>Do:</label><input type="date" id="exportTo">
-        <button class="btn" id="exportExcelBtn">⬇ Eksportuj zakres do Excela</button>
-      </div>
-      <div class="tools-row">
-        <button class="btn ghost" id="importExcelBtn">⬆ Importuj wypełniony Excel</button>
-        <input type="file" id="importExcelFile" accept=".xlsx" style="display:none;">
-        <span class="ex-hint" id="excelStatus"></span>
+        <button class="btn" id="generatePlanPdfBtn">📄 Generuj PDF za wybrany zakres</button>
       </div>
     </div>
 
@@ -1356,9 +1370,7 @@ function renderMain(){
   `;
   $('prevMonth').onclick = () => { viewDate.setMonth(viewDate.getMonth()-1); renderCalendar(); };
   $('nextMonth').onclick = () => { viewDate.setMonth(viewDate.getMonth()+1); renderCalendar(); };
-  $('exportExcelBtn').onclick = () => exportRangeToExcel(selectedClientId, $('exportFrom').value, $('exportTo').value);
-  $('importExcelBtn').onclick = () => $('importExcelFile').click();
-  $('importExcelFile').onchange = (e) => importExcelFile(e.target.files[0]);
+  $('generatePlanPdfBtn').onclick = () => generatePlanPdf(selectedClientId, $('exportFrom').value, $('exportTo').value);
   $('libAdd').onclick = addLibraryExercise;
   renderCalendar();
   renderLibraryList();
@@ -1389,7 +1401,7 @@ function renderCalendar(){
     if(dateStr === selectedDateStr) cell.classList.add('selected');
     if(dateStr === todayStr) cell.classList.add('today');
     const dayData = plan[dateStr];
-    const dotClass = getDayDotClass(dayData);
+    const dotClass = isDayOverdue(dayData, dateStr) ? 'dot-overdue' : getDayDotClass(dayData);
     cell.innerHTML = `${d}` + (dotClass ? `<div class="dot ${dotClass}"></div>` : '');
     cell.onclick = () => { selectedDateStr = dateStr; renderCalendar(); renderDayPanel(); };
     grid.appendChild(cell);
@@ -1408,9 +1420,18 @@ function renderDayPanel(){
   const tpl = editingTemplateMode ? templates.find(t => t.id === currentTemplateId) : null;
   const day = editingTemplateMode ? tpl.days[currentTemplateDayIdx] : getDay(selectedClientId, selectedDateStr, true);
   const headTitle = editingTemplateMode ? escapeHtml(tpl.days[currentTemplateDayIdx].label || ('Dzień ' + (currentTemplateDayIdx+1))) : selectedDateStr;
+  const isOverdue = !editingTemplateMode && isDayOverdue(day, selectedDateStr);
 
   holder.innerHTML = `
     <div class="day-panel">
+      ${isOverdue ? `
+      <div class="overdue-alert">
+        <div class="overdue-txt">Ten dzień jest <b>zaległy</b> — minęła data, a trening nie został wykonany.</div>
+        <div class="overdue-btns">
+          <button class="btn-resolve-agreed" id="resolveAgreedBtn">🤝 Ustalone razem — nie robimy tego dnia<span class="sub">Nie liczy się jako nieobecność klienta</span></button>
+          <button class="btn-resolve-clientskip" id="resolveClientSkipBtn">⏭ Pominięte przez klienta<span class="sub">Klient sam zrezygnował, bez ustaleń</span></button>
+        </div>
+      </div>` : ''}
       <div class="day-panel-head">
         <h3>${headTitle}</h3>
         <div class="day-panel-actions">
@@ -1467,6 +1488,22 @@ function renderDayPanel(){
     </div>
   `;
   $('saveDayBtn').onclick = async () => { await persistCurrentDayFn(); toast('Plan zapisany'); };
+  if(isOverdue){
+    $('resolveAgreedBtn').onclick = async () => {
+      day.resolution = 'agreed';
+      await persistCurrentDayFn();
+      renderDayPanel();
+      renderCalendar();
+      toast('Oznaczono jako ustalone razem');
+    };
+    $('resolveClientSkipBtn').onclick = async () => {
+      day.resolution = 'client-skip';
+      await persistCurrentDayFn();
+      renderDayPanel();
+      renderCalendar();
+      toast('Oznaczono jako pominięte przez klienta');
+    };
+  }
   $('dayTitleInput').onchange = async () => { day.title = $('dayTitleInput').value; await persistCurrentDayFn(); };
   $('daySubtitleInput').onchange = async () => { day.subtitle = $('daySubtitleInput').value; await persistCurrentDayFn(); };
 
@@ -2280,6 +2317,213 @@ function renderTimeSeriesChartSVG(points, unit){
   return svg;
 }
 
+function getSeriesPdfColor(label){
+  const letter = (label||'')[0];
+  const map = {A:[232,96,74], B:[62,124,177], C:[216,154,46], D:[76,175,124], E:[139,109,196], F:[70,163,163]};
+  return map[letter] || [140,140,140];
+}
+
+async function generatePlanPdf(clientId, fromStr, toStr){
+  if(!clientId){ toast('Wybierz klienta'); return; }
+  if(!fromStr || !toStr){ toast('Wybierz zakres dat (Od / Do)'); return; }
+  const c = clients.find(cl => cl.id === clientId);
+  if(!c) return;
+  setStatus('Przygotowuję PDF…');
+  await ensurePlanLoaded(clientId);
+  const plan = plansCache[clientId] || {};
+  const dates = Object.keys(plan).filter(d => d >= fromStr && d <= toStr && plan[d] && plan[d].exercises && plan[d].exercises.length > 0).sort();
+  setStatus('');
+  if(dates.length === 0){ alert('Brak treningów z ćwiczeniami w wybranym zakresie dat.'); return; }
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  dates.forEach((dateStr, idx) => {
+    if(idx > 0) doc.addPage();
+    const day = plan[dateStr];
+    let y;
+
+    doc.setFillColor(26,26,26);
+    doc.rect(0,0,210,24,'F');
+    doc.setTextColor(255,255,255);
+    doc.setFontSize(14);
+    doc.text('Plan treningowy', 14, 12);
+    doc.setFontSize(10);
+    doc.text(c.name, 14, 19);
+
+    y = 32;
+    doc.setFontSize(9);
+    doc.setTextColor(90,90,90);
+    doc.text(`Data: ${dateStr}`, 14, y);
+    doc.text(`Wygenerowano: ${new Date().toISOString().slice(0,10)}`, 150, y);
+    y += 8;
+
+    if(day.title || day.subtitle){
+      doc.setFillColor(239,237,233);
+      doc.roundedRect(14, y, 182, 14, 2, 2, 'F');
+      doc.setFontSize(11);
+      doc.setTextColor(30,30,30);
+      if(day.title) doc.text(String(day.title), 105, y+6, {align:'center'});
+      doc.setFontSize(8.5);
+      doc.setTextColor(110,110,110);
+      if(day.subtitle) doc.text(String(day.subtitle), 105, y+11, {align:'center'});
+      y += 20;
+    }
+
+    ['warmup','main'].forEach(cat => {
+      const exs = day.exercises.filter(e => e.category === cat);
+      if(exs.length === 0) return;
+      if(y > 260){ doc.addPage(); y = 20; }
+      doc.setFontSize(8);
+      doc.setTextColor(140,140,140);
+      doc.text(cat === 'warmup' ? 'ROZGRZEWKA' : 'ĆWICZENIA GŁÓWNE', 14, y);
+      y += 5;
+      doc.setDrawColor(225,223,218);
+      doc.line(14, y, 196, y);
+      y += 7;
+
+      exs.forEach(ex => {
+        if(y > 265){ doc.addPage(); y = 20; }
+        const col = getSeriesPdfColor(ex.label);
+        doc.setFillColor(col[0], col[1], col[2]);
+        doc.circle(18, y-1.5, 3.2, 'F');
+        doc.setTextColor(255,255,255);
+        doc.setFontSize(6.5);
+        doc.text(ex.label||'', 18, y-0.3, {align:'center'});
+
+        doc.setTextColor(30,30,30);
+        doc.setFontSize(9.5);
+        const exName = resolveExName(ex);
+        doc.text(String(exName).slice(0,34), 25, y);
+
+        doc.setFontSize(7.5);
+        doc.setTextColor(110,110,110);
+        const info = ex.isInterval
+          ? `${ex.sets} x ${ex.reps} rund - praca ${ex.workTime||'-'}s / przerwa ${ex.restTime||'-'}s`
+          : ex.splitLR
+            ? `P:${ex.setsRight||'-'} L:${ex.setsLeft||'-'} x ${ex.reps} - tempo ${ex.tempo}`
+            : `${ex.sets} x ${ex.reps} - tempo ${ex.tempo} - przerwa ${ex.rest}`;
+        doc.text(info, 25, y+5);
+
+        if(!ex.noWeight){
+          doc.setDrawColor(220,218,213);
+          doc.rect(163, y-6, 30, 11);
+          doc.setFontSize(6.5);
+          doc.setTextColor(160,160,160);
+          doc.text('kg / powt.', 178, y, {align:'center'});
+        }
+
+        y += 13;
+
+        if(ex.note){
+          if(y > 270){ doc.addPage(); y = 20; }
+          doc.setFillColor(253,240,236);
+          doc.roundedRect(25, y-5, 168, 8, 1.5, 1.5, 'F');
+          doc.setTextColor(180,71,46);
+          doc.setFontSize(7);
+          doc.text(String(ex.note).slice(0,85), 27, y);
+          y += 10;
+        }
+      });
+      y += 5;
+    });
+  });
+
+  doc.save(`plan-${c.name.replace(/\s+/g,'_')}-${fromStr}_do_${toStr}.pdf`);
+}
+
+async function generateAttendancePdf(c){
+  setStatus('Przygotowuję raport…');
+  await ensurePlanLoaded(c.id);
+  const plan = plansCache[c.id] || {};
+  const rows = [];
+  Object.keys(plan).sort().forEach(dateStr => {
+    const day = plan[dateStr];
+    if(!day || !day.exercises || day.exercises.length === 0) return;
+    let status = null;
+    if(day.resolution === 'agreed') status = 'agreed';
+    else if(day.resolution === 'client-skip') status = 'client-skip';
+    else if(getDayDotClass(day) === 'dot-done') status = 'done';
+    if(!status) return;
+    rows.push({date: dateStr, title: day.title || 'Trening', status});
+  });
+  setStatus('');
+
+  if(rows.length === 0){
+    alert('Brak danych do raportu — żaden trening nie jest jeszcze wykonany, ustalony ani pominięty.');
+    return;
+  }
+
+  const counts = {done:0, agreed:0, 'client-skip':0};
+  rows.forEach(r => counts[r.status]++);
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  doc.setFillColor(26,26,26);
+  doc.rect(0,0,210,24,'F');
+  doc.setTextColor(255,255,255);
+  doc.setFontSize(14);
+  doc.text('Raport obecności — trening online', 14, 12);
+  doc.setFontSize(10);
+  doc.text(c.name, 14, 19);
+
+  doc.setFontSize(9);
+  doc.setTextColor(90,90,90);
+  doc.text(`Okres: ${rows[0].date} - ${rows[rows.length-1].date}`, 14, 32);
+  doc.text(`Wygenerowano: ${new Date().toISOString().slice(0,10)}`, 150, 32);
+
+  const boxY = 38, boxW = 58, boxH = 20, gap = 4;
+  const summary = [
+    {label:'WYKONANE', val: counts.done, color:[46,158,91]},
+    {label:'USTALONE', val: counts.agreed, color:[90,107,142]},
+    {label:'POMINIĘTE', val: counts['client-skip'], color:[180,71,46]}
+  ];
+  summary.forEach((s,i) => {
+    const x = 14 + i*(boxW+gap);
+    doc.setFillColor(239,237,233);
+    doc.roundedRect(x, boxY, boxW, boxH, 2, 2, 'F');
+    doc.setTextColor(s.color[0], s.color[1], s.color[2]);
+    doc.setFontSize(16);
+    doc.text(String(s.val), x+boxW/2, boxY+11, {align:'center'});
+    doc.setFontSize(7.5);
+    doc.setTextColor(110,110,110);
+    doc.text(s.label, x+boxW/2, boxY+17, {align:'center'});
+  });
+
+  let y = boxY + boxH + 14;
+  doc.setFontSize(8);
+  doc.setTextColor(140,140,140);
+  doc.text('DATA', 14, y);
+  doc.text('TRENING', 45, y);
+  doc.text('STATUS', 150, y);
+  y += 2;
+  doc.setDrawColor(225,223,218);
+  doc.line(14, y, 196, y);
+  y += 7;
+
+  const statusLabel = {done:'Wykonano', agreed:'Ustalone', 'client-skip':'Pominięte'};
+  const statusColor = {done:[46,158,91], agreed:[90,107,142], 'client-skip':[180,71,46]};
+
+  doc.setFontSize(9);
+  rows.forEach(r => {
+    if(y > 280){ doc.addPage(); y = 20; }
+    doc.setTextColor(30,30,30);
+    doc.text(r.date, 14, y);
+    doc.text(String(r.title).slice(0,40), 45, y);
+    const col = statusColor[r.status];
+    doc.setTextColor(col[0], col[1], col[2]);
+    doc.text(statusLabel[r.status], 150, y);
+    y += 7;
+  });
+
+  doc.setFontSize(7.5);
+  doc.setTextColor(150,150,150);
+  doc.text('MoveU Studio - wygenerowano automatycznie z panelu treningowego', 105, 290, {align:'center'});
+
+  doc.save(`raport-obecnosci-${c.name.replace(/\s+/g,'_')}.pdf`);
+}
+
 function renderClientProfile(clientId){
   const c = clients.find(cl => cl.id === clientId);
   if(!c) return;
@@ -2305,6 +2549,12 @@ function renderClientProfile(clientId){
         <label>Wysokość (cm):</label>
         <input type="number" id="profHeight" value="${c.height||''}" style="width:90px;">
       </div>
+    </div>
+
+    <div class="tools-panel">
+      <h4>Raport obecności (PDF)</h4>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">Zestawienie wykonanych, ustalonych i pominiętych treningów.</div>
+      <button class="btn" id="generatePdfBtn">📄 Generuj raport PDF</button>
     </div>
 
     <div class="tools-panel">
@@ -2366,6 +2616,7 @@ function renderClientProfile(clientId){
     };
   };
   $('exportWeightBtn').onclick = () => exportMeasurementData(c, 'weight');
+  $('generatePdfBtn').onclick = () => generateAttendancePdf(c);
   renderWeightSection(c);
 
   $('addMeasureTile').onclick = () => {
@@ -3323,7 +3574,7 @@ function renderAthleteCalendar(){
     cell.className = 'cal-cell' + (dayData ? '' : ' nodata');
     if(dateStr === aSelectedDateStr) cell.classList.add('selected');
     if(dateStr === todayStr) cell.classList.add('today');
-    const dotClass = getDayDotClass(dayData);
+    const dotClass = isDayOverdue(dayData, dateStr) ? 'dot-overdue' : getDayDotClass(dayData);
     const hasExercises = !!dotClass;
     cell.innerHTML = `${d}` + (dotClass ? `<div class="dot ${dotClass}"></div>` : '');
     if(hasExercises){
