@@ -276,6 +276,25 @@
   .date-row-apply input[type=date]{flex:1;padding:7px 10px;border:1px solid var(--line);border-radius:7px;font-size:12.5px;max-width:200px;}
   .coral-btn{background:#E8604A !important;}
   .apply-rm-date-btn{color:var(--warn);cursor:pointer;font-size:14px;padding:0 4px;}
+  .online-manage-link{text-decoration:underline;cursor:pointer;}
+  .oc-card{display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:10px;cursor:pointer;transition:box-shadow .15s;}
+  .oc-card:hover{box-shadow:0 4px 14px rgba(0,0,0,.06);}
+  .oc-nm{font-weight:700;font-family:'Space Grotesk',sans-serif;font-size:14.5px;}
+  .oc-sub{font-size:11.5px;color:var(--muted);margin-top:2px;}
+  .oc-mid{flex:1;}
+  .oc-progress{width:90px;}
+  .oc-progress-bar-wrap{background:var(--surface-2);border-radius:6px;height:6px;overflow:hidden;margin-bottom:4px;}
+  .oc-progress-bar{height:100%;border-radius:6px;}
+  .oc-progress-txt{font-size:10.5px;color:var(--muted);text-align:center;}
+  .oc-badge{padding:6px 12px;border-radius:20px;font-size:11.5px;font-weight:700;white-space:nowrap;}
+  .oc-badge.oc-ok{background:rgba(46,158,91,.12);color:#2E9E5B;}
+  .oc-badge.oc-warn{background:rgba(216,154,46,.14);color:#D89A2E;}
+  .oc-badge.oc-danger{background:rgba(180,71,46,.12);color:#B4472E;}
+  .oc-chev{color:var(--muted);}
+  .manage-row-online{display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 15px;margin-bottom:8px;}
+  .manage-row-online .nm{font-weight:600;font-size:13px;flex:1;}
+  .manage-row-online label{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);cursor:pointer;}
+  .manage-row-online input[type=number]{width:52px;padding:6px 8px;border:1px solid var(--line);border-radius:6px;font-size:12px;}
   .back-link:hover{border-color:var(--accent-dim);}
   .a-video-head{position:relative;border-radius:10px;overflow:hidden;background:var(--surface-2);aspect-ratio:16/9;margin-bottom:16px;border:1px solid var(--line);}
   .a-video-head img, .a-video-head iframe{width:100%;height:100%;object-fit:cover;border:0;display:block;}
@@ -442,6 +461,7 @@
       <div id="clientList"></div>
       <button class="add-client-btn" id="completedTrainingsBtn">📋 Ukończone treningi</button>
       <button class="add-client-btn" id="showTemplatesBtn">🗂️ Szablony planów</button>
+      <button class="add-client-btn" id="showOnlineBtn">💻 Treningi online</button>
       <button class="add-client-btn" id="showLibraryBtn" style="margin-top:14px;">📚 Biblioteka ćwiczeń</button>
       <button class="add-client-btn" id="showRosterBtn">👥 Klienci</button>
       <button class="add-client-btn" id="copyAppLinkBtn">🔗 Skopiuj link aplikacji</button>
@@ -813,7 +833,8 @@ function clientRowToJs(row){
     groupId: row.group_id, subgroupId: row.subgroup_id,
     dob: row.dob, height: row.height,
     weightLog: row.weight_log || [], measurementsLog: row.measurements_log || [],
-    pendingCompletions: row.pending_completions || []
+    pendingCompletions: row.pending_completions || [],
+    onlineActive: row.online_active || false, onlineTotal: row.online_total || 0
   };
 }
 function clientJsToRow(c){
@@ -822,9 +843,18 @@ function clientJsToRow(c){
     group_id: c.groupId || null, subgroup_id: c.subgroupId || null,
     dob: c.dob || null, height: c.height || null,
     weight_log: c.weightLog || [], measurements_log: c.measurementsLog || [],
-    pending_completions: c.pendingCompletions || []
+    pending_completions: c.pendingCompletions || [],
+    online_active: !!c.onlineActive, online_total: c.onlineTotal || 0
   };
 }
+async function refreshClientsFromDB(){
+  setStatus('Odświeżanie…');
+  const fresh = await loadClientsFromDB();
+  // zachowujemy zaladowane juz plany, tylko odswieamy dane klientow (pending_completions itd.)
+  clients = fresh;
+  setStatus('');
+}
+
 async function loadClientsFromDB(){
   try{
     const { data, error } = await sbClient.from('app_clients').select('*');
@@ -955,6 +985,12 @@ function getDayDotClass(day){
     const numSets = Math.max(1, parseInt(ex.sets)||1);
     totalSlots += numSets;
     const log = ex.log || [];
+    if(ex.isInterval){
+      // interwal zapisuje jeden podsumowujacy wpis po calym ukonczeniu - liczy sie jako CALE cwiczenie wypelnione
+      const done = log.length > 0 && (log[0].weight || log[0].reps);
+      if(done) filledSlots += numSets;
+      return;
+    }
     for(let i=0;i<numSets;i++){
       const entry = log[i];
       if(entry && (entry.weight || entry.reps)) filledSlots++;
@@ -1031,6 +1067,7 @@ async function openCompletedDay(clientId, dateStr){
   await saveClientRow(c);
   renderCompletedTrainingsButton();
 
+  delete plansCache[clientId]; // swiezy plan, nie stara wersja z pamieci
   await ensurePlanLoaded(clientId);
   const day = plansCache[clientId][dateStr];
   if(!day){
@@ -1138,6 +1175,7 @@ async function switchTab(tab){
   $('sportowiecView').style.display = tab==='sportowiec' ? '' : 'none';
   renderInstallChip();
   if(tab === 'trener'){
+    await refreshClientsFromDB();
     renderCompletedTrainingsButton();
   }
   if(tab === 'sportowiec'){
@@ -1218,33 +1256,48 @@ async function selectClient(id){
   selectedClientId = id;
   renderClientList();
   setStatus('Ładowanie planu…');
+  delete plansCache[id]; // zawsze pobierz swiezy plan - zeby nie pokazywac starej wersji z pamieci
   await ensurePlanLoaded(id);
   setStatus('');
   selectedDateStr = null;
   renderMain();
 }
 
-$('showTemplatesBtn').onclick = () => {
+$('showTemplatesBtn').onclick = async () => {
   trainerViewMode = 'templates';
   selectedClientId = null;
   editingTemplateMode = false;
+  await refreshClientsFromDB();
   renderClientList();
   renderTemplatesListView();
 };
 
-$('showLibraryBtn').onclick = () => {
+$('showOnlineBtn').onclick = async () => {
+  trainerViewMode = 'online';
+  selectedClientId = null;
+  await refreshClientsFromDB();
+  renderClientList();
+  await renderOnlineTrainingsView();
+};
+
+$('showLibraryBtn').onclick = async () => {
   trainerViewMode = 'library';
   selectedClientId = null;
+  await refreshClientsFromDB();
   renderClientList();
   renderLibraryView();
 };
-$('showRosterBtn').onclick = () => {
+$('showRosterBtn').onclick = async () => {
   trainerViewMode = 'roster';
   selectedClientId = null;
+  await refreshClientsFromDB();
   renderClientList();
   renderRosterView();
 };
-$('completedTrainingsBtn').onclick = renderCompletedTrainingsList;
+$('completedTrainingsBtn').onclick = async () => {
+  await refreshClientsFromDB();
+  renderCompletedTrainingsList();
+};
 
 $('copyAppLinkBtn').onclick = async () => {
   const link = window.location.origin + window.location.pathname;
@@ -2407,6 +2460,97 @@ async function exportMeasurementData(c, kind){
 }
 
 /* ============ SZABLONY PLANÓW ============ */
+/* ============ TRENINGI ONLINE ============ */
+function countCompletedDays(clientId){
+  const plan = plansCache[clientId] || {};
+  let count = 0;
+  Object.values(plan).forEach(day => {
+    if(getDayDotClass(day) === 'dot-done') count++;
+  });
+  return count;
+}
+
+function onlineBadgeInfo(done, total){
+  const left = Math.max(0, total - done);
+  if(left <= 1) return {cls:'danger', txt:`Zostało ${left} ${left===1?'trening':'treningów'}`};
+  if(left <= 3) return {cls:'warn', txt:`Zostały ${left} treningi`};
+  return {cls:'ok', txt:`Zostało ${left} treningów`};
+}
+
+async function renderOnlineTrainingsView(){
+  const main = $('main');
+  const activeClients = clients.filter(c => c.onlineActive);
+  main.innerHTML = `
+    <div class="section-title"><div class="bar"></div><h2>Treningi online</h2></div>
+    <div class="section-desc">Osoby robiące plan samodzielnie. <span class="online-manage-link" id="goOnlineManage">Zarządzaj listą aktywnych →</span></div>
+    <div id="onlineRows"><div class="empty-state">Ładowanie…</div></div>
+  `;
+  $('goOnlineManage').onclick = renderOnlineManageView;
+
+  // wczytaj plany wszystkich aktywnych, zeby policzyc wykonane treningi
+  for(const c of activeClients){ await ensurePlanLoaded(c.id); }
+
+  const holder = $('onlineRows');
+  if(activeClients.length === 0){
+    holder.innerHTML = '<div class="empty-state">Brak aktywnych osób. Kliknij "Zarządzaj listą aktywnych", żeby kogoś dodać.</div>';
+    return;
+  }
+  holder.innerHTML = activeClients.map(c => {
+    const done = countCompletedDays(c.id);
+    const total = c.onlineTotal || 0;
+    const b = onlineBadgeInfo(done, total);
+    const pct = total > 0 ? Math.min(100, Math.round(done/total*100)) : 0;
+    const barColor = b.cls==='ok' ? '#2E9E5B' : (b.cls==='warn' ? '#D89A2E' : '#B4472E');
+    return `
+      <div class="oc-card" data-cid="${c.id}">
+        <div class="oc-mid">
+          <div class="oc-nm">${escapeHtml(c.name)}</div>
+          <div class="oc-sub">Wykonano ${done} z ${total} zaplanowanych treningów</div>
+        </div>
+        <div class="oc-progress">
+          <div class="oc-progress-bar-wrap"><div class="oc-progress-bar" style="width:${pct}%;background:${barColor};"></div></div>
+          <div class="oc-progress-txt">${pct}%</div>
+        </div>
+        <div class="oc-badge oc-${b.cls}">${escapeHtml(b.txt)}</div>
+        <div class="oc-chev">›</div>
+      </div>
+    `;
+  }).join('');
+  holder.querySelectorAll('.oc-card').forEach(card => {
+    card.onclick = () => selectClient(card.dataset.cid);
+  });
+}
+
+function renderOnlineManageView(){
+  const main = $('main');
+  main.innerHTML = `
+    <span class="back-link" id="onlineManageBackBtn">← Wróć do panelu treningów online</span>
+    <div class="section-title"><div class="bar"></div><h2>Zarządzaj listą aktywnych</h2></div>
+    <div class="section-desc">Zaznacz, kto korzysta z treningów online, i ile treningów obejmuje jego wykupiony okres.</div>
+    <div id="onlineManageRows"></div>
+  `;
+  $('onlineManageBackBtn').onclick = renderOnlineTrainingsView;
+  const holder = $('onlineManageRows');
+  holder.innerHTML = clients.map(c => `
+    <div class="manage-row-online" data-cid="${c.id}">
+      <div class="nm">${escapeHtml(c.name)}</div>
+      <label><input type="checkbox" class="online-active-check" ${c.onlineActive?'checked':''}> Aktywny</label>
+      <label>Ile treningów w okresie: <input type="number" class="online-total-input" min="0" value="${c.onlineTotal||0}"></label>
+    </div>
+  `).join('');
+  holder.querySelectorAll('.manage-row-online').forEach(row => {
+    const c = clients.find(cl => cl.id === row.dataset.cid);
+    row.querySelector('.online-active-check').onchange = async (e) => {
+      c.onlineActive = e.target.checked;
+      await saveClientRow(c);
+    };
+    row.querySelector('.online-total-input').onchange = async (e) => {
+      c.onlineTotal = parseInt(e.target.value) || 0;
+      await saveClientRow(c);
+    };
+  });
+}
+
 function renderTemplatesListView(){
   const main = $('main');
   main.innerHTML = `
