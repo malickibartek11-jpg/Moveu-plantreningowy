@@ -182,6 +182,13 @@
   .lib-panel{margin-top:24px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px;}
   .lib-panel h3{font-size:15px;margin-bottom:12px;}
   .lib-row{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
+  .yt-sync-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px;}
+  .yt-sync-row img{width:64px;height:36px;object-fit:cover;border-radius:4px;flex-shrink:0;background:var(--surface-2);}
+  .yt-sync-sec{margin-top:14px;}
+  .yt-sync-sec summary{cursor:pointer;font-weight:600;font-size:13px;padding:6px 0;}
+  .yt-sync-sec h4{font-size:13px;margin:0 0 4px;}
+  .yt-sync-warn{font-size:11px;color:#B4472E;margin-top:2px;}
+  .yt-sync-info{font-size:11.5px;color:var(--muted);}
   .lib-row input{flex:1;min-width:140px;background:var(--surface-2);border:1px solid var(--line);border-radius:7px;color:var(--text);padding:8px 10px;font-size:13px;}
   .lib-list{display:flex;flex-wrap:wrap;gap:6px;}
   .lib-chip{background:var(--surface-2);border:1px solid var(--line);border-radius:20px;padding:5px 12px;font-size:12px;color:var(--muted);}
@@ -495,6 +502,10 @@
 
 <div class="modal-overlay" id="aExerciseModal" style="display:none;">
   <div class="modal-content" id="aExerciseModalContent"></div>
+</div>
+
+<div class="modal-overlay" id="ytSyncModal" style="display:none;">
+  <div class="modal-content" id="ytSyncModalContent" style="max-width:600px;"></div>
 </div>
 
 <div class="modal-overlay" id="applyConflictModal" style="display:none;">
@@ -3271,6 +3282,19 @@ function renderLibraryView(){
       </div>
     </div>
 
+    <div class="tools-panel" id="ytSyncPanel">
+      <h4>▶️ Synchronizacja z YouTube</h4>
+      <div class="lib-row">
+        <input id="ytSyncSource" placeholder="Link do kanału YouTube (np. https://www.youtube.com/@moveu)" style="flex:2;min-width:220px;">
+        <input id="ytSyncKey" type="password" placeholder="Klucz API (AIza...)" style="flex:1;min-width:160px;">
+      </div>
+      <div class="lib-row" style="align-items:center;">
+        <button class="btn ghost" id="ytSyncSaveBtn">Zapisz ustawienia</button>
+        <button class="btn" id="ytSyncRunBtn">🔄 Synchronizuj z YouTube</button>
+        <span id="ytSyncLast" style="font-size:12px;color:var(--muted);"></span>
+      </div>
+    </div>
+
     <div class="tools-panel">
       <h4>Dodaj nowe ćwiczenie</h4>
       <div class="lib-row">
@@ -3290,6 +3314,7 @@ function renderLibraryView(){
   renderLibGroupChips();
   renderLibGroupSelect();
   renderLibFullTable();
+  initYtSyncPanel();
 
   $('addGroupBtn').onclick = async () => {
     const name = $('newGroupName').value.trim();
@@ -3405,6 +3430,274 @@ function renderLibFullTable(){
     };
     tbody.appendChild(tr);
   });
+}
+
+/* ============ SYNCHRONIZACJA BIBLIOTEKI Z YOUTUBE ============
+   Zasady: TYLKO DODAJE nowe pozycje. Nigdy nie usuwa i nie zmienia istniejących ćwiczeń.
+   Duplikaty wykrywane po ID filmu YouTube (nie po nazwie). */
+const YT_SYNC_KEY = 'youtube_sync_settings';
+let ytSyncSettings = null;
+let ytSyncResult = null;
+
+async function loadYtSyncSettings(){
+  ytSyncSettings = (await safeGet(YT_SYNC_KEY)) || { source:'', apiKey:'', lastSync:null };
+  return ytSyncSettings;
+}
+function renderYtSyncLast(){
+  const el = $('ytSyncLast'); if(!el) return;
+  const ls = ytSyncSettings && ytSyncSettings.lastSync;
+  el.textContent = ls ? `Ostatnio: ${new Date(ls.at).toLocaleString('pl-PL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})} — dodano ${ls.added}` : '';
+}
+async function initYtSyncPanel(){
+  if(!$('ytSyncPanel')) return;
+  await loadYtSyncSettings();
+  if(!$('ytSyncSource')) return;
+  $('ytSyncSource').value = ytSyncSettings.source || '';
+  $('ytSyncKey').value = ytSyncSettings.apiKey || '';
+  renderYtSyncLast();
+  $('ytSyncSaveBtn').onclick = async () => {
+    const fresh = (await safeGet(YT_SYNC_KEY)) || {};
+    ytSyncSettings = { ...fresh, source: $('ytSyncSource').value.trim(), apiKey: $('ytSyncKey').value.trim() };
+    const ok = await persistWithFeedback(YT_SYNC_KEY, ytSyncSettings);
+    if(ok) toast('Zapisano ustawienia YouTube');
+  };
+  $('ytSyncRunBtn').onclick = runYtSync;
+}
+
+/* Normalizacja nazwy do porównań (wielkość liter, spacje) */
+function ytNormName(n){ return (n||'').toString().trim().replace(/\s+/g,' ').toLowerCase(); }
+
+/* Rozpoznaje co wkleił użytkownik: kanał (@handle, /channel/UC..., /user/...) albo playlistę (list=) */
+function parseYtSource(input){
+  const raw = (input||'').trim();
+  if(!raw) return null;
+  if(/^@[\w.\-]+$/.test(raw)) return {type:'handle', value: raw};
+  if(/^UC[\w-]{22}$/.test(raw)) return {type:'channelId', value: raw};
+  try{
+    const u = new URL(/^https?:\/\//i.test(raw) ? raw : 'https://' + raw);
+    const list = u.searchParams.get('list');
+    if(list) return {type:'playlist', value: list};
+    const parts = u.pathname.split('/').filter(Boolean);
+    if(parts[0] && parts[0].startsWith('@')) return {type:'handle', value: decodeURIComponent(parts[0])};
+    if(parts[0] === 'channel' && parts[1]) return {type:'channelId', value: parts[1]};
+    if(parts[0] === 'user' && parts[1]) return {type:'username', value: parts[1]};
+  }catch(e){}
+  return null;
+}
+
+async function ytApi(path, params, apiKey){
+  const q = new URLSearchParams({...params, key: apiKey});
+  let res;
+  try{
+    res = await fetch(`https://www.googleapis.com/youtube/v3/${path}?${q.toString()}`);
+  }catch(e){
+    throw new Error('Brak połączenia z YouTube. Sprawdź internet i spróbuj ponownie.');
+  }
+  let data = null;
+  try{ data = await res.json(); }catch(e){}
+  if(!res.ok){
+    const reason = data && data.error && data.error.errors && data.error.errors[0] ? data.error.errors[0].reason : '';
+    const msg = data && data.error ? (data.error.message||'') : '';
+    if(reason === 'keyInvalid' || /API key not valid/i.test(msg)) throw new Error('Nieprawidłowy klucz API. Sprawdź, czy skopiowałeś go w całości.');
+    if(reason === 'quotaExceeded' || reason === 'dailyLimitExceeded') throw new Error('Przekroczony dzienny limit YouTube API. Spróbuj jutro.');
+    if(/referer|referrer/i.test(reason + ' ' + msg)) throw new Error('Klucz API blokuje tę stronę. W Google Cloud dopisz adres tej strony w „Ograniczeniach aplikacji → Witryny”.');
+    if(reason === 'accessNotConfigured' || /has not been used|is disabled/i.test(msg)) throw new Error('YouTube Data API v3 nie jest włączone w projekcie Google Cloud.');
+    if(reason === 'playlistNotFound') throw new Error('Nie znaleziono playlisty/kanału. Sprawdź link.');
+    throw new Error('Błąd YouTube API: ' + (msg || res.status));
+  }
+  return data;
+}
+
+/* Pobiera WSZYSTKIE filmy (stronicowanie po 50) */
+async function fetchYtVideos(settings){
+  const src = parseYtSource(settings.source);
+  if(!src) throw new Error('Nie rozpoznaję linku do kanału. Wklej np. https://www.youtube.com/@twojkanal');
+  const key = settings.apiKey;
+  let playlistId = null;
+  if(src.type === 'playlist'){
+    playlistId = src.value;
+  } else {
+    const params = {part:'contentDetails'};
+    if(src.type === 'handle') params.forHandle = src.value;
+    if(src.type === 'channelId') params.id = src.value;
+    if(src.type === 'username') params.forUsername = src.value;
+    const ch = await ytApi('channels', params, key);
+    if(!ch.items || !ch.items.length) throw new Error('Nie znaleziono kanału. Sprawdź link.');
+    playlistId = ch.items[0].contentDetails.relatedPlaylists.uploads;
+  }
+  const videos = [];
+  let pageToken = '';
+  let guard = 0;
+  do{
+    const params = {part:'snippet', maxResults:'50', playlistId};
+    if(pageToken) params.pageToken = pageToken;
+    const data = await ytApi('playlistItems', params, key);
+    (data.items||[]).forEach(it => {
+      const sn = it.snippet || {};
+      const vid = sn.resourceId && sn.resourceId.videoId;
+      if(!vid) return;
+      if(sn.title === 'Private video' || sn.title === 'Deleted video') return;
+      videos.push({ videoId: vid, title: (sn.title||'').trim() });
+    });
+    pageToken = data.nextPageToken || '';
+    setStatus(`Pobieranie z YouTube… ${videos.length}`);
+    guard++;
+  } while(pageToken && guard < 200);
+  return videos;
+}
+
+/* CZYSTA LOGIKA porównania - bez zapisu. Dzieli filmy na kategorie. */
+function classifyYtSync(lib, ytVideos){
+  const byVid = new Map();   // videoId -> [pozycje biblioteki]
+  const libNames = new Set();
+  (lib||[]).forEach(l => {
+    libNames.add(ytNormName(l.name));
+    const id = getYoutubeId(l.videoUrl);
+    if(id){ if(!byVid.has(id)) byVid.set(id, []); byVid.get(id).push(l); }
+  });
+  const result = { newItems:[], nameConflicts:[], sameVideoDiffName:[], dupLinksInLib:[], skipped:0 };
+  const seen = new Set();
+  const newNames = new Set();
+  (ytVideos||[]).forEach(v => {
+    if(!v || !v.videoId || seen.has(v.videoId)) return;
+    seen.add(v.videoId);
+    const existing = byVid.get(v.videoId);
+    if(existing){
+      if(existing.some(l => ytNormName(l.name) === ytNormName(v.title))) result.skipped++;
+      else result.sameVideoDiffName.push({ ...v, libNames: existing.map(l => l.name) });
+      return;
+    }
+    const nn = ytNormName(v.title);
+    if(!nn || libNames.has(nn) || newNames.has(nn)) result.nameConflicts.push(v);
+    else { result.newItems.push(v); newNames.add(nn); }
+  });
+  byVid.forEach((items, vid) => {
+    if(items.length > 1) result.dupLinksInLib.push({ videoId: vid, names: items.map(l => l.name) });
+  });
+  return result;
+}
+
+/* Buduje nową bibliotekę: ŚWIEŻA wersja z bazy + dopisane na końcu. Nic nie usuwa/nie zmienia. */
+function buildLibraryWithAdditions(freshLib, toAdd){
+  const out = freshLib.slice();
+  const have = new Set(freshLib.map(l => getYoutubeId(l.videoUrl)).filter(Boolean));
+  const base = Date.now();
+  let added = 0;
+  toAdd.forEach((v, i) => {
+    if(have.has(v.videoId)) return;   // ostatnia kontrola duplikatu
+    have.add(v.videoId);
+    out.push({ id: 'l_' + base + '_' + i, name: v.title, videoUrl: 'https://www.youtube.com/watch?v=' + v.videoId, groupId: null });
+    added++;
+  });
+  return { list: out, added };
+}
+
+async function runYtSync(){
+  await loadYtSyncSettings();
+  const src = $('ytSyncSource') ? $('ytSyncSource').value.trim() : '';
+  const key = $('ytSyncKey') ? $('ytSyncKey').value.trim() : '';
+  const settings = { ...ytSyncSettings, source: src || ytSyncSettings.source, apiKey: key || ytSyncSettings.apiKey };
+  if(!settings.source || !settings.apiKey){ alert('Wpisz link do kanału i klucz API, a potem kliknij „Zapisz ustawienia”.'); return; }
+  const btn = $('ytSyncRunBtn');
+  if(btn){ btn.disabled = true; btn.textContent = '⏳ Sprawdzam…'; }
+  try{
+    const videos = await fetchYtVideos(settings);
+    const freshLib = (await safeGet('exercise_library'));
+    const lib = freshLib === null ? library : freshLib;
+    ytSyncResult = classifyYtSync(lib, videos);
+    ytSyncResult.total = videos.length;
+    setStatus('');
+    renderYtSyncModal();
+  }catch(e){
+    setStatus('');
+    alert(e.message || 'Nie udało się pobrać filmów z YouTube.');
+  }finally{
+    if(btn){ btn.disabled = false; btn.textContent = '🔄 Synchronizuj z YouTube'; }
+  }
+}
+
+function ytThumb(id){ return `<img src="https://img.youtube.com/vi/${id}/mqdefault.jpg" loading="lazy" alt="">`; }
+
+function renderYtSyncModal(){
+  const r = ytSyncResult;
+  const box = $('ytSyncModalContent');
+  const newCount = r.newItems.length + r.nameConflicts.length;
+  const row = (v, checked, warn) => `
+    <label class="yt-sync-row">
+      <input type="checkbox" class="yt-sync-check" data-vid="${escapeHtml(v.videoId)}" ${checked?'checked':''}>
+      ${ytThumb(v.videoId)}
+      <div style="min-width:0;"><div>${escapeHtml(v.title||'(bez tytułu)')}</div>${warn?`<div class="yt-sync-warn">${warn}</div>`:''}</div>
+    </label>`;
+  let html = `<span class="modal-close" id="ytSyncCloseBtn">✕</span>
+    <h3 style="margin-bottom:4px;">Nowe filmy na kanale: ${newCount}</h3>
+    <div class="yt-sync-info">Sprawdzono ${r.total} filmów. Pominięto ${r.skipped} — już są w bibliotece.</div>`;
+  if(newCount === 0){
+    html += `<div style="margin:16px 0;font-weight:600;">✅ Biblioteka jest aktualna — brak nowych filmów.</div>`;
+  } else {
+    html += `<div class="yt-sync-sec">`;
+    html += r.newItems.map(v => row(v, true, '')).join('');
+    html += r.nameConflicts.map(v => row(v, false, '⚠️ Ćwiczenie o tej nazwie już istnieje (inny film)')).join('');
+    html += `</div>`;
+  }
+  if(r.sameVideoDiffName.length){
+    html += `<details class="yt-sync-sec"><summary>ℹ️ Ten sam film, inna nazwa: ${r.sameVideoDiffName.length}</summary>
+      <div class="yt-sync-info" style="margin-bottom:6px;">Nie zostaną dodane. Nazwy w bibliotece zostają bez zmian — popraw ręcznie, jeśli chcesz.</div>
+      ${r.sameVideoDiffName.map(v => `<div class="yt-sync-row">${ytThumb(v.videoId)}<div style="min-width:0;"><div><b>YouTube:</b> ${escapeHtml(v.title)}</div><div><b>Biblioteka:</b> ${v.libNames.map(escapeHtml).join(', ')}</div><div class="yt-sync-info">youtu.be/${escapeHtml(v.videoId)}</div></div></div>`).join('')}
+    </details>`;
+  }
+  if(r.dupLinksInLib.length){
+    html += `<details class="yt-sync-sec"><summary>ℹ️ Ten sam link w kilku ćwiczeniach biblioteki: ${r.dupLinksInLib.length}</summary>
+      <div class="yt-sync-info" style="margin-bottom:6px;">Tylko informacja — prawdopodobnie błąd przy wklejaniu linku.</div>
+      ${r.dupLinksInLib.map(d => `<div class="yt-sync-row">${ytThumb(d.videoId)}<div style="min-width:0;"><div>${d.names.map(escapeHtml).join(' · ')}</div><div class="yt-sync-info">youtu.be/${escapeHtml(d.videoId)}</div></div></div>`).join('')}
+    </details>`;
+  }
+  html += `<div class="yt-sync-info" style="margin:14px 0 10px;">Nowe ćwiczenia trafią do „Bez grupy”. Nic nie zostanie usunięte ani zmienione.</div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button class="btn ghost" id="ytSyncCancelBtn">${newCount ? 'Anuluj' : 'Zamknij'}</button>
+      ${newCount ? `<button class="btn" id="ytSyncAddBtn" style="background:#E8604A;">Dodaj zaznaczone (<span id="ytSyncSelCount">0</span>)</button>` : ''}
+    </div>`;
+  box.innerHTML = html;
+  $('ytSyncModal').style.display = 'flex';
+  const close = () => { $('ytSyncModal').style.display = 'none'; };
+  $('ytSyncCloseBtn').onclick = close;
+  $('ytSyncCancelBtn').onclick = close;
+  const updateCount = () => { const c = $('ytSyncSelCount'); if(c) c.textContent = box.querySelectorAll('.yt-sync-check:checked').length; };
+  box.querySelectorAll('.yt-sync-check').forEach(cb => cb.onchange = updateCount);
+  updateCount();
+  if($('ytSyncAddBtn')) $('ytSyncAddBtn').onclick = addSelectedYtVideos;
+}
+
+async function addSelectedYtVideos(){
+  const box = $('ytSyncModalContent');
+  const ids = new Set([...box.querySelectorAll('.yt-sync-check:checked')].map(cb => cb.dataset.vid));
+  if(ids.size === 0){ alert('Nie zaznaczono żadnego filmu.'); return; }
+  const all = ytSyncResult.newItems.concat(ytSyncResult.nameConflicts);
+  const toAdd = all.filter(v => ids.has(v.videoId));
+  const btn = $('ytSyncAddBtn');
+  if(btn){ btn.disabled = true; btn.textContent = 'Zapisywanie…'; }
+  // ŚWIEŻA biblioteka z bazy tuż przed zapisem (ochrona przed nadpisaniem z innej karty)
+  const fresh = await safeGet('exercise_library');
+  if(fresh === null){
+    alert('Nie udało się pobrać aktualnej biblioteki z bazy. Nic nie zostało zapisane — spróbuj ponownie.');
+    if(btn){ btn.disabled = false; btn.textContent = 'Dodaj zaznaczone'; }
+    return;
+  }
+  const { list, added } = buildLibraryWithAdditions(fresh, toAdd);
+  if(list.length < fresh.length){ alert('Błąd bezpieczeństwa — przerwano zapis.'); return; }
+  const ok = added === 0 ? true : await persistWithFeedback('exercise_library', list);
+  if(!ok){
+    if(btn){ btn.disabled = false; btn.textContent = 'Dodaj zaznaczone'; }
+    return; // persistWithFeedback już pokazał alert
+  }
+  library = list;
+  const settingsFresh = (await safeGet(YT_SYNC_KEY)) || ytSyncSettings || {};
+  ytSyncSettings = { ...settingsFresh, lastSync: { at: new Date().toISOString(), added } };
+  await safeSet(YT_SYNC_KEY, ytSyncSettings);
+  $('ytSyncModal').style.display = 'none';
+  renderLibraryList();
+  if($('libFullRows')) renderLibFullTable();
+  renderYtSyncLast();
+  alert(`Dodano ${added}, pominięto ${ytSyncResult.skipped + (toAdd.length - added)} (już w bibliotece).`);
 }
 
 function renderLibraryList(){
