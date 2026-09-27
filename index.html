@@ -3508,6 +3508,183 @@ async function runApplyTasks(tasks, idx){
   }
 }
 
+const GROUP_ORG_MAP = {
+  'Góra Push': [
+    'Wyciskanie sztangi - ławka pozioma',
+    'Wyciskanie hantli- nad głowę siedząc - z oparciem',
+    'Wyciskanie sztangi - nad głowę - stojąc',
+    'Wyciskanie hantli - na ławce - poziomej',
+    'Dipy',
+    'Rozpiętki z hantlami - leżąc na ławce - poziomej'
+  ],
+  'Góra Pull': [
+    'Wiosłowanie hantlem - jednorącz - w oparciu o ławkę',
+    'Wiosłowanie hantlem w oparciu - jednorącz',
+    'Wiosłowanie hantlem-w oparciu o ławke - Gruby chwyt',
+    'Wiosłowanie sztangą - Pendlay row',
+    'Podciągnie - podchwytem',
+    'Podciąganie - nachwytem',
+    'Ściąganie drążka wyciągu górnego- do klatki - nachwytem'
+  ],
+  'Dół Squat': [
+    'Przysiad - ze sztanga na plecach',
+    'Przysiad - ze sztangą na plecach - do skrzyni',
+    'Przysiad ze sztangą na plecach - do skrzyni - gumy oporowe',
+    'Flywheel - przysiad',
+    'Przysiad bułgarski - ze sztangą na plecach',
+    'Przysiad bułgarski - hantle',
+    'Przysiad wykroczny - ze sztangą na plecach',
+    'Przysiad wykroczny - wydłużona ekscentryka',
+    'Przysiad wykroczny - izometria - dolna pozycja',
+    'Przysiad obunóż - izometria - dolna pozycja',
+    'Przysiad do boku - z hantlem',
+    'Zakrok- hantle',
+    'Krzesełko - obunóż - stopy na palcach',
+    'Izometryczny przysiad „hokejowy” do boku z hantlem',
+    'Box step up- ze sztanga na plecach - 50cm',
+    'Wejscia na podest z krązkiem - 50cm'
+  ],
+  'Dół Hip Hinge': [
+    'Hip thrust - ze sztangą - obunóż',
+    'Hip thrust - jednonóż',
+    'Izometryczny hip trust - jednonóż - ze sztangą',
+    'RDL - jednonóż - półsztanga',
+    'Trap bar - martwy ciąg'
+  ],
+  'Dynamic': [
+    'Zarzut sztangi- znad kolan',
+    'Rzut piłką o ścianę - z zakroku - reaktywnie',
+    'Rzut piłką o ściane - z rotacji - przodem',
+    'Rzut piłką - o ściane - znad głowy',
+    'Wejscie na skrzynie - pierwszy krok - z gumą oporową'
+  ],
+  'Ramiona': [
+    'Wznosy hantli bokiem - siedząc',
+    'Wznosy hantli bokiem - stojąc',
+    'Prostowanie przedramion - na wyciągu - chwyt neutralny',
+    'Uginanie przedramion - wyciąg dolny - chwyt neutralny',
+    'Uginanie przedramion- chwyt neutralny - stojąc - naprzemiennie',
+    'Rotacja przedramienia - z użyciem wyciągu - stojąc'
+  ],
+  'Tułów': [
+    'Flywheel rotacja tułowia',
+    'Skłony tułowia - z krążkiem nad głową',
+    'Rotacja tułowia - wyciąg - stojąc',
+    'Siady z leżenia',
+    'Wyprosty tułowia - ławka rzymska',
+    'Wyprosty tułowia -GHD',
+    'T2B (Toes to bar)',
+    'Brzuch - skręty z uniesieniem bioder',
+    'Brzuszki - Voyager',
+    'Brzuch - mięśnie skośne - skłon tułowia z przywiedzeniem nogi po przekątnej',
+    'L- sit up - izometria',
+    'Martwy robak'
+  ],
+  'Nogi Uginanie/Prostowanie': [
+    'Wspięcia na palce - jednonóż',
+    'Prostowanie podudzi - na maszynie - jednonóż',
+    'Wyprosty podudzi na maszynie - obunóż',
+    'Wyprosty podudzi na maszynie - metoda 2:1',
+    'Wyprosty podudzi na maszynie - jednonóż- stopa zgięta grzbietowo',
+    'Wyprosty podudzi na maszynie - jednonóż - 3 pauzy izometryczne',
+    'Uginanie podudzi stojąc - jednonóż',
+    'Uginanie podudzi - jednonóż - na maszynie - siedząc',
+    'Uginanie podudzi - na piłce szwajcarskiej',
+    'GH roller - drop - jednonóż',
+    'Gh roller - uginanie podudzi - jednonóż',
+    'Nordic hamstring - supramax'
+  ],
+  'Prehab/rehab': [
+    'Kopenhaskie przywodzenie',
+    'Kopenhaskie przywodzenie - na kolanie',
+    'Izometryczne kopenhaskie przywodzenie - krótka dźwignia',
+    'VMO - wstępowania',
+    'TKE',
+    'Muszelka - leżąc na boku - z gumą',
+    'Krok dostawny z gumą',
+    'Odwiedzenie nogi na maszynie - stojąc',
+    'Izometryczny wyprost biodra - jednonóż - stopa na ścianie',
+    'Leżąc na boku - unoszenie nogi do boku - prosta noga - mięsień pośladkowy',
+    'Leżąc na plecach - odwodzenie i przywodzenie wyprostowanej nogi',
+    'Zginacz biodra - leżąc na plecach - mini band',
+    'Piszczelowy przedni - zgięcia obunóż'
+  ],
+  'Plyometria': [
+    'Lądowanie z hantlem do pozycji wykroczno-zakrocznej',
+    'Skok w dal - jednonóż - na stopie - reaktywny'
+  ],
+  'Mobilność': [
+    'Rozciąganie - zginacz biodra',
+    'Mobilizacja biodra w 3 kierunkach',
+    'Rotacja wewnętrzna - na rollerze - w leżeniu bokiem',
+    '90-90 - ręce splecione za głową i wciskane w ziemie',
+    'Rozgrzewka - całość',
+    'Complex z gumą'
+  ],
+  'Kondycja': [
+    'Bieżnia - bieg',
+    'Air bike',
+    'SkiErg'
+  ],
+  'Mięśnie karku': [
+    'Kark na piłce szwajcarskiej - 4 strony'
+  ]
+};
+
+function normalizeExName(s){
+  return String(s||'')
+    .toLowerCase()
+    .replace(/[„""']/g, '"')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+async function applyGroupOrganization(){
+  setStatus('Porządkuję bibliotekę…');
+  let freshGroups = (await safeGet('library_groups')) || [];
+  let freshLib = (await safeGet('exercise_library')) || [];
+
+  const byNormName = new Map();
+  freshLib.forEach(ex => byNormName.set(normalizeExName(ex.name), ex));
+
+  const matched = [];
+  const notFound = [];
+
+  Object.keys(GROUP_ORG_MAP).forEach(groupName => {
+    let grp = freshGroups.find(g => g.name === groupName);
+    if(!grp){
+      grp = {id: 'lg_'+Date.now()+'_'+Math.random().toString(36).slice(2,6), name: groupName};
+      freshGroups.push(grp);
+    }
+    GROUP_ORG_MAP[groupName].forEach(exName => {
+      const found = byNormName.get(normalizeExName(exName));
+      if(found){
+        found.groupId = grp.id;
+        matched.push(exName);
+      } else {
+        notFound.push(`${exName} (grupa: ${groupName})`);
+      }
+    });
+  });
+
+  await persistWithFeedback('library_groups', freshGroups);
+  await persistWithFeedback('exercise_library', freshLib);
+  libraryGroups = freshGroups;
+  library = freshLib;
+  setStatus('');
+
+  renderLibGroupChips();
+  renderLibGroupSelect();
+  renderLibFullTable();
+
+  const resultEl = $('groupOrgResult');
+  let html = `<div style="color:var(--muted);">Dopasowano <b style="color:var(--text);">${matched.length}</b> ćwiczeń do 13 grup.</div>`;
+  if(notFound.length > 0){
+    html += `<div style="margin-top:8px;color:var(--warn);"><b>Nie znaleziono w bibliotece (${notFound.length}) — sprawdź nazwy:</b><ul style="margin:6px 0 0;padding-left:18px;">${notFound.map(n=>`<li>${escapeHtml(n)}</li>`).join('')}</ul></div>`;
+  }
+  if(resultEl) resultEl.innerHTML = html;
+}
+
 function renderLibraryView(){
   const main = $('main');
   main.innerHTML = `
@@ -3521,6 +3698,13 @@ function renderLibraryView(){
         <input id="newGroupName" placeholder="Nazwa nowej grupy (np. Dolne partie)">
         <button class="btn" id="addGroupBtn">+ Dodaj grupę</button>
       </div>
+    </div>
+
+    <div class="tools-panel">
+      <h4>🗂️ Uporządkuj bibliotekę na 13 grup</h4>
+      <div class="section-desc" style="margin:0 0 10px;">Utworzy grupy (Góra Push, Góra Pull, Dół Squat, Dół Hip Hinge, Dynamic, Ramiona, Tułów, Nogi Uginanie/Prostowanie, Prehab/rehab, Plyometria, Mobilność, Kondycja, Mięśnie karku) i przypisze do nich ćwiczenia po nazwie. Bezpieczne — jeśli grupa już istnieje, użyje jej zamiast tworzyć drugą.</div>
+      <button class="btn" id="applyGroupOrgBtn">Zastosuj podział na 13 grup</button>
+      <div id="groupOrgResult" style="margin-top:10px;font-size:12.5px;"></div>
     </div>
 
     <div class="tools-panel" id="ytSyncPanel">
@@ -3567,6 +3751,7 @@ function renderLibraryView(){
     renderLibGroupSelect();
     renderLibFullTable();
   };
+  $('applyGroupOrgBtn').onclick = applyGroupOrganization;
   $('addExFullBtn').onclick = async () => {
     const name = $('newExName').value.trim();
     const videoUrl = $('newExVideo').value.trim();
