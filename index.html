@@ -143,8 +143,30 @@
   .interval-fields label{display:flex;flex-direction:column;gap:3px;font-size:10.5px;color:var(--muted);font-weight:600;}
   .interval-fields input{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 8px;font-size:12.5px;width:110px;}
   .note-label{font-size:10px;color:var(--muted);font-weight:700;margin-bottom:5px;display:block;}
+  .rpe-panel{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;}
+  .rpe-field label{display:block;font-size:10px;color:var(--muted);font-weight:700;margin-bottom:4px;}
+  .rpe-field input{width:70px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:6px 8px;font-size:12.5px;text-align:center;}
+  .rpe-history{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:9px 12px;font-size:11.5px;min-width:140px;}
+  .rpe-history .lbl{color:var(--muted);font-size:9.5px;font-weight:700;text-transform:uppercase;margin-bottom:2px;}
+  .rpe-history .val{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:14px;}
+  .suggestion-card{flex:1;min-width:280px;background:#fff;border:1.5px solid #E8604A;border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:12px;}
+  .suggestion-icon{font-size:20px;}
+  .suggestion-text{flex:1;font-size:12px;line-height:1.4;color:var(--text);}
+  .suggestion-text b{font-family:'Space Grotesk',sans-serif;}
+  .suggestion-btns{display:flex;flex-direction:column;gap:6px;}
+  .btn-apply{background:#E8604A;color:#fff;border:none;border-radius:6px;padding:7px 12px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;}
+  .btn-dismiss{background:transparent;border:1px solid var(--line);border-radius:6px;padding:7px 10px;font-size:11px;color:var(--muted);cursor:pointer;}
   .note-input{width:100%;background:var(--surface);border:1px solid var(--line);border-radius:7px;padding:8px 10px;font-size:12.5px;color:var(--text);}
   .a-note-card{display:flex;gap:9px;background:var(--surface);border:1px solid var(--line);border-left:3px solid #E8604A;border-radius:10px;padding:11px 13px;margin-bottom:14px;}
+  .feedback-section{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;margin-top:14px;}
+  .feedback-label{font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;font-weight:700;color:var(--muted);margin-bottom:10px;}
+  .rpe-row{display:flex;gap:4px;margin-bottom:6px;}
+  .rpe-pill{flex:1;aspect-ratio:1;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:12px;color:#fff;cursor:pointer;border:2px solid transparent;}
+  .rpe-pill.selected{border-color:#1C1C1C;transform:scale(1.08);}
+  .rpe-scale-labels{display:flex;justify-content:space-between;font-size:8.5px;color:var(--muted);margin-bottom:16px;padding:0 2px;}
+  .note-label{font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;font-weight:700;color:var(--muted);margin-bottom:6px;}
+  .note-textarea{width:100%;min-height:60px;border:1px solid var(--line);border-radius:8px;padding:9px 10px;font-size:12.5px;font-family:'IBM Plex Sans',sans-serif;color:var(--text);resize:none;background:var(--surface-2);box-sizing:border-box;}
+  .note-textarea::placeholder{color:#A8A39A;}
   .a-note-card .icon{font-size:14px;flex-shrink:0;line-height:1.3;}
   .a-note-card .txt{font-size:12.5px;color:var(--text);line-height:1.4;}
   .test-toggle input{accent-color:var(--warn);}
@@ -463,10 +485,12 @@
     <button id="tabSportowiec">Panel sportowca</button>
   </div>
   <div class="status" id="status">Ładowanie…</div>
+  <div class="status" id="offlineQueueIndicator" style="display:none;color:#D89A2E;"></div>
   <div class="install-chip" id="installChip" style="display:none;">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg>
     <span>Zainstaluj</span>
   </div>
+  <button class="btn ghost" id="backNavBtn" style="display:none;background:transparent;border:1px solid rgba(245,244,241,.25);color:rgba(245,244,241,.85);padding:6px 12px;font-size:11.5px;margin-right:8px;">← Wstecz</button>
   <button class="btn ghost" id="logoutBtn" style="background:transparent;border:1px solid rgba(245,244,241,.25);color:rgba(245,244,241,.75);padding:6px 12px;font-size:11.5px;">Wyloguj</button>
 </div>
 
@@ -887,16 +911,21 @@ async function loadClientsFromDB(){
    edytujace dwoch roznych klientow jednoczesnie nigdy sobie nie przeszkadzaja. */
 async function saveClientRow(c){
   setStatus('Zapisywanie…');
-  const { error } = await sbClient.from('app_clients').upsert(clientJsToRow(c));
-  if(error){
-    console.error('Blad zapisu klienta:', error);
-    setStatus('❌ BŁĄD ZAPISU');
-    alert('Nie udało się zapisać zmian w bazie danych!\n\nSprawdź połączenie z internetem i spróbuj tę zmianę jeszcze raz — w tej chwili NIE została ona zapisana i zniknie po odświeżeniu strony.');
-    return false;
+  let lastError = null;
+  for(let attempt = 0; attempt < 3; attempt++){
+    const { error } = await sbClient.from('app_clients').upsert(clientJsToRow(c));
+    if(!error){
+      setStatus('Zapisano');
+      setTimeout(()=>setStatus(''), 1200);
+      return true;
+    }
+    lastError = error;
+    if(attempt < 2){ setStatus(`Ponawiam zapis… (${attempt+2}/3)`); await new Promise(r => setTimeout(r, 900*(attempt+1))); }
   }
-  setStatus('Zapisano');
-  setTimeout(()=>setStatus(''), 1200);
-  return true;
+  console.error('Blad zapisu klienta (po probach ponowienia):', lastError);
+  setStatus('❌ BŁĄD ZAPISU');
+  alert('Nie udało się zapisać zmian w bazie danych!\n\nSprawdź połączenie z internetem i spróbuj tę zmianę jeszcze raz — w tej chwili NIE została ona zapisana i zniknie po odświeżeniu strony.');
+  return false;
 }
 async function deleteClientRow(id){
   setStatus('Usuwanie…');
@@ -918,18 +947,120 @@ async function loadPlanFromDB(clientId){
     return (data && data.plan) || {};
   }catch(e){ console.error('Wyjatek wczytywania planu:', e); return {}; }
 }
+/* ============ KOLEJKA OFFLINE - zabezpieczenie zapisu wynikow ============
+   Zanim probujemy wyslac wynik do bazy, zapisujemy go NAJPIERW lokalnie na
+   telefonie (localStorage). Jesli wysylka sie uda - kasujemy lokalna kopie.
+   Jesli sie nie uda (lub telefon zamrozi strone w polowie) - kopia zostaje
+   i probujemy ja wyslac przy nastepnym uruchomieniu appki / powrocie internetu. */
+const OFFLINE_QUEUE_KEY = 'moveu_offline_plan_queue_v1';
+
+function getOfflineQueue(){
+  try{ return JSON.parse(localStorage.getItem(OFFLINE_QUEUE_KEY) || '[]'); }
+  catch(e){ return []; }
+}
+function setOfflineQueueRaw(queue){
+  try{ localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(queue)); }
+  catch(e){ /* np. tryb prywatny/brak miejsca - nie przerywamy dzialania appki z tego powodu */ }
+}
+function queueOfflineSave(clientId, dateStr, dayData){
+  const queue = getOfflineQueue();
+  const idx = queue.findIndex(q => q.clientId === clientId && q.dateStr === dateStr);
+  const entry = { clientId, dateStr, dayData, savedAt: Date.now() };
+  if(idx >= 0) queue[idx] = entry; else queue.push(entry);
+  setOfflineQueueRaw(queue);
+  renderOfflineQueueIndicator();
+}
+function removeFromOfflineQueue(clientId, dateStr){
+  const queue = getOfflineQueue().filter(q => !(q.clientId === clientId && q.dateStr === dateStr));
+  setOfflineQueueRaw(queue);
+  renderOfflineQueueIndicator();
+}
+function renderOfflineQueueIndicator(){
+  const el = $('offlineQueueIndicator');
+  if(!el) return;
+  const n = getOfflineQueue().length;
+  if(n === 0){ el.style.display = 'none'; el.textContent = ''; }
+  else { el.style.display = ''; el.textContent = `🔄 ${n} ${n===1?'zmiana czeka':'zmiany czekają'} na wysłanie…`; }
+}
+
+/* Zapisuje wynik cwiczenia: NAJPIERW lokalnie (natychmiast, zawsze sie udaje),
+   POTEM probuje wyslac do bazy (z wbudowanymi juz 3 probami w savePlanRow).
+   Jesli wysylka sie uda - kasuje lokalna kopie. Jesli nie - kopia zostaje w kolejce. */
+async function saveResultWithOfflineBackup(clientId, dateStr, day){
+  queueOfflineSave(clientId, dateStr, day);
+  const ok = await persistPlan(clientId);
+  if(ok) removeFromOfflineQueue(clientId, dateStr);
+  return ok;
+}
+
+/* Probuje wyslac wszystko, co czeka w kolejce. Dla kazdego wpisu pobiera
+   NAJSWIEZSZY plan z bazy, nadpisuje w nim TYLKO ten jeden dzien lokalna,
+   oczekujaca wersja (zeby nie nadpisac przypadkiem czegos innego, co
+   zmienilo sie w miedzyczasie), i zapisuje calosc z powrotem. */
+/* ============ NAWIGACJA WSTECZ - dziala w calym panelu trenera ============
+   Kazde przejscie do nowego widoku odklada "jak odtworzyc poprzedni widok"
+   na stos. Klikniecie Wstecz zdejmuje ostatni i wywoluje go ponownie -
+   ponowne wywolanie zawsze czyta aktualny stan (swieze dane), nie zamrozony zrzut. */
+let navHistory = [];
+let currentViewRestore = null;
+function updateBackButtonVisibility(){
+  const btn = $('backNavBtn');
+  if(!btn) return;
+  btn.style.display = navHistory.length > 0 ? '' : 'none';
+}
+async function navigateTo(restoreFn){
+  if(currentViewRestore) navHistory.push(currentViewRestore);
+  currentViewRestore = restoreFn;
+  updateBackButtonVisibility();
+  await restoreFn();
+}
+async function goBackInApp(){
+  const fn = navHistory.pop();
+  updateBackButtonVisibility();
+  if(fn){
+    currentViewRestore = fn;
+    if(currentTab !== 'trener') await switchTab('trener');
+    await fn();
+  }
+}
+
+async function flushOfflineQueue(){
+  const queue = getOfflineQueue();
+  if(queue.length === 0) return;
+  for(const entry of queue){
+    try{
+      delete plansCache[entry.clientId];
+      await ensurePlanLoaded(entry.clientId);
+      if(!plansCache[entry.clientId]) plansCache[entry.clientId] = {};
+      plansCache[entry.clientId][entry.dateStr] = entry.dayData;
+      const ok = await savePlanRow(entry.clientId, plansCache[entry.clientId]);
+      if(ok){
+        removeFromOfflineQueue(entry.clientId, entry.dateStr);
+        await checkAndMarkCompletion(entry.clientId, entry.dateStr, plansCache[entry.clientId][entry.dateStr]);
+      }
+    }catch(e){
+      console.error('Nie udalo sie zsynchronizowac oczekujacego zapisu:', e);
+    }
+  }
+}
+
 async function savePlanRow(clientId, plan){
   setStatus('Zapisywanie…');
-  const { error } = await sbClient.from('app_plans').upsert({ client_id: clientId, plan, updated_at: new Date().toISOString() });
-  if(error){
-    console.error('Blad zapisu planu:', error);
-    setStatus('❌ BŁĄD ZAPISU');
-    alert('Nie udało się zapisać zmian w bazie danych!\n\nSprawdź połączenie z internetem i spróbuj tę zmianę jeszcze raz — w tej chwili NIE została ona zapisana i zniknie po odświeżeniu strony.');
-    return false;
+  let lastError = null;
+  for(let attempt = 0; attempt < 3; attempt++){
+    const { error } = await sbClient.from('app_plans').upsert({ client_id: clientId, plan, updated_at: new Date().toISOString() });
+    if(!error){
+      setStatus('Zapisano');
+      setTimeout(()=>setStatus(''), 1200);
+      return true;
+    }
+    lastError = error;
+    if(attempt < 2){ setStatus(`Ponawiam zapis… (${attempt+2}/3)`); await new Promise(r => setTimeout(r, 900*(attempt+1))); }
   }
-  setStatus('Zapisano');
-  setTimeout(()=>setStatus(''), 1200);
-  return true;
+  console.error('Blad zapisu planu (po probach ponowienia):', lastError);
+  setStatus('❌ BŁĄD ZAPISU');
+  alert('Nie udało się zapisać zmian w bazie danych!\n\nSprawdź połączenie z internetem i spróbuj tę zmianę jeszcze raz — w tej chwili NIE została ona zapisana i zniknie po odświeżeniu strony.');
+  return false;
 }
 
 function fmtDate(y,m,d){
@@ -1081,6 +1212,7 @@ async function resyncMissedCompletions(){
     let planChanged = false;
     for(const dateStr of Object.keys(plan)){
       const day = plan[dateStr];
+      if(day.completionReviewed) continue; // juz obejrzane przez trenera - nie wskrzeszamy
       if(getDayDotClass(day) !== 'dot-done') continue;
       if(existingDates.has(dateStr)) continue;
       // to jest dokladnie przypadek "utkniety" - dzien wykonany, ale nigdy poprawnie nie zgloszony
@@ -1131,7 +1263,7 @@ function renderCompletedTrainingsList(){
     const row = document.createElement('div');
     row.className = 'completed-row';
     row.innerHTML = `<div class="completed-nm">${escapeHtml(r.clientName)}</div><div class="completed-time">${escapeHtml(r.date)} · ${escapeHtml(r.time)}</div><div class="completed-chev">›</div>`;
-    row.onclick = () => openCompletedDay(r.clientId, r.date);
+    row.onclick = () => navigateTo(() => openCompletedDay(r.clientId, r.date));
     holder.appendChild(row);
   });
 }
@@ -1139,7 +1271,7 @@ function renderCompletedTrainingsList(){
 async function openCompletedDay(clientId, dateStr){
   const c = clients.find(cl => cl.id === clientId);
   if(!c) return;
-  // wyswietlenie = zaakceptowanie: usuwamy wpis z listy oczekujacych
+  // wyswietlenie = zaakceptowanie: usuwamy wpis z listy oczekujacych, na trwale oznaczajac ze zostalo obejrzane
   c.pendingCompletions = (c.pendingCompletions||[]).filter(pc => !(pc.date === dateStr));
   await saveClientRow(c);
   renderCompletedTrainingsButton();
@@ -1150,6 +1282,10 @@ async function openCompletedDay(clientId, dateStr){
   if(!day){
     $('main').innerHTML = `<div class="empty-state">Nie znaleziono tego dnia w planie.</div>`;
     return;
+  }
+  if(!day.completionReviewed){
+    day.completionReviewed = true;
+    await persistPlan(clientId);
   }
   // Pokazujemy DOKLADNIE ten sam, prawdziwy widok co panel sportowca -
   // te same odznaki, ten sam modal cwiczenia (wideo/notatki/interwal/podzial P/L).
@@ -1236,6 +1372,12 @@ async function init(){
   templates = (await safeGet('plan_templates')) || [];
   renderClientList();
   renderAthleteGroupOptions();
+  renderOfflineQueueIndicator();
+  flushOfflineQueue();
+  window.addEventListener('online', flushOfflineQueue);
+  document.addEventListener('visibilitychange', () => {
+    if(document.visibilityState === 'visible') flushOfflineQueue();
+  });
   setStatus('Zapisano');
   setTimeout(()=>setStatus(''), 1500);
 }
@@ -1283,7 +1425,7 @@ function renderClientList(){
     div.className = 'client-item' + (c.id === selectedClientId ? ' active' : '');
     const grp = clientGroups.find(g => g.id === c.groupId);
     div.innerHTML = `<span class="cname">${escapeHtml(c.name)}${grp?` <small style="color:var(--muted);font-weight:400;">· ${escapeHtml(grp.name)}</small>`:''}</span><span class="del" data-id="${c.id}">✕</span>`;
-    div.querySelector('.cname').onclick = () => selectClient(c.id);
+    div.querySelector('.cname').onclick = () => navigateTo(() => selectClient(c.id));
     div.querySelector('.del').onclick = (e) => { e.stopPropagation(); deleteClient(c.id); };
     list.appendChild(div);
   });
@@ -1340,41 +1482,43 @@ async function selectClient(id){
   renderMain();
 }
 
-$('showTemplatesBtn').onclick = async () => {
+$('showTemplatesBtn').onclick = () => navigateTo(async () => {
   trainerViewMode = 'templates';
   selectedClientId = null;
   editingTemplateMode = false;
   await refreshClientsFromDB();
   renderClientList();
   renderTemplatesListView();
-};
+});
 
-$('showOnlineBtn').onclick = async () => {
+$('showOnlineBtn').onclick = () => navigateTo(async () => {
   trainerViewMode = 'online';
   selectedClientId = null;
   await refreshClientsFromDB();
   renderClientList();
   await renderOnlineTrainingsView();
-};
+});
 
-$('showLibraryBtn').onclick = async () => {
+$('showLibraryBtn').onclick = () => navigateTo(async () => {
   trainerViewMode = 'library';
   selectedClientId = null;
   await refreshClientsFromDB();
   renderClientList();
   renderLibraryView();
-};
-$('showRosterBtn').onclick = async () => {
+});
+$('showRosterBtn').onclick = () => navigateTo(async () => {
   trainerViewMode = 'roster';
   selectedClientId = null;
   await refreshClientsFromDB();
   renderClientList();
   renderRosterView();
-};
-$('completedTrainingsBtn').onclick = async () => {
+});
+$('completedTrainingsBtn').onclick = () => navigateTo(async () => {
   await refreshClientsFromDB();
   renderCompletedTrainingsList();
-};
+});
+
+$('backNavBtn').onclick = goBackInApp;
 
 $('copyAppLinkBtn').onclick = async () => {
   const link = window.location.origin + window.location.pathname;
@@ -1521,7 +1665,7 @@ function renderDayPanel(){
 
         <div class="section-label">Rozgrzewka</div>
         <table class="exlist">
-          <thead><tr><th></th><th>Ćwiczenie</th><th>Serie</th><th>Powt.</th><th>Tempo</th><th>Przerwa</th><th>Sugerowany kg</th><th></th><th>Bez ciężaru</th><th>Interwał</th><th>Podział P/L</th><th></th></tr></thead>
+          <thead><tr><th></th><th>Ćwiczenie</th><th>Serie</th><th>Powt.</th><th>Tempo</th><th>Przerwa</th><th>Sugerowany kg</th><th></th><th>Bez ciężaru</th><th>Interwał</th><th>Podział P/L</th><th>Progresja RPE</th><th></th></tr></thead>
           <tbody id="exRows-warmup"></tbody>
         </table>
         <div class="add-ex-row">
@@ -1532,7 +1676,7 @@ function renderDayPanel(){
 
         <div class="section-label">Ćwiczenia główne</div>
         <table class="exlist">
-          <thead><tr><th></th><th>Ćwiczenie</th><th>Serie</th><th>Powt.</th><th>Tempo</th><th>Przerwa</th><th>Sugerowany kg</th><th></th><th>Bez ciężaru</th><th>Interwał</th><th>Podział P/L</th><th>Test</th><th></th></tr></thead>
+          <thead><tr><th></th><th>Ćwiczenie</th><th>Serie</th><th>Powt.</th><th>Tempo</th><th>Przerwa</th><th>Sugerowany kg</th><th></th><th>Bez ciężaru</th><th>Interwał</th><th>Podział P/L</th><th>Progresja RPE</th><th>Test</th><th></th></tr></thead>
           <tbody id="exRows-main"></tbody>
         </table>
         <div class="add-ex-row">
@@ -1591,7 +1735,8 @@ function renderDayPanel(){
       const clonedExercises = day.exercises.map(ex => ({
         ...ex, id: 'e_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),
         log: [], suggestedWeight:'', suggestedManual:false, isTest:false,
-        logRight: ex.splitLR ? [] : undefined, logLeft: ex.splitLR ? [] : undefined
+        logRight: ex.splitLR ? [] : undefined, logLeft: ex.splitLR ? [] : undefined,
+        rpe: null, clientNote: ''
       }));
       plan[dateStr] = { title: day.title||'', subtitle: day.subtitle||'', exercises: clonedExercises };
     });
@@ -1635,7 +1780,7 @@ function renderDayPanel(){
         category: cat, sets:defaults.sets, reps:defaults.reps, tempo:defaults.tempo, rest:defaults.rest,
         labelManual:false, suggestedWeight:'', suggestedManual:false, isTest:false, noWeight:false,
         isInterval:false, workTime:'', restTime:'', effortPercent:'', restBetweenSets:'',
-        splitLR:false, setsRight:'', setsLeft:'', note:'', log:[]
+        splitLR:false, setsRight:'', setsLeft:'', note:'', rpeProgression:false, targetRpe:'', rpe:null, clientNote:'', log:[]
       });
       relabelExercises(day);
       sel.value = '';
@@ -1687,6 +1832,7 @@ function renderExRows(day, category){
       <td><label class="test-toggle"><input type="checkbox" class="noweight-check" ${ex.noWeight?'checked':''}></label></td>
       <td><label class="test-toggle"><input type="checkbox" class="interval-check" ${ex.isInterval?'checked':''}></label></td>
       <td><label class="test-toggle"><input type="checkbox" class="splitlr-check" ${ex.splitLR?'checked':''}></label></td>
+      <td><label class="test-toggle"><input type="checkbox" class="rpeprog-check" ${ex.rpeProgression?'checked':''}></label></td>
       ${testCell}
       <td><button class="rm-btn" title="Usuń">✕</button></td>
     `;
@@ -1705,6 +1851,11 @@ function renderExRows(day, category){
       if(ex.splitLR){
         ensureLog(ex);
       }
+      await persistCurrentDayFn();
+      renderDayPanel();
+    };
+    tr.querySelector('.rpeprog-check').onchange = async (e) => {
+      ex.rpeProgression = e.target.checked;
       await persistCurrentDayFn();
       renderDayPanel();
     };
@@ -1820,7 +1971,7 @@ function renderExRows(day, category){
       trS.className = 'interval-subrow';
       trS.innerHTML = `
         <td></td>
-        <td colspan="10">
+        <td colspan="11">
           <div class="interval-fields">
             <label>Serie — prawa strona<input class="pill-input" data-sf="setsRight" value="${escapeHtml(ex.setsRight||'')}" placeholder="np. 3"></label>
             <label>Serie — lewa strona<input class="pill-input" data-sf="setsLeft" value="${escapeHtml(ex.setsLeft||'')}" placeholder="np. 1"></label>
@@ -1841,7 +1992,7 @@ function renderExRows(day, category){
     trN.className = 'interval-subrow';
     trN.innerHTML = `
       <td></td>
-      <td colspan="10">
+      <td colspan="11">
         <span class="note-label">Notatka dla klienta (widoczna w jego widoku)</span>
         <input class="note-input" data-nf="note" value="${escapeHtml(ex.note||'')}" placeholder="np. Trzymaj plecy w neutralu...">
       </td>
@@ -1851,10 +2002,99 @@ function renderExRows(day, category){
       await persistCurrentDayFn();
     };
     tbody.appendChild(trN);
+
+    if(ex.rpeProgression){
+      const exNameForRpe = resolveExName(ex);
+      const report = getLatestRpeReport(selectedClientId, exNameForRpe);
+      const suggestion = computeRpeSuggestion(ex.targetRpe, report);
+      const trR = document.createElement('tr');
+      trR.className = 'interval-subrow';
+      trR.innerHTML = `
+        <td></td>
+        <td colspan="11">
+          <div class="rpe-panel">
+            <div class="rpe-field">
+              <label>Docelowe RPE</label>
+              <input class="rpe-target-input" value="${escapeHtml(ex.targetRpe||'')}" placeholder="np. 8">
+            </div>
+            ${report ? `
+            <div class="rpe-history">
+              <div class="lbl">Ostatnio zgłoszone (${escapeHtml(report.date)})</div>
+              <div class="val">RPE ${report.rpe}</div>
+            </div>` : `<div class="rpe-history"><div class="lbl">Ostatnio zgłoszone</div><div class="val" style="color:var(--muted);font-size:11px;">— brak jeszcze danych —</div></div>`}
+            ${suggestion ? `
+            <div class="suggestion-card">
+              <div class="suggestion-icon">📈</div>
+              <div class="suggestion-text">
+                Klient zgłosił RPE ${suggestion.lastRpe}, cel to ${suggestion.target} — <b>${escapeHtml(suggestion.label)}</b>.<br>
+                Sugerowany ciężar: <b>${suggestion.lastWeight} kg → ${suggestion.newWeight} kg</b>
+              </div>
+              <div class="suggestion-btns">
+                <button class="btn-apply">Zastosuj</button>
+                <button class="btn-dismiss">Odrzuć</button>
+              </div>
+            </div>` : ''}
+          </div>
+        </td>
+      `;
+      trR.querySelector('.rpe-target-input').onchange = async (e) => {
+        ex.targetRpe = e.target.value;
+        await persistCurrentDayFn();
+        renderDayPanel();
+      };
+      if(suggestion){
+        trR.querySelector('.btn-apply').onclick = async () => {
+          ex.suggestedWeight = String(suggestion.newWeight);
+          ex.suggestedManual = true;
+          await persistCurrentDayFn();
+          renderDayPanel();
+        };
+        trR.querySelector('.btn-dismiss').onclick = () => {
+          trR.querySelector('.suggestion-card').remove();
+        };
+      }
+      tbody.appendChild(trR);
+    }
   });
 }
 
 /* ============ RAPORT DNIA + WYKRES PROGRESU ============ */
+function getLatestRpeReport(clientId, exerciseName){
+  const plan = plansCache[clientId] || {};
+  let latest = null;
+  Object.keys(plan).sort().forEach(dateStr => {
+    const d = plan[dateStr];
+    if(!d || !d.exercises) return;
+    d.exercises.filter(ex => resolveExName(ex) === exerciseName).forEach(ex => {
+      if(ex.rpe === undefined || ex.rpe === null || ex.rpe === '') return;
+      let bestWeight = null;
+      (ex.log||[]).forEach(l => {
+        const w = parseFloat((l.weight||'').replace(',','.'));
+        if(!isNaN(w) && (bestWeight === null || w > bestWeight)) bestWeight = w;
+      });
+      if(bestWeight !== null){
+        latest = { date: dateStr, rpe: parseFloat(ex.rpe), weight: bestWeight };
+      }
+    });
+  });
+  return latest;
+}
+
+function computeRpeSuggestion(targetRpe, report){
+  if(!report) return null;
+  const target = parseFloat(targetRpe);
+  if(isNaN(target)) return null;
+  const diff = report.rpe - target;
+  let pct, label;
+  if(diff <= -2){ pct = 0.05; label = 'wyraźnie za lekko'; }
+  else if(diff < 0){ pct = 0.025; label = 'lekko poniżej celu'; }
+  else if(diff === 0){ pct = 0.025; label = 'w sam raz'; }
+  else if(diff === 1){ pct = 0; label = 'trochę za ciężko — ten sam ciężar'; }
+  else { pct = -0.05; label = 'zdecydowanie za ciężko'; }
+  const newWeight = Math.round(report.weight * (1+pct) * 2) / 2;
+  return { lastRpe: report.rpe, target, lastWeight: report.weight, newWeight, diff, label, date: report.date };
+}
+
 function getExerciseSessionBests(clientId, exerciseName){
   const plan = plansCache[clientId] || {};
   const sessions = [];
@@ -2865,7 +3105,7 @@ async function renderOnlineTrainingsView(){
     `;
   }).join('');
   holder.querySelectorAll('.oc-card').forEach(card => {
-    card.onclick = () => selectClient(card.dataset.cid);
+    card.onclick = () => navigateTo(() => selectClient(card.dataset.cid));
   });
 }
 
@@ -3195,7 +3435,8 @@ function copyTemplateDayToPlan(plan, date, templateDay){
     log: [],
     logRight: ex.splitLR ? [] : undefined,
     logLeft: ex.splitLR ? [] : undefined,
-    suggestedWeight:'', suggestedManual:false, isTest:false, completedNotified:false
+    suggestedWeight:'', suggestedManual:false, isTest:false, completedNotified:false,
+    rpe: null, clientNote: ''
   }));
   plan[date] = { title: templateDay.title||'', subtitle: templateDay.subtitle||'', exercises: clonedExercises };
 }
@@ -4222,7 +4463,7 @@ function renderIntervalExerciseModal(ex, exName, day){
     stopIvTimer();
     ivBeep(660);
     ex.log = [{weight:'', reps: String(totalRounds)}];
-    await persistPlan(aClientId);
+    await saveResultWithOfflineBackup(aClientId, aSelectedDateStr, day);
     await checkAndMarkCompletion(aClientId, aSelectedDateStr, day);
     renderAthleteDay();
     holder.innerHTML = `
@@ -4341,8 +4582,35 @@ function renderAthleteDetail(day){
       <tbody>${setRows}</tbody>
     </table>
     `}
+    <div class="feedback-section">
+      <div class="feedback-label">Jak ciężkie było to ćwiczenie? (RPE)</div>
+      <div class="rpe-row" id="rpeRow"></div>
+      <div class="rpe-scale-labels"><span>Bardzo lekko</span><span>Maksymalny wysiłek</span></div>
+      <div class="note-label">Twoja notatka (opcjonalnie)</div>
+      <textarea class="note-textarea" id="clientNoteInput" placeholder="Napisz, jak poszło — np. co bolało, co było za ciężkie/za lekkie...">${escapeHtml(ex.clientNote||'')}</textarea>
+    </div>
     <button class="btn" id="aDoneBtn" style="width:100%;margin-top:18px;padding:14px;font-size:14px;">✓ Gotowe</button>
   `;
+
+  const RPE_COLORS = ['#2E9E5B','#3EA55C','#5CAE55','#8AB94E','#C9BE47','#E8B93F','#E89A3A','#E87E35','#E8632E','#D6472E','#B4472E'];
+  const rpeRowEl = $('rpeRow');
+  for(let i=0;i<=10;i++){
+    const pill = document.createElement('div');
+    pill.className = 'rpe-pill' + (ex.rpe === i ? ' selected' : '');
+    pill.style.background = RPE_COLORS[i];
+    pill.textContent = i;
+    pill.onclick = async () => {
+      ex.rpe = i;
+      rpeRowEl.querySelectorAll('.rpe-pill').forEach(p=>p.classList.remove('selected'));
+      pill.classList.add('selected');
+      await saveResultWithOfflineBackup(aClientId, aSelectedDateStr, day);
+    };
+    rpeRowEl.appendChild(pill);
+  }
+  $('clientNoteInput').onchange = async () => {
+    ex.clientNote = $('clientNoteInput').value;
+    await saveResultWithOfflineBackup(aClientId, aSelectedDateStr, day);
+  };
 
   $('aModalCloseBtn').onclick = closeExerciseModal;
   $('aDoneBtn').onclick = closeExerciseModal;
@@ -4366,7 +4634,7 @@ function renderAthleteDetail(day){
     inp.onchange = async () => {
       const i = parseInt(inp.dataset.i);
       ex.log[i][inp.dataset.f] = inp.value;
-      await persistPlan(aClientId);
+      await saveResultWithOfflineBackup(aClientId, aSelectedDateStr, day);
       await checkAndMarkCompletion(aClientId, aSelectedDateStr, day);
     };
   });
@@ -4375,7 +4643,7 @@ function renderAthleteDetail(day){
       const i = parseInt(inp.dataset.i);
       const arr = inp.dataset.side === 'right' ? ex.logRight : ex.logLeft;
       arr[i][inp.dataset.f] = inp.value;
-      await persistPlan(aClientId);
+      await saveResultWithOfflineBackup(aClientId, aSelectedDateStr, day);
       await checkAndMarkCompletion(aClientId, aSelectedDateStr, day);
     };
   });
