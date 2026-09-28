@@ -515,6 +515,24 @@
   .client-sub-count{font-size:11px;font-weight:700;color:var(--muted);background:var(--surface);border-radius:10px;padding:2px 8px;}
   .client-list-empty{padding:10px;color:var(--muted);font-size:12px;}
   .a-pick-tile img.tile-logo-moveu{width:auto;max-width:110px;height:64px;object-fit:contain;border-radius:0;}
+
+  /* ===== biblioteka: szukajka na gorze + okno synchronizacji ===== */
+  .lib-search-bar{display:flex;align-items:center;gap:10px;margin:14px 0 10px;}
+  .lib-search-bar input{flex:1;background:var(--surface);border:2px solid var(--line);border-radius:10px;padding:12px 14px;font-size:15px;color:var(--text);}
+  .lib-search-bar input:focus{outline:none;border-color:var(--accent);}
+  .lib-search-count{font-size:12px;color:var(--muted);white-space:nowrap;min-width:110px;text-align:right;}
+  details.lib-tools{padding:0;}
+  details.lib-tools > summary{cursor:pointer;padding:12px 16px;font-weight:600;font-size:13px;list-style:none;}
+  details.lib-tools > summary::-webkit-details-marker{display:none;}
+  details.lib-tools > summary::before{content:'▸ ';color:var(--muted);}
+  details.lib-tools[open] > summary::before{content:'▾ ';}
+  .lib-tools-body{padding:0 16px 6px;}
+  .yt-sync-item{border-bottom:1px solid var(--line);}
+  .yt-sync-item .yt-sync-row{border-bottom:none;}
+  .yt-sync-h{font-size:12.5px;font-weight:700;margin:16px 0 4px;}
+  .yt-sync-target{font-size:11.5px;color:#2E7D4F;margin-top:2px;}
+  .yt-sync-suggest{font-size:11.5px;color:var(--muted);margin:-2px 0 8px 100px;}
+  .yt-sync-suggest select{margin-left:4px;max-width:260px;font-size:11.5px;padding:3px 6px;border:1px solid var(--line);border-radius:6px;background:var(--surface);}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -646,6 +664,7 @@ let trainerViewMode = 'clients'; // 'clients' | 'library' | 'roster' | 'profile'
 let profileClientId = null;
 let libFilterGroupId = null;
 let libSearchQuery = '';
+let libToolsOpen = false;
 
 let aClientId = null;
 let aViewDate = new Date();
@@ -3908,9 +3927,18 @@ function renderLibraryView(){
     <div class="section-title"><div class="bar"></div><h2>Biblioteka ćwiczeń</h2></div>
     <div class="section-desc">Grupy ćwiczeń, nazwy i linki do filmów instruktażowych.</div>
 
+    <div class="lib-search-bar">
+      <input id="libSearchInput" placeholder="🔍 Szukaj ćwiczenia (nazwa lub grupa)…" autocomplete="off">
+      <button class="btn ghost" id="libSearchClear" style="display:none;">✕</button>
+      <span class="lib-search-count" id="libSearchCount"></span>
+    </div>
+    <div class="tools-row" id="libGroupChips" style="margin-bottom:12px;"></div>
+
+    <details class="tools-panel lib-tools" id="libTools" ${libToolsOpen ? 'open' : ''}>
+      <summary>🛠️ Narzędzia biblioteki: synchronizacja z YouTube, grupy</summary>
+      <div class="lib-tools-body">
     <div class="tools-panel">
       <h4>Grupy ćwiczeń</h4>
-      <div class="tools-row" id="libGroupChips"></div>
       <div class="tools-row">
         <input id="newGroupName" placeholder="Nazwa nowej grupy (np. Dolne partie)">
         <button class="btn" id="addGroupBtn">+ Dodaj grupę</button>
@@ -3937,6 +3965,9 @@ function renderLibraryView(){
       </div>
     </div>
 
+      </div>
+    </details>
+
     <div class="tools-panel">
       <h4>Dodaj nowe ćwiczenie</h4>
       <div class="lib-row">
@@ -3945,10 +3976,6 @@ function renderLibraryView(){
         <select id="newExGroup"></select>
         <button class="btn" id="addExFullBtn">+ Dodaj</button>
       </div>
-    </div>
-
-    <div class="lib-row" style="margin-bottom:10px;">
-      <input id="libSearchInput" placeholder="🔍 Szukaj ćwiczenia po nazwie…" style="flex:1;">
     </div>
 
     <table class="exlist" id="libFullTable">
@@ -3974,10 +4001,10 @@ function renderLibraryView(){
   };
   $('applyGroupOrgBtn').onclick = applyGroupOrganization;
   $('libSearchInput').value = libSearchQuery;
-  $('libSearchInput').oninput = () => {
-    libSearchQuery = $('libSearchInput').value;
-    renderLibFullTable();
-  };
+  $('libSearchInput').oninput = () => { libSearchQuery = $('libSearchInput').value; renderLibFullTable(); };
+  $('libSearchInput').onkeydown = (e) => { if(e.key === 'Escape'){ libSearchQuery = ''; $('libSearchInput').value = ''; renderLibFullTable(); } };
+  $('libSearchClear').onclick = () => { libSearchQuery = ''; $('libSearchInput').value = ''; renderLibFullTable(); $('libSearchInput').focus(); };
+  $('libTools').addEventListener('toggle', () => { libToolsOpen = $('libTools').open; });
   $('addExFullBtn').onclick = async () => {
     const name = $('newExName').value.trim();
     const videoUrl = $('newExVideo').value.trim();
@@ -4011,17 +4038,27 @@ function renderLibGroupSelect(){
   const sel = $('newExGroup');
   sel.innerHTML = '<option value="">Bez grupy</option>' + libraryGroups.map(g => `<option value="${g.id}">${escapeHtml(g.name)}</option>`).join('');
 }
+function plSearchKey(x){ return String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/ł/g,'l'); }
+
 function renderLibFullTable(){
   const tbody = $('libFullRows');
-  let rows = (libFilterGroupId && libFilterGroupId !== 'all')
-    ? library.filter(l => l.groupId === libFilterGroupId)
-    : library;
-  if(libSearchQuery.trim()){
-    const q = libSearchQuery.trim().toLowerCase();
-    rows = rows.filter(l => l.name.toLowerCase().includes(q));
+  const groupFiltered = (libFilterGroupId && libFilterGroupId !== 'all');
+  let rows = groupFiltered ? library.filter(l => l.groupId === libFilterGroupId) : library;
+  const tokens = plSearchKey(libSearchQuery).split(/\s+/).filter(Boolean);
+  if(tokens.length){
+    rows = rows.filter(l => {
+      const grp = libraryGroups.find(g => g.id === l.groupId);
+      const hay = plSearchKey(l.name + ' ' + (grp ? grp.name : ''));
+      return tokens.every(t => hay.includes(t));   // wszystkie wpisane slowa musza pasowac (w dowolnej kolejnosci)
+    });
   }
+  const cnt = $('libSearchCount'), clr = $('libSearchClear');
+  if(cnt) cnt.textContent = (tokens.length || groupFiltered)
+    ? `Znaleziono ${rows.length} z ${library.length}`
+    : `${library.length} ${plPlural(library.length, 'ćwiczenie', 'ćwiczenia', 'ćwiczeń')}`;
+  if(clr) clr.style.display = libSearchQuery ? '' : 'none';
   if(rows.length === 0){
-    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:16px;">Brak ćwiczeń pasujących do filtra.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:16px;">${tokens.length ? 'Brak ćwiczeń pasujących do „' + escapeHtml(libSearchQuery.trim()) + '”.' : 'Brak ćwiczeń w tej grupie.'}</td></tr>`;
     return;
   }
   tbody.innerHTML = '';
@@ -4102,7 +4139,7 @@ async function loadYtSyncSettings(){
 function renderYtSyncLast(){
   const el = $('ytSyncLast'); if(!el) return;
   const ls = ytSyncSettings && ytSyncSettings.lastSync;
-  el.textContent = ls ? `Ostatnio: ${new Date(ls.at).toLocaleString('pl-PL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})} — dodano ${ls.added}` : '';
+  el.textContent = ls ? `Ostatnio: ${new Date(ls.at).toLocaleString('pl-PL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})} — dodano ${ls.added}${ls.attached ? ', uzupełniono linki: ' + ls.attached : ''}` : '';
 }
 async function initYtSyncPanel(){
   if(!$('ytSyncPanel')) return;
@@ -4121,7 +4158,43 @@ async function initYtSyncPanel(){
 }
 
 /* Normalizacja nazwy do porównań (wielkość liter, spacje) */
-function ytNormName(n){ return (n||'').toString().trim().replace(/\s+/g,' ').toLowerCase(); }
+/* Klucz porownywania nazw: bez roznic w wielkosci liter, polskich znakach, myslnikach (- – —),
+   spacjach wokol myslnika, cudzyslowach i hashtagach (#shorts). Sluzy tylko do DOPASOWANIA - nazw nie zmienia. */
+function ytNormName(n){
+  return (n||'').toString()
+    .replace(/#[\p{L}\p{N}_]+/gu, ' ')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase().replace(/ł/g, 'l')
+    .replace(/[\u2010-\u2015\u2212]/g, '-')
+    .replace(/[„”“"'’`]/g, '')
+    .replace(/\s*-\s*/g, '-')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+function cleanYtTitle(t){
+  const c = (t||'').replace(/\s*#[\p{L}\p{N}_]+/gu, '').replace(/\s+/g, ' ').trim();
+  return c || (t||'').trim();
+}
+function ytDice(a, b){
+  const grams = str => { const m = new Map(); for(let i = 0; i < str.length - 1; i++){ const g = str.substr(i, 2); m.set(g, (m.get(g) || 0) + 1); } return m; };
+  const A = grams(a), B = grams(b);
+  let inter = 0; A.forEach((c, g) => { if(B.has(g)) inter += Math.min(c, B.get(g)); });
+  const tot = (a.length - 1) + (b.length - 1);
+  return tot > 0 ? 2 * inter / tot : 0;
+}
+function ytSimilarity(a, b){
+  if(a === b) return 1;
+  const m = a.length, n = b.length;
+  if(!m || !n || Math.abs(m - n) / Math.max(m, n) > 0.3) return 0;
+  if(ytDice(a, b) < 0.6) return 0;   // szybki filtr po parach liter (znosi literowki) - nie liczymy dalej dla zupelnie roznych nazw
+  let prev = Array.from({length: n + 1}, (_, j) => j);
+  for(let i = 1; i <= m; i++){
+    const cur = [i];
+    for(let j = 1; j <= n; j++) cur[j] = Math.min(prev[j] + 1, cur[j-1] + 1, prev[j-1] + (a[i-1] === b[j-1] ? 0 : 1));
+    prev = cur;
+  }
+  return 1 - prev[n] / Math.max(m, n);
+}
 
 /* Rozpoznaje co wkleił użytkownik: kanał (@handle, /channel/UC..., /user/...) albo playlistę (list=) */
 function parseYtSource(input){
@@ -4202,18 +4275,28 @@ async function fetchYtVideos(settings){
   return videos;
 }
 
-/* CZYSTA LOGIKA porównania - bez zapisu. Dzieli filmy na kategorie. */
+/* CZYSTA LOGIKA porównania - bez zapisu. Dzieli filmy na kategorie:
+   skipped        - film jest już w bibliotece pod tą nazwą
+   linkable       - nazwa pasuje do ISTNIEJĄCEGO ćwiczenia BEZ linku -> uzupełnimy link (bez duplikatu)
+   newItems       - nowe ćwiczenie (opcjonalnie z podpowiedzią podobnego ćwiczenia bez linku)
+   nameConflicts  - ćwiczenie o tej nazwie ma już INNY film albo tytuł powtarza się na kanale
+   sameVideoDiffName / dupLinksInLib - tylko informacje */
 function classifyYtSync(lib, ytVideos){
-  const byVid = new Map();   // videoId -> [pozycje biblioteki]
-  const libNames = new Set();
+  const byVid = new Map();    // videoId -> [pozycje biblioteki]
+  const byName = new Map();   // znormalizowana nazwa -> [pozycje biblioteki]
   (lib||[]).forEach(l => {
-    libNames.add(ytNormName(l.name));
+    const k = ytNormName(l.name);
+    if(!byName.has(k)) byName.set(k, []);
+    byName.get(k).push(l);
     const id = getYoutubeId(l.videoUrl);
     if(id){ if(!byVid.has(id)) byVid.set(id, []); byVid.get(id).push(l); }
   });
-  const result = { newItems:[], nameConflicts:[], sameVideoDiffName:[], dupLinksInLib:[], skipped:0 };
+  const result = { newItems:[], linkable:[], nameConflicts:[], sameVideoDiffName:[], dupLinksInLib:[], skipped:0 };
   const seen = new Set();
-  const newNames = new Set();
+  const usedNames = new Set();        // tytuly juz obsluzone w tym przebiegu (dwa filmy o tym samym tytule)
+  const targeted = new Set();         // id cwiczen, ktore dostana link
+  const unmatched = [];
+  // przebieg 1: filmy juz powiazane oraz dokladne dopasowania nazwy
   (ytVideos||[]).forEach(v => {
     if(!v || !v.videoId || seen.has(v.videoId)) return;
     seen.add(v.videoId);
@@ -4224,8 +4307,25 @@ function classifyYtSync(lib, ytVideos){
       return;
     }
     const nn = ytNormName(v.title);
-    if(!nn || libNames.has(nn) || newNames.has(nn)) result.nameConflicts.push(v);
-    else { result.newItems.push(v); newNames.add(nn); }
+    if(!nn){ result.nameConflicts.push({ ...v, why:'Film bez tytułu' }); return; }
+    if(usedNames.has(nn)){ result.nameConflicts.push({ ...v, why:'Na kanale jest już inny film o tym samym tytule' }); return; }
+    const sameName = byName.get(nn) || [];
+    if(sameName.length){
+      const noLink = sameName.find(l => !getYoutubeId(l.videoUrl) && !targeted.has(l.id));
+      if(noLink){ result.linkable.push({ ...v, targetId: noLink.id, targetName: noLink.name }); targeted.add(noLink.id); usedNames.add(nn); return; }
+      result.nameConflicts.push({ ...v, why:'Ćwiczenie o tej nazwie ma już inny film: ' + sameName.map(l => l.name).join(', ') });
+      usedNames.add(nn);
+      return;
+    }
+    usedNames.add(nn);
+    unmatched.push({ v, nn });
+  });
+  // przebieg 2: dla reszty szukamy PODOBNYCH ćwiczeń bez linku (tylko podpowiedź - domyślnie dodajemy jako nowe)
+  const candidates = (lib||[]).filter(l => !getYoutubeId(l.videoUrl) && !targeted.has(l.id)).map(l => ({ l, key: ytNormName(l.name) }));
+  unmatched.forEach(({ v, nn }) => {
+    let best = null, bestScore = 0.9;   // 0.9 = tylko literowki; warianty (obunoz/jednonoz ~0.87) NIE sa podpowiadane
+    candidates.forEach(c => { const sc = ytSimilarity(nn, c.key); if(sc >= bestScore){ best = c.l; bestScore = sc; } });
+    result.newItems.push(best ? { ...v, suggest: { id: best.id, name: best.name } } : v);
   });
   byVid.forEach((items, vid) => {
     if(items.length > 1) result.dupLinksInLib.push({ videoId: vid, names: items.map(l => l.name) });
@@ -4233,19 +4333,34 @@ function classifyYtSync(lib, ytVideos){
   return result;
 }
 
-/* Buduje nową bibliotekę: ŚWIEŻA wersja z bazy + dopisane na końcu. Nic nie usuwa/nie zmienia. */
-function buildLibraryWithAdditions(freshLib, toAdd){
-  const out = freshLib.slice();
-  const have = new Set(freshLib.map(l => getYoutubeId(l.videoUrl)).filter(Boolean));
+/* Buduje nową bibliotekę: ŚWIEŻA wersja z bazy + zmiany. NIC nie usuwa.
+   attach - uzupełnia link w istniejącym ćwiczeniu BEZ linku (zdejmuje też znacznik "DO NAGRANIA")
+   addNew - dopisuje nowe ćwiczenia na końcu */
+function applyYtSyncSelection(freshLib, sel){
+  const attachMap = new Map();   // id cwiczenia -> videoId
+  const haveVid = new Set(freshLib.map(l => getYoutubeId(l.videoUrl)).filter(Boolean));
+  let attached = 0, skippedAttach = 0;
+  ((sel && sel.attach) || []).forEach(a => {
+    const target = freshLib.find(l => l.id === a.targetId);
+    if(!target || getYoutubeId(target.videoUrl) || haveVid.has(a.videoId) || attachMap.has(a.targetId)){ skippedAttach++; return; }
+    attachMap.set(a.targetId, a.videoId); haveVid.add(a.videoId); attached++;
+  });
+  const out = freshLib.map(l => attachMap.has(l.id)
+    ? { ...l, videoUrl: 'https://www.youtube.com/watch?v=' + attachMap.get(l.id), notMoveU: false }
+    : l);
   const base = Date.now();
   let added = 0;
-  toAdd.forEach((v, i) => {
-    if(have.has(v.videoId)) return;   // ostatnia kontrola duplikatu
-    have.add(v.videoId);
-    out.push({ id: 'l_' + base + '_' + i, name: v.title, videoUrl: 'https://www.youtube.com/watch?v=' + v.videoId, groupId: null });
+  ((sel && sel.addNew) || []).forEach((v, i) => {
+    if(haveVid.has(v.videoId)) return;   // ostatnia kontrola duplikatu
+    haveVid.add(v.videoId);
+    out.push({ id: 'l_' + base + '_' + i, name: cleanYtTitle(v.title), videoUrl: 'https://www.youtube.com/watch?v=' + v.videoId, groupId: null });
     added++;
   });
-  return { list: out, added };
+  return { list: out, added, attached, skippedAttach };
+}
+function buildLibraryWithAdditions(freshLib, toAdd){
+  const r = applyYtSyncSelection(freshLib, { addNew: toAdd, attach: [] });
+  return { list: r.list, added: r.added };
 }
 
 async function runYtSync(){
@@ -4277,28 +4392,43 @@ function ytThumb(id){ return `<img src="https://img.youtube.com/vi/${id}/mqdefau
 function renderYtSyncModal(){
   const r = ytSyncResult;
   const box = $('ytSyncModalContent');
-  const newCount = r.newItems.length + r.nameConflicts.length;
-  const row = (v, checked, warn) => `
-    <label class="yt-sync-row">
-      <input type="checkbox" class="yt-sync-check" data-vid="${escapeHtml(v.videoId)}" ${checked?'checked':''}>
-      ${ytThumb(v.videoId)}
-      <div style="min-width:0;"><div>${escapeHtml(v.title||'(bez tytułu)')}</div>${warn?`<div class="yt-sync-warn">${warn}</div>`:''}</div>
-    </label>`;
+  const total = r.linkable.length + r.newItems.length + r.nameConflicts.length;
+  const item = (v, checked, inner) => `
+    <div class="yt-sync-item">
+      <label class="yt-sync-row">
+        <input type="checkbox" class="yt-sync-check" data-vid="${escapeHtml(v.videoId)}" ${checked?'checked':''}>
+        ${ytThumb(v.videoId)}
+        <div style="min-width:0;"><div>${escapeHtml(v.title||'(bez tytułu)')}</div>${inner||''}</div>
+      </label>
+      ${v.suggest ? `<div class="yt-sync-suggest">💡 Podobne ćwiczenie bez linku:
+        <select class="yt-sync-target-sel" data-vid="${escapeHtml(v.videoId)}">
+          <option value="">Dodaj jako nowe ćwiczenie</option>
+          <option value="${escapeHtml(v.suggest.id)}">Przypisz do: ${escapeHtml(v.suggest.name)}</option>
+        </select></div>` : ''}
+    </div>`;
   let html = `<span class="modal-close" id="ytSyncCloseBtn">✕</span>
-    <h3 style="margin-bottom:4px;">Nowe filmy na kanale: ${newCount}</h3>
+    <h3 style="margin-bottom:4px;">Synchronizacja z YouTube</h3>
     <div class="yt-sync-info">Sprawdzono ${r.total} filmów. Pominięto ${r.skipped} — już są w bibliotece.</div>`;
-  if(newCount === 0){
+  if(total === 0){
     html += `<div style="margin:16px 0;font-weight:600;">✅ Biblioteka jest aktualna — brak nowych filmów.</div>`;
-  } else {
-    html += `<div class="yt-sync-sec">`;
-    html += r.newItems.map(v => row(v, true, '')).join('');
-    html += r.nameConflicts.map(v => row(v, false, '⚠️ Ćwiczenie o tej nazwie już istnieje (inny film)')).join('');
-    html += `</div>`;
+  }
+  if(r.linkable.length){
+    html += `<div class="yt-sync-h">🔗 Uzupełnij link w istniejących ćwiczeniach: ${r.linkable.length}</div>
+      <div class="yt-sync-info">Nazwa filmu pasuje do ćwiczenia, które nie miało jeszcze linku. Zostanie tylko dopisany link (bez duplikatu) i zdjęty znacznik „DO NAGRANIA”.</div>
+      <div class="yt-sync-sec">${r.linkable.map(v => item(v, true, `<div class="yt-sync-target">→ ćwiczenie: <b>${escapeHtml(v.targetName)}</b></div>`)).join('')}</div>`;
+  }
+  if(r.newItems.length){
+    html += `<div class="yt-sync-h">➕ Nowe ćwiczenia: ${r.newItems.length}</div>
+      <div class="yt-sync-sec">${r.newItems.map(v => item(v, true, '')).join('')}</div>`;
+  }
+  if(r.nameConflicts.length){
+    html += `<div class="yt-sync-h">⚠️ Do sprawdzenia: ${r.nameConflicts.length}</div>
+      <div class="yt-sync-sec">${r.nameConflicts.map(v => item(v, false, `<div class="yt-sync-warn">${escapeHtml(v.why || 'Ćwiczenie o tej nazwie już istnieje')}</div>`)).join('')}</div>`;
   }
   if(r.sameVideoDiffName.length){
     html += `<details class="yt-sync-sec"><summary>ℹ️ Ten sam film, inna nazwa: ${r.sameVideoDiffName.length}</summary>
       <div class="yt-sync-info" style="margin-bottom:6px;">Nie zostaną dodane. Nazwy w bibliotece zostają bez zmian — popraw ręcznie, jeśli chcesz.</div>
-      ${r.sameVideoDiffName.map(v => `<div class="yt-sync-row">${ytThumb(v.videoId)}<div style="min-width:0;"><div><b>YouTube:</b> ${escapeHtml(v.title)}</div><div><b>Biblioteka:</b> ${v.libNames.map(escapeHtml).join(', ')}</div><div class="yt-sync-info">youtu.be/${escapeHtml(v.videoId)}</div></div></div>`).join('')}
+      ${r.sameVideoDiffName.map(v => `<div class="yt-sync-row">${ytThumb(v.videoId)}<div style="min-width:0;"><div><b>YouTube:</b> ${escapeHtml(v.title)}</div><div><b>Biblioteka:</b> ${v.libNames.map(escapeHtml).join(', ')}</div></div></div>`).join('')}
     </details>`;
   }
   if(r.dupLinksInLib.length){
@@ -4307,10 +4437,10 @@ function renderYtSyncModal(){
       ${r.dupLinksInLib.map(d => `<div class="yt-sync-row">${ytThumb(d.videoId)}<div style="min-width:0;"><div>${d.names.map(escapeHtml).join(' · ')}</div><div class="yt-sync-info">youtu.be/${escapeHtml(d.videoId)}</div></div></div>`).join('')}
     </details>`;
   }
-  html += `<div class="yt-sync-info" style="margin:14px 0 10px;">Nowe ćwiczenia trafią do „Bez grupy”. Nic nie zostanie usunięte ani zmienione.</div>
+  html += `<div class="yt-sync-info" style="margin:14px 0 10px;">Nowe ćwiczenia trafią do „Bez grupy”. Nic nie zostanie usunięte.</div>
     <div style="display:flex;gap:8px;justify-content:flex-end;">
-      <button class="btn ghost" id="ytSyncCancelBtn">${newCount ? 'Anuluj' : 'Zamknij'}</button>
-      ${newCount ? `<button class="btn" id="ytSyncAddBtn" style="background:#E8604A;">Dodaj zaznaczone (<span id="ytSyncSelCount">0</span>)</button>` : ''}
+      <button class="btn ghost" id="ytSyncCancelBtn">${total ? 'Anuluj' : 'Zamknij'}</button>
+      ${total ? `<button class="btn" id="ytSyncAddBtn" style="background:#E8604A;">Zastosuj zaznaczone (<span id="ytSyncSelCount">0</span>)</button>` : ''}
     </div>`;
   box.innerHTML = html;
   $('ytSyncModal').style.display = 'flex';
@@ -4327,33 +4457,39 @@ async function addSelectedYtVideos(){
   const box = $('ytSyncModalContent');
   const ids = new Set([...box.querySelectorAll('.yt-sync-check:checked')].map(cb => cb.dataset.vid));
   if(ids.size === 0){ alert('Nie zaznaczono żadnego filmu.'); return; }
-  const all = ytSyncResult.newItems.concat(ytSyncResult.nameConflicts);
-  const toAdd = all.filter(v => ids.has(v.videoId));
+  const r = ytSyncResult;
+  const attach = [], addNew = [];
+  r.linkable.filter(v => ids.has(v.videoId)).forEach(v => attach.push({ videoId: v.videoId, targetId: v.targetId }));
+  r.newItems.concat(r.nameConflicts).filter(v => ids.has(v.videoId)).forEach(v => {
+    const sel = [...box.querySelectorAll('.yt-sync-target-sel')].find(x => x.dataset.vid === v.videoId);
+    if(sel && sel.value) attach.push({ videoId: v.videoId, targetId: sel.value });
+    else addNew.push(v);
+  });
   const btn = $('ytSyncAddBtn');
   if(btn){ btn.disabled = true; btn.textContent = 'Zapisywanie…'; }
   // ŚWIEŻA biblioteka z bazy tuż przed zapisem (ochrona przed nadpisaniem z innej karty)
   const fresh = await safeGet('exercise_library');
   if(fresh === null){
     alert('Nie udało się pobrać aktualnej biblioteki z bazy. Nic nie zostało zapisane — spróbuj ponownie.');
-    if(btn){ btn.disabled = false; btn.textContent = 'Dodaj zaznaczone'; }
+    if(btn){ btn.disabled = false; btn.textContent = 'Zastosuj zaznaczone'; }
     return;
   }
-  const { list, added } = buildLibraryWithAdditions(fresh, toAdd);
+  const { list, added, attached, skippedAttach } = applyYtSyncSelection(fresh, { addNew, attach });
   if(list.length < fresh.length){ alert('Błąd bezpieczeństwa — przerwano zapis.'); return; }
-  const ok = added === 0 ? true : await persistWithFeedback('exercise_library', list);
+  const ok = (added === 0 && attached === 0) ? true : await persistWithFeedback('exercise_library', list);
   if(!ok){
-    if(btn){ btn.disabled = false; btn.textContent = 'Dodaj zaznaczone'; }
+    if(btn){ btn.disabled = false; btn.textContent = 'Zastosuj zaznaczone'; }
     return; // persistWithFeedback już pokazał alert
   }
   library = list;
   const settingsFresh = (await safeGet(YT_SYNC_KEY)) || ytSyncSettings || {};
-  ytSyncSettings = { ...settingsFresh, lastSync: { at: new Date().toISOString(), added } };
+  ytSyncSettings = { ...settingsFresh, lastSync: { at: new Date().toISOString(), added, attached } };
   await safeSet(YT_SYNC_KEY, ytSyncSettings);
   $('ytSyncModal').style.display = 'none';
   renderLibraryList();
   if($('libFullRows')) renderLibFullTable();
   renderYtSyncLast();
-  alert(`Dodano ${added}, pominięto ${ytSyncResult.skipped + (toAdd.length - added)} (już w bibliotece).`);
+  alert(`Dodano nowych ćwiczeń: ${added}. Uzupełniono link w istniejących: ${attached}.` + (skippedAttach ? `\nPominięto ${skippedAttach} (ćwiczenie miało już link).` : ''));
 }
 
 function renderLibraryList(){
