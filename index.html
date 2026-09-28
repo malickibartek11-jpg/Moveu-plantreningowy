@@ -503,6 +503,18 @@
   .a-roster-person{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-bottom:12px;}
   .a-roster-person h2{font-size:20px;}
   @media (max-width:760px){ .a-roster{grid-template-columns:1fr;} .a-roster-names{position:static;max-height:220px;} }
+
+  /* ===== lista klientow: organizacja -> rocznik -> osoby ===== */
+  .client-crumb{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);margin:2px 0 8px;padding:0 4px;flex-wrap:wrap;}
+  .client-crumb b{color:var(--text);}
+  .client-crumb-link{cursor:pointer;font-weight:600;color:var(--text);}
+  .client-crumb-link:hover{text-decoration:underline;}
+  .client-crumb-sep{color:var(--muted);}
+  .client-sub-row{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-radius:7px;cursor:pointer;font-size:14px;color:var(--text);margin-bottom:3px;background:var(--surface-2);}
+  .client-sub-row:hover{background:var(--line);}
+  .client-sub-count{font-size:11px;font-weight:700;color:var(--muted);background:var(--surface);border-radius:10px;padding:2px 8px;}
+  .client-list-empty{padding:10px;color:var(--muted);font-size:12px;}
+  .a-pick-tile img.tile-logo-moveu{width:auto;max-width:110px;height:64px;object-fit:contain;border-radius:0;}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -1514,6 +1526,8 @@ async function switchTab(tab){
 /* ============ TRENER: CLIENTS ============ */
 let clientListOrgFilter = null; // null = wszyscy, 'unassigned' = bez organizacji, albo id organizacji
 
+let clientListSubFilter = null; // null = lista podgrup (gdy wybrana organizacja ma podgrupy), id podgrupy albo '__none__'
+
 function renderClientOrgFilterChips(){
   const el = $('clientOrgFilterChips');
   const chip = (id, label) => {
@@ -1524,10 +1538,19 @@ function renderClientOrgFilterChips(){
   el.querySelectorAll('.client-org-chip').forEach(c => {
     c.onclick = () => {
       clientListOrgFilter = c.dataset.oid === '' ? null : c.dataset.oid;
-      renderClientOrgFilterChips();
+      clientListSubFilter = null;
       renderClientList();
     };
   });
+}
+
+function clientListItem(c, labelText){
+  const div = document.createElement('div');
+  div.className = 'client-item' + (c.id === selectedClientId ? ' active' : '');
+  div.innerHTML = `<span class="cname">${escapeHtml(c.name)}${labelText ? ` <small style="color:var(--muted);font-weight:400;">· ${escapeHtml(labelText)}</small>` : ''}</span><span class="del" data-id="${c.id}">✕</span>`;
+  div.querySelector('.cname').onclick = () => navigateTo(() => selectClient(c.id));
+  div.querySelector('.del').onclick = (e) => { e.stopPropagation(); deleteClient(c.id); };
+  return div;
 }
 
 function renderClientList(){
@@ -1535,20 +1558,49 @@ function renderClientList(){
   const list = $('clientList');
   list.innerHTML = '';
   const query = ($('clientSearchInput').value || '').trim().toLowerCase();
-  let filtered = clientListOrgFilter ? clients.filter(c => c.groupId === clientListOrgFilter) : clients;
-  if(query) filtered = filtered.filter(c => c.name.toLowerCase().includes(query));
-  filtered.forEach(c => {
-    const div = document.createElement('div');
-    div.className = 'client-item' + (c.id === selectedClientId ? ' active' : '');
-    const grp = clientGroups.find(g => g.id === c.groupId);
-    div.innerHTML = `<span class="cname">${escapeHtml(c.name)}${grp?` <small style="color:var(--muted);font-weight:400;">· ${escapeHtml(grp.name)}</small>`:''}</span><span class="del" data-id="${c.id}">✕</span>`;
-    div.querySelector('.cname').onclick = () => navigateTo(() => selectClient(c.id));
-    div.querySelector('.del').onclick = (e) => { e.stopPropagation(); deleteClient(c.id); };
-    list.appendChild(div);
-  });
-  if(filtered.length === 0){
-    list.innerHTML = `<div style="padding:10px;color:var(--muted);font-size:12px;">${query ? 'Brak wyników.' : 'Brak klientów.'}</div>`;
+  const org = clientListOrgFilter ? clientGroups.find(g => g.id === clientListOrgFilter) : null;
+  const subs = org ? clientSubgroups.filter(s => s.orgId === org.id) : [];
+  const inOrg = org ? clients.filter(c => c.groupId === org.id) : clients;
+  const subName = c => { const sg = clientSubgroups.find(x => x.id === c.subgroupId); return sg ? sg.name : null; };
+  const orgName = c => { const g = clientGroups.find(x => x.id === c.groupId); return g ? g.name : null; };
+  // etykieta przy nazwisku: w widoku jednej organizacji - rocznik, w widoku "Wszyscy" - organizacja
+  const labelFor = c => org ? subName(c) : orgName(c);
+  const emptyMsg = txt => { const e = document.createElement('div'); e.className = 'client-list-empty'; e.textContent = txt; return e; };
+
+  // 1) wyszukiwanie: plaska lista wynikow w calej wybranej organizacji (niezaleznie od rocznika)
+  if(query){
+    const found = inOrg.filter(c => c.name.toLowerCase().includes(query));
+    found.forEach(c => list.appendChild(clientListItem(c, labelFor(c))));
+    if(found.length === 0) list.appendChild(emptyMsg('Brak wyników.'));
+    return;
   }
+
+  // 2) organizacja z rocznikami: najpierw lista roczniakow, po kliknieciu - osoby z rocznika
+  if(org && subs.length > 0){
+    const noneCount = inOrg.filter(c => !c.subgroupId).length;
+    if(clientListSubFilter === null){
+      const rows = subs.map(sg => ({id: sg.id, name: sg.name, n: inOrg.filter(c => c.subgroupId === sg.id).length}));
+      if(noneCount > 0) rows.push({id:'__none__', name:'Bez rocznika', n: noneCount});
+      list.innerHTML = `<div class="client-crumb"><b>${escapeHtml(org.name)}</b></div>` +
+        rows.map(r => `<div class="client-sub-row" data-sid="${r.id}"><span>${escapeHtml(r.name)}</span><span class="client-sub-count">${r.n}</span></div>`).join('');
+      list.querySelectorAll('.client-sub-row').forEach(row => row.onclick = () => { clientListSubFilter = row.dataset.sid; renderClientList(); });
+      return;
+    }
+    const sub = clientListSubFilter === '__none__' ? {name:'Bez rocznika'} : subs.find(sg => sg.id === clientListSubFilter);
+    if(!sub){ clientListSubFilter = null; renderClientList(); return; }
+    const people = inOrg
+      .filter(c => clientListSubFilter === '__none__' ? !c.subgroupId : c.subgroupId === clientListSubFilter)
+      .sort((a, b) => surnameKey(a.name).localeCompare(surnameKey(b.name), 'pl'));
+    list.innerHTML = `<div class="client-crumb"><span class="client-crumb-link" id="clientCrumbOrg">‹ ${escapeHtml(org.name)}</span><span class="client-crumb-sep">›</span><b>${escapeHtml(sub.name)}</b></div>`;
+    $('clientCrumbOrg').onclick = () => { clientListSubFilter = null; renderClientList(); };
+    people.forEach(c => list.appendChild(clientListItem(c, null)));
+    if(people.length === 0) list.appendChild(emptyMsg('Brak osób w tym roczniku.'));
+    return;
+  }
+
+  // 3) reszta ("Wszyscy" albo organizacja bez podgrup): plaska lista
+  inOrg.forEach(c => list.appendChild(clientListItem(c, labelFor(c))));
+  if(inOrg.length === 0) list.appendChild(emptyMsg('Brak klientów.'));
 }
 $('clientSearchInput').addEventListener('input', renderClientList);
 
@@ -4550,7 +4602,16 @@ function applyContextTheme(){
   const sub = $('brandAkademiaSub');
   if(sub) sub.textContent = t.sub ? ('Rocznik: ' + t.sub) : 'UNI Opole · Akademia ECO';
   const cg = $('changeGroupBtn');
-  if(cg) cg.style.display = (currentTab === 'sportowiec' && !athleteLocked && (t.ctx || t.key)) ? '' : 'none';
+  if(cg) cg.style.display = (currentTab === 'sportowiec' && !athleteLocked && (t.ctx || t.key || aClientId)) ? '' : 'none';
+}
+
+function orgTileLogoHtml(g){
+  if(themeKeyForOrg(g.id)) return `<img src="${ORG_THEME_LOGOS.round}" alt="">`;
+  if(/move\s?u/i.test(g.name)){
+    const src = (document.querySelector('.topbar .logo-badge img') || {}).src;   // to samo logo co w gornym pasku
+    if(src) return `<img class="tile-logo-moveu" src="${src}" alt="MoveU">`;
+  }
+  return '';
 }
 
 function renderAthleteHome(){
@@ -4558,7 +4619,7 @@ function renderAthleteHome(){
   $('athleteWrap').classList.remove('roster-mode');
   const tiles = clientGroups.map(g => {
     const n = clients.filter(c => c.groupId === g.id).length;
-    return `<div class="a-pick-tile" data-org="${g.id}">${themeKeyForOrg(g.id) ? `<img src="${ORG_THEME_LOGOS.round}" alt="">` : ''}<div class="nm">${escapeHtml(g.name)}</div><div class="sub">${n} ${plPlural(n,'osoba','osoby','osób')}</div></div>`;
+    return `<div class="a-pick-tile" data-org="${g.id}">${orgTileLogoHtml(g)}<div class="nm">${escapeHtml(g.name)}</div><div class="sub">${n} ${plPlural(n,'osoba','osoby','osób')}</div></div>`;
   }).join('');
   $('athleteBody').innerHTML = `
     <h2 class="a-pick-title">Wybierz grupę</h2>
