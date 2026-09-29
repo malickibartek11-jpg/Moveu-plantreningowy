@@ -2075,7 +2075,7 @@ function renderExRows(day, category){
     const autoInfo = editingTemplateMode ? null : computeSuggestedWeightInfo(selectedClientId, exName, ex.reps, selectedDateStr);
     const autoVal = autoInfo ? autoInfo.value : null;
     const displayVal = ex.suggestedManual ? (ex.suggestedWeight||'') : (autoVal !== null ? String(autoVal) : '');
-    const suggTitle = ex.suggestedManual ? 'Wpisane ręcznie (wyczyść pole, żeby wrócić do automatycznej podpowiedzi)' : (autoInfo ? suggestedSourceText(autoInfo) : 'Brak podpowiedzi: nie ma poprzedniego treningu z tymi powtórzeniami ani testu 1RM');
+    const suggTitle = ex.suggestedManual ? 'Wpisane ręcznie (wyczyść pole, żeby wrócić do automatycznej podpowiedzi)' : (autoInfo ? suggestedSourceText(autoInfo) : 'Brak podpowiedzi: brak wcześniejszych treningów tego ćwiczenia (do 10 powt.) i testu 1RM');
     const lastStats = getExerciseStats(selectedClientId, exName);
     const lastIconCell = lastStats
       ? `<td><span class="hist-icon" tabindex="0">🏋️<span class="hist-tip">Ostatnio: ${escapeHtml(String(lastStats.last.reps))} powt. ${escapeHtml(String(lastStats.last.weight))}kg</span></span></td>`
@@ -2521,15 +2521,49 @@ function lastSessionBestBefore(clientId, exerciseName, plannedReps, beforeDate){
   });
   return found;
 }
+/* Kontinuum powtorzen: najswiezszy trening tego cwiczenia (przed danym dniem), serie 1-10 powt.,
+   najlepsza seria wg ciezar / %1RM(powt.) z tabeli PCT_1RM_TABLE. */
+const CONTINUUM_MAX_REPS = 10;
+function lastSessionContinuumBefore(clientId, exerciseName, beforeDate){
+  if(!clientId) return null;
+  const plan = plansCache[clientId] || {};
+  let found = null;
+  Object.keys(plan).sort().forEach(dateStr => {
+    if(beforeDate && dateStr >= beforeDate) return;
+    const d = plan[dateStr];
+    if(!d || !d.exercises) return;
+    let best = null;
+    d.exercises.filter(ex => resolveExName(ex) === exerciseName).forEach(ex => {
+      [].concat(ex.log||[], ex.logRight||[], ex.logLeft||[]).forEach(l => {
+        const w = parseFloat(String(l.weight||'').replace(',','.'));
+        const r = parseInt(l.reps);
+        if(isNaN(w) || w <= 0 || isNaN(r) || r < 1 || r > CONTINUUM_MAX_REPS) return;
+        const e1rm = w / (pctForReps(r) / 100);
+        if(!best || e1rm > best.e1rm) best = {e1rm, weight: w, reps: r};
+      });
+    });
+    if(best) found = {...best, date: dateStr};   // nadpisywane - zostaje najswiezszy trening
+  });
+  return found;
+}
 function computeSuggestedWeightInfo(clientId, exerciseName, plannedReps, beforeDate){
   if(!clientId) return null;
+  // 1) ostatni trening z tymi samymi powtorzeniami
   const last = lastSessionBestBefore(clientId, exerciseName, plannedReps, beforeDate);
   if(last) return {value: last.weight, source: 'last', date: last.date};
+  const reps = parseInt(plannedReps);
+  // 2) test 1RM
   const test = getLatestTest1RM(clientId, exerciseName);
-  if(!test) return null;
-  const reps = parseInt(plannedReps) || 1;
-  const pct = pctForReps(reps);
-  return {value: Math.round(test.oneRM * pct/100 * 2) / 2, source: 'test', date: test.date};
+  if(test){
+    const pct = pctForReps(reps || 1);
+    return {value: Math.round(test.oneRM * pct/100 * 2) / 2, source: 'test', date: test.date};
+  }
+  // 3) kontinuum z ostatniego treningu z innymi powtorzeniami
+  if(reps >= 1){
+    const c = lastSessionContinuumBefore(clientId, exerciseName, beforeDate);
+    if(c) return {value: Math.round(c.e1rm * pctForReps(reps)/100 * 2) / 2, source: 'cont', date: c.date, fromWeight: c.weight, fromReps: c.reps};
+  }
+  return null;
 }
 function computeSuggestedWeight(clientId, exerciseName, plannedReps, beforeDate){
   const info = computeSuggestedWeightInfo(clientId, exerciseName, plannedReps, beforeDate);
@@ -2537,7 +2571,9 @@ function computeSuggestedWeight(clientId, exerciseName, plannedReps, beforeDate)
 }
 function suggestedSourceText(info){
   if(!info) return '';
-  return info.source === 'last' ? `Z ostatniego treningu (${info.date}, te same powtórzenia)` : `Wyliczone z testu 1RM (${info.date})`;
+  if(info.source === 'last') return `Z ostatniego treningu (${info.date}, te same powtórzenia)`;
+  if(info.source === 'cont') return `Przeliczone z ${info.fromWeight} kg × ${info.fromReps} (${info.date}) wg %1RM`;
+  return `Wyliczone z testu 1RM (${info.date})`;
 }
 function buildExerciseHistory(clientId, exerciseName){
   const plan = plansCache[clientId] || {};
@@ -3673,7 +3709,7 @@ function renderTemplateWeekPanel(){
   };
   holder.innerHTML = `<div class="day-panel">
       <div class="day-panel-head"><h3>${escapeHtml(day.label || ('Dzień ' + (currentTemplateDayIdx+1)))} — Tydzień ${k+1}</h3></div>
-      <div class="tpl-wk-note">Wpisz <b>tylko to, co się zmienia</b> w tym tygodniu. Szare pola = tak jak w tygodniu ${k}. Puste pole ciężaru = <b style="color:#2E9E5B;">auto</b> (ostatni trening z tymi samymi powtórzeniami → test 1RM). Ćwiczenia dodajesz i usuwasz w <span class="tpl-wk-link" id="tplGoWeek1">Tygodniu 1</span> — zmiana dotyczy wszystkich tygodni.</div>
+      <div class="tpl-wk-note">Wpisz <b>tylko to, co się zmienia</b> w tym tygodniu. Szare pola = tak jak w tygodniu ${k}. Puste pole ciężaru = <b style="color:#2E9E5B;">auto</b> (ostatni trening z tymi samymi powtórzeniami → test 1RM → przeliczenie z ostatniego treningu). Ćwiczenia dodajesz i usuwasz w <span class="tpl-wk-link" id="tplGoWeek1">Tygodniu 1</span> — zmiana dotyczy wszystkich tygodni.</div>
       ${exs.length ? section('warmup','Rozgrzewka') + section('main','Ćwiczenia główne') : '<div class="empty-state">Ten dzień nie ma jeszcze ćwiczeń — dodaj je w Tygodniu 1.</div>'}
       <div class="tpl-wk-legend"><span><span class="tpl-sw"></span>jak w poprzednim tygodniu</span><span><span class="tpl-sw own"></span>zmienione w tym tygodniu</span></div>
     </div>`;
