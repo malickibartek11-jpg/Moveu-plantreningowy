@@ -533,6 +533,37 @@
   .yt-sync-target{font-size:11.5px;color:#2E7D4F;margin-top:2px;}
   .yt-sync-suggest{font-size:11.5px;color:var(--muted);margin:-2px 0 8px 100px;}
   .yt-sync-suggest select{margin-left:4px;max-width:260px;font-size:11.5px;padding:3px 6px;border:1px solid var(--line);border-radius:6px;background:var(--surface);}
+
+  /* ===== szablony: tygodnie ===== */
+  .tpl-title-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+  .tpl-weeks-ctl{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted);}
+  .tpl-weeks-ctl b{min-width:20px;text-align:center;color:var(--text);font-size:14px;}
+  .tpl-day-del{margin-left:8px;display:inline-flex;width:18px;height:18px;border-radius:50%;align-items:center;justify-content:center;font-size:10.5px;color:var(--muted);}
+  .tpl-day-del:hover{background:#FDE3DE;color:#B4472E;}
+  .tpl-week-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 12px;align-items:center;}
+  .tpl-wk-tab{position:relative;border:1.5px solid var(--line);background:var(--surface);border-radius:18px;padding:6px 14px;font-weight:700;font-size:12.5px;cursor:pointer;font-family:inherit;color:var(--text);}
+  .tpl-wk-tab.active{background:#1C1C1C;color:#fff;border-color:#1C1C1C;}
+  .tpl-wk-tab.prog{margin-left:auto;font-weight:600;}
+  .tpl-wk-dot{position:absolute;top:-3px;right:-3px;width:9px;height:9px;border-radius:50%;background:#E8604A;border:2px solid #fff;}
+  .tpl-wk-note{font-size:12.5px;color:var(--muted);line-height:1.5;margin:4px 0 12px;}
+  .tpl-wk-note b{color:var(--text);}
+  .tpl-wk-link{color:var(--text);font-weight:700;text-decoration:underline;cursor:pointer;}
+  .tpl-wk-sec{font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);margin:14px 0 6px;}
+  .tpl-wk-input::placeholder{color:#A8A39A;}
+  .tpl-wk-input.kg::placeholder{color:#2E9E5B;font-weight:600;}
+  .tpl-wk-input.own{background:#fff;border-color:#E8604A;font-weight:700;box-shadow:inset 3px 0 0 #E8604A;}
+  .tpl-lr{font-size:10px;font-weight:700;color:var(--muted);align-self:center;}
+  .tpl-wk-legend{display:flex;gap:18px;flex-wrap:wrap;font-size:11.5px;color:var(--muted);margin-top:12px;align-items:center;}
+  .tpl-wk-legend span{display:flex;align-items:center;gap:6px;}
+  .tpl-sw{display:inline-block;width:24px;height:14px;border-radius:4px;border:1px solid var(--line);background:var(--surface-2);}
+  .tpl-sw.own{background:#fff;border-color:#E8604A;box-shadow:inset 3px 0 0 #E8604A;}
+  .tpl-prog-cell{display:inline-block;padding:4px 8px;border-radius:6px;background:var(--surface-2);font-size:12px;white-space:nowrap;}
+  .tpl-prog-cell.ch{background:#FDEBE7;color:#B4472E;font-weight:700;}
+  .apply-week-block{padding:8px 0;border-top:1px solid var(--line);}
+  .apply-week-block:first-child{border-top:none;}
+  .apply-week-dates{display:flex;flex-wrap:wrap;gap:10px;}
+  .apply-week-date{display:flex;align-items:center;gap:6px;background:var(--surface-2);border-radius:8px;padding:4px 8px;}
+  .apply-wk-lbl{font-size:11px;font-weight:700;color:var(--muted);}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -656,6 +687,8 @@ let selectedClientId = null;
 let editingTemplateMode = false;
 let currentTemplateId = null;
 let currentTemplateDayIdx = 0;
+let currentTemplateWeekIdx = 0;   // 0 = tydzien 1 (baza, zwykly edytor)
+let tplProgView = false;          // widok tabeli progresji dnia
 let templates = [];
 let persistCurrentDayFn = () => persistPlan(selectedClientId);
 let viewDate = new Date();
@@ -1805,6 +1838,11 @@ function getDay(clientId, dateStr, createIfMissing){
 }
 
 function renderDayPanel(){
+  if(editingTemplateMode){
+    const tplX = templates.find(t => t.id === currentTemplateId);
+    if(tplX && tplWeeks(tplX) > 1 && tplProgView){ renderTemplateProgressPanel(); return; }
+    if(tplX && tplWeeks(tplX) > 1 && currentTemplateWeekIdx > 0){ renderTemplateWeekPanel(); return; }
+  }
   const holder = $('dayPanelHolder');
   if(!editingTemplateMode && !selectedDateStr){ holder.innerHTML = '<div class="empty-state">Wybierz dzień w kalendarzu z lewej.</div>'; return; }
   const tpl = editingTemplateMode ? templates.find(t => t.id === currentTemplateId) : null;
@@ -2034,8 +2072,10 @@ function renderExRows(day, category){
     tr.draggable = true;
     const isTestEx = category === 'main' && ex.isTest;
     const exName = resolveExName(ex);
-    const autoVal = computeSuggestedWeight(selectedClientId, exName, ex.reps);
+    const autoInfo = editingTemplateMode ? null : computeSuggestedWeightInfo(selectedClientId, exName, ex.reps, selectedDateStr);
+    const autoVal = autoInfo ? autoInfo.value : null;
     const displayVal = ex.suggestedManual ? (ex.suggestedWeight||'') : (autoVal !== null ? String(autoVal) : '');
+    const suggTitle = ex.suggestedManual ? 'Wpisane ręcznie (wyczyść pole, żeby wrócić do automatycznej podpowiedzi)' : (autoInfo ? suggestedSourceText(autoInfo) : 'Brak podpowiedzi: nie ma poprzedniego treningu z tymi powtórzeniami ani testu 1RM');
     const lastStats = getExerciseStats(selectedClientId, exName);
     const lastIconCell = lastStats
       ? `<td><span class="hist-icon" tabindex="0">🏋️<span class="hist-tip">Ostatnio: ${escapeHtml(String(lastStats.last.reps))} powt. ${escapeHtml(String(lastStats.last.weight))}kg</span></span></td>`
@@ -2053,7 +2093,7 @@ function renderExRows(day, category){
       <td><input class="pill-input" data-f="reps" value="${ex.reps}"></td>
       <td><input class="pill-input" data-f="tempo" value="${ex.tempo}"></td>
       <td><input class="pill-input" data-f="rest" value="${ex.rest}"></td>
-      <td>${isTestEx ? '<span style="color:var(--warn);font-size:11px;">to jest test</span>' : `<input class="pill-input" data-f="suggestedWeight" value="${displayVal}" placeholder="kg">`}</td>
+      <td>${isTestEx ? '<span style="color:var(--warn);font-size:11px;">to jest test</span>' : `<input class="pill-input" data-f="suggestedWeight" value="${displayVal}" placeholder="${editingTemplateMode ? 'auto' : 'kg'}" title="${escapeHtml(editingTemplateMode ? 'Puste = aplikacja zaproponuje ciężar każdej osobie' : suggTitle)}">`}</td>
       ${lastIconCell}
       <td><label class="test-toggle"><input type="checkbox" class="noweight-check" ${ex.noWeight?'checked':''}></label></td>
       <td><label class="test-toggle"><input type="checkbox" class="interval-check" ${ex.isInterval?'checked':''}></label></td>
@@ -2458,12 +2498,46 @@ function getTestHistory(clientId, exerciseName){
   });
   return history;
 }
-function computeSuggestedWeight(clientId, exerciseName, plannedReps){
+/* Sugerowany ciezar (gdy trener nie wpisal recznie):
+   1) najlepszy ciezar z OSTATNIEGO treningu tego cwiczenia przy TYCH SAMYCH powtorzeniach (przed danym dniem)
+   2) jesli brak - wyliczenie z ostatniego testu 1RM (wzor Brzyckiego, % wg liczby powtorzen)
+   3) jesli brak - nic */
+function lastSessionBestBefore(clientId, exerciseName, plannedReps, beforeDate){
+  if(!clientId) return null;
+  const plan = plansCache[clientId] || {};
+  let found = null;
+  Object.keys(plan).sort().forEach(dateStr => {
+    if(beforeDate && dateStr >= beforeDate) return;
+    const d = plan[dateStr];
+    if(!d || !d.exercises) return;
+    let best = null;
+    d.exercises.filter(ex => resolveExName(ex) === exerciseName && String(ex.reps).trim() === String(plannedReps).trim()).forEach(ex => {
+      [].concat(ex.log||[], ex.logRight||[], ex.logLeft||[]).forEach(l => {
+        const w = parseFloat(String(l.weight||'').replace(',','.'));
+        if(!isNaN(w) && w > 0 && (best === null || w > best)) best = w;
+      });
+    });
+    if(best !== null) found = {weight: best, date: dateStr};
+  });
+  return found;
+}
+function computeSuggestedWeightInfo(clientId, exerciseName, plannedReps, beforeDate){
+  if(!clientId) return null;
+  const last = lastSessionBestBefore(clientId, exerciseName, plannedReps, beforeDate);
+  if(last) return {value: last.weight, source: 'last', date: last.date};
   const test = getLatestTest1RM(clientId, exerciseName);
   if(!test) return null;
   const reps = parseInt(plannedReps) || 1;
   const pct = pctForReps(reps);
-  return Math.round(test.oneRM * pct/100 * 2) / 2; // zaokrąglenie do 0.5kg
+  return {value: Math.round(test.oneRM * pct/100 * 2) / 2, source: 'test', date: test.date};
+}
+function computeSuggestedWeight(clientId, exerciseName, plannedReps, beforeDate){
+  const info = computeSuggestedWeightInfo(clientId, exerciseName, plannedReps, beforeDate);
+  return info ? info.value : null;
+}
+function suggestedSourceText(info){
+  if(!info) return '';
+  return info.source === 'last' ? `Z ostatniego treningu (${info.date}, te same powtórzenia)` : `Wyliczone z testu 1RM (${info.date})`;
 }
 function buildExerciseHistory(clientId, exerciseName){
   const plan = plansCache[clientId] || {};
@@ -3382,7 +3456,7 @@ function renderTemplatesListView(){
   $('addTplBtn').onclick = async () => {
     const name = $('newTplName').value.trim();
     if(!name) return;
-    const newTpl = { id:'tpl_'+Date.now(), name, days: [ {id:'d_'+Date.now(), title:'', subtitle:'', label:'Dzień 1', exercises:[]} ] };
+    const newTpl = { id:'tpl_'+Date.now(), name, weeks: 3, days: [ {id:'d_'+Date.now(), title:'', subtitle:'', label:'Dzień 1', exercises:[]} ] };
     templates.push(newTpl);
     await persistWithFeedback('plan_templates', templates);
     openTemplateEditor(newTpl.id);
@@ -3398,7 +3472,7 @@ function renderTplListRows(){
   holder.innerHTML = templates.map(t => `
     <div class="tpl-row" data-tid="${t.id}">
       <div class="tpl-nm">${escapeHtml(t.name)}</div>
-      <div class="tpl-days">${t.days.length} ${t.days.length===1?'dzień':'dni'} · ${t.days.map(d=>escapeHtml(d.label||'Dzień')).join(', ')}</div>
+      <div class="tpl-days">${t.days.length} ${t.days.length===1?'dzień':'dni'}${tplWeeks(t) > 1 ? ' × ' + tplWeeks(t) + ' tyg.' : ''} · ${t.days.map(d=>escapeHtml(d.label||'Dzień')).join(', ')}</div>
       <button class="btn ghost small tpl-edit-btn">Edytuj</button>
       <button class="btn small tpl-apply-btn">Zastosuj</button>
       <button class="rm-btn tpl-rm-btn" title="Usuń szablon">✕</button>
@@ -3421,6 +3495,8 @@ function openTemplateEditor(templateId){
   editingTemplateMode = true;
   currentTemplateId = templateId;
   currentTemplateDayIdx = 0;
+  currentTemplateWeekIdx = 0;
+  tplProgView = false;
   persistCurrentDayFn = async () => { await persistWithFeedback('plan_templates', templates); };
   renderTemplateEditorShell();
 }
@@ -3432,14 +3508,22 @@ function renderTemplateEditorShell(){
     <span class="back-link" id="tplBackBtn">← Wróć do listy szablonów</span>
     <div class="tpl-title-row">
       <input id="tplNameInput" value="${escapeHtml(tpl.name)}" placeholder="Nazwa szablonu">
+      <div class="tpl-weeks-ctl">Tygodnie w bloku:
+        <button class="btn ghost small" id="tplWeeksMinus" title="Mniej tygodni">−</button>
+        <b id="tplWeeksNum">${tplWeeks(tpl)}</b>
+        <button class="btn ghost small" id="tplWeeksPlus" title="Więcej tygodni">+</button>
+      </div>
     </div>
     <div class="day-tabs-tpl" id="tplDayTabs"></div>
+    <div id="tplWeekBar"></div>
     <div id="dayPanelHolder"></div>
     <datalist id="libNamesList"></datalist>
   `;
   $('tplBackBtn').onclick = () => {
     editingTemplateMode = false;
     currentTemplateId = null;
+    currentTemplateWeekIdx = 0;
+    tplProgView = false;
     persistCurrentDayFn = () => persistPlan(selectedClientId);
     renderTemplatesListView();
   };
@@ -3447,7 +3531,10 @@ function renderTemplateEditorShell(){
     tpl.name = $('tplNameInput').value.trim() || tpl.name;
     await persistWithFeedback('plan_templates', templates);
   };
+  $('tplWeeksMinus').onclick = () => changeTplWeeks(-1);
+  $('tplWeeksPlus').onclick = () => changeTplWeeks(1);
   renderTplDayTabs();
+  renderTplWeekBar();
   renderDayPanel();
   renderLibraryList();
 }
@@ -3456,23 +3543,174 @@ function renderTplDayTabs(){
   const tpl = templates.find(t => t.id === currentTemplateId);
   const holder = $('tplDayTabs');
   holder.innerHTML = tpl.days.map((d,i) => `
-    <button class="day-tab-tpl ${i===currentTemplateDayIdx?'active':''}" data-idx="${i}">${escapeHtml(d.label||('Dzień '+(i+1)))}</button>
+    <button class="day-tab-tpl ${i===currentTemplateDayIdx?'active':''}" data-idx="${i}">${escapeHtml(d.label||('Dzień '+(i+1)))}${d.title ? ' · ' + escapeHtml(d.title) : ''}${tpl.days.length > 1 ? `<span class="tpl-day-del" data-del="${i}" title="Usuń ten dzień z szablonu">✕</span>` : ''}</button>
   `).join('') + `<button class="day-tab-tpl add" id="tplAddDayBtn">+ Dodaj dzień</button>`;
   holder.querySelectorAll('.day-tab-tpl[data-idx]').forEach(btn => {
-    btn.onclick = () => {
+    btn.onclick = (e) => {
+      if(e.target.closest('.tpl-day-del')) return;
       currentTemplateDayIdx = parseInt(btn.dataset.idx);
       renderTplDayTabs();
+      renderTplWeekBar();
       renderDayPanel();
+    };
+  });
+  holder.querySelectorAll('.tpl-day-del').forEach(x => {
+    x.onclick = async (e) => {
+      e.stopPropagation();
+      await deleteTemplateDay(parseInt(x.dataset.del));
     };
   });
   $('tplAddDayBtn').onclick = async () => {
     const n = tpl.days.length + 1;
     tpl.days.push({id:'d_'+Date.now(), title:'', subtitle:'', label:'Dzień '+n, exercises:[]});
     currentTemplateDayIdx = tpl.days.length - 1;
+    currentTemplateWeekIdx = 0; tplProgView = false;
     await persistWithFeedback('plan_templates', templates);
     renderTplDayTabs();
+    renderTplWeekBar();
     renderDayPanel();
   };
+}
+
+
+/* ============ SZABLONY: TYGODNIE + USUWANIE DNI ============
+   Tydzien 1 = baza (pola cwiczenia, zwykly edytor). Tygodnie 2+ przechowuja TYLKO zmiany
+   w ex.weekOverrides[indeksTygodnia] = {sets, reps, tempo, rest, suggestedWeight, setsRight, setsLeft}.
+   Wartosc tygodnia = najblizsza wpisana w tym lub wczesniejszym tygodniu. */
+const TPL_WEEK_FIELDS = ['sets','reps','tempo','rest','suggestedWeight','setsRight','setsLeft'];
+function tplWeeks(tpl){ const w = parseInt(tpl && tpl.weeks); return (w >= 1 && w <= 8) ? w : 1; }
+function tplBaseValue(ex, f){
+  if(f === 'suggestedWeight') return ex.suggestedManual ? (ex.suggestedWeight || '') : '';
+  return ex[f] == null ? '' : String(ex[f]);
+}
+function tplOwnValue(ex, k, f){
+  const o = ex.weekOverrides && ex.weekOverrides[k];
+  const v = o ? o[f] : undefined;
+  return (v === undefined || v === null) ? '' : String(v);
+}
+function tplWeekValue(ex, k, f){
+  for(let i = k; i >= 1; i--){ const v = tplOwnValue(ex, i, f); if(v !== '') return v; }
+  return tplBaseValue(ex, f);
+}
+function tplWeekHasChanges(day, k){
+  return k > 0 && (day.exercises||[]).some(ex => TPL_WEEK_FIELDS.some(f => tplOwnValue(ex, k, f) !== ''));
+}
+
+async function changeTplWeeks(delta){
+  const tpl = templates.find(t => t.id === currentTemplateId);
+  const w = Math.min(8, Math.max(1, tplWeeks(tpl) + delta));
+  if(w === tplWeeks(tpl)) return;
+  tpl.weeks = w;   // zmiany z usunietych tygodni zostaja zachowane (wroca po ponownym dodaniu tygodnia)
+  if(currentTemplateWeekIdx >= w) currentTemplateWeekIdx = w - 1;
+  if(w === 1){ tplProgView = false; currentTemplateWeekIdx = 0; }
+  await persistWithFeedback('plan_templates', templates);
+  $('tplWeeksNum').textContent = w;
+  renderTplWeekBar();
+  renderDayPanel();
+}
+
+async function deleteTemplateDay(idx){
+  const tpl = templates.find(t => t.id === currentTemplateId);
+  if(!tpl || tpl.days.length <= 1) return;
+  const d = tpl.days[idx];
+  const name = (d.label || ('Dzień ' + (idx+1))) + (d.title ? ' · ' + d.title : '');
+  if(!confirm(`Usunąć „${name}” z szablonu?\n\nZnikną wszystkie tygodnie tego dnia. Plany już dodane klientom się NIE zmienią (to niezależne kopie).`)) return;
+  tpl.days.splice(idx, 1);
+  // przenumerowanie domyslnych nazw "Dzień N" (wlasne nazwy zostaja)
+  tpl.days.forEach((dd, i) => { if(!dd.label || /^Dzień \d+$/.test(dd.label)) dd.label = 'Dzień ' + (i+1); });
+  if(currentTemplateDayIdx >= tpl.days.length) currentTemplateDayIdx = tpl.days.length - 1;
+  else if(currentTemplateDayIdx > idx) currentTemplateDayIdx--;
+  await persistWithFeedback('plan_templates', templates);
+  renderTplDayTabs();
+  renderTplWeekBar();
+  renderDayPanel();
+  toast('Usunięto dzień z szablonu');
+}
+
+function renderTplWeekBar(){
+  const holder = $('tplWeekBar');
+  if(!holder) return;
+  const tpl = templates.find(t => t.id === currentTemplateId);
+  const W = tplWeeks(tpl);
+  if(W <= 1){ holder.innerHTML = ''; return; }
+  const day = tpl.days[currentTemplateDayIdx];
+  holder.innerHTML = `<div class="tpl-week-tabs">
+    ${Array.from({length: W}, (_, k) => `<button class="tpl-wk-tab ${!tplProgView && k === currentTemplateWeekIdx ? 'active' : ''}" data-wk="${k}">Tydzień ${k+1}${tplWeekHasChanges(day, k) ? '<span class="tpl-wk-dot"></span>' : ''}</button>`).join('')}
+    <button class="tpl-wk-tab prog ${tplProgView ? 'active' : ''}" id="tplProgBtn">📊 Progresja</button>
+  </div>`;
+  holder.querySelectorAll('[data-wk]').forEach(b => b.onclick = () => { currentTemplateWeekIdx = parseInt(b.dataset.wk); tplProgView = false; renderTplWeekBar(); renderDayPanel(); });
+  $('tplProgBtn').onclick = () => { tplProgView = !tplProgView; renderTplWeekBar(); renderDayPanel(); };
+}
+
+function renderTemplateWeekPanel(){
+  const holder = $('dayPanelHolder');
+  const tpl = templates.find(t => t.id === currentTemplateId);
+  const day = tpl.days[currentTemplateDayIdx];
+  const k = currentTemplateWeekIdx;
+  const exs = day.exercises || [];
+  const cell = (ex, f) => {
+    const own = tplOwnValue(ex, k, f);
+    const inh = tplWeekValue(ex, k - 1, f);
+    const isKg = f === 'suggestedWeight';
+    const ph = isKg ? (inh || 'auto') : inh;
+    return `<input class="pill-input tpl-wk-input ${own !== '' ? 'own' : ''} ${isKg ? 'kg' : ''}" data-ex="${exs.indexOf(ex)}" data-f="${f}" value="${escapeHtml(own)}" placeholder="${escapeHtml(ph)}">`;
+  };
+  const row = ex => `<tr>
+      <td><span class="ex-label">${escapeHtml(ex.label || '')}</span></td>
+      <td>${escapeHtml(resolveExName(ex))}${ex.isInterval ? ' <small style="color:var(--muted);">(interwał)</small>' : ''}</td>
+      <td>${ex.splitLR ? `<div style="display:flex;gap:4px;"><span class="tpl-lr">P</span>${cell(ex,'setsRight')}<span class="tpl-lr">L</span>${cell(ex,'setsLeft')}</div>` : cell(ex,'sets')}</td>
+      <td>${cell(ex,'reps')}</td>
+      <td>${cell(ex,'tempo')}</td>
+      <td>${cell(ex,'rest')}</td>
+      <td>${(ex.noWeight) ? '<span style="color:var(--muted);font-size:11px;">bez ciężaru</span>' : (ex.category === 'main' && ex.isTest) ? '<span style="color:var(--warn);font-size:11px;">test</span>' : cell(ex,'suggestedWeight')}</td>
+    </tr>`;
+  const section = (cat, title) => {
+    const items = exs.filter(ex => ex.category === cat);
+    if(!items.length) return '';
+    return `<h4 class="tpl-wk-sec">${title}</h4>
+      <table class="exlist tpl-wk-table"><thead><tr><th style="width:44px;"></th><th>Ćwiczenie</th><th style="width:130px;">Serie</th><th style="width:80px;">Powt.</th><th style="width:80px;">Tempo</th><th style="width:80px;">Przerwa</th><th style="width:90px;">Sug. kg</th></tr></thead>
+      <tbody>${items.map(row).join('')}</tbody></table>`;
+  };
+  holder.innerHTML = `<div class="day-panel">
+      <div class="day-panel-head"><h3>${escapeHtml(day.label || ('Dzień ' + (currentTemplateDayIdx+1)))} — Tydzień ${k+1}</h3></div>
+      <div class="tpl-wk-note">Wpisz <b>tylko to, co się zmienia</b> w tym tygodniu. Szare pola = tak jak w tygodniu ${k}. Puste pole ciężaru = <b style="color:#2E9E5B;">auto</b> (ostatni trening z tymi samymi powtórzeniami → test 1RM). Ćwiczenia dodajesz i usuwasz w <span class="tpl-wk-link" id="tplGoWeek1">Tygodniu 1</span> — zmiana dotyczy wszystkich tygodni.</div>
+      ${exs.length ? section('warmup','Rozgrzewka') + section('main','Ćwiczenia główne') : '<div class="empty-state">Ten dzień nie ma jeszcze ćwiczeń — dodaj je w Tygodniu 1.</div>'}
+      <div class="tpl-wk-legend"><span><span class="tpl-sw"></span>jak w poprzednim tygodniu</span><span><span class="tpl-sw own"></span>zmienione w tym tygodniu</span></div>
+    </div>`;
+  $('tplGoWeek1').onclick = () => { currentTemplateWeekIdx = 0; renderTplWeekBar(); renderDayPanel(); };
+  holder.querySelectorAll('.tpl-wk-input').forEach(inp => inp.onchange = async () => {
+    const ex = exs[parseInt(inp.dataset.ex)];
+    const f = inp.dataset.f;
+    const v = inp.value.trim();
+    if(!ex.weekOverrides) ex.weekOverrides = {};
+    if(!ex.weekOverrides[k]) ex.weekOverrides[k] = {};
+    if(v === '') delete ex.weekOverrides[k][f]; else ex.weekOverrides[k][f] = v;
+    if(Object.keys(ex.weekOverrides[k]).length === 0) delete ex.weekOverrides[k];
+    await persistWithFeedback('plan_templates', templates);
+    renderTplWeekBar();
+    renderTemplateWeekPanel();
+  });
+}
+
+function renderTemplateProgressPanel(){
+  const holder = $('dayPanelHolder');
+  const tpl = templates.find(t => t.id === currentTemplateId);
+  const day = tpl.days[currentTemplateDayIdx];
+  const W = tplWeeks(tpl);
+  const exs = day.exercises || [];
+  const txt = (ex, k) => {
+    const sets = ex.splitLR ? `P${tplWeekValue(ex,k,'setsRight') || '-'}/L${tplWeekValue(ex,k,'setsLeft') || '-'}` : (tplWeekValue(ex,k,'sets') || '-');
+    const kg = ex.noWeight ? '' : ` · ${tplWeekValue(ex,k,'suggestedWeight') ? escapeHtml(tplWeekValue(ex,k,'suggestedWeight')) + ' kg' : '<span style="color:#2E9E5B;font-weight:600;">auto</span>'}`;
+    return `${escapeHtml(sets)}×${escapeHtml(tplWeekValue(ex,k,'reps') || '-')}${kg}`;
+  };
+  const changed = (ex, k) => k > 0 && TPL_WEEK_FIELDS.some(f => tplOwnValue(ex, k, f) !== '');
+  holder.innerHTML = `<div class="day-panel">
+      <div class="day-panel-head"><h3>${escapeHtml(day.label || '')} — progresja w ${W} tygodniach</h3></div>
+      ${exs.length ? `<table class="exlist tpl-prog-table"><thead><tr><th style="width:44px;"></th><th>Ćwiczenie</th>${Array.from({length: W}, (_, k) => `<th>Tydzień ${k+1}</th>`).join('')}</tr></thead>
+        <tbody>${exs.map(ex => `<tr><td><span class="ex-label">${escapeHtml(ex.label || '')}</span></td><td>${escapeHtml(resolveExName(ex))}</td>${Array.from({length: W}, (_, k) => `<td><span class="tpl-prog-cell ${changed(ex,k) ? 'ch' : ''}">${txt(ex,k)}</span></td>`).join('')}</tr>`).join('')}</tbody></table>
+        <div class="tpl-wk-legend"><span><span class="tpl-prog-cell ch" style="padding:1px 6px;">4×6</span> zmiana względem poprzedniego tygodnia</span><span>Kliknij zakładkę tygodnia, żeby edytować.</span></div>`
+      : '<div class="empty-state">Ten dzień nie ma jeszcze ćwiczeń.</div>'}
+    </div>`;
 }
 
 let currentApplyTemplateId = null;
@@ -3590,8 +3828,24 @@ function renderApplyDateRows(){
   const ids = [...applySelectedClientIds];
 
   tpl.days.forEach(d => { if(!applyDayDates[d.id]) applyDayDates[d.id] = ['']; });
+  const W = tplWeeks(tpl);
+  if(W > 1){
+    tpl.days.forEach(d => {
+      const arr = applyDayDates[d.id];
+      while(arr.length < W) arr.push('');
+      if(arr.length > W) arr.length = W;
+    });
+  }
 
-  const dayDatesHtml = tpl.days.map(d => {
+  const dayDatesHtml = W > 1 ? tpl.days.map(d => {
+    const dates = applyDayDates[d.id];
+    return `<div class="apply-week-block"><div class="day-lbl" style="font-weight:700;margin-bottom:6px;">${escapeHtml(d.label||'Dzień')}${d.title ? ' · ' + escapeHtml(d.title) : ''}</div>
+      <div class="apply-week-dates">${dates.map((dateVal, i) => `
+        <div class="apply-week-date"><span class="apply-wk-lbl">Tydz. ${i+1}</span>
+          <input type="date" class="apply-date-input" data-did="${d.id}" data-idx="${i}" value="${dateVal}">
+          ${dateVal ? `<span class="apply-rm-date-btn" data-did="${d.id}" data-idx="${i}" title="Pomiń ten tydzień">✕</span>` : ''}
+        </div>`).join('')}</div></div>`;
+  }).join('') + `<div style="font-size:11.5px;color:var(--muted);margin-top:6px;">Wybierz datę tygodnia 1 — kolejne tygodnie wpiszą się same co 7 dni (możesz je zmienić). ✕ pomija dany tydzień.</div>` : tpl.days.map(d => {
     const dates = applyDayDates[d.id];
     return dates.map((dateVal, i) => `
       <div class="date-row-apply">
@@ -3605,7 +3859,7 @@ function renderApplyDateRows(){
 
   holder.innerHTML = dayDatesHtml + `
     <div style="margin-top:14px;">
-      <div style="font-size:11px;color:var(--muted);margin-bottom:8px;">Chcesz dać komuś inną datę niż reszta? Wybierz osobę, dzień szablonu i nową datę:</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:8px;">Chcesz dać komuś inną datę niż reszta? Wybierz osobę, dzień szablonu i nową datę${W > 1 ? ' <b>tygodnia 1</b> — kolejne tygodnie przesuną się razem z nią (co 7 dni)' : ''}:</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
         <select id="ovClientSel">${ids.map(id => { const c = clients.find(cl=>cl.id===id); return c ? `<option value="${id}">${escapeHtml(c.name)}</option>` : ''; }).join('')}</select>
         <select id="ovDaySel">${tpl.days.map(d=>`<option value="${d.id}">${escapeHtml(d.label||'Dzień')}</option>`).join('')}</select>
@@ -3617,7 +3871,16 @@ function renderApplyDateRows(){
   `;
 
   holder.querySelectorAll('.apply-date-input').forEach(inp => {
-    inp.onchange = () => { applyDayDates[inp.dataset.did][parseInt(inp.dataset.idx)] = inp.value; };
+    inp.onchange = () => {
+      const arr = applyDayDates[inp.dataset.did];
+      const i = parseInt(inp.dataset.idx);
+      arr[i] = inp.value;
+      if(W > 1 && inp.value){
+        let changed = false;
+        for(let j = i + 1; j < arr.length; j++){ if(!arr[j]){ arr[j] = addDaysToDateStr(inp.value, 7 * (j - i)); changed = true; } }
+        if(changed) renderApplyDateRows();
+      } else if(W > 1){ renderApplyDateRows(); }
+    };
   });
   holder.querySelectorAll('.apply-add-date-btn').forEach(btn => {
     btn.onclick = () => {
@@ -3631,6 +3894,7 @@ function renderApplyDateRows(){
   holder.querySelectorAll('.apply-rm-date-btn').forEach(el => {
     el.onclick = () => {
       const dayId = el.dataset.did;
+      if(W > 1){ applyDayDates[dayId][parseInt(el.dataset.idx)] = ''; renderApplyDateRows(); return; }
       applyDayDates[dayId].splice(parseInt(el.dataset.idx), 1);
       if(applyDayDates[dayId].length === 0) applyDayDates[dayId] = [''];
       renderApplyDateRows();
@@ -3664,16 +3928,25 @@ function renderOverridesList(){
   });
 }
 
-function copyTemplateDayToPlan(plan, date, templateDay){
-  const clonedExercises = templateDay.exercises.map(ex => ({
-    ...ex,
-    id: 'e_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),
-    log: [],
-    logRight: ex.splitLR ? [] : undefined,
-    logLeft: ex.splitLR ? [] : undefined,
-    suggestedWeight:'', suggestedManual:false, isTest:false, completedNotified:false,
-    rpe: null, clientNote: ''
-  }));
+function copyTemplateDayToPlan(plan, date, templateDay, weekIdx){
+  const k = weekIdx || 0;
+  const clonedExercises = templateDay.exercises.map(ex => {
+    const kg = tplWeekValue(ex, k, 'suggestedWeight');
+    const c = {
+      ...ex,
+      id: 'e_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),
+      sets: tplWeekValue(ex, k, 'sets'), reps: tplWeekValue(ex, k, 'reps'),
+      tempo: tplWeekValue(ex, k, 'tempo'), rest: tplWeekValue(ex, k, 'rest'),
+      log: [],
+      logRight: ex.splitLR ? [] : undefined,
+      logLeft: ex.splitLR ? [] : undefined,
+      suggestedWeight: kg, suggestedManual: kg !== '', isTest:false, completedNotified:false,
+      rpe: null, clientNote: ''
+    };
+    if(ex.splitLR){ c.setsRight = tplWeekValue(ex, k, 'setsRight'); c.setsLeft = tplWeekValue(ex, k, 'setsLeft'); }
+    delete c.weekOverrides;
+    return c;
+  });
   plan[date] = { title: templateDay.title||'', subtitle: templateDay.subtitle||'', exercises: clonedExercises };
 }
 
@@ -3703,11 +3976,17 @@ async function confirmApplyTemplate(){
   clientIds.forEach(clientId => {
     tpl.days.forEach(day => {
       const override = applyOverrides.find(o => o.clientId===clientId && o.dayId===day.id);
+      const W = tplWeeks(tpl);
       if(override){
-        tasks.push({clientId, day, date: override.date});
+        if(W > 1){
+          // inna data dla tej osoby = data tygodnia 1, kolejne tygodnie co 7 dni (pomijajac tygodnie wylaczone dla grupy)
+          (applyDayDates[day.id]||[]).forEach((d, wk) => { if(d) tasks.push({clientId, day, date: addDaysToDateStr(override.date, 7*wk), week: wk}); });
+        } else {
+          tasks.push({clientId, day, date: override.date, week: 0});
+        }
       } else {
-        (applyDayDates[day.id]||[]).filter(d => d).forEach(date => {
-          tasks.push({clientId, day, date});
+        (applyDayDates[day.id]||[]).forEach((date, wk) => {
+          if(date) tasks.push({clientId, day, date, week: W > 1 ? wk : 0});
         });
       }
     });
@@ -3723,7 +4002,7 @@ async function runApplyTasks(tasks, idx){
     renderTemplatesListView();
     return;
   }
-  const {clientId, day, date} = tasks[idx];
+  const {clientId, day, date, week} = tasks[idx];
   await ensurePlanLoaded(clientId);
   const plan = plansCache[clientId];
   const existing = plan[date];
@@ -3732,13 +4011,13 @@ async function runApplyTasks(tasks, idx){
     const c = clients.find(cl=>cl.id===clientId);
     showApplyConflictModal(c ? c.name : '?', date, async (action) => {
       if(action === 'overwrite'){
-        copyTemplateDayToPlan(plan, date, day);
+        copyTemplateDayToPlan(plan, date, day, week);
         await savePlanRow(clientId, plan);
       }
       await runApplyTasks(tasks, idx+1);
     });
   } else {
-    copyTemplateDayToPlan(plan, date, day);
+    copyTemplateDayToPlan(plan, date, day, week);
     await savePlanRow(clientId, plan);
     await runApplyTasks(tasks, idx+1);
   }
@@ -5271,7 +5550,7 @@ function renderAthleteDetail(day){
     : `<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);font-size:12px;">Brak filmu</div>`;
 
   const isThisATest = ex.category === 'main' && ex.isTest;
-  const autoVal = (isThisATest || ex.noWeight) ? null : computeSuggestedWeight(aClientId, exName, ex.reps);
+  const autoVal = (isThisATest || ex.noWeight) ? null : computeSuggestedWeight(aClientId, exName, ex.reps, aSelectedDateStr);
   let suggestedDisplay = '';
   if(!isThisATest && !ex.noWeight){
     if(ex.suggestedManual && ex.suggestedWeight){
