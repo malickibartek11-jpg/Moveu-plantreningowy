@@ -564,6 +564,38 @@
   .apply-week-dates{display:flex;flex-wrap:wrap;gap:10px;}
   .apply-week-date{display:flex;align-items:center;gap:6px;background:var(--surface-2);border-radius:8px;padding:4px 8px;}
   .apply-wk-lbl{font-size:11px;font-weight:700;color:var(--muted);}
+
+  /* ===== YouTube: porownanie nazw + reczne laczenie ===== */
+  .ytc-grid{display:grid;grid-template-columns:1fr 36px 1fr;margin-top:14px;}
+  .ytc-side{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;min-width:0;}
+  .ytc-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.4px;font-weight:700;color:var(--muted);margin-bottom:6px;}
+  .ytc-nm{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16px;line-height:1.35;word-break:break-word;}
+  .ytc-nm mark{background:#FFE8B3;color:inherit;border-radius:3px;padding:0 2px;}
+  .ytc-meta{font-size:11.5px;color:var(--muted);margin-top:6px;line-height:1.5;}
+  .ytc-thumb{margin-top:8px;border-radius:8px;overflow:hidden;aspect-ratio:16/9;background:#222;display:flex;align-items:center;justify-content:center;}
+  .ytc-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+  .ytc-thumb.none{background:var(--surface-2);border:1px dashed var(--line);color:var(--muted);font-size:12px;}
+  .ytc-arrow{display:flex;align-items:center;justify-content:center;color:#E8604A;font-size:20px;}
+  .ytc-q{text-align:center;font-weight:700;font-size:14px;margin:14px 0 2px;}
+  .ytc-qsub{text-align:center;font-size:12px;color:var(--muted);}
+  .ytc-rename{display:flex;align-items:center;justify-content:center;gap:7px;font-size:12px;color:var(--muted);margin-top:8px;}
+  .ytc-choices{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:12px;}
+  .ytc-foot{display:flex;justify-content:space-between;align-items:center;margin-top:14px;padding-top:10px;border-top:1px solid var(--line);}
+  .ytc-prog{display:flex;gap:4px;flex-wrap:wrap;}
+  .ytc-prog i{display:block;width:22px;height:5px;border-radius:3px;background:var(--line);}
+  .ytc-prog i.done{background:#2E9E5B;} .ytc-prog i.cur{background:#1C1C1C;}
+  .yt-pick-btn{margin-left:8px;border:1px dashed #999;background:transparent;border-radius:7px;padding:3px 8px;font-size:11px;font-weight:600;cursor:pointer;color:var(--text);font-family:inherit;}
+  .yt-pick-btn:hover{border-color:#1C1C1C;}
+  #ytPickSearch{width:100%;margin:10px 0;padding:9px 11px;border:1px solid var(--line);border-radius:8px;font-size:13px;background:var(--surface);color:var(--text);}
+  .yt-pick-list{max-height:420px;overflow-y:auto;}
+  .yt-pick-row{display:flex;align-items:center;gap:10px;padding:7px 4px;border-bottom:1px solid var(--line);cursor:pointer;font-size:12.5px;}
+  .yt-pick-row:hover{background:var(--surface-2);}
+  .yt-pick-row.used{opacity:.5;cursor:default;}
+  .yt-pick-row img{width:88px;border-radius:6px;flex-shrink:0;}
+  /* ===== panel sportowca: przycisk Dzis ===== */
+  .a-today-btn{margin-left:10px;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:5px 11px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;color:var(--text);}
+  .a-today-btn:hover{border-color:var(--accent);}
+  .a-pin{margin-left:8px;font-size:11px;color:var(--muted);}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -1369,6 +1401,30 @@ async function resyncMissedCompletions(){
   renderCompletedTrainingsList();
 }
 
+async function markAllCompletionsReviewed(){
+  await refreshClientsFromDB();   // swieze dane - zeby nie skasowac powiadomien, ktore wlasnie doszly
+  const withPending = clients.filter(c => (c.pendingCompletions||[]).length);
+  const n = withPending.reduce((sum, c) => sum + c.pendingCompletions.length, 0);
+  if(!n){ renderCompletedTrainingsButton(); renderCompletedTrainingsList(); return; }
+  if(!confirm(`Oznaczyć wszystkie (${n}) ukończone treningi jako sprawdzone?\n\nZnikną z listy i nie wrócą po „Sprawdź brakujące”.`)) return;
+  setStatus('Oznaczam jako sprawdzone…');
+  for(const c of withPending){
+    const dates = c.pendingCompletions.map(pc => pc.date);
+    if(!getOfflineQueue().some(q => q.clientId === c.id)) delete plansCache[c.id];
+    await ensurePlanLoaded(c.id);
+    const plan = plansCache[c.id] || {};
+    let changed = false;
+    dates.forEach(d => { if(plan[d] && !plan[d].completionReviewed){ plan[d].completionReviewed = true; changed = true; } });
+    if(changed) await savePlanRow(c.id, plan);
+    c.pendingCompletions = (c.pendingCompletions||[]).filter(pc => !dates.includes(pc.date));
+    await saveClientRow(c);
+  }
+  setStatus('');
+  renderCompletedTrainingsButton();
+  renderCompletedTrainingsList();
+  toast(`Oznaczono ${n} ${plPlural(n, 'trening', 'treningi', 'treningów')} jako sprawdzone`);
+}
+
 function renderCompletedTrainingsList(){
   trainerViewMode = 'completed';
   selectedClientId = null;
@@ -1387,10 +1443,14 @@ function renderCompletedTrainingsList(){
   }
   main.innerHTML = `
     <h2 style="font-family:'Space Grotesk';margin-bottom:10px;">Ukończone treningi</h2>
-    ${resyncBtnHtml}
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:16px;">
+      <button class="btn small" id="markAllCompletionsBtn" style="background:#2E9E5B;">✓ Oznacz wszystkie (${rows.length}) jako sprawdzone</button>
+      ${resyncBtnHtml.replace('margin-bottom:16px;', '')}
+    </div>
     <div id="completedRows"></div>
   `;
   $('resyncCompletionsBtn').onclick = resyncMissedCompletions;
+  $('markAllCompletionsBtn').onclick = markAllCompletionsReviewed;
   const holder = $('completedRows');
   rows.forEach(r => {
     const row = document.createElement('div');
@@ -1578,12 +1638,13 @@ async function switchTab(tab){
 /* ============ TRENER: CLIENTS ============ */
 let clientListOrgFilter = null; // null = wszyscy, 'unassigned' = bez organizacji, albo id organizacji
 
+let clientListPicked = false;   // lista nazwisk pokazuje sie dopiero po kliknieciu pigulki
 let clientListSubFilter = null; // null = lista podgrup (gdy wybrana organizacja ma podgrupy), id podgrupy albo '__none__'
 
 function renderClientOrgFilterChips(){
   const el = $('clientOrgFilterChips');
   const chip = (id, label) => {
-    const active = clientListOrgFilter === id;
+    const active = clientListPicked && clientListOrgFilter === id;
     return `<span class="client-org-chip ${active?'active':''}" data-oid="${id===null?'':id}">${escapeHtml(label)}</span>`;
   };
   el.innerHTML = chip(null, 'Wszyscy') + clientGroups.map(g => chip(g.id, g.name)).join('');
@@ -1591,6 +1652,7 @@ function renderClientOrgFilterChips(){
     c.onclick = () => {
       clientListOrgFilter = c.dataset.oid === '' ? null : c.dataset.oid;
       clientListSubFilter = null;
+      clientListPicked = true;
       renderClientList();
     };
   });
@@ -1618,6 +1680,7 @@ function renderClientList(){
   // etykieta przy nazwisku: w widoku jednej organizacji - rocznik, w widoku "Wszyscy" - organizacja
   const labelFor = c => org ? subName(c) : orgName(c);
   const emptyMsg = txt => { const e = document.createElement('div'); e.className = 'client-list-empty'; e.textContent = txt; return e; };
+  if(!clientListPicked && !query){ list.appendChild(emptyMsg('Wybierz grupę powyżej albo wpisz nazwisko.')); return; }
 
   // 1) wyszukiwanie: plaska lista wynikow w calej wybranej organizacji (niezaleznie od rocznika)
   if(query){
@@ -4382,7 +4445,7 @@ function renderLibFullTable(){
     const grp = libraryGroups.find(g => g.id === ex.groupId);
     tr.innerHTML = `
       <td><span class="ex-edit-name" style="cursor:text;">${escapeHtml(ex.name)}</span>${ex.notMoveU ? '<span class="record-badge"><span class="record-dot"></span>DO NAGRANIA</span>' : ''}</td>
-      <td><span class="yt-hover-wrap"><span class="ex-edit-video" style="cursor:text;color:var(--muted);font-size:12px;">${ex.videoUrl?escapeHtml(ex.videoUrl):'— brak linku —'}</span>${getYoutubeId(ex.videoUrl) ? `<span class="yt-hover-thumb"><img src="https://img.youtube.com/vi/${getYoutubeId(ex.videoUrl)}/hqdefault.jpg" loading="lazy"></span>` : ''}</span></td>
+      <td><span class="yt-hover-wrap"><span class="ex-edit-video" style="cursor:text;color:var(--muted);font-size:12px;">${ex.videoUrl?escapeHtml(ex.videoUrl):'— brak linku —'}</span>${ex.videoUrl ? '' : '<button class="yt-pick-btn" type="button" title="Wybierz film z Twojego kanału YouTube">🔗 Wybierz film</button>'}${getYoutubeId(ex.videoUrl) ? `<span class="yt-hover-thumb"><img src="https://img.youtube.com/vi/${getYoutubeId(ex.videoUrl)}/hqdefault.jpg" loading="lazy"></span>` : ''}</span></td>
       <td></td>
       <td style="text-align:center;"><input type="checkbox" class="notmoveu-check" ${ex.notMoveU?'checked':''}></td>
       <td><button class="rm-btn" title="Usuń">✕</button></td>
@@ -4424,6 +4487,8 @@ function renderLibFullTable(){
       renderLibFullTable();
     };
     tr.children[2].appendChild(groupSel);
+    const pickBtn = tr.querySelector('.yt-pick-btn');
+    if(pickBtn) pickBtn.onclick = (e) => { e.stopPropagation(); openYtPicker(ex.id); };
     tr.querySelector('.notmoveu-check').onchange = async (e) => {
       ex.notMoveU = e.target.checked;
       await persistWithFeedback('exercise_library', library);
@@ -4454,7 +4519,7 @@ async function loadYtSyncSettings(){
 function renderYtSyncLast(){
   const el = $('ytSyncLast'); if(!el) return;
   const ls = ytSyncSettings && ytSyncSettings.lastSync;
-  el.textContent = ls ? `Ostatnio: ${new Date(ls.at).toLocaleString('pl-PL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})} — dodano ${ls.added}${ls.attached ? ', uzupełniono linki: ' + ls.attached : ''}` : '';
+  el.textContent = ls ? `Ostatnio: ${new Date(ls.at).toLocaleString('pl-PL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})} — dodano ${ls.added}${ls.attached ? ', uzupełniono linki: ' + ls.attached : ''}${ls.replaced ? ', zamieniono filmy: ' + ls.replaced : ''}` : '';
 }
 async function initYtSyncPanel(){
   if(!$('ytSyncPanel')) return;
@@ -4475,19 +4540,43 @@ async function initYtSyncPanel(){
 /* Normalizacja nazwy do porównań (wielkość liter, spacje) */
 /* Klucz porownywania nazw: bez roznic w wielkosci liter, polskich znakach, myslnikach (- – —),
    spacjach wokol myslnika, cudzyslowach i hashtagach (#shorts). Sluzy tylko do DOPASOWANIA - nazw nie zmienia. */
+const YT_NOISE_RE = /\b(move\s?u(\s+studio)?|shorts?)\b/g;
 function ytNormName(n){
   return (n||'').toString()
     .replace(/#[\p{L}\p{N}_]+/gu, ' ')
     .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
     .toLowerCase().replace(/ł/g, 'l')
-    .replace(/[\u2010-\u2015\u2212]/g, '-')
-    .replace(/[„”“"'’`]/g, '')
-    .replace(/\s*-\s*/g, '-')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .replace(YT_NOISE_RE, ' ')
     .replace(/\s+/g, ' ')
     .trim();
 }
+/* klucz "tej samej nazwy": bez interpunkcji, wielkosci liter, polskich znakow i kolejnosci slow */
+function ytKey(n){ return ytNormName(n).split(' ').filter(Boolean).sort().join(' '); }
+const YT_STOP = new Set(['z','ze','na','do','w','we','o','i','a','od','po','pod','nad','bez','dla','oraz']);
+function ytStems(n){ return [...new Set(ytNormName(n).split(' ').filter(t => t.length > 2 && !YT_STOP.has(t)).map(t => t.slice(0, 5)))]; }
+/* slowa, ktore oznaczaja INNE cwiczenie (wariant) - takie pary nigdy nie sa "podobne" */
+const YT_EXCLUSIVE = [['jedno','obuno','obura'], ['stoja','siedz','lezac'], ['nachw','podch','neutr'], ['hantl','sztan','kettl']];
+const YT_SIMILAR_MIN = 0.8;
+function ytNameSimilarity(a, b){
+  const sa = ytStems(a), sb = ytStems(b);
+  const A = new Set(sa), B = new Set(sb);
+  const onlyA = sa.filter(x => !B.has(x)), onlyB = sb.filter(x => !A.has(x));
+  for(const g of YT_EXCLUSIVE){ if(onlyA.some(x => g.includes(x)) && onlyB.some(x => g.includes(x))) return 0; }
+  const inter = sa.filter(x => B.has(x)).length;
+  const dice = (sa.length + sb.length) ? 2 * inter / (sa.length + sb.length) : 0;
+  return Math.max(dice, ytSimilarity(ytNormName(a), ytNormName(b)));
+}
+function ytHighlight(a, b){
+  const bs = new Set(ytNormName(b).split(' ').filter(Boolean).map(t => t.slice(0, 5)));
+  return String(a).split(/(\s+)/).map(tok => {
+    const n = ytNormName(tok);
+    if(!n) return escapeHtml(tok);
+    return n.split(' ').some(t => !bs.has(t.slice(0, 5))) ? `<mark>${escapeHtml(tok)}</mark>` : escapeHtml(tok);
+  }).join('');
+}
 function cleanYtTitle(t){
-  const c = (t||'').replace(/\s*#[\p{L}\p{N}_]+/gu, '').replace(/\s+/g, ' ').trim();
+  const c = (t||'').replace(/\s*#[\p{L}\p{N}_]+/gu, '').replace(/\s*[|\-–—]\s*move\s?u(\s+studio)?\s*$/i, '').replace(/\s+/g, ' ').trim();
   return c || (t||'').trim();
 }
 function ytDice(a, b){
@@ -4590,88 +4679,99 @@ async function fetchYtVideos(settings){
   return videos;
 }
 
-/* CZYSTA LOGIKA porównania - bez zapisu. Dzieli filmy na kategorie:
-   skipped        - film jest już w bibliotece pod tą nazwą
-   linkable       - nazwa pasuje do ISTNIEJĄCEGO ćwiczenia BEZ linku -> uzupełnimy link (bez duplikatu)
-   newItems       - nowe ćwiczenie (opcjonalnie z podpowiedzią podobnego ćwiczenia bez linku)
-   nameConflicts  - ćwiczenie o tej nazwie ma już INNY film albo tytuł powtarza się na kanale
-   sameVideoDiffName / dupLinksInLib - tylko informacje */
+/* CZYSTA LOGIKA porownania - bez zapisu:
+   skipped        - film juz jest w bibliotece pod ta nazwa
+   linkable       - TA SAMA nazwa, cwiczenie bez linku -> dopisz link
+   replaceItems   - TA SAMA nazwa, cwiczenie ma link spoza kanalu -> podmien (automatycznie)
+   similar        - PODOBNA nazwa (cwiczenie bez linku albo z obcym) -> okno porownania
+   newItems       - nowe cwiczenie
+   nameConflicts  - powtorzony tytul na kanale / cwiczenie ma juz inny film z kanalu */
 function classifyYtSync(lib, ytVideos){
-  const byVid = new Map();    // videoId -> [pozycje biblioteki]
-  const byName = new Map();   // znormalizowana nazwa -> [pozycje biblioteki]
+  const mine = new Set((ytVideos||[]).map(v => v && v.videoId).filter(Boolean));
+  const hasLink = l => String(l.videoUrl||'').trim() !== '';
+  const isMine = l => mine.has(getYoutubeId(l.videoUrl));
+  const byVid = new Map(), byKey = new Map();
   (lib||[]).forEach(l => {
-    const k = ytNormName(l.name);
-    if(!byName.has(k)) byName.set(k, []);
-    byName.get(k).push(l);
+    const k = ytKey(l.name);
+    if(!byKey.has(k)) byKey.set(k, []);
+    byKey.get(k).push(l);
     const id = getYoutubeId(l.videoUrl);
     if(id){ if(!byVid.has(id)) byVid.set(id, []); byVid.get(id).push(l); }
   });
-  const result = { newItems:[], linkable:[], nameConflicts:[], sameVideoDiffName:[], dupLinksInLib:[], skipped:0 };
-  const seen = new Set();
-  const usedNames = new Set();        // tytuly juz obsluzone w tym przebiegu (dwa filmy o tym samym tytule)
-  const targeted = new Set();         // id cwiczen, ktore dostana link
-  const unmatched = [];
-  // przebieg 1: filmy juz powiazane oraz dokladne dopasowania nazwy
+  const R = { replaceItems:[], linkable:[], similar:[], newItems:[], nameConflicts:[], sameVideoDiffName:[], dupLinksInLib:[], skipped:0 };
+  const seen = new Set(), usedKeys = new Set(), targeted = new Set(), unmatched = [];
   (ytVideos||[]).forEach(v => {
     if(!v || !v.videoId || seen.has(v.videoId)) return;
     seen.add(v.videoId);
     const existing = byVid.get(v.videoId);
     if(existing){
-      if(existing.some(l => ytNormName(l.name) === ytNormName(v.title))) result.skipped++;
-      else result.sameVideoDiffName.push({ ...v, libNames: existing.map(l => l.name) });
+      if(existing.some(l => ytKey(l.name) === ytKey(v.title))) R.skipped++;
+      else R.sameVideoDiffName.push({ ...v, libNames: existing.map(l => l.name) });
       return;
     }
-    const nn = ytNormName(v.title);
-    if(!nn){ result.nameConflicts.push({ ...v, why:'Film bez tytułu' }); return; }
-    if(usedNames.has(nn)){ result.nameConflicts.push({ ...v, why:'Na kanale jest już inny film o tym samym tytule' }); return; }
-    const sameName = byName.get(nn) || [];
-    if(sameName.length){
-      const noLink = sameName.find(l => !getYoutubeId(l.videoUrl) && !targeted.has(l.id));
-      if(noLink){ result.linkable.push({ ...v, targetId: noLink.id, targetName: noLink.name }); targeted.add(noLink.id); usedNames.add(nn); return; }
-      result.nameConflicts.push({ ...v, why:'Ćwiczenie o tej nazwie ma już inny film: ' + sameName.map(l => l.name).join(', ') });
-      usedNames.add(nn);
+    const k = ytKey(v.title);
+    if(!k){ R.nameConflicts.push({ ...v, why:'Film bez tytułu' }); return; }
+    if(usedKeys.has(k)){ R.nameConflicts.push({ ...v, why:'Na kanale jest już inny film o tym samym tytule' }); return; }
+    usedKeys.add(k);
+    const all = byKey.get(k) || [];
+    if(all.length){
+      const free = all.filter(l => !targeted.has(l.id));
+      const noLink = free.find(l => !hasLink(l));
+      if(noLink){ R.linkable.push({ ...v, targetId: noLink.id, targetName: noLink.name }); targeted.add(noLink.id); return; }
+      const foreign = free.find(l => hasLink(l) && !isMine(l));
+      if(foreign){ R.replaceItems.push({ ...v, targetId: foreign.id, targetName: foreign.name, oldUrl: foreign.videoUrl }); targeted.add(foreign.id); return; }
+      R.nameConflicts.push({ ...v, why:'Ćwiczenie o tej nazwie ma już inny film z Twojego kanału' });
       return;
     }
-    usedNames.add(nn);
-    unmatched.push({ v, nn });
+    unmatched.push(v);
   });
-  // przebieg 2: dla reszty szukamy PODOBNYCH ćwiczeń bez linku (tylko podpowiedź - domyślnie dodajemy jako nowe)
-  const candidates = (lib||[]).filter(l => !getYoutubeId(l.videoUrl) && !targeted.has(l.id)).map(l => ({ l, key: ytNormName(l.name) }));
-  unmatched.forEach(({ v, nn }) => {
-    let best = null, bestScore = 0.9;   // 0.9 = tylko literowki; warianty (obunoz/jednonoz ~0.87) NIE sa podpowiadane
-    candidates.forEach(c => { const sc = ytSimilarity(nn, c.key); if(sc >= bestScore){ best = c.l; bestScore = sc; } });
-    result.newItems.push(best ? { ...v, suggest: { id: best.id, name: best.name } } : v);
+  const cands = (lib||[]).filter(l => !targeted.has(l.id) && !isMine(l));
+  const pairs = [];
+  unmatched.forEach(v => cands.forEach(l => { const sc = ytNameSimilarity(v.title, l.name); if(sc >= YT_SIMILAR_MIN) pairs.push({v, l, sc}); }));
+  pairs.sort((x, y) => y.sc - x.sc);
+  const usedV = new Set(), usedL = new Set();
+  pairs.forEach(pp => {
+    if(usedV.has(pp.v.videoId) || usedL.has(pp.l.id)) return;
+    usedV.add(pp.v.videoId); usedL.add(pp.l.id);
+    R.similar.push({ ...pp.v, targetId: pp.l.id, targetName: pp.l.name, targetGroupId: pp.l.groupId || null, targetVideoUrl: pp.l.videoUrl || '', notMoveU: !!pp.l.notMoveU, score: Math.round(pp.sc * 100) / 100 });
   });
-  byVid.forEach((items, vid) => {
-    if(items.length > 1) result.dupLinksInLib.push({ videoId: vid, names: items.map(l => l.name) });
-  });
-  return result;
+  unmatched.forEach(v => { if(!usedV.has(v.videoId)) R.newItems.push(v); });
+  byVid.forEach((items, vid) => { if(items.length > 1) R.dupLinksInLib.push({ videoId: vid, names: items.map(l => l.name) }); });
+  return R;
 }
 
-/* Buduje nową bibliotekę: ŚWIEŻA wersja z bazy + zmiany. NIC nie usuwa.
-   attach - uzupełnia link w istniejącym ćwiczeniu BEZ linku (zdejmuje też znacznik "DO NAGRANIA")
-   addNew - dopisuje nowe ćwiczenia na końcu */
+/* Buduje nowa biblioteke ze SWIEZEJ wersji z bazy. NIC nie usuwa. */
 function applyYtSyncSelection(freshLib, sel){
-  const attachMap = new Map();   // id cwiczenia -> videoId
   const haveVid = new Set(freshLib.map(l => getYoutubeId(l.videoUrl)).filter(Boolean));
-  let attached = 0, skippedAttach = 0;
-  ((sel && sel.attach) || []).forEach(a => {
-    const target = freshLib.find(l => l.id === a.targetId);
-    if(!target || getYoutubeId(target.videoUrl) || haveVid.has(a.videoId) || attachMap.has(a.targetId)){ skippedAttach++; return; }
-    attachMap.set(a.targetId, a.videoId); haveVid.add(a.videoId); attached++;
+  const changes = new Map();
+  let attached = 0, replaced = 0, skippedAttach = 0;
+  const one = (a, mode) => {
+    const t = freshLib.find(l => l.id === a.targetId);
+    const linked = t && String(t.videoUrl||'').trim() !== '';
+    if(!t || changes.has(t.id) || haveVid.has(a.videoId) || (mode === 'attach' && linked)){ skippedAttach++; return; }
+    changes.set(t.id, { videoId: a.videoId, newName: a.newName || '', prev: linked ? t.videoUrl : '' });
+    haveVid.add(a.videoId);
+    if(linked) replaced++; else attached++;
+  };
+  ((sel && sel.attach) || []).forEach(a => one(a, 'attach'));
+  ((sel && sel.replace) || []).forEach(a => one(a, 'replace'));
+  const out = freshLib.map(l => {
+    const c = changes.get(l.id);
+    if(!c) return l;
+    const n = { ...l, videoUrl: 'https://www.youtube.com/watch?v=' + c.videoId, notMoveU: false };
+    if(c.prev) n.prevVideoUrl = c.prev;
+    if(c.newName.trim()) n.name = c.newName.trim();
+    return n;
   });
-  const out = freshLib.map(l => attachMap.has(l.id)
-    ? { ...l, videoUrl: 'https://www.youtube.com/watch?v=' + attachMap.get(l.id), notMoveU: false }
-    : l);
   const base = Date.now();
   let added = 0;
   ((sel && sel.addNew) || []).forEach((v, i) => {
-    if(haveVid.has(v.videoId)) return;   // ostatnia kontrola duplikatu
+    if(haveVid.has(v.videoId)) return;
     haveVid.add(v.videoId);
     out.push({ id: 'l_' + base + '_' + i, name: cleanYtTitle(v.title), videoUrl: 'https://www.youtube.com/watch?v=' + v.videoId, groupId: null });
     added++;
   });
-  return { list: out, added, attached, skippedAttach };
+  return { list: out, added, attached, replaced, skippedAttach };
 }
 function buildLibraryWithAdditions(freshLib, toAdd){
   const r = applyYtSyncSelection(freshLib, { addNew: toAdd, attach: [] });
@@ -4692,8 +4792,10 @@ async function runYtSync(){
     const lib = freshLib === null ? library : freshLib;
     ytSyncResult = classifyYtSync(lib, videos);
     ytSyncResult.total = videos.length;
+    await safeSet('youtube_channel_videos', { at: new Date().toISOString(), videos });
     setStatus('');
-    renderYtSyncModal();
+    ytReview = { idx: 0, decisions: [] };
+    if(ytSyncResult.similar.length) renderYtReview(); else renderYtSyncModal();
   }catch(e){
     setStatus('');
     alert(e.message || 'Nie udało się pobrać filmów z YouTube.');
@@ -4704,64 +4806,97 @@ async function runYtSync(){
 
 function ytThumb(id){ return `<img src="https://img.youtube.com/vi/${id}/mqdefault.jpg" loading="lazy" alt="">`; }
 
+let ytReview = { idx: 0, decisions: [] };
+
+/* Okno porownania PODOBNYCH nazw - jedna para naraz */
+function renderYtReview(){
+  const r = ytSyncResult, i = ytReview.idx, pr = r.similar[i];
+  const box = $('ytSyncModalContent');
+  const grp = libraryGroups.find(g => g.id === pr.targetGroupId);
+  const curId = getYoutubeId(pr.targetVideoUrl);
+  const linked = String(pr.targetVideoUrl||'').trim() !== '';
+  const prev = ytReview.decisions[i];
+  box.innerHTML = `<span class="modal-close" id="ytSyncCloseBtn">✕</span>
+    <h3 style="margin-bottom:2px;">Podobna nazwa — czy to to samo ćwiczenie?</h3>
+    <div class="yt-sync-info">Para ${i+1} z ${r.similar.length} · różnice w nazwach są podświetlone</div>
+    <div class="ytc-grid">
+      <div class="ytc-side"><div class="ytc-lbl">📱 W aplikacji</div><div class="ytc-nm">${ytHighlight(pr.targetName, pr.title)}</div>
+        <div class="ytc-meta">Grupa: ${grp ? escapeHtml(grp.name) : 'Bez grupy'}<br>Obecny film: ${linked ? '<b style="color:#C9682E;">spoza Twojego kanału</b>' : '<b>brak</b>'}</div>
+        ${curId ? `<div class="ytc-thumb">${ytThumb(curId)}</div>` : `<div class="ytc-thumb none">${linked ? 'link spoza YouTube' : 'brak filmu'}</div>`}</div>
+      <div class="ytc-arrow">⇄</div>
+      <div class="ytc-side"><div class="ytc-lbl">▶️ Na Twoim kanale YouTube</div><div class="ytc-nm">${ytHighlight(pr.title, pr.targetName)}</div>
+        <div class="ytc-meta">youtu.be/${escapeHtml(pr.videoId)}<br>&nbsp;</div><div class="ytc-thumb">${ytThumb(pr.videoId)}</div></div>
+    </div>
+    <div class="ytc-q">${linked ? 'Zamienić obecny film na ten z Twojego kanału?' : 'Przypisać ten film do ćwiczenia z aplikacji?'}</div>
+    <div class="ytc-qsub">Nazwa i grupa ćwiczenia zostaną bez zmian${pr.notMoveU ? ' · znacznik „DO NAGRANIA” zniknie' : ''}.</div>
+    <label class="ytc-rename"><input type="checkbox" id="ytcRename" ${prev && prev.rename ? 'checked' : ''}> Ustaw też nazwę jak na YouTube („${escapeHtml(cleanYtTitle(pr.title))}”)</label>
+    <div class="ytc-choices">
+      <button class="btn ghost" id="ytcSkip">Pomiń</button>
+      <button class="btn ghost" id="ytcNew">To inne ćwiczenie — dodaj jako nowe</button>
+      <button class="btn" id="ytcYes" style="background:#2E9E5B;">✓ Zamień</button>
+    </div>
+    <div class="ytc-foot"><div class="ytc-prog">${r.similar.map((_, k) => `<i class="${k < i ? 'done' : (k === i ? 'cur' : '')}"></i>`).join('')}</div>
+      <button class="btn ghost small" id="ytcBack" ${i === 0 ? 'disabled' : ''}>← Poprzednia para</button></div>`;
+  $('ytSyncModal').style.display = 'flex';
+  $('ytSyncCloseBtn').onclick = () => { $('ytSyncModal').style.display = 'none'; };
+  const decide = act => {
+    ytReview.decisions[i] = { a: act, rename: $('ytcRename').checked };
+    if(i < r.similar.length - 1){ ytReview.idx++; renderYtReview(); } else renderYtSyncModal();
+  };
+  $('ytcYes').onclick = () => decide('swap');
+  $('ytcNew').onclick = () => decide('new');
+  $('ytcSkip').onclick = () => decide('skip');
+  $('ytcBack').onclick = () => { if(ytReview.idx > 0){ ytReview.idx--; renderYtReview(); } };
+}
+
+/* Podsumowanie przed zapisem */
 function renderYtSyncModal(){
   const r = ytSyncResult;
   const box = $('ytSyncModalContent');
-  const total = r.linkable.length + r.newItems.length + r.nameConflicts.length;
-  const item = (v, checked, inner) => `
-    <div class="yt-sync-item">
-      <label class="yt-sync-row">
-        <input type="checkbox" class="yt-sync-check" data-vid="${escapeHtml(v.videoId)}" ${checked?'checked':''}>
-        ${ytThumb(v.videoId)}
-        <div style="min-width:0;"><div>${escapeHtml(v.title||'(bez tytułu)')}</div>${inner||''}</div>
-      </label>
-      ${v.suggest ? `<div class="yt-sync-suggest">💡 Podobne ćwiczenie bez linku:
-        <select class="yt-sync-target-sel" data-vid="${escapeHtml(v.videoId)}">
-          <option value="">Dodaj jako nowe ćwiczenie</option>
-          <option value="${escapeHtml(v.suggest.id)}">Przypisz do: ${escapeHtml(v.suggest.name)}</option>
-        </select></div>` : ''}
-    </div>`;
+  const dec = i => ytReview.decisions[i] || { a: 'skip' };
+  const row = (key, checked, title, small, disabled) => `
+    <label class="yt-sync-row ytc-sumrow">
+      <input type="checkbox" class="yt-sync-check" data-key="${key}" ${checked ? 'checked' : ''} ${disabled ? 'disabled' : ''}>
+      ${ytThumb(key.split(':')[1])}
+      <div style="min-width:0;"><div>${title}</div><div class="yt-sync-info">${small}</div></div>
+    </label>`;
+  const oldLink = u => getYoutubeId(u) ? 'youtu.be/' + getYoutubeId(u) : escapeHtml(u);
+  const actionable = r.replaceItems.length + r.linkable.length + r.similar.length + r.newItems.length + r.nameConflicts.length;
   let html = `<span class="modal-close" id="ytSyncCloseBtn">✕</span>
-    <h3 style="margin-bottom:4px;">Synchronizacja z YouTube</h3>
+    <h3 style="margin-bottom:4px;">Podsumowanie synchronizacji</h3>
     <div class="yt-sync-info">Sprawdzono ${r.total} filmów. Pominięto ${r.skipped} — już są w bibliotece.</div>`;
-  if(total === 0){
-    html += `<div style="margin:16px 0;font-weight:600;">✅ Biblioteka jest aktualna — brak nowych filmów.</div>`;
-  }
-  if(r.linkable.length){
-    html += `<div class="yt-sync-h">🔗 Uzupełnij link w istniejących ćwiczeniach: ${r.linkable.length}</div>
-      <div class="yt-sync-info">Nazwa filmu pasuje do ćwiczenia, które nie miało jeszcze linku. Zostanie tylko dopisany link (bez duplikatu) i zdjęty znacznik „DO NAGRANIA”.</div>
-      <div class="yt-sync-sec">${r.linkable.map(v => item(v, true, `<div class="yt-sync-target">→ ćwiczenie: <b>${escapeHtml(v.targetName)}</b></div>`)).join('')}</div>`;
-  }
-  if(r.newItems.length){
-    html += `<div class="yt-sync-h">➕ Nowe ćwiczenia: ${r.newItems.length}</div>
-      <div class="yt-sync-sec">${r.newItems.map(v => item(v, true, '')).join('')}</div>`;
-  }
-  if(r.nameConflicts.length){
-    html += `<div class="yt-sync-h">⚠️ Do sprawdzenia: ${r.nameConflicts.length}</div>
-      <div class="yt-sync-sec">${r.nameConflicts.map(v => item(v, false, `<div class="yt-sync-warn">${escapeHtml(v.why || 'Ćwiczenie o tej nazwie już istnieje')}</div>`)).join('')}</div>`;
-  }
-  if(r.sameVideoDiffName.length){
-    html += `<details class="yt-sync-sec"><summary>ℹ️ Ten sam film, inna nazwa: ${r.sameVideoDiffName.length}</summary>
-      <div class="yt-sync-info" style="margin-bottom:6px;">Nie zostaną dodane. Nazwy w bibliotece zostają bez zmian — popraw ręcznie, jeśli chcesz.</div>
-      ${r.sameVideoDiffName.map(v => `<div class="yt-sync-row">${ytThumb(v.videoId)}<div style="min-width:0;"><div><b>YouTube:</b> ${escapeHtml(v.title)}</div><div><b>Biblioteka:</b> ${v.libNames.map(escapeHtml).join(', ')}</div></div></div>`).join('')}
-    </details>`;
-  }
-  if(r.dupLinksInLib.length){
-    html += `<details class="yt-sync-sec"><summary>ℹ️ Ten sam link w kilku ćwiczeniach biblioteki: ${r.dupLinksInLib.length}</summary>
-      <div class="yt-sync-info" style="margin-bottom:6px;">Tylko informacja — prawdopodobnie błąd przy wklejaniu linku.</div>
-      ${r.dupLinksInLib.map(d => `<div class="yt-sync-row">${ytThumb(d.videoId)}<div style="min-width:0;"><div>${d.names.map(escapeHtml).join(' · ')}</div><div class="yt-sync-info">youtu.be/${escapeHtml(d.videoId)}</div></div></div>`).join('')}
-    </details>`;
-  }
-  html += `<div class="yt-sync-info" style="margin:14px 0 10px;">Nowe ćwiczenia trafią do „Bez grupy”. Nic nie zostanie usunięte.</div>
-    <div style="display:flex;gap:8px;justify-content:flex-end;">
-      <button class="btn ghost" id="ytSyncCancelBtn">${total ? 'Anuluj' : 'Zamknij'}</button>
-      ${total ? `<button class="btn" id="ytSyncAddBtn" style="background:#E8604A;">Zastosuj zaznaczone (<span id="ytSyncSelCount">0</span>)</button>` : ''}
+  if(actionable === 0) html += `<div style="margin:16px 0;font-weight:600;">✅ Biblioteka jest aktualna — brak nowych filmów.</div>`;
+  if(r.replaceItems.length) html += `<div class="yt-sync-h">🔁 Ta sama nazwa — film spoza kanału zamieniony na Twój: ${r.replaceItems.length}</div>
+    <div class="yt-sync-sec">${r.replaceItems.map(v => row('rep:' + v.videoId, true, escapeHtml(v.targetName), `<s>${oldLink(v.oldUrl)}</s> → youtu.be/${escapeHtml(v.videoId)}`)).join('')}</div>`;
+  if(r.linkable.length) html += `<div class="yt-sync-h">🔗 Ta sama nazwa — uzupełniony brakujący link: ${r.linkable.length}</div>
+    <div class="yt-sync-sec">${r.linkable.map(v => row('lnk:' + v.videoId, true, escapeHtml(v.targetName), `brak → youtu.be/${escapeHtml(v.videoId)}`)).join('')}</div>`;
+  if(r.similar.length) html += `<div class="yt-sync-h">⇄ Podobne nazwy — Twoje decyzje: ${r.similar.length}</div>
+    <div class="yt-sync-sec">${r.similar.map((v, i) => {
+      const d = dec(i);
+      if(d.a === 'swap') return row('sim:' + v.videoId, true, escapeHtml(v.targetName) + (d.rename ? ` → <b>${escapeHtml(cleanYtTitle(v.title))}</b>` : ''), `${v.targetVideoUrl ? '<s>' + oldLink(v.targetVideoUrl) + '</s>' : 'brak'} → youtu.be/${escapeHtml(v.videoId)}`);
+      if(d.a === 'new') return row('sim:' + v.videoId, true, 'Nowe ćwiczenie: ' + escapeHtml(cleanYtTitle(v.title)), 'doda się jako osobne ćwiczenie');
+      return row('sim:' + v.videoId, false, escapeHtml(v.title), 'pominięte', true);
+    }).join('')}</div>`;
+  if(r.newItems.length) html += `<div class="yt-sync-h">➕ Nowe ćwiczenia: ${r.newItems.length}</div>
+    <div class="yt-sync-sec">${r.newItems.map(v => row('new:' + v.videoId, true, escapeHtml(cleanYtTitle(v.title)), 'trafi do „Bez grupy”')).join('')}</div>`;
+  if(r.nameConflicts.length) html += `<div class="yt-sync-h">⚠️ Do sprawdzenia: ${r.nameConflicts.length}</div>
+    <div class="yt-sync-sec">${r.nameConflicts.map(v => row('con:' + v.videoId, false, escapeHtml(v.title || '(bez tytułu)'), escapeHtml(v.why || '') + ' · zaznacz, żeby dodać jako osobne ćwiczenie')).join('')}</div>`;
+  if(r.sameVideoDiffName.length) html += `<details class="yt-sync-sec"><summary>ℹ️ Ten sam film, inna nazwa: ${r.sameVideoDiffName.length}</summary>
+    ${r.sameVideoDiffName.map(v => `<div class="yt-sync-row">${ytThumb(v.videoId)}<div style="min-width:0;"><div><b>YouTube:</b> ${escapeHtml(v.title)}</div><div><b>Biblioteka:</b> ${v.libNames.map(escapeHtml).join(', ')}</div></div></div>`).join('')}</details>`;
+  if(r.dupLinksInLib.length) html += `<details class="yt-sync-sec"><summary>ℹ️ Ten sam link w kilku ćwiczeniach: ${r.dupLinksInLib.length}</summary>
+    ${r.dupLinksInLib.map(d => `<div class="yt-sync-row">${ytThumb(d.videoId)}<div style="min-width:0;">${d.names.map(escapeHtml).join(' · ')}</div></div>`).join('')}</details>`;
+  html += `<div class="yt-sync-info" style="margin:14px 0 10px;">Nazwy i grupy ćwiczeń zostają (chyba że wybrałeś nazwę z YouTube). Stary link zostaje zapamiętany. Nic nie zostanie usunięte.</div>
+    <div style="display:flex;gap:8px;justify-content:space-between;align-items:center;">
+      ${r.similar.length ? '<button class="btn ghost" id="ytSyncBackBtn">← Wróć do porównań</button>' : '<span></span>'}
+      <div style="display:flex;gap:8px;"><button class="btn ghost" id="ytSyncCancelBtn">${actionable ? 'Anuluj' : 'Zamknij'}</button>
+      ${actionable ? `<button class="btn" id="ytSyncAddBtn" style="background:#E8604A;">Zastosuj zaznaczone (<span id="ytSyncSelCount">0</span>)</button>` : ''}</div>
     </div>`;
   box.innerHTML = html;
   $('ytSyncModal').style.display = 'flex';
   const close = () => { $('ytSyncModal').style.display = 'none'; };
   $('ytSyncCloseBtn').onclick = close;
   $('ytSyncCancelBtn').onclick = close;
+  if($('ytSyncBackBtn')) $('ytSyncBackBtn').onclick = () => { ytReview.idx = r.similar.length - 1; renderYtReview(); };
   const updateCount = () => { const c = $('ytSyncSelCount'); if(c) c.textContent = box.querySelectorAll('.yt-sync-check:checked').length; };
   box.querySelectorAll('.yt-sync-check').forEach(cb => cb.onchange = updateCount);
   updateCount();
@@ -4770,41 +4905,105 @@ function renderYtSyncModal(){
 
 async function addSelectedYtVideos(){
   const box = $('ytSyncModalContent');
-  const ids = new Set([...box.querySelectorAll('.yt-sync-check:checked')].map(cb => cb.dataset.vid));
-  if(ids.size === 0){ alert('Nie zaznaczono żadnego filmu.'); return; }
+  const on = new Set([...box.querySelectorAll('.yt-sync-check:checked')].map(cb => cb.dataset.key));
+  if(on.size === 0){ alert('Nie zaznaczono żadnego filmu.'); return; }
   const r = ytSyncResult;
-  const attach = [], addNew = [];
-  r.linkable.filter(v => ids.has(v.videoId)).forEach(v => attach.push({ videoId: v.videoId, targetId: v.targetId }));
-  r.newItems.concat(r.nameConflicts).filter(v => ids.has(v.videoId)).forEach(v => {
-    const sel = [...box.querySelectorAll('.yt-sync-target-sel')].find(x => x.dataset.vid === v.videoId);
-    if(sel && sel.value) attach.push({ videoId: v.videoId, targetId: sel.value });
-    else addNew.push(v);
+  const attach = [], replace = [], addNew = [];
+  r.replaceItems.forEach(v => { if(on.has('rep:' + v.videoId)) replace.push({ videoId: v.videoId, targetId: v.targetId }); });
+  r.linkable.forEach(v => { if(on.has('lnk:' + v.videoId)) attach.push({ videoId: v.videoId, targetId: v.targetId }); });
+  r.similar.forEach((v, i) => {
+    if(!on.has('sim:' + v.videoId)) return;
+    const d = ytReview.decisions[i] || { a: 'skip' };
+    if(d.a === 'swap'){
+      const item = { videoId: v.videoId, targetId: v.targetId, newName: d.rename ? cleanYtTitle(v.title) : '' };
+      (String(v.targetVideoUrl||'').trim() ? replace : attach).push(item);
+    } else if(d.a === 'new') addNew.push(v);
   });
+  r.newItems.forEach(v => { if(on.has('new:' + v.videoId)) addNew.push(v); });
+  r.nameConflicts.forEach(v => { if(on.has('con:' + v.videoId)) addNew.push(v); });
   const btn = $('ytSyncAddBtn');
   if(btn){ btn.disabled = true; btn.textContent = 'Zapisywanie…'; }
-  // ŚWIEŻA biblioteka z bazy tuż przed zapisem (ochrona przed nadpisaniem z innej karty)
   const fresh = await safeGet('exercise_library');
   if(fresh === null){
     alert('Nie udało się pobrać aktualnej biblioteki z bazy. Nic nie zostało zapisane — spróbuj ponownie.');
     if(btn){ btn.disabled = false; btn.textContent = 'Zastosuj zaznaczone'; }
     return;
   }
-  const { list, added, attached, skippedAttach } = applyYtSyncSelection(fresh, { addNew, attach });
+  const { list, added, attached, replaced, skippedAttach } = applyYtSyncSelection(fresh, { attach, replace, addNew });
   if(list.length < fresh.length){ alert('Błąd bezpieczeństwa — przerwano zapis.'); return; }
-  const ok = (added === 0 && attached === 0) ? true : await persistWithFeedback('exercise_library', list);
-  if(!ok){
-    if(btn){ btn.disabled = false; btn.textContent = 'Zastosuj zaznaczone'; }
-    return; // persistWithFeedback już pokazał alert
-  }
+  const ok = (added + attached + replaced === 0) ? true : await persistWithFeedback('exercise_library', list);
+  if(!ok){ if(btn){ btn.disabled = false; btn.textContent = 'Zastosuj zaznaczone'; } return; }
   library = list;
   const settingsFresh = (await safeGet(YT_SYNC_KEY)) || ytSyncSettings || {};
-  ytSyncSettings = { ...settingsFresh, lastSync: { at: new Date().toISOString(), added, attached } };
+  ytSyncSettings = { ...settingsFresh, lastSync: { at: new Date().toISOString(), added, attached, replaced } };
   await safeSet(YT_SYNC_KEY, ytSyncSettings);
   $('ytSyncModal').style.display = 'none';
   renderLibraryList();
   if($('libFullRows')) renderLibFullTable();
   renderYtSyncLast();
-  alert(`Dodano nowych ćwiczeń: ${added}. Uzupełniono link w istniejących: ${attached}.` + (skippedAttach ? `\nPominięto ${skippedAttach} (ćwiczenie miało już link).` : ''));
+  alert(`Zamieniono filmy: ${replaced}. Uzupełniono linki: ${attached}. Nowe ćwiczenia: ${added}.` + (skippedAttach ? `\nPominięto ${skippedAttach} (w międzyczasie zmienione w bibliotece).` : ''));
+}
+
+/* RECZNE LACZENIE: wybor filmu z kanalu dla cwiczenia bez linku */
+async function openYtPicker(exId){
+  const ex = library.find(l => l.id === exId);
+  if(!ex) return;
+  let cache = await safeGet('youtube_channel_videos');
+  if(!cache || !Array.isArray(cache.videos) || !cache.videos.length){
+    await loadYtSyncSettings();
+    if(ytSyncSettings && ytSyncSettings.source && ytSyncSettings.apiKey){
+      try{
+        setStatus('Pobieram filmy z kanału…');
+        const videos = await fetchYtVideos(ytSyncSettings);
+        cache = { at: new Date().toISOString(), videos };
+        await safeSet('youtube_channel_videos', cache);
+      }catch(e){ setStatus(''); alert(e.message || 'Nie udało się pobrać filmów z YouTube.'); return; }
+      setStatus('');
+    } else {
+      alert('Najpierw ustaw link do kanału i klucz API w „Narzędzia biblioteki → Synchronizacja z YouTube”.');
+      return;
+    }
+  }
+  const used = new Map();
+  library.forEach(l => { const id = getYoutubeId(l.videoUrl); if(id) used.set(id, l.name); });
+  const vids = cache.videos.map(v => ({ ...v, sc: ytNameSimilarity(v.title, ex.name) })).sort((x, y) => y.sc - x.sc);
+  const box = $('ytSyncModalContent');
+  box.innerHTML = `<span class="modal-close" id="ytSyncCloseBtn">✕</span>
+    <h3 style="margin-bottom:2px;">Wybierz film z Twojego kanału</h3>
+    <div class="yt-sync-info">Dla ćwiczenia: <b>${escapeHtml(ex.name)}</b> · najbardziej podobne tytuły na górze · lista filmów z ${escapeHtml(new Date(cache.at).toLocaleDateString('pl-PL'))}</div>
+    <input id="ytPickSearch" placeholder="🔍 Szukaj w tytułach filmów…" autocomplete="off">
+    <div id="ytPickList" class="yt-pick-list"></div>`;
+  $('ytSyncModal').style.display = 'flex';
+  $('ytSyncCloseBtn').onclick = () => { $('ytSyncModal').style.display = 'none'; };
+  const draw = q => {
+    const tokens = plSearchKey(q || '').split(/\s+/).filter(Boolean);
+    const list = vids.filter(v => tokens.every(t => plSearchKey(v.title).includes(t)));
+    $('ytPickList').innerHTML = list.slice(0, 80).map(v => {
+      const u = used.get(v.videoId);
+      return `<div class="yt-pick-row ${u ? 'used' : ''}" data-vid="${escapeHtml(v.videoId)}">${ytThumb(v.videoId)}
+        <div style="min-width:0;flex:1;"><div>${escapeHtml(v.title)}</div>${u ? `<div class="yt-sync-info">już przypisany do: ${escapeHtml(u)}</div>` : ''}</div>
+        ${u ? '' : '<button class="btn small" type="button">Wybierz</button>'}</div>`;
+    }).join('') || '<div class="yt-sync-info" style="padding:12px;">Brak filmów pasujących do wyszukiwania.</div>';
+    $('ytPickList').querySelectorAll('.yt-pick-row:not(.used)').forEach(rw => rw.onclick = () => assignYtToExercise(exId, rw.dataset.vid));
+  };
+  $('ytPickSearch').oninput = e => draw(e.target.value);
+  draw('');
+}
+async function assignYtToExercise(exId, videoId){
+  const fresh = await safeGet('exercise_library');
+  if(fresh === null){ alert('Nie udało się pobrać aktualnej biblioteki. Nic nie zapisano.'); return; }
+  const t = fresh.find(l => l.id === exId);
+  if(!t){ alert('Tego ćwiczenia nie ma już w bibliotece.'); return; }
+  if(fresh.some(l => getYoutubeId(l.videoUrl) === videoId)){ alert('Ten film jest już przypisany do innego ćwiczenia.'); return; }
+  if(String(t.videoUrl||'').trim() && !confirm(`„${t.name}” ma już link. Zamienić na wybrany film?`)) return;
+  const list = fresh.map(l => l.id !== exId ? l : Object.assign({}, l, { videoUrl: 'https://www.youtube.com/watch?v=' + videoId, notMoveU: false }, String(l.videoUrl||'').trim() ? { prevVideoUrl: l.videoUrl } : {}));
+  const ok = await persistWithFeedback('exercise_library', list);
+  if(!ok) return;
+  library = list;
+  $('ytSyncModal').style.display = 'none';
+  renderLibFullTable();
+  renderLibraryList();
+  toast('Przypisano film do ćwiczenia');
 }
 
 function renderLibraryList(){
@@ -4987,6 +5186,7 @@ let athleteLocked = false;   // zawodniczka zalogowana na wlasne konto - bez wyb
 let aRosterMode = null;      // {orgId, subId} - lista zespolu po lewej + plan po prawej
 let aHomeOrgId = null;       // organizacja wybrana w kafelkach (jeszcze przed wyborem rocznika)
 let aRosterSearch = '';
+let aManualDate = null;       // dzien wybrany recznie w widoku zespolu - zostaje przy zmianie osoby
 
 function plPlural(n, one, few, many){
   if(n === 1) return one;
@@ -5178,12 +5378,21 @@ async function selectRosterPerson(id){
   await ensurePlanLoaded(id);
   setStatus('');
   if(aClientId !== id) return; // w miedzyczasie ktos kliknal inna osobe
-  aSelectedDateStr = pickDefaultDay(plansCache[id] || {});
+  aSelectedDateStr = aManualDate || pickDefaultDay(plansCache[id] || {});
   if(aSelectedDateStr){ const [y, m] = aSelectedDateStr.split('-'); aViewDate = new Date(parseInt(y, 10), parseInt(m, 10) - 1, 1); }
   aFlyoutOpen = false;
   refreshRosterNames();
   renderAthleteRosterCenter();
   applyContextTheme();
+}
+
+function athleteBackToToday(){
+  aManualDate = null;
+  aSelectedDateStr = pickDefaultDay(plansCache[aClientId] || {});
+  if(aSelectedDateStr){ const [y, m] = aSelectedDateStr.split('-'); aViewDate = new Date(parseInt(y, 10), parseInt(m, 10) - 1, 1); }
+  aDetailExId = null;
+  if($('aCalGrid')) renderAthleteCalendar();
+  renderAthleteDay();
 }
 
 function refreshAthleteView(){
@@ -5281,7 +5490,7 @@ function renderAthleteCalendar(){
     const hasExercises = !!dotClass;
     cell.innerHTML = `${d}` + (dotClass ? `<div class="dot ${dotClass}"></div>` : '');
     if(hasExercises){
-      cell.onclick = () => { aSelectedDateStr = dateStr; aDetailExId = null; renderAthleteCalendar(); renderAthleteDay(); };
+      cell.onclick = () => { aSelectedDateStr = dateStr; if(aRosterMode) aManualDate = dateStr; aDetailExId = null; renderAthleteCalendar(); renderAthleteDay(); };
     }
     grid.appendChild(cell);
   }
@@ -5291,7 +5500,15 @@ function renderAthleteDay(){
   const holder = $('aDayHolder');
   const plan = plansCache[aClientId] || {};
   const day = plan[aSelectedDateStr];
-  if(!day){ holder.innerHTML = ''; return; }
+  if(!day){
+    if(aRosterMode){
+      holder.innerHTML = aSelectedDateStr
+        ? `<div class="empty-state">Brak treningu w dniu <b>${escapeHtml(aSelectedDateStr)}</b>.${aManualDate ? '<br><button class="a-today-btn" id="aTodayBtn" style="margin-top:10px;">↺ Wróć do dziś</button>' : ''}</div>`
+        : '<div class="empty-state">Brak zaplanowanego treningu — otwórz kalendarz (zakładka KALENDARZ).</div>';
+      if($('aTodayBtn')) $('aTodayBtn').onclick = athleteBackToToday;
+    } else holder.innerHTML = '';
+    return;
+  }
 
   const sectionHtml = (cat, title) => {
     const items = day.exercises.filter(ex => ex.category === cat);
@@ -5331,7 +5548,7 @@ function renderAthleteDay(){
     </div>` : '';
 
   holder.innerHTML = `
-    <div class="a-daylabel"><h2>${aSelectedDateStr}</h2>${day.exercises.some(e=>e.isTest) ? '<span class="badge-test">TEST</span>':''}</div>
+    <div class="a-daylabel"><h2>${aSelectedDateStr}</h2>${day.exercises.some(e=>e.isTest) ? '<span class="badge-test">TEST</span>':''}${(aRosterMode && aManualDate) ? '<button class="a-today-btn" id="aTodayBtn">↺ Dziś</button><span class="a-pin">📌 ten dzień zostaje przy zmianie osoby</span>' : ''}</div>
     ${titleCardHtml}
     ${sectionHtml('warmup','Rozgrzewka')}
     ${sectionHtml('main','Ćwiczenia główne')}
@@ -5350,6 +5567,7 @@ function renderAthleteDay(){
 
 $('aExerciseModal').addEventListener('click', (e) => {
   if(e.target.id === 'aExerciseModal') closeExerciseModal();
+  if($('aTodayBtn')) $('aTodayBtn').onclick = athleteBackToToday;
 });
 
 function openExerciseModal(exId, day){
