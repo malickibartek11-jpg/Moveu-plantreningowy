@@ -660,6 +660,27 @@
   .cv-form{display:grid;grid-template-columns:140px 1fr;gap:8px 10px;align-items:center;font-size:12.5px;}
   .cv-form label{color:var(--muted);}
   .cv-ro{font-size:12.5px;}
+
+  /* ===== Ukonczone: 3 zakladki ===== */
+  .comp-miss-badge{display:inline-block;background:#B4472E;color:#fff;font-size:10.5px;font-weight:700;border-radius:9px;padding:1px 7px;margin-left:4px;}
+  .comp-filters{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:12px;}
+  .comp-per-l{margin-left:auto;font-size:12px;color:var(--muted);}
+  .comp-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px;}
+  .comp-tab{background:var(--surface);border:2px solid var(--line);border-radius:12px;padding:12px 14px;cursor:pointer;}
+  .comp-tab.on{border-color:#1C1C1C;}
+  .comp-n{font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:700;}
+  .comp-l{font-size:12.5px;font-weight:700;}
+  .comp-d{font-size:11px;color:var(--muted);margin-top:2px;}
+  .comp-list{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;}
+  .comp-it{display:flex;align-items:center;gap:12px;padding:10px 14px;border-top:1px solid var(--line);font-size:13px;flex-wrap:wrap;}
+  .comp-it:first-child{border-top:none;}
+  .comp-who{width:200px;} .comp-who b{display:block;} .comp-who span{font-size:11px;color:var(--muted);}
+  .comp-when{width:92px;font-family:'IBM Plex Mono',monospace;font-size:12px;} .comp-when small{display:block;color:var(--muted);font-size:10.5px;}
+  .comp-what{flex:1;min-width:140px;} .comp-what small{display:block;color:var(--muted);font-size:11px;}
+  .comp-bar{width:100px;height:8px;border-radius:4px;background:var(--surface-2);overflow:hidden;} .comp-bar i{display:block;height:100%;}
+  .comp-pct{width:40px;font-weight:700;font-size:12px;text-align:right;}
+  .comp-acts{display:flex;gap:6px;flex-wrap:wrap;}
+  .comp-info{font-size:11.5px;color:var(--muted);margin-top:10px;line-height:1.5;}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -861,8 +882,10 @@ async function handleAuthResult(session){
   }
 
   if(email === TRAINER_EMAIL.toLowerCase()){
+    isTrainerUser = true;
     showAppShell();
     renderCompletedTrainingsButton();
+    setTimeout(() => { computeCompletionBuckets(14, false).catch(e => console.warn(e)); }, 1200);
     return;
   }
 
@@ -1127,23 +1150,45 @@ async function refreshClientsFromDB(){
   // zachowujemy zaladowane juz plany, tylko odswieamy dane klientow (pending_completions itd.)
   clients = fresh;
   setStatus('');
+  refreshCompletionsIfNeeded().catch(e => console.warn(e));
 }
 
 async function loadClientsFromDB(){
   try{
     const { data, error } = await sbClient.from('app_clients').select('*');
     if(error){ console.error('Blad wczytywania klientow:', error); return []; }
-    return (data || []).map(clientRowToJs);
+    const list = (data || []).map(clientRowToJs);
+    list.forEach(c => { clientPendingBase[c.id] = deepClone(c.pendingCompletions || []); });
+    return list;
   }catch(e){ console.error('Wyjatek wczytywania klientow:', e); return []; }
 }
 /* Zapisuje JEDNEGO klienta (jeden wiersz) - nie nadpisuje calej tabeli, wiec dwie karty
    edytujace dwoch roznych klientow jednoczesnie nigdy sobie nie przeszkadzaja. */
+const clientPendingBase = {};
+/* Powiadomienia (pending_completions) scalamy ze swieza wersja z bazy - zeby zapis danych klienta
+   z innego urzadzenia (np. trener zmienia mase ciala) nie skasowal powiadomienia, ktore wlasnie doszlo. */
+async function mergePendingWithRemote(c){
+  try{
+    const { data, error } = await sbClient.from('app_clients').select('pending_completions').eq('id', c.id).maybeSingle();
+    if(error || !data) return;
+    const remote = data.pending_completions || [];
+    const base = clientPendingBase[c.id] || [];
+    const local = c.pendingCompletions || [];
+    const localDates = new Set(local.map(x => x.date));
+    const removedLocally = new Set(base.map(x => x.date).filter(d => !localDates.has(d)));
+    const merged = local.slice();
+    remote.forEach(x => { if(!localDates.has(x.date) && !removedLocally.has(x.date)){ merged.push(x); localDates.add(x.date); } });
+    c.pendingCompletions = merged;
+  }catch(e){}
+}
 async function saveClientRow(c){
   setStatus('Zapisywanie…');
   let lastError = null;
+  await mergePendingWithRemote(c);
   for(let attempt = 0; attempt < 3; attempt++){
     const { error } = await sbClient.from('app_clients').upsert(clientJsToRow(c));
     if(!error){
+      clientPendingBase[c.id] = deepClone(c.pendingCompletions || []);
       setStatus('Zapisano');
       setTimeout(()=>setStatus(''), 1200);
       return true;
@@ -1274,22 +1319,94 @@ async function flushOfflineQueue(){
   }
 }
 
-async function savePlanRow(clientId, plan){
+/* ===== ZAPIS PLANU BEZ NADPISYWANIA =====
+   planBase = ostatnia wersja planu, ktora znamy z bazy. Przed zapisem pobieramy swieza wersje
+   i scalamy 3-stronnie: to, co zmienilismy MY, wygrywa; to, co w miedzyczasie zmienil KTOS INNY
+   (np. zawodnik wpisal wyniki na telefonie), zostaje. Scalanie odbywa sie "w miejscu" - obiekty dni
+   i cwiczen otwarte na ekranie pozostaja tymi samymi obiektami. */
+const planBase = {};
+const deepClone = o => (o === undefined ? undefined : JSON.parse(JSON.stringify(o)));
+const sameJ = (a, b) => JSON.stringify(a === undefined ? null : a) === JSON.stringify(b === undefined ? null : b);
+function syncObjInPlace(t, src){
+  Object.keys(t).forEach(k => { if(!(k in src)) delete t[k]; });
+  Object.keys(src).forEach(k => { t[k] = deepClone(src[k]); });
+}
+function syncDayInPlace(t, src){
+  Object.keys(t).forEach(k => { if(k !== 'exercises' && !(k in src)) delete t[k]; });
+  Object.keys(src).forEach(k => { if(k !== 'exercises') t[k] = deepClone(src[k]); });
+  if(!Array.isArray(src.exercises)){ delete t.exercises; return; }
+  const oldById = new Map((Array.isArray(t.exercises) ? t.exercises : []).map(e => [e && e.id, e]));
+  const arr = Array.isArray(t.exercises) ? t.exercises : (t.exercises = []);
+  const next = src.exercises.map(se => { const te = (se && se.id != null) ? oldById.get(se.id) : null; if(te){ syncObjInPlace(te, se); return te; } return deepClone(se); });
+  arr.length = 0; next.forEach(x => arr.push(x));
+}
+function mergeDayInPlace(b, l, r){
+  const keys = new Set([...Object.keys(b), ...Object.keys(l), ...Object.keys(r)]);
+  keys.delete('exercises');
+  keys.forEach(k => { if(sameJ(l[k], b[k]) && !sameJ(r[k], b[k])){ if(r[k] === undefined) delete l[k]; else l[k] = deepClone(r[k]); } });
+  const bEx = new Map((b.exercises||[]).map(e => [e.id, e]));
+  const rEx = new Map((r.exercises||[]).map(e => [e.id, e]));
+  const lArr = Array.isArray(l.exercises) ? l.exercises : (l.exercises = []);
+  const lIds = new Set(lArr.map(e => e.id));
+  for(let i = lArr.length - 1; i >= 0; i--){
+    const le = lArr[i], be = bEx.get(le.id), re = rEx.get(le.id);
+    if(re === undefined){ if(be !== undefined && sameJ(le, be)) lArr.splice(i, 1); continue; }
+    if(be === undefined) continue;
+    const fk = new Set([...Object.keys(be), ...Object.keys(le), ...Object.keys(re)]);
+    fk.forEach(f => { if(sameJ(le[f], be[f]) && !sameJ(re[f], be[f])){ if(re[f] === undefined) delete le[f]; else le[f] = deepClone(re[f]); } });
+  }
+  (r.exercises||[]).forEach(re => { if(!lIds.has(re.id) && !bEx.has(re.id)) lArr.push(deepClone(re)); });
+}
+function mergePlanInPlace(base, local, remote){
+  base = base || {}; remote = remote || {};
+  const dates = new Set([...Object.keys(base), ...Object.keys(local), ...Object.keys(remote)]);
+  dates.forEach(d => {
+    const b = base[d], l = local[d], r = remote[d];
+    const lChanged = !sameJ(l, b), rChanged = !sameJ(r, b);
+    if(!lChanged){
+      if(!rChanged) return;
+      if(r === undefined){ delete local[d]; return; }
+      if(l && typeof l === 'object') syncDayInPlace(l, r); else local[d] = deepClone(r);
+      return;
+    }
+    if(!rChanged) return;                 // zmienilismy tylko my
+    if(l === undefined || r === undefined) return;   // usuniecie po jednej stronie - zostaje nasza wersja
+    mergeDayInPlace(b || {}, l, r);       // obie strony zmienily ten sam dzien - scalanie pol
+  });
+  return local;
+}
+async function savePlanRow(clientId, plan, opts){
+  const force = !!(opts && opts.force);
   setStatus('Zapisywanie…');
   let lastError = null;
   for(let attempt = 0; attempt < 3; attempt++){
-    const { error } = await sbClient.from('app_plans').upsert({ client_id: clientId, plan, updated_at: new Date().toISOString() });
-    if(!error){
-      setStatus('Zapisano');
-      setTimeout(()=>setStatus(''), 1200);
-      return true;
+    let ok = true;
+    if(!force){
+      try{
+        const { data, error: rErr } = await sbClient.from('app_plans').select('plan').eq('client_id', clientId).maybeSingle();
+        if(rErr){ lastError = rErr; ok = false; }
+        else {
+          const remote = (data && data.plan) || {};
+          backfillLibraryIds(remote);
+          mergePlanInPlace(planBase[clientId] || {}, plan, remote);
+        }
+      }catch(e){ lastError = e; ok = false; }
     }
-    lastError = error;
+    if(ok){
+      const { error } = await sbClient.from('app_plans').upsert({ client_id: clientId, plan, updated_at: new Date().toISOString() });
+      if(!error){
+        planBase[clientId] = deepClone(plan);
+        setStatus('Zapisano');
+        setTimeout(()=>setStatus(''), 1200);
+        return true;
+      }
+      lastError = error;
+    }
     if(attempt < 2){ setStatus(`Ponawiam zapis… (${attempt+2}/3)`); await new Promise(r => setTimeout(r, 900*(attempt+1))); }
   }
   console.error('Blad zapisu planu (po probach ponowienia):', lastError);
   setStatus('❌ BŁĄD ZAPISU');
-  alert('Nie udało się zapisać zmian w bazie danych!\n\nSprawdź połączenie z internetem i spróbuj tę zmianę jeszcze raz — w tej chwili NIE została ona zapisana i zniknie po odświeżeniu strony.');
+  alert('Nie udało się zapisać zmian w bazie danych!\n\nSprawdź połączenie z internetem i spróbuj tę zmianę jeszcze raz — w tej chwili NIE została ona zapisana.');
   return false;
 }
 
@@ -1358,37 +1475,47 @@ function isDayOverdue(day, dateStr){
   return cls !== 'dot-done' && cls !== 'dot-test';
 }
 
+/* Ile serii jest zaplanowanych / wpisanych w cwiczeniu */
+function exSlots(ex){
+  if(ex.splitLR){
+    const nR = Math.max(1, parseInt(ex.setsRight)||1), nL = Math.max(1, parseInt(ex.setsLeft)||1);
+    const logR = ex.logRight || [], logL = ex.logLeft || [];
+    let f = 0;
+    for(let i=0;i<nR;i++){ const e=logR[i]; if(e && (e.weight||e.reps)) f++; }
+    for(let i=0;i<nL;i++){ const e=logL[i]; if(e && (e.weight||e.reps)) f++; }
+    return { t: nR + nL, f };
+  }
+  const n = Math.max(1, parseInt(ex.sets)||1);
+  const log = ex.log || [];
+  if(ex.isInterval){
+    // interwal zapisuje jeden podsumowujacy wpis po calym ukonczeniu - liczy sie jako CALE cwiczenie
+    const done = log.length > 0 && (log[0].weight || log[0].reps);
+    return { t: n, f: done ? n : 0 };
+  }
+  let f = 0;
+  for(let i=0;i<n;i++){ const e = log[i]; if(e && (e.weight || e.reps)) f++; }
+  return { t: n, f };
+}
+/* Wypelnienie dnia: procent liczony z CWICZEN GLOWNYCH (rozgrzewki zwykle nikt nie wpisuje).
+   Gdy dzien ma tylko rozgrzewke - liczona jest rozgrzewka. anyFilled = cokolwiek wpisane. */
+function dayFill(day){
+  const exs = (day && day.exercises) || [];
+  const hasMain = exs.some(ex => ex.category !== 'warmup');
+  let total = 0, filled = 0, anyFilled = 0;
+  exs.forEach(ex => {
+    const sl = exSlots(ex);
+    anyFilled += sl.f;
+    if(!hasMain || ex.category !== 'warmup'){ total += sl.t; filled += sl.f; }
+  });
+  return { total, filled, anyFilled };
+}
 function getDayDotClass(day){
   if(!day || !day.exercises || day.exercises.length === 0) return null;
   const hasTest = day.exercises.some(ex => ex.category === 'main' && ex.isTest);
   if(hasTest) return 'dot-test';
-  let totalSlots = 0, filledSlots = 0;
-  day.exercises.forEach(ex => {
-    if(ex.splitLR){
-      const nR = Math.max(1, parseInt(ex.setsRight)||1);
-      const nL = Math.max(1, parseInt(ex.setsLeft)||1);
-      totalSlots += nR + nL;
-      const logR = ex.logRight || [], logL = ex.logLeft || [];
-      for(let i=0;i<nR;i++){ const e=logR[i]; if(e && (e.weight||e.reps)) filledSlots++; }
-      for(let i=0;i<nL;i++){ const e=logL[i]; if(e && (e.weight||e.reps)) filledSlots++; }
-      return;
-    }
-    const numSets = Math.max(1, parseInt(ex.sets)||1);
-    totalSlots += numSets;
-    const log = ex.log || [];
-    if(ex.isInterval){
-      // interwal zapisuje jeden podsumowujacy wpis po calym ukonczeniu - liczy sie jako CALE cwiczenie wypelnione
-      const done = log.length > 0 && (log[0].weight || log[0].reps);
-      if(done) filledSlots += numSets;
-      return;
-    }
-    for(let i=0;i<numSets;i++){
-      const entry = log[i];
-      if(entry && (entry.weight || entry.reps)) filledSlots++;
-    }
-  });
-  if(filledSlots === 0) return 'dot-planned';
-  return (filledSlots/totalSlots) >= 0.5 ? 'dot-done' : 'dot-incomplete';
+  const f = dayFill(day);
+  if(f.anyFilled === 0) return 'dot-planned';
+  return (f.total > 0 && f.filled / f.total >= 0.5) ? 'dot-done' : 'dot-incomplete';
 }
 /* Wywolywane po kazdym zapisie wyniku przez sportowca - sprawdza czy dzien
    przekroczyl prog 50% PIERWSZY RAZ, i jesli tak, dopisuje powiadomienie
@@ -1421,10 +1548,12 @@ async function checkAndMarkCompletion(clientId, dateStr, day){
 function renderCompletedTrainingsButton(){
   const btn = document.getElementById('completedTrainingsBtn');
   if(!btn) return;
-  const count = clients.reduce((sum, c) => sum + (c.pendingCompletions||[]).length, 0);
-  if(count > 0){
-    btn.className = 'add-client-btn completed-has-new';
-    btn.innerHTML = `<span class="completed-dot"></span>Ukończone treningi (${count})`;
+  const pendingCount = clients.reduce((sum, c) => sum + (c.pendingCompletions||[]).length, 0);
+  const count = lastCompletionBuckets ? lastCompletionBuckets.done.length : pendingCount;
+  const miss = lastCompletionBuckets ? lastCompletionBuckets.miss.length : 0;
+  if(count > 0 || miss > 0){
+    btn.className = 'add-client-btn' + (count > 0 ? ' completed-has-new' : '');
+    btn.innerHTML = `${count > 0 ? '<span class="completed-dot"></span>' : '📋 '}Ukończone treningi${count > 0 ? ` (${count})` : ''}${miss > 0 ? ` <span class="comp-miss-badge">⭕ ${miss}</span>` : ''}`;
   } else {
     btn.className = 'add-client-btn';
     btn.innerHTML = `📋 Ukończone treningi`;
@@ -1466,64 +1595,152 @@ async function resyncMissedCompletions(){
   renderCompletedTrainingsList();
 }
 
-async function markAllCompletionsReviewed(){
-  await refreshClientsFromDB();   // swieze dane - zeby nie skasowac powiadomien, ktore wlasnie doszly
-  const withPending = clients.filter(c => (c.pendingCompletions||[]).length);
-  const n = withPending.reduce((sum, c) => sum + c.pendingCompletions.length, 0);
-  if(!n){ renderCompletedTrainingsButton(); renderCompletedTrainingsList(); return; }
-  if(!confirm(`Oznaczyć wszystkie (${n}) ukończone treningi jako sprawdzone?\n\nZnikną z listy i nie wrócą po „Sprawdź brakujące”.`)) return;
-  setStatus('Oznaczam jako sprawdzone…');
-  for(const c of withPending){
-    const dates = c.pendingCompletions.map(pc => pc.date);
-    if(!getOfflineQueue().some(q => q.clientId === c.id)) delete plansCache[c.id];
+/* ===== UKONCZONE / CZESCIOWO / NIEWYKONANE - liczone na biezaco z planow ===== */
+let lastCompletionBuckets = null;
+let compTab = 'done', compGroup = 'all', compPeriod = 14;
+function dayAvgRpe(day){
+  const v = (day.exercises||[]).map(e => parseFloat(e.rpe)).filter(x => !isNaN(x));
+  return v.length ? Math.round(v.reduce((a, b) => a + b, 0) / v.length * 10) / 10 : null;
+}
+async function computeCompletionBuckets(periodDays, refetch){
+  const today = todayKey();
+  const from = addDaysToDateStr(today, -(periodDays || 30));
+  await Promise.all(clients.map(async c => {
+    if(refetch && !getOfflineQueue().some(q => q.clientId === c.id)) delete plansCache[c.id];
     await ensurePlanLoaded(c.id);
+  }));
+  const out = { done: [], part: [], miss: [] };
+  clients.forEach(c => {
     const plan = plansCache[c.id] || {};
-    let changed = false;
-    dates.forEach(d => { if(plan[d] && !plan[d].completionReviewed){ plan[d].completionReviewed = true; changed = true; } });
-    if(changed) await savePlanRow(c.id, plan);
-    c.pendingCompletions = (c.pendingCompletions||[]).filter(pc => !dates.includes(pc.date));
-    await saveClientRow(c);
+    Object.keys(plan).forEach(ds => {
+      if(ds < from || ds > today) return;
+      const day = plan[ds];
+      if(!day || !day.exercises || !day.exercises.length || day.completionReviewed) return;
+      const f = dayFill(day);
+      const pct = f.total ? Math.round(f.filled / f.total * 100) : 0;
+      const pc = (c.pendingCompletions||[]).find(x => x.date === ds);
+      const row = { clientId: c.id, name: c.name, orgId: c.groupId || null, group: clientGroupLabel(c), date: ds, title: day.title || '', pct, rpe: dayAvgRpe(day), time: pc ? pc.time : '' };
+      if(f.anyFilled === 0){ if(ds < today && !day.resolution) out.miss.push(row); return; }
+      if(f.total > 0 && f.filled / f.total >= 0.5) out.done.push(row);
+      else if(ds < today) out.part.push(row);
+    });
+  });
+  ['done','part','miss'].forEach(k => out[k].sort((x, y) => (y.date + (y.time||'')).localeCompare(x.date + (x.time||''))));
+  if((periodDays || 30) >= 14 || !lastCompletionBuckets) lastCompletionBuckets = out;
+  renderCompletedTrainingsButton();
+  return out;
+}
+/* Po odswiezeniu klientow: jesli przyszlo nowe powiadomienie, dociagamy plan tej osoby i liczymy na nowo */
+async function refreshCompletionsIfNeeded(){
+  if(!isTrainerUser) return;
+  const known = new Set(((lastCompletionBuckets && lastCompletionBuckets.done) || []).map(r => r.clientId + '|' + r.date));
+  const stale = clients.filter(c => (c.pendingCompletions||[]).some(pc => !known.has(c.id + '|' + pc.date)));
+  if(!stale.length && lastCompletionBuckets) return;
+  stale.forEach(c => { if(!getOfflineQueue().some(q => q.clientId === c.id)) delete plansCache[c.id]; });
+  await computeCompletionBuckets(14, false);
+}
+async function setDayFlags(clientId, dateStr, flags){
+  if(!getOfflineQueue().some(q => q.clientId === clientId)) delete plansCache[clientId];
+  await ensurePlanLoaded(clientId);
+  const day = (plansCache[clientId] || {})[dateStr];
+  if(!day) return false;
+  Object.assign(day, flags);
+  return await savePlanRow(clientId, plansCache[clientId]);
+}
+async function dropPendingDates(clientId, dates){
+  const c = clients.find(cl => cl.id === clientId);
+  if(!c || !(c.pendingCompletions||[]).some(pc => dates.includes(pc.date))) return;
+  c.pendingCompletions = c.pendingCompletions.filter(pc => !dates.includes(pc.date));
+  await saveClientRow(c);
+}
+async function markDayReviewed(clientId, dateStr){
+  if(await setDayFlags(clientId, dateStr, { completionReviewed: true })) await dropPendingDates(clientId, [dateStr]);
+}
+async function markAllCompletionsReviewed(){
+  const rows = filteredCompRows('done');
+  if(!rows.length) return;
+  if(!confirm(`Oznaczyć wszystkie (${rows.length}) ukończone treningi jako sprawdzone?\n\nZnikną z listy na stałe.`)) return;
+  setStatus('Oznaczam jako sprawdzone…');
+  const byClient = {};
+  rows.forEach(r => { (byClient[r.clientId] = byClient[r.clientId] || []).push(r.date); });
+  for(const id of Object.keys(byClient)){
+    if(!getOfflineQueue().some(q => q.clientId === id)) delete plansCache[id];
+    await ensurePlanLoaded(id);
+    const plan = plansCache[id] || {};
+    byClient[id].forEach(d => { if(plan[d]) plan[d].completionReviewed = true; });
+    if(await savePlanRow(id, plan)) await dropPendingDates(id, byClient[id]);
   }
   setStatus('');
-  renderCompletedTrainingsButton();
-  renderCompletedTrainingsList();
-  toast(`Oznaczono ${n} ${plPlural(n, 'trening', 'treningi', 'treningów')} jako sprawdzone`);
+  toast(`Oznaczono ${rows.length} ${plPlural(rows.length, 'trening', 'treningi', 'treningów')} jako sprawdzone`);
+  await renderCompletedTrainingsList(false);
 }
-
-function renderCompletedTrainingsList(){
+async function openClientPlanDay(clientId, dateStr){
+  await navigateTo(async () => {
+    trainerViewMode = 'clients';
+    selectedClientId = clientId;
+    renderClientList();
+    if(!getOfflineQueue().some(q => q.clientId === clientId)) delete plansCache[clientId];
+    await ensurePlanLoaded(clientId);
+    clientView = 'plan';
+    const [y, m] = dateStr.split('-').map(Number);
+    viewDate = new Date(y, m - 1, 1);
+    selectedDateStr = dateStr;
+    renderMain();
+    renderDayPanel();
+  });
+}
+function filteredCompRows(kind){
+  const b = lastCompletionBucketsView || { done: [], part: [], miss: [] };
+  return (b[kind] || []).filter(r => compGroup === 'all' || r.orgId === compGroup);
+}
+let lastCompletionBucketsView = null;
+async function renderCompletedTrainingsList(refetch){
   trainerViewMode = 'completed';
   selectedClientId = null;
   renderClientList();
   const main = $('main');
-  const rows = [];
-  clients.forEach(c => {
-    (c.pendingCompletions||[]).forEach(pc => rows.push({clientId: c.id, clientName: c.name, date: pc.date, time: pc.time}));
-  });
-  rows.sort((a,b) => (b.date+b.time).localeCompare(a.date+a.time));
-  const resyncBtnHtml = `<button class="btn ghost small" id="resyncCompletionsBtn" style="margin-bottom:16px;">🔄 Sprawdź brakujące powiadomienia (dla wszystkich klientów)</button>`;
-  if(rows.length === 0){
-    main.innerHTML = resyncBtnHtml + `<div class="empty-state">Brak nowych ukończonych treningów.</div>`;
-    $('resyncCompletionsBtn').onclick = resyncMissedCompletions;
-    return;
+  if(refetch !== false){
+    main.innerHTML = `<h2 style="font-family:'Space Grotesk';margin-bottom:10px;">Ukończone treningi</h2><div class="empty-state">Sprawdzam plany wszystkich osób…</div>`;
+    setStatus('Sprawdzam plany…');
   }
-  main.innerHTML = `
-    <h2 style="font-family:'Space Grotesk';margin-bottom:10px;">Ukończone treningi</h2>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:16px;">
-      <button class="btn small" id="markAllCompletionsBtn" style="background:#2E9E5B;">✓ Oznacz wszystkie (${rows.length}) jako sprawdzone</button>
-      ${resyncBtnHtml.replace('margin-bottom:16px;', '')}
+  lastCompletionBucketsView = await computeCompletionBuckets(compPeriod, refetch !== false);
+  setStatus('');
+  if(trainerViewMode !== 'completed') return;
+  const rows = filteredCompRows(compTab);
+  const cnt = { done: filteredCompRows('done').length, part: filteredCompRows('part').length, miss: filteredCompRows('miss').length };
+  const WD = ['ndz','pon','wt','śr','czw','pt','sob'];
+  const fmtD = ds => { const [y, m, d] = ds.split('-').map(Number); return WD[new Date(y, m-1, d).getDay()] + ' ' + String(d).padStart(2,'0') + '.' + String(m).padStart(2,'0'); };
+  const ago = ds => { const n = Math.round((new Date(todayKey()) - new Date(ds)) / 86400000); return n === 1 ? 'wczoraj' : n + ' dni temu'; };
+  const barCol = p => p >= 50 ? '#2E9E5B' : (p > 0 ? '#D9A21B' : '#B4472E');
+  const acts = r => compTab === 'miss'
+    ? `<button class="btn ghost small" data-res="agreed" data-c="${r.clientId}" data-d="${r.date}">Ustalone razem</button><button class="btn ghost small" data-res="client-skip" data-c="${r.clientId}" data-d="${r.date}">Pominięte przez klienta</button><button class="btn ghost small" data-open="${r.clientId}" data-d="${r.date}">Otwórz</button>`
+    : `<button class="btn ghost small" data-open="${r.clientId}" data-d="${r.date}">Otwórz</button><button class="btn ghost small" data-ok="${r.clientId}" data-d="${r.date}">✓ Sprawdzone</button>`;
+  main.innerHTML = `<h2 style="font-family:'Space Grotesk';margin-bottom:10px;">Ukończone treningi</h2>
+    <div class="comp-filters">
+      <span class="client-org-chip ${compGroup === 'all' ? 'active' : ''}" data-g="all">Wszyscy</span>
+      ${clientGroups.map(g => `<span class="client-org-chip ${compGroup === g.id ? 'active' : ''}" data-g="${g.id}">${escapeHtml(g.name)}</span>`).join('')}
+      <span class="comp-per-l">Okres:</span>${[7, 14, 30].map(p => `<span class="client-org-chip ${compPeriod === p ? 'active' : ''}" data-p="${p}">${p} dni</span>`).join('')}
     </div>
-    <div id="completedRows"></div>
-  `;
-  $('resyncCompletionsBtn').onclick = resyncMissedCompletions;
-  $('markAllCompletionsBtn').onclick = markAllCompletionsReviewed;
-  const holder = $('completedRows');
-  rows.forEach(r => {
-    const row = document.createElement('div');
-    row.className = 'completed-row';
-    row.innerHTML = `<div class="completed-nm">${escapeHtml(r.clientName)}</div><div class="completed-time">${escapeHtml(r.date)} · ${escapeHtml(r.time)}</div><div class="completed-chev">›</div>`;
-    row.onclick = () => navigateTo(() => openCompletedDay(r.clientId, r.date));
-    holder.appendChild(row);
-  });
+    <div class="comp-tabs">
+      <div class="comp-tab ${compTab === 'done' ? 'on' : ''}" data-t="done"><div class="comp-n" style="color:#2E9E5B">${cnt.done}</div><div class="comp-l">✅ Ukończone</div><div class="comp-d">≥ 50% serii w ćwiczeniach głównych</div></div>
+      <div class="comp-tab ${compTab === 'part' ? 'on' : ''}" data-t="part"><div class="comp-n" style="color:#D9A21B">${cnt.part}</div><div class="comp-l">🟡 Częściowo</div><div class="comp-d">1–49% · dni, które już minęły</div></div>
+      <div class="comp-tab ${compTab === 'miss' ? 'on' : ''}" data-t="miss"><div class="comp-n" style="color:#B4472E">${cnt.miss}</div><div class="comp-l">⭕ Niewykonane</div><div class="comp-d">był plan, dzień minął, nic nie wpisane</div></div>
+    </div>
+    ${compTab === 'done' && rows.length ? `<div style="margin-bottom:10px;"><button class="btn small" id="markAllCompletionsBtn" style="background:#2E9E5B;">✓ Oznacz wszystkie (${rows.length}) jako sprawdzone</button></div>` : ''}
+    <div class="comp-list">${rows.map(r => `<div class="comp-it">
+        <div class="comp-who"><b>${escapeHtml(r.name)}</b><span>${escapeHtml(r.group)}</span></div>
+        <div class="comp-when">${fmtD(r.date)}${r.time ? `<small>${escapeHtml(r.time)}</small>` : ''}</div>
+        <div class="comp-what">${escapeHtml(r.title || 'Trening')}<small>${compTab === 'miss' ? ago(r.date) + ' · brak wpisów' : (r.rpe !== null ? 'śr. RPE ' + r.rpe : '')}</small></div>
+        ${compTab !== 'miss' ? `<div class="comp-bar"><i style="width:${r.pct}%;background:${barCol(r.pct)}"></i></div><div class="comp-pct">${r.pct}%</div>` : ''}
+        <div class="comp-acts">${acts(r)}</div></div>`).join('') || `<div class="empty-state" style="padding:26px;">Nic do pokazania w tym okresie.</div>`}</div>
+    <div class="comp-info">${compTab === 'miss' ? '„Ustalone razem” / „Pominięte przez klienta” działają tak samo jak w zaległym dniu w kalendarzu i trafiają do raportu obecności PDF.' : compTab === 'part' ? 'Treningi z częścią wpisanych serii (np. tylko rozgrzewka albo część ćwiczeń). Dzisiejsze pokażą się tu dopiero jutro — mogą być jeszcze w trakcie.' : 'Lista liczona na bieżąco z planów przy każdym wejściu — nie zależy od tego, czy telefon zawodnika zdążył wysłać powiadomienie.'}</div>`;
+  main.querySelectorAll('[data-t]').forEach(e => e.onclick = () => { compTab = e.dataset.t; renderCompletedTrainingsList(false); });
+  main.querySelectorAll('[data-g]').forEach(e => e.onclick = () => { compGroup = e.dataset.g; renderCompletedTrainingsList(false); });
+  main.querySelectorAll('[data-p]').forEach(e => e.onclick = () => { compPeriod = +e.dataset.p; renderCompletedTrainingsList(false); });
+  main.querySelectorAll('[data-ok]').forEach(e => e.onclick = async () => { e.disabled = true; await markDayReviewed(e.dataset.ok, e.dataset.d); renderCompletedTrainingsList(false); });
+  main.querySelectorAll('[data-res]').forEach(e => e.onclick = async () => { e.disabled = true; await setDayFlags(e.dataset.c, e.dataset.d, { resolution: e.dataset.res }); renderCompletedTrainingsList(false); });
+  main.querySelectorAll('[data-open]').forEach(e => e.onclick = () => { if(compTab === 'done') navigateTo(() => openCompletedDay(e.dataset.open, e.dataset.d)); else openClientPlanDay(e.dataset.open, e.dataset.d); });
+  if($('markAllCompletionsBtn')) $('markAllCompletionsBtn').onclick = markAllCompletionsReviewed;
 }
 
 async function openCompletedDay(clientId, dateStr){
@@ -1604,6 +1821,7 @@ async function ensurePlanLoaded(clientId){
     const plan = await loadPlanFromDB(clientId);
     backfillLibraryIds(plan);
     plansCache[clientId] = plan;
+    planBase[clientId] = deepClone(plan);
   }
   return plansCache[clientId];
 }
@@ -1885,7 +2103,8 @@ $('copyAppLinkBtn').onclick = async () => {
 /* ============ KARTA OSOBY: wybor Plan / Informacje ============
    Informacje (notatki, zdrowie, testy, kontakt) sa w osobnej tabeli app_client_notes,
    dostepnej TYLKO dla trenera (RLS). Klient na swoim koncie nie ma do niej dostepu. */
-let clientView = 'choose';         // 'choose' | 'plan' | 'info'
+let clientView = 'choose';
+let isTrainerUser = false;         // 'choose' | 'plan' | 'info'
 let infoTab = 'prz';
 let notesFilter = 'all';
 let profileReturnTo = null;
@@ -6345,7 +6564,7 @@ async function handleImportFile(e){
     plansCache = {};
     for(const clientId of Object.keys(plans)){
       plansCache[clientId] = plans[clientId];
-      await savePlanRow(clientId, plans[clientId]);
+      await savePlanRow(clientId, plans[clientId], { force: true });   // import ma swiadomie nadpisac
     }
     renderClientList();
     selectedClientId = null;
