@@ -596,6 +596,70 @@
   .a-today-btn{margin-left:10px;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:5px 11px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;color:var(--text);}
   .a-today-btn:hover{border-color:var(--accent);}
   .a-pin{margin-left:8px;font-size:11px;color:var(--muted);}
+
+  /* ===== karta osoby ===== */
+  .cv-top{display:flex;align-items:center;gap:12px;margin-bottom:10px;flex-wrap:wrap;}
+  .cv-crumbs{font-size:12px;color:var(--muted);}
+  .cv-lnk{color:var(--text);font-weight:600;cursor:pointer;border-bottom:1px solid var(--line);}
+  .cv-switch{display:inline-flex;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:3px;margin-left:auto;}
+  .cv-switch div{padding:7px 14px;border-radius:7px;font-weight:700;font-size:12.5px;cursor:pointer;color:var(--muted);}
+  .cv-switch div.on{background:#1C1C1C;color:#fff;}
+  .cv-alert{background:#FDECE8;border:1.5px solid #F2B8AA;border-radius:10px;padding:10px 14px;font-size:12.5px;margin:0 0 12px;display:flex;gap:10px;align-items:flex-start;}
+  .cv-alert b{color:#B4472E;}
+  .cv-head{display:flex;align-items:center;gap:14px;margin-bottom:12px;}
+  .cv-av{width:54px;height:54px;border-radius:50%;background:#FDEBD6;display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:18px;flex-shrink:0;}
+  .cv-head h2{font-size:21px;margin:0;}
+  .cv-sub{font-size:12.5px;color:var(--muted);margin-top:2px;}
+  .cv-pill{display:inline-block;font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:10px;margin-right:5px;background:var(--surface-2);color:var(--muted);}
+  .cv-pill.warn{background:#FDE3DE;color:#B4472E;} .cv-pill.ok{background:#E3F4E9;color:#2E9E5B;}
+  .cv-pick{max-width:560px;margin:14px auto 0;}
+  .cv-pick-title{font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;text-align:center;margin-bottom:14px;}
+  .cv-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .cv-tile{background:var(--surface);border:2px solid var(--line);border-radius:14px;padding:22px 14px;text-align:center;cursor:pointer;}
+  .cv-tile:hover{border-color:#1C1C1C;box-shadow:0 8px 22px rgba(0,0,0,.07);}
+  .cv-logo{height:64px;display:flex;align-items:center;justify-content:center;margin-bottom:8px;}
+  .cv-logo svg{width:64px;height:64px;display:block;}
+  .cv-nm{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15px;}
+  .cv-ds{font-size:11.5px;color:var(--muted);margin-top:4px;}
+  .cv-hint{font-size:11.5px;color:var(--muted);text-align:center;margin-top:14px;}
+  .cv-tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:14px;flex-wrap:wrap;}
+  .cv-tab{padding:9px 14px;font-weight:600;font-size:13px;color:var(--muted);cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-1px;}
+  .cv-tab.on{color:var(--text);border-color:#E8604A;}
+  .cv-n{font-size:10px;background:var(--surface-2);border-radius:8px;padding:1px 6px;margin-left:4px;}
+  .cv-grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .cv-grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+  .cv-card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;}
+  .cv-card h4{font-size:13.5px;margin:0 0 8px;font-family:'Space Grotesk',sans-serif;}
+  .cv-stat{font-family:'Space Grotesk',sans-serif;font-size:26px;font-weight:700;}
+  .cv-stat-l{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;font-weight:700;}
+  .cv-small{font-size:11.5px;color:var(--muted);}
+  .cv-bar{height:8px;border-radius:4px;background:var(--surface-2);overflow:hidden;margin-top:6px;}
+  .cv-bar i{display:block;height:100%;background:#2E9E5B;}
+  .cv-input{border:1px solid var(--line);border-radius:8px;padding:7px 9px;font-size:13px;font-family:inherit;background:var(--surface-2);color:var(--text);width:100%;}
+  textarea.cv-input{resize:vertical;}
+  .cv-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px;font-size:12px;color:var(--muted);}
+  .cv-row input[type=date], .cv-row select, .cv-row input[type=number]{border:1px solid var(--line);border-radius:7px;padding:6px 8px;font-size:12.5px;font-family:inherit;}
+  .cv-note{border:1px solid var(--line);border-left:3px solid var(--line);border-radius:0 8px 8px 0;padding:8px 12px;margin-bottom:8px;background:var(--surface);}
+  .cv-note.pin{background:#FFF8EC;}
+  .cv-note-meta{font-size:11px;color:var(--muted);display:flex;gap:8px;align-items:center;margin-bottom:3px;}
+  .cv-note-txt{font-size:13px;line-height:1.45;}
+  .cv-note-act{margin-left:auto;display:flex;gap:10px;cursor:pointer;}
+  .cv-tag{font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px;color:#fff;}
+  .cv-filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;}
+  .cv-chip{font-size:11.5px;font-weight:600;padding:5px 11px;border-radius:14px;border:1px solid var(--line);background:var(--surface);cursor:pointer;}
+  .cv-chip.on{background:#1C1C1C;color:#fff;border-color:#1C1C1C;}
+  .cv-inj{display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line);font-size:12.5px;}
+  .cv-x{cursor:pointer;color:var(--muted);padding:0 4px;}
+  .cv-x:hover{color:#B4472E;}
+  .cv-spark{display:flex;align-items:flex-end;gap:4px;height:60px;margin-top:6px;}
+  .cv-spark i{flex:1;background:#B4472E;border-radius:3px 3px 0 0;opacity:.75;}
+  .cv-privacy{font-size:11.5px;color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-top:12px;}
+  .cv-privacy b{color:var(--text);}
+  .cv-kv{display:grid;grid-template-columns:130px 1fr;gap:6px 10px;font-size:12.5px;}
+  .cv-kv span{color:var(--muted);}
+  .cv-form{display:grid;grid-template-columns:140px 1fr;gap:8px 10px;align-items:center;font-size:12.5px;}
+  .cv-form label{color:var(--muted);}
+  .cv-ro{font-size:12.5px;}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -1095,6 +1159,7 @@ async function saveClientRow(c){
 async function deleteClientRow(id){
   setStatus('Usuwanie…');
   const { error } = await sbClient.from('app_clients').delete().eq('id', id);
+  if(!error){ try{ await sbClient.from('app_client_notes').delete().eq('client_id', id); }catch(e){} delete notesCache[id]; }
   if(error){
     console.error('Blad usuwania klienta:', error);
     setStatus('❌ BŁĄD USUWANIA');
@@ -1730,7 +1795,7 @@ function startEditClientName(nameEl, c){
     const val = input.value.trim();
     if(val){ c.name = val; await saveClientRow(c); }
     renderClientList();
-    if(selectedClientId === c.id) renderMain();
+    if(selectedClientId === c.id) showClientView();
   };
   input.onblur = commit;
   input.onkeydown = e => { if(e.key==='Enter') input.blur(); };
@@ -1763,7 +1828,8 @@ async function selectClient(id){
   await ensurePlanLoaded(id);
   setStatus('');
   selectedDateStr = null;
-  renderMain();
+  clientView = getLastClientView() || 'choose';
+  await showClientView();
 }
 
 $('showTemplatesBtn').onclick = () => navigateTo(async () => {
@@ -1816,13 +1882,299 @@ $('copyAppLinkBtn').onclick = async () => {
 };
 
 /* ============ TRENER: MAIN ============ */
+/* ============ KARTA OSOBY: wybor Plan / Informacje ============
+   Informacje (notatki, zdrowie, testy, kontakt) sa w osobnej tabeli app_client_notes,
+   dostepnej TYLKO dla trenera (RLS). Klient na swoim koncie nie ma do niej dostepu. */
+let clientView = 'choose';         // 'choose' | 'plan' | 'info'
+let infoTab = 'prz';
+let notesFilter = 'all';
+let profileReturnTo = null;
+let notesTableMissing = false;
+const notesCache = {};
+const NOTE_TAGS = { sesja:['Sesja','#3E7CB1'], bol:['Ból','#B4472E'], tech:['Technika','#E8871E'], rozm:['Rozmowa','#7B61B8'], org:['Organizacyjne','#767268'] };
+const CLIENT_VIEW_KEY = 'moveu_client_view';
+function getLastClientView(){ try{ const v = localStorage.getItem(CLIENT_VIEW_KEY); return (v === 'plan' || v === 'info') ? v : null; }catch(e){ return null; } }
+function setLastClientView(v){ try{ localStorage.setItem(CLIENT_VIEW_KEY, v); }catch(e){} }
+function isNotesTableError(err){ const t = ((err && err.code) || '') + ' ' + ((err && err.message) || ''); return /42P01|PGRST205|does not exist|schema cache/i.test(t); }
+function normalizeNotes(d){
+  d = (d && typeof d === 'object') ? d : {};
+  return {
+    goal: d.goal || '', position: d.position || '', alert: d.alert || '',
+    notes: Array.isArray(d.notes) ? d.notes : [], injuries: Array.isArray(d.injuries) ? d.injuries : [],
+    tests: Array.isArray(d.tests) ? d.tests : [], asym: Array.isArray(d.asym) ? d.asym : [],
+    contact: Object.assign({ phone:'', ig:'', guardian:'', rodo:'', image:'' }, d.contact || {})
+  };
+}
+async function loadClientNotes(id){
+  if(notesCache[id]) return notesCache[id];
+  try{
+    const { data, error } = await sbClient.from('app_client_notes').select('data').eq('client_id', id).maybeSingle();
+    if(error){
+      if(isNotesTableError(error)) notesTableMissing = true;
+      console.warn('Notatki - blad wczytywania:', error);
+      notesCache[id] = normalizeNotes(null);   // pokazujemy pusta karte, ale zapis bedzie zablokowany komunikatem
+      notesCache[id].__unsaved = true;
+      return notesCache[id];
+    }
+    notesTableMissing = false;
+    notesCache[id] = normalizeNotes(data && data.data);
+    return notesCache[id];
+  }catch(e){ console.warn(e); notesCache[id] = normalizeNotes(null); notesCache[id].__unsaved = true; return notesCache[id]; }
+}
+async function saveClientNotes(id){
+  const d = notesCache[id];
+  if(!d) return false;
+  const payload = { ...d }; delete payload.__unsaved;
+  setStatus('Zapisywanie…');
+  for(let attempt = 0; attempt < 3; attempt++){
+    try{
+      const { error } = await sbClient.from('app_client_notes').upsert({ client_id: id, data: payload, updated_at: new Date().toISOString() });
+      if(!error){ notesTableMissing = false; delete d.__unsaved; setStatus('Zapisano'); setTimeout(() => setStatus(''), 1200); return true; }
+      if(isNotesTableError(error)){ notesTableMissing = true; break; }
+      console.warn('Notatki - blad zapisu:', error);
+    }catch(e){ console.warn(e); }
+    await new Promise(r => setTimeout(r, 900 * (attempt + 1)));
+  }
+  setStatus('');
+  alert(notesTableMissing
+    ? 'W bazie brakuje jeszcze tabeli na informacje o osobach (app_client_notes).\nWklej polecenie z instrukcji w Supabase. Ta zmiana NIE została zapisana.'
+    : 'Nie udało się zapisać informacji. Sprawdź internet i spróbuj ponownie.');
+  return false;
+}
+function clientAge(c){
+  if(!c.dob) return null;
+  const b = new Date(c.dob), n = new Date();
+  let a = n.getFullYear() - b.getFullYear();
+  if(n.getMonth() < b.getMonth() || (n.getMonth() === b.getMonth() && n.getDate() < b.getDate())) a--;
+  return a;
+}
+function clientGroupLabel(c){
+  const org = clientGroups.find(g => g.id === c.groupId);
+  const sub = clientSubgroups.find(x => x.id === c.subgroupId);
+  return [org ? org.name : '', sub ? sub.name : ''].filter(Boolean).join(' · ');
+}
+function clientViewTopHtml(c, view){
+  return `<div class="cv-top"><div class="cv-crumbs"><span class="cv-lnk" id="cvCrumb">${escapeHtml(c.name)}</span> › ${view === 'plan' ? 'Plan' : 'Informacje'}</div>
+    <div class="cv-switch"><div class="${view === 'plan' ? 'on' : ''}" data-cv="plan">📅 Plan</div><div class="${view === 'info' ? 'on' : ''}" data-cv="info">👤 Informacje</div></div></div>`;
+}
+function bindClientViewTop(){
+  if($('cvCrumb')) $('cvCrumb').onclick = () => { clientView = 'choose'; showClientView(); };
+  document.querySelectorAll('.cv-switch [data-cv]').forEach(b => b.onclick = () => { clientView = b.dataset.cv; setLastClientView(clientView); showClientView(); });
+}
+async function refreshClientAlert(){
+  const id = selectedClientId;
+  const d = await loadClientNotes(id);
+  const h = $('cvAlertHolder');
+  if(!h || selectedClientId !== id) return;
+  h.innerHTML = (d && d.alert) ? `<div class="cv-alert">⚠️ <div><b>Uwaga:</b> ${escapeHtml(d.alert)}</div></div>` : '';
+}
+async function showClientView(){
+  const c = clients.find(cl => cl.id === selectedClientId);
+  if(!c) return;
+  if(clientView === 'plan'){ renderMain(); return; }
+  if(clientView === 'info'){ await loadClientNotes(c.id); if(selectedClientId === c.id && clientView === 'info') renderClientInfo(); return; }
+  renderClientChooser();
+}
+const CV_ICON_PLAN = `<svg viewBox="0 0 64 64" width="64" height="64"><circle cx="32" cy="32" r="32" fill="#F5F4F1"/><circle cx="32" cy="32" r="31" fill="none" stroke="#E1DFDA" stroke-width="2"/>
+  <g fill="none" stroke="#1C1C1C" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><rect x="20" y="22" width="24" height="22" rx="4"/><line x1="20" y1="29" x2="44" y2="29"/><line x1="26" y1="18" x2="26" y2="24"/><line x1="38" y1="18" x2="38" y2="24"/></g>
+  <path d="M26 37 l4 4 l8 -8" fill="none" stroke="#E8604A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const CV_ICON_INFO = `<svg viewBox="0 0 64 64" width="64" height="64"><circle cx="32" cy="32" r="32" fill="#F5F4F1"/><circle cx="32" cy="32" r="31" fill="none" stroke="#E1DFDA" stroke-width="2"/>
+  <g fill="none" stroke="#1C1C1C" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><rect x="20" y="17" width="24" height="30" rx="4"/><circle cx="32" cy="28" r="4.5"/><path d="M25 40 q7 -7 14 0"/></g>
+  <circle cx="44" cy="18" r="3.6" fill="#E8604A"/></svg>`;
+function personHeadHtml(c, d){
+  const age = clientAge(c);
+  const ini = c.name.split(/\s+/).map(w => w[0] || '').slice(0, 2).join('').toUpperCase();
+  const sub = [clientGroupLabel(c), age !== null ? age + ' lat' : '', d && d.position ? d.position : ''].filter(Boolean).join(' · ');
+  return `<div class="cv-head"><div class="cv-av">${escapeHtml(ini)}</div><div><h2>${escapeHtml(c.name)}</h2><div class="cv-sub">${escapeHtml(sub)}</div>
+    <div style="margin-top:5px;">${d && d.alert ? '<span class="cv-pill warn">⚠ ograniczenia</span>' : ''}${age !== null && age < 18 ? '<span class="cv-pill">niepełnoletnia/i</span>' : ''}</div></div></div>`;
+}
+function renderClientChooser(){
+  const c = clients.find(cl => cl.id === selectedClientId);
+  const d = notesCache[c.id];
+  $('main').innerHTML = personHeadHtml(c, d) + `<div class="cv-pick">
+      <div class="cv-pick-title">Co chcesz otworzyć?</div>
+      <div class="cv-grid">
+        <div class="cv-tile" data-go="plan"><div class="cv-logo">${CV_ICON_PLAN}</div><div class="cv-nm">Plan treningowy</div><div class="cv-ds">kalendarz i treningi</div></div>
+        <div class="cv-tile" data-go="info"><div class="cv-logo">${CV_ICON_INFO}</div><div class="cv-nm">Informacje</div><div class="cv-ds">notatki, zdrowie, testy</div></div>
+      </div>
+      <div class="cv-hint">Wybór zostanie zapamiętany — kolejne osoby otworzą się od razu w tym widoku. Wrócisz tu, klikając imię u góry.</div>
+    </div>`;
+  document.querySelectorAll('.cv-tile').forEach(t => t.onclick = () => { clientView = t.dataset.go; setLastClientView(clientView); showClientView(); });
+  if(!d) loadClientNotes(c.id).then(() => { if(selectedClientId === c.id && clientView === 'choose') renderClientChooser(); });
+}
+
+/* ---------- statystyki z planu ---------- */
+function clientPlanStats(id){
+  const plan = plansCache[id] || {};
+  const today = todayKey();
+  const from = (() => { const d = new Date(); d.setDate(d.getDate() - 29); return fmtDate(d.getFullYear(), d.getMonth(), d.getDate()); })();
+  let total = 0, done = 0, last = null;
+  Object.keys(plan).sort().forEach(ds => {
+    const day = plan[ds];
+    if(!day || !day.exercises || !day.exercises.length || ds > today) return;
+    const cls = getDayDotClass(day);
+    if(ds >= from){ total++; if(cls === 'dot-done') done++; }
+    if(cls === 'dot-done' || cls === 'dot-incomplete') last = { date: ds, day };
+  });
+  let rpe = null;
+  if(last){ const v = last.day.exercises.map(e => parseFloat(e.rpe)).filter(x => !isNaN(x)); if(v.length) rpe = Math.round(v.reduce((a, b) => a + b, 0) / v.length * 10) / 10; }
+  return { total, done, last, rpe };
+}
+function clientE1rmList(id){
+  const plan = plansCache[id] || {};
+  const best = {};
+  Object.keys(plan).forEach(ds => {
+    const day = plan[ds];
+    (day && day.exercises || []).forEach(ex => {
+      if(ex.noWeight) return;
+      const name = resolveExName(ex);
+      [].concat(ex.log||[], ex.logRight||[], ex.logLeft||[]).forEach(l => {
+        const w = parseFloat(String(l.weight||'').replace(',', '.')), r = parseInt(l.reps);
+        if(isNaN(w) || w <= 0 || isNaN(r) || r < 1 || r > 10) return;
+        const e1 = w / (pctForReps(r) / 100);
+        if(!best[name] || e1 > best[name].e1) best[name] = { e1, w, r, date: ds };
+      });
+    });
+  });
+  return Object.entries(best).map(([name, b]) => ({ name, ...b })).sort((a, b) => b.date.localeCompare(a.date)).slice(0, 12);
+}
+
+/* ---------- widok Informacje ---------- */
+function noteRowHtml(n, withActions){
+  const t = NOTE_TAGS[n.tag] || NOTE_TAGS.sesja;
+  return `<div class="cv-note ${n.pin ? 'pin' : ''}"><div class="cv-note-meta">${n.pin ? '📌' : ''}<span class="cv-tag" style="background:${t[1]}">${t[0]}</span>${escapeHtml(n.date || '')}${n.pain !== null && n.pain !== undefined && n.pain !== '' ? ` · ból <b style="color:#B4472E;">${escapeHtml(String(n.pain))}/10</b>` : ''}
+    ${withActions ? `<span class="cv-note-act"><span data-pin="${n.id}" title="${n.pin ? 'Odepnij' : 'Przypnij'}">📌</span><span data-del="${n.id}" title="Usuń notatkę">✕</span></span>` : ''}</div>
+    <div class="cv-note-txt">${escapeHtml(n.text || '').replace(/\n/g, '<br>')}</div></div>`;
+}
+function renderClientInfo(){
+  const c = clients.find(cl => cl.id === selectedClientId);
+  if(!c) return;
+  const d = notesCache[c.id] || normalizeNotes(null);
+  const id = c.id;
+  const save = () => saveClientNotes(id);
+  const tabs = [['prz','Przegląd'],['not','Notatki', d.notes.length],['zdr','Zdrowie'],['tes','Testy'],['pom','Pomiary'],['kon','Kontakt']];
+  let body = '';
+  if(infoTab === 'prz'){
+    const st = clientPlanStats(id);
+    const painNotes = d.notes.filter(n => n.pain !== null && n.pain !== undefined && n.pain !== '').sort((a, b) => (b.date||'').localeCompare(a.date||''));
+    const sorted = d.notes.slice().sort((a, b) => (b.date||'').localeCompare(a.date||''));
+    body = `<div class="cv-grid3">
+        <div class="cv-card"><div class="cv-stat-l">Frekwencja 30 dni</div><div class="cv-stat">${st.done}/${st.total}</div><div class="cv-bar"><i style="width:${st.total ? Math.round(st.done/st.total*100) : 0}%"></i></div></div>
+        <div class="cv-card"><div class="cv-stat-l">Ostatni trening</div><div class="cv-stat" style="font-size:20px;">${st.last ? escapeHtml(st.last.date) : '—'}</div><div class="cv-small">${st.last ? escapeHtml(st.last.day.title || 'bez tytułu') + (st.rpe !== null ? ' · RPE ' + st.rpe : '') : 'brak wykonanych treningów'}</div></div>
+        <div class="cv-card"><div class="cv-stat-l">Ból (ostatnie zgłoszenie)</div><div class="cv-stat" style="color:${painNotes.length ? '#B4472E' : 'inherit'};">${painNotes.length ? escapeHtml(String(painNotes[0].pain)) + '/10' : '—'}</div><div class="cv-small">${painNotes.length ? escapeHtml(painNotes[0].date || '') : 'brak notatek z bólem'}</div></div>
+      </div>
+      <div class="cv-grid2" style="margin-top:14px;">
+        <div class="cv-card"><h4>🎯 Cel</h4><textarea id="cvGoal" class="cv-input" rows="3" placeholder="np. Poprawa skoczności i odporność kolana przed sezonem">${escapeHtml(d.goal)}</textarea>
+          <h4 style="margin-top:10px;">Pozycja / rola</h4><input id="cvPos" class="cv-input" value="${escapeHtml(d.position)}" placeholder="np. Przyjmująca">
+          <h4 style="margin-top:12px;">📌 Przypięte notatki</h4>${d.notes.filter(n => n.pin).map(n => noteRowHtml(n, false)).join('') || '<div class="cv-small">Brak.</div>'}</div>
+        <div class="cv-card"><h4>🗒️ Ostatnie notatki <span class="cv-small" style="font-weight:400;">wszystkie w zakładce Notatki</span></h4>${sorted.slice(0, 3).map(n => noteRowHtml(n, false)).join('') || '<div class="cv-small">Brak notatek.</div>'}</div>
+      </div>`;
+  }
+  if(infoTab === 'not'){
+    const list = d.notes.filter(n => notesFilter === 'all' || n.tag === notesFilter).sort((a, b) => (b.pin - a.pin) || (b.date||'').localeCompare(a.date||''));
+    body = `<div class="cv-card" style="margin-bottom:12px;"><textarea id="cvNoteTxt" class="cv-input" rows="3" placeholder="Nowa notatka… (jak poszła sesja, co boli, ustalenia z trenerem)"></textarea>
+        <div class="cv-row">Data: <input type="date" id="cvNoteDate" value="${todayKey()}">
+          Tag: <select id="cvNoteTag">${Object.entries(NOTE_TAGS).map(([k, t]) => `<option value="${k}">${t[0]}</option>`).join('')}</select>
+          Ból (0–10, opcjonalnie): <input type="number" id="cvNotePain" min="0" max="10" style="width:64px;">
+          <label><input type="checkbox" id="cvNotePin"> 📌 przypnij</label>
+          <button class="btn" id="cvNoteAdd" style="margin-left:auto;">+ Dodaj notatkę</button></div></div>
+      <div class="cv-filters"><span class="cv-chip ${notesFilter === 'all' ? 'on' : ''}" data-f="all">Wszystkie</span>${Object.entries(NOTE_TAGS).map(([k, t]) => `<span class="cv-chip ${notesFilter === k ? 'on' : ''}" data-f="${k}">${t[0]}</span>`).join('')}</div>
+      <div id="cvNoteList">${list.map(n => noteRowHtml(n, true)).join('') || '<div class="cv-small">Brak notatek.</div>'}</div>`;
+  }
+  if(infoTab === 'zdr'){
+    const pains = d.notes.filter(n => n.pain !== null && n.pain !== undefined && n.pain !== '').sort((a, b) => (a.date||'').localeCompare(b.date||'')).slice(-12);
+    body = `<div class="cv-grid2">
+      <div class="cv-card"><h4>⚠️ Przeciwwskazania / uwagi do planu <span class="cv-small" style="font-weight:400;">widoczne w planie tej osoby</span></h4>
+        <textarea id="cvAlertTxt" class="cv-input" rows="3" placeholder="np. Bez skoków z lądowaniem na jedną nogę do 12.10 — ból kolana L">${escapeHtml(d.alert)}</textarea>
+        <div class="cv-row"><button class="btn" id="cvAlertSave">Zapisz</button><button class="btn ghost" id="cvAlertClear">Wyczyść (brak ograniczeń)</button></div></div>
+      <div class="cv-card"><h4>🩹 Kontuzje i zabiegi</h4>
+        ${d.injuries.map(i => `<div class="cv-inj"><div><b>${escapeHtml(i.name)}</b><div class="cv-small">${i.since ? 'od ' + escapeHtml(i.since) : ''}</div></div>
+          <span class="cv-pill ${i.status === 'aktywna' ? 'warn' : 'ok'}" data-injst="${i.id}" title="Kliknij, żeby zmienić status" style="cursor:pointer;margin-left:auto;">${escapeHtml(i.status)}</span><span class="cv-x" data-injdel="${i.id}" title="Usuń">✕</span></div>`).join('') || '<div class="cv-small">Brak wpisów.</div>'}
+        <div class="cv-row" style="margin-top:10px;"><input id="cvInjName" class="cv-input" style="flex:1;min-width:140px;" placeholder="np. Skręcenie stawu skokowego P"><input id="cvInjSince" class="cv-input" style="width:110px;" placeholder="od kiedy"><button class="btn ghost" id="cvInjAdd">+ Dodaj</button></div>
+        <h4 style="margin-top:14px;">📈 Ból w czasie <span class="cv-small" style="font-weight:400;">z notatek z wpisanym bólem</span></h4>
+        ${pains.length ? `<div class="cv-spark">${pains.map(n => `<i style="height:${Math.max(6, n.pain * 10)}%" title="${escapeHtml((n.date||'') + ': ' + n.pain + '/10')}"></i>`).join('')}</div>` : '<div class="cv-small">Brak danych.</div>'}</div>
+      </div>
+      <div class="cv-privacy">🔒 <b>Te informacje widzi tylko trener.</b> Osoba logująca się na własne konto nie ma do nich dostępu.</div>`;
+  }
+  if(infoTab === 'tes'){
+    const e1 = clientE1rmList(id);
+    body = `<div class="cv-grid2">
+      <div class="cv-card"><h4>🏋️ Szacowane 1RM z treningów <span class="cv-small" style="font-weight:400;">liczone automatycznie</span></h4>
+        ${e1.length ? `<table class="report-table"><tr><th>Ćwiczenie</th><th>1RM</th><th>Z serii</th><th>Data</th></tr>${e1.map(x => `<tr><td>${escapeHtml(x.name)}</td><td><b>${Math.round(x.e1 * 2) / 2} kg</b></td><td>${x.w} kg × ${x.r}</td><td>${escapeHtml(x.date)}</td></tr>`).join('')}</table>` : '<div class="cv-small">Brak wpisanych ciężarów (serie 1–10 powt.).</div>'}
+        <h4 style="margin-top:14px;">📝 Inne testy <span class="cv-small" style="font-weight:400;">np. CMJ, sprint, zasięg</span></h4>
+        ${d.tests.slice().sort((a, b) => (b.date||'').localeCompare(a.date||'')).map(t => `<div class="cv-inj"><div><b>${escapeHtml(t.name)}</b>: ${escapeHtml(t.value)}<div class="cv-small">${escapeHtml(t.date || '')}</div></div><span class="cv-x" data-testdel="${t.id}" style="margin-left:auto;">✕</span></div>`).join('') || '<div class="cv-small">Brak.</div>'}
+        <div class="cv-row" style="margin-top:8px;"><input id="cvTestName" class="cv-input" style="flex:1;min-width:110px;" placeholder="np. CMJ"><input id="cvTestVal" class="cv-input" style="width:100px;" placeholder="38,4 cm"><input type="date" id="cvTestDate" value="${todayKey()}"><button class="btn ghost" id="cvTestAdd">+ Dodaj</button></div></div>
+      <div class="cv-card"><h4>⚖️ Asymetria P / L <span class="cv-small" style="font-weight:400;">np. z Vald DynaMo</span></h4>
+        ${d.asym.length ? `<table class="report-table"><tr><th>Test</th><th>P</th><th>L</th><th>Asym.</th><th>Data</th><th></th></tr>${d.asym.slice().sort((a, b) => (b.date||'').localeCompare(a.date||'')).map(a => { const r = parseFloat(a.r), l = parseFloat(a.l); const pct = (r > 0 && l > 0) ? Math.round(Math.abs(r - l) / Math.max(r, l) * 100) : null;
+          return `<tr><td>${escapeHtml(a.name)}</td><td>${escapeHtml(String(a.r))}</td><td>${escapeHtml(String(a.l))}</td><td style="font-weight:700;color:${pct !== null && pct >= 10 ? '#B4472E' : '#2E9E5B'};">${pct !== null ? pct + '%' + (pct >= 10 ? ' ⚠' : '') : '—'}</td><td>${escapeHtml(a.date || '')}</td><td><span class="cv-x" data-asymdel="${a.id}">✕</span></td></tr>`; }).join('')}</table>` : '<div class="cv-small">Brak pomiarów.</div>'}
+        <div class="cv-row" style="margin-top:8px;"><input id="cvAsName" class="cv-input" style="flex:1;min-width:110px;" placeholder="np. Prostowniki kolana"><input id="cvAsR" class="cv-input" style="width:64px;" placeholder="P"><input id="cvAsL" class="cv-input" style="width:64px;" placeholder="L"><input type="date" id="cvAsDate" value="${todayKey()}"><button class="btn ghost" id="cvAsAdd">+ Dodaj</button></div>
+        <div class="cv-small" style="margin-top:6px;">Asymetria ≥ 10% jest podświetlona na czerwono.</div></div></div>`;
+  }
+  if(infoTab === 'pom'){
+    const wl = (c.weightLog || []).slice().sort((a, b) => (a.date||'').localeCompare(b.date||''));
+    const lastW = wl.length ? wl[wl.length - 1] : null;
+    body = `<div class="cv-grid2"><div class="cv-card"><h4>Masa ciała</h4><div class="cv-stat">${lastW ? escapeHtml(String(lastW.weight)) + ' kg' : '—'}</div><div class="cv-small">${lastW ? 'ostatni pomiar: ' + escapeHtml(lastW.date || '') : 'brak pomiarów'}</div></div>
+      <div class="cv-card"><h4>Dane podstawowe</h4><div class="cv-kv"><span>Data urodzenia</span>${escapeHtml(c.dob || '—')}<span>Wzrost</span>${c.height ? escapeHtml(String(c.height)) + ' cm' : '—'}<span>Pomiary obwodów</span>${(c.measurementsLog || []).length}</div></div></div>
+      <button class="btn" id="cvOpenProfile" style="margin-top:14px;">📏 Otwórz pomiary, dane i raport PDF</button>
+      <div class="cv-small" style="margin-top:6px;">Masa ciała, 13 obwodów z wykresami, edycja danych podstawowych i raport obecności PDF — jak dotąd.</div>`;
+  }
+  if(infoTab === 'kon'){
+    const k = d.contact;
+    const wa = (k.phone || '').replace(/[^0-9]/g, '');
+    body = `<div class="cv-grid2"><div class="cv-card"><h4>📇 Kontakt</h4><div class="cv-form">
+        <label>E-mail (logowanie)</label><div class="cv-ro">${escapeHtml(c.email || '— brak (osoba nie loguje się sama)')}</div>
+        <label>Telefon</label><input class="cv-input cv-ct" data-k="phone" value="${escapeHtml(k.phone)}" placeholder="+48 …">
+        <label>Instagram</label><input class="cv-input cv-ct" data-k="ig" value="${escapeHtml(k.ig)}" placeholder="@…">
+        <label>WhatsApp</label><div>${wa ? `<a href="https://wa.me/${wa}" target="_blank" rel="noopener">otwórz czat</a>` : '<span class="cv-small">wpisz telefon</span>'}</div></div></div>
+      <div class="cv-card"><h4>👨‍👩‍👧 Opiekun i zgody <span class="cv-small" style="font-weight:400;">ważne przy niepełnoletnich</span></h4><div class="cv-form">
+        <label>Opiekun</label><input class="cv-input cv-ct" data-k="guardian" value="${escapeHtml(k.guardian)}" placeholder="imię, telefon">
+        <label>Zgoda RODO (data)</label><input type="date" class="cv-input cv-ct" data-k="rodo" value="${escapeHtml(k.rodo)}">
+        <label>Zgoda na wizerunek</label><select class="cv-input cv-ct" data-k="image"><option value="" ${!k.image ? 'selected' : ''}>—</option><option value="tak" ${k.image === 'tak' ? 'selected' : ''}>tak</option><option value="nie" ${k.image === 'nie' ? 'selected' : ''}>nie</option></select></div></div></div>`;
+  }
+  $('main').innerHTML = clientViewTopHtml(c, 'info') + personHeadHtml(c, d)
+    + (notesTableMissing ? `<div class="cv-alert" style="background:#FFF4E5;border-color:#F3C88B;">🛠️ <div><b>Brakuje tabeli w bazie.</b> Wklej polecenie z instrukcji w Supabase (SQL Editor). Do tego czasu zmiany w tej karcie się nie zapiszą.</div></div>` : '')
+    + (d.alert && infoTab !== 'zdr' ? `<div class="cv-alert">⚠️ <div><b>Uwaga:</b> ${escapeHtml(d.alert)}</div></div>` : '')
+    + `<div class="cv-tabs">${tabs.map(([k, l, n]) => `<div class="cv-tab ${infoTab === k ? 'on' : ''}" data-t="${k}">${l}${n ? `<span class="cv-n">${n}</span>` : ''}</div>`).join('')}</div>` + body;
+  bindClientViewTop();
+  document.querySelectorAll('.cv-tab').forEach(t => t.onclick = () => { infoTab = t.dataset.t; renderClientInfo(); });
+  const uid = () => 'n_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
+  const rerender = () => { if(selectedClientId === id && clientView === 'info') renderClientInfo(); };
+  if($('cvGoal')) $('cvGoal').onchange = async e => { d.goal = e.target.value.trim(); await save(); };
+  if($('cvPos')) $('cvPos').onchange = async e => { d.position = e.target.value.trim(); await save(); rerender(); };
+  if($('cvNoteAdd')) $('cvNoteAdd').onclick = async () => {
+    const text = $('cvNoteTxt').value.trim();
+    if(!text){ alert('Wpisz treść notatki.'); return; }
+    const pv = $('cvNotePain').value;
+    const pain = pv === '' ? null : Math.max(0, Math.min(10, parseInt(pv, 10)));
+    d.notes.push({ id: uid(), date: $('cvNoteDate').value || todayKey(), tag: $('cvNoteTag').value, text, pin: $('cvNotePin').checked, pain: isNaN(pain) ? null : pain });
+    notesFilter = 'all';
+    await save(); rerender();
+  };
+  document.querySelectorAll('.cv-chip').forEach(f => f.onclick = () => { notesFilter = f.dataset.f; renderClientInfo(); });
+  document.querySelectorAll('[data-pin]').forEach(b => b.onclick = async () => { const n = d.notes.find(x => x.id === b.dataset.pin); if(n){ n.pin = !n.pin; await save(); rerender(); } });
+  document.querySelectorAll('[data-del]').forEach(b => b.onclick = async () => { if(!confirm('Usunąć tę notatkę?')) return; d.notes = d.notes.filter(x => x.id !== b.dataset.del); await save(); rerender(); });
+  if($('cvAlertSave')) $('cvAlertSave').onclick = async () => { d.alert = $('cvAlertTxt').value.trim(); await save(); rerender(); };
+  if($('cvAlertClear')) $('cvAlertClear').onclick = async () => { d.alert = ''; await save(); rerender(); };
+  if($('cvInjAdd')) $('cvInjAdd').onclick = async () => { const n = $('cvInjName').value.trim(); if(!n) return; d.injuries.push({ id: uid(), name: n, since: $('cvInjSince').value.trim(), status: 'aktywna' }); await save(); rerender(); };
+  document.querySelectorAll('[data-injst]').forEach(b => b.onclick = async () => { const i = d.injuries.find(x => x.id === b.dataset.injst); if(i){ i.status = i.status === 'aktywna' ? 'wygojona' : 'aktywna'; await save(); rerender(); } });
+  document.querySelectorAll('[data-injdel]').forEach(b => b.onclick = async () => { if(!confirm('Usunąć ten wpis?')) return; d.injuries = d.injuries.filter(x => x.id !== b.dataset.injdel); await save(); rerender(); });
+  if($('cvTestAdd')) $('cvTestAdd').onclick = async () => { const n = $('cvTestName').value.trim(), v = $('cvTestVal').value.trim(); if(!n || !v) return; d.tests.push({ id: uid(), name: n, value: v, date: $('cvTestDate').value }); await save(); rerender(); };
+  document.querySelectorAll('[data-testdel]').forEach(b => b.onclick = async () => { d.tests = d.tests.filter(x => x.id !== b.dataset.testdel); await save(); rerender(); });
+  if($('cvAsAdd')) $('cvAsAdd').onclick = async () => { const n = $('cvAsName').value.trim(); if(!n) return; d.asym.push({ id: uid(), name: n, r: $('cvAsR').value.trim(), l: $('cvAsL').value.trim(), date: $('cvAsDate').value }); await save(); rerender(); };
+  document.querySelectorAll('[data-asymdel]').forEach(b => b.onclick = async () => { d.asym = d.asym.filter(x => x.id !== b.dataset.asymdel); await save(); rerender(); });
+  if($('cvOpenProfile')) $('cvOpenProfile').onclick = () => { profileReturnTo = 'info'; trainerViewMode = 'profile'; renderClientProfile(id); };
+  document.querySelectorAll('.cv-ct').forEach(inp => inp.onchange = async () => { d.contact[inp.dataset.k] = inp.value.trim(); await save(); if(inp.dataset.k === 'phone') rerender(); });
+}
+
 function renderMain(){
   const client = clients.find(c => c.id === selectedClientId);
   if(!client){ return; }
   const main = $('main');
   main.innerHTML = `
+    ${clientViewTopHtml(client, 'plan')}
     <div class="section-title"><div class="bar"></div><h2 id="clientNameHeader">${escapeHtml(client.name)}</h2></div>
     <div class="section-desc">Kalendarz, plan treningowy, testy i raport postępów.</div>
+    <div id="cvAlertHolder"></div>
 
     <div class="tools-panel">
       <h4>📄 Generuj plan jako PDF</h4>
@@ -1860,6 +2212,8 @@ function renderMain(){
   $('libAdd').onclick = addLibraryExercise;
   renderCalendar();
   renderLibraryList();
+  bindClientViewTop();
+  refreshClientAlert();
 }
 
 function renderCalendar(){
@@ -3324,7 +3678,10 @@ function renderClientProfile(clientId){
     </div>
   `;
 
-  $('profileBack').onclick = () => { trainerViewMode = 'roster'; renderRosterView(); };
+  $('profileBack').onclick = () => {
+    if(profileReturnTo === 'info'){ profileReturnTo = null; trainerViewMode = 'clients'; selectedClientId = clientId; clientView = 'info'; showClientView(); return; }
+    trainerViewMode = 'roster'; renderRosterView();
+  };
   $('profName').onchange = async () => {
     const val = $('profName').value.trim();
     if(val) c.name = val;
