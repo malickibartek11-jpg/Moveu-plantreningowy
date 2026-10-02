@@ -612,9 +612,9 @@
   .cv-sub{font-size:12.5px;color:var(--muted);margin-top:2px;}
   .cv-pill{display:inline-block;font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:10px;margin-right:5px;background:var(--surface-2);color:var(--muted);}
   .cv-pill.warn{background:#FDE3DE;color:#B4472E;} .cv-pill.ok{background:#E3F4E9;color:#2E9E5B;}
-  .cv-pick{max-width:560px;margin:14px auto 0;}
+  .cv-pick{max-width:760px;margin:14px auto 0;}
   .cv-pick-title{font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;text-align:center;margin-bottom:14px;}
-  .cv-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .cv-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
   .cv-tile{background:var(--surface);border:2px solid var(--line);border-radius:14px;padding:22px 14px;text-align:center;cursor:pointer;}
   .cv-tile:hover{border-color:#1C1C1C;box-shadow:0 8px 22px rgba(0,0,0,.07);}
   .cv-logo{height:64px;display:flex;align-items:center;justify-content:center;margin-bottom:8px;}
@@ -681,6 +681,98 @@
   .comp-pct{width:40px;font-weight:700;font-size:12px;text-align:right;}
   .comp-acts{display:flex;gap:6px;flex-wrap:wrap;}
   .comp-info{font-size:11.5px;color:var(--muted);margin-top:10px;line-height:1.5;}
+
+  /* ===== DIETA ===== */
+  .di{width:22px;height:22px;display:block;}
+  .di-inline{width:13px;height:13px;display:inline-block;vertical-align:-2px;}
+  .meal-ph{position:relative;width:100%;overflow:hidden;display:flex;align-items:center;justify-content:center;color:rgba(28,28,28,.4);}
+  .meal-ph img{width:100%;height:100%;object-fit:cover;display:block;}
+  .meal-ph-ic{width:34px;height:34px;}
+  .mac{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px;}
+  .mac b{font-size:10.5px;padding:2px 6px;border-radius:7px;color:#fff;font-weight:700;}
+  .mk{background:#1C1C1C;} .mb{background:#3E7CB1;} .mt{background:#E8871E;} .mw{background:#7B61B8;}
+  .meal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:12px;}
+  .meal-card{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;cursor:pointer;}
+  .meal-card:hover{border-color:#1C1C1C;}
+  .meal-cb{padding:8px 10px 10px;} .meal-cn{font-weight:700;font-size:13px;line-height:1.25;} .meal-cc{font-size:10.5px;color:var(--muted);text-transform:uppercase;font-weight:700;margin-top:2px;}
+  .meal-modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:300;padding:16px;}
+  .meal-modal{width:480px;max-width:100%;max-height:90vh;overflow-y:auto;background:var(--bg);border-radius:14px;position:relative;box-shadow:0 18px 50px rgba(0,0,0,.35);}
+  .meal-x{position:absolute;top:10px;right:10px;width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.92);display:flex;align-items:center;justify-content:center;cursor:pointer;font-weight:700;z-index:2;}
+  .md-body{padding:12px 14px 6px;} .md-cat{font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;}
+  .md-nm{font-size:17px;margin:3px 0 4px;line-height:1.25;}
+  .md-h{font-size:12.5px;margin:14px 0 6px;font-family:'Space Grotesk',sans-serif;}
+  .md-ing{list-style:none;margin:0;padding:0;border:1px solid var(--line);border-radius:10px;background:var(--surface);}
+  .md-ing li{display:flex;justify-content:space-between;gap:10px;padding:7px 10px;border-top:1px solid var(--line);font-size:12.5px;}
+  .md-ing li:first-child{border-top:none;} .md-ing li b{font-weight:600;color:#444;white-space:nowrap;}
+  .md-steps{margin:0;padding:0;list-style:none;counter-reset:st;}
+  .md-steps li{counter-increment:st;position:relative;padding:6px 0 8px 32px;font-size:12.5px;line-height:1.45;border-bottom:1px dashed var(--line);}
+  .md-steps li:last-child{border-bottom:none;}
+  .md-steps li::before{content:counter(st);position:absolute;left:0;top:5px;width:22px;height:22px;border-radius:50%;background:#1C1C1C;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;}
+  .md-acts{display:flex;gap:8px;padding:12px 14px 14px;}
+  .me-wrap{padding:16px;} .me-photo{display:flex;gap:12px;align-items:center;margin-bottom:12px;} .me-photo .meal-ph{width:160px;border-radius:10px;flex-shrink:0;}
+  .me-photo-acts{display:flex;flex-direction:column;gap:6px;align-items:flex-start;}
+  .me-grid{display:grid;grid-template-columns:110px 1fr;gap:8px 10px;align-items:center;font-size:12.5px;} .me-grid label{color:var(--muted);}
+  .me-ing{display:flex;gap:6px;align-items:center;margin-bottom:6px;}
+  .diet-cb{display:flex;align-items:center;gap:7px;font-size:12.5px;margin:4px 0;cursor:pointer;} .diet-cb input{width:16px;height:16px;accent-color:#1C1C1C;}
+  .diet-cb.dis{opacity:.4;cursor:default;}
+  .diet-cell .diet-cb{margin:2px 0;font-size:12px;}
+  .diet-st{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:9px;margin-top:3px;}
+  .diet-st.active{background:#E3F4E9;color:#2E9E5B;} .diet-st.teaser{background:#FDECE8;color:#E8604A;} .diet-st.hidden{background:var(--surface-2);color:var(--muted);}
+  .diet-bulk{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:10px;font-size:12px;color:var(--muted);}
+  .diet-bulk-g{display:inline-flex;gap:5px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:4px 6px;} .diet-bulk-g b{color:var(--text);margin:0 4px;}
+  .diet-tg{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;} .diet-tg label{font-size:11px;color:var(--muted);display:flex;flex-direction:column;gap:3px;}
+  .diet-days{display:flex;gap:5px;flex-wrap:wrap;margin:6px 0 10px;}
+  .diet-slot{display:flex;align-items:center;gap:10px;padding:6px 0;border-top:1px solid var(--line);} .diet-slot-l{width:90px;font-size:11px;font-weight:700;text-transform:uppercase;color:var(--muted);}
+  .diet-slot select{flex:1;} .diet-slot-k{width:130px;text-align:right;font-size:11.5px;color:var(--muted);}
+  .diet-sum{display:flex;gap:12px;align-items:center;flex-wrap:wrap;font-size:12px;margin-top:8px;}
+  /* panel klienta */
+  body.has-bnav .athlete-wrap{padding-bottom:84px;}
+  .a-bnav{position:fixed;left:0;right:0;bottom:0;z-index:150;display:none;justify-content:center;background:var(--surface);border-top:1px solid var(--line);padding:7px 0 calc(10px + env(safe-area-inset-bottom));}
+  .a-bnav > div{flex:1;max-width:160px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10.5px;font-weight:700;color:#9A958C;cursor:pointer;position:relative;}
+  .a-bnav > div.on{color:var(--text);}
+  .a-bnav-dot{position:absolute;top:0;left:calc(50% + 8px);width:7px;height:7px;border-radius:50%;background:#E8604A;border:1.5px solid #fff;}
+  .dm-week{display:flex;gap:4px;align-items:center;margin-bottom:8px;overflow-x:auto;}
+  .dm-wnav{width:28px;height:44px;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;color:var(--muted);flex-shrink:0;}
+  .dm-day{flex:1;min-width:38px;display:flex;flex-direction:column;align-items:center;padding:5px 0;border-radius:10px;border:1px solid var(--line);background:var(--surface);font-size:11px;cursor:pointer;}
+  .dm-day b{font-size:10.5px;} .dm-day.today{border-color:#E8604A;} .dm-day.on{background:#1C1C1C;color:#fff;border-color:#1C1C1C;}
+  .dm-prog{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 11px;margin-bottom:9px;font-size:12px;}
+  .dm{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:9px;}
+  .dm.done{opacity:.6;} .dm-phw{cursor:pointer;}
+  .dm-b{padding:9px 11px 11px;}
+  .dm-cat{font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;}
+  .dm-row{display:flex;align-items:center;gap:8px;margin-top:3px;}
+  .dm-n{font-weight:700;font-size:13.5px;line-height:1.25;cursor:pointer;}
+  .dm-chk{width:24px;height:24px;border-radius:7px;border:2px solid #bbb;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;color:#fff;}
+  .dm-chk svg{width:15px;height:15px;} .dm-chk.on{background:#2E9E5B;border-color:#2E9E5B;}
+  .dm-more{font-size:11.5px;color:#E8604A;font-weight:700;cursor:pointer;}
+  .dm-swap{display:inline-flex;align-items:center;gap:4px;margin-left:auto;font-size:11.5px;font-weight:700;border:1px solid var(--line);background:var(--surface-2);border-radius:8px;padding:4px 9px;cursor:pointer;}
+  .dm-swap svg{width:14px;height:14px;}
+  .dm-alts{border-top:1px dashed var(--line);margin-top:9px;padding-top:7px;}
+  .dm-alt{display:flex;align-items:center;gap:9px;padding:5px 0;cursor:pointer;font-size:12px;}
+  .dm-alt .meal-ph{width:40px !important;border-radius:7px;flex-shrink:0;} .dm-alt .meal-ph-ic{width:20px;height:20px;}
+  .dm-alt-n{flex:1;font-weight:600;} .dm-alt-d{font-size:10.5px;color:var(--muted);text-align:right;white-space:nowrap;}
+  .dm-back{display:flex;align-items:center;gap:6px;padding:10px 12px;background:var(--surface);border:1px solid var(--line);border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:8px;}
+  .md-card{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;}
+  .shop-h{font-size:11px;text-transform:uppercase;color:var(--muted);margin:12px 2px 4px;font-family:'IBM Plex Sans',sans-serif;}
+  .shop-i{display:flex;align-items:center;gap:9px;padding:8px 4px;border-bottom:1px solid var(--line);font-size:13px;cursor:pointer;}
+  .shop-i.got{color:#aaa;text-decoration:line-through;} .shop-q{margin-left:auto;font-size:12px;color:var(--muted);}
+  .dt-hero{border-radius:14px;padding:16px 14px;background:linear-gradient(150deg,#1C1C1C 0%,#2E2B28 100%);color:#fff;position:relative;overflow:hidden;}
+  .dt-deco{position:absolute;right:-18px;bottom:-22px;width:120px;height:120px;color:#fff;opacity:.12;}
+  .dt-kick{font-size:10.5px;letter-spacing:.6px;text-transform:uppercase;color:#F3B39F;font-weight:700;}
+  .dt-hero h2{font-size:19px;line-height:1.22;margin:6px 0;position:relative;color:#fff;} .dt-hero p{font-size:12px;opacity:.85;margin:0;line-height:1.45;position:relative;}
+  .dt-ben{list-style:none;margin:12px 0 0;padding:0;}
+  .dt-ben li{display:flex;gap:10px;align-items:flex-start;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 10px;margin-bottom:6px;font-size:12px;line-height:1.4;}
+  .dt-ben b{display:block;font-size:12.5px;}
+  .dt-bi{width:30px;height:30px;border-radius:9px;background:#FDECE8;color:#E8604A;display:flex;align-items:center;justify-content:center;flex-shrink:0;} .dt-bi svg{width:18px;height:18px;}
+  .dt-peek{position:relative;margin-top:10px;border-radius:12px;overflow:hidden;}
+  .dt-blur{filter:blur(2.5px);opacity:.75;pointer-events:none;}
+  .dm-mini{display:flex;gap:10px;align-items:center;padding:8px;} .dm-mini .meal-ph{border-radius:9px;flex-shrink:0;} .dm-mini .meal-ph-ic{width:24px;height:24px;}
+  .dt-peek-l{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;}
+  .dt-peek-l span{display:flex;align-items:center;gap:6px;background:rgba(28,28,28,.88);color:#fff;font-size:11.5px;font-weight:700;padding:6px 12px;border-radius:14px;} .dt-peek-l svg{width:14px;height:14px;}
+  .dt-contact{display:flex;align-items:center;gap:12px;margin-top:12px;background:#E6F4EA;border:1.5px solid #BFE3CC;border-radius:12px;padding:12px;}
+  .dt-ci{width:36px;height:36px;border-radius:50%;background:#2E9E5B;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;} .dt-ci svg{width:20px;height:20px;}
+  .dt-contact b{display:block;font-size:13.5px;} .dt-contact span{font-size:11.5px;color:#3D6B4C;}
+  .dt-fine{font-size:10.5px;color:var(--muted);text-align:center;margin-top:8px;}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -749,6 +841,7 @@
       <button class="add-client-btn" id="showTemplatesBtn">🗂️ Szablony planów</button>
       <button class="add-client-btn" id="showOnlineBtn">💻 Treningi online</button>
       <button class="add-client-btn" id="showLibraryBtn" style="margin-top:14px;">📚 Biblioteka ćwiczeń</button>
+      <button class="add-client-btn" id="showMealsBtn">Biblioteka posiłków</button>
       <button class="add-client-btn" id="showRosterBtn">👥 Klienci</button>
       <button class="add-client-btn" id="copyAppLinkBtn">🔗 Skopiuj link aplikacji</button>
     </div>
@@ -2074,6 +2167,13 @@ $('showLibraryBtn').onclick = () => navigateTo(async () => {
   renderClientList();
   renderLibraryView();
 });
+$('showMealsBtn').onclick = () => navigateTo(async () => {
+  trainerViewMode = 'meals';
+  selectedClientId = null;
+  renderClientList();
+  await loadMealLibrary(true);
+  renderMealLibraryView();
+});
 $('showRosterBtn').onclick = () => navigateTo(async () => {
   trainerViewMode = 'roster';
   selectedClientId = null;
@@ -2112,7 +2212,7 @@ let notesTableMissing = false;
 const notesCache = {};
 const NOTE_TAGS = { sesja:['Sesja','#3E7CB1'], bol:['Ból','#B4472E'], tech:['Technika','#E8871E'], rozm:['Rozmowa','#7B61B8'], org:['Organizacyjne','#767268'] };
 const CLIENT_VIEW_KEY = 'moveu_client_view';
-function getLastClientView(){ try{ const v = localStorage.getItem(CLIENT_VIEW_KEY); return (v === 'plan' || v === 'info') ? v : null; }catch(e){ return null; } }
+function getLastClientView(){ try{ const v = localStorage.getItem(CLIENT_VIEW_KEY); return (v === 'plan' || v === 'info' || v === 'diet') ? v : null; }catch(e){ return null; } }
 function setLastClientView(v){ try{ localStorage.setItem(CLIENT_VIEW_KEY, v); }catch(e){} }
 function isNotesTableError(err){ const t = ((err && err.code) || '') + ' ' + ((err && err.message) || ''); return /42P01|PGRST205|does not exist|schema cache/i.test(t); }
 function normalizeNotes(d){
@@ -2173,8 +2273,8 @@ function clientGroupLabel(c){
   return [org ? org.name : '', sub ? sub.name : ''].filter(Boolean).join(' · ');
 }
 function clientViewTopHtml(c, view){
-  return `<div class="cv-top"><div class="cv-crumbs"><span class="cv-lnk" id="cvCrumb">${escapeHtml(c.name)}</span> › ${view === 'plan' ? 'Plan' : 'Informacje'}</div>
-    <div class="cv-switch"><div class="${view === 'plan' ? 'on' : ''}" data-cv="plan">📅 Plan</div><div class="${view === 'info' ? 'on' : ''}" data-cv="info">👤 Informacje</div></div></div>`;
+  return `<div class="cv-top"><div class="cv-crumbs"><span class="cv-lnk" id="cvCrumb">${escapeHtml(c.name)}</span> › ${view === 'plan' ? 'Plan' : view === 'diet' ? 'Dieta' : 'Informacje'}</div>
+    <div class="cv-switch"><div class="${view === 'plan' ? 'on' : ''}" data-cv="plan">Plan</div><div class="${view === 'info' ? 'on' : ''}" data-cv="info">Informacje</div><div class="${view === 'diet' ? 'on' : ''}" data-cv="diet">Dieta</div></div></div>`;
 }
 function bindClientViewTop(){
   if($('cvCrumb')) $('cvCrumb').onclick = () => { clientView = 'choose'; showClientView(); };
@@ -2192,6 +2292,7 @@ async function showClientView(){
   if(!c) return;
   if(clientView === 'plan'){ renderMain(); return; }
   if(clientView === 'info'){ await loadClientNotes(c.id); if(selectedClientId === c.id && clientView === 'info') renderClientInfo(); return; }
+  if(clientView === 'diet'){ await Promise.all([loadDiet(c.id, true), loadMealLibrary()]); if(selectedClientId === c.id && clientView === 'diet') renderClientDiet(); return; }
   renderClientChooser();
 }
 const CV_ICON_PLAN = `<svg viewBox="0 0 64 64" width="64" height="64"><circle cx="32" cy="32" r="32" fill="#F5F4F1"/><circle cx="32" cy="32" r="31" fill="none" stroke="#E1DFDA" stroke-width="2"/>
@@ -2215,6 +2316,7 @@ function renderClientChooser(){
       <div class="cv-grid">
         <div class="cv-tile" data-go="plan"><div class="cv-logo">${CV_ICON_PLAN}</div><div class="cv-nm">Plan treningowy</div><div class="cv-ds">kalendarz i treningi</div></div>
         <div class="cv-tile" data-go="info"><div class="cv-logo">${CV_ICON_INFO}</div><div class="cv-nm">Informacje</div><div class="cv-ds">notatki, zdrowie, testy</div></div>
+        <div class="cv-tile" data-go="diet"><div class="cv-logo">${CV_ICON_DIET}</div><div class="cv-nm">Dieta</div><div class="cv-ds">jadłospis i cele</div></div>
       </div>
       <div class="cv-hint">Wybór zostanie zapamiętany — kolejne osoby otworzą się od razu w tym widoku. Wrócisz tu, klikając imię u góry.</div>
     </div>`;
@@ -2383,6 +2485,421 @@ function renderClientInfo(){
   document.querySelectorAll('[data-asymdel]').forEach(b => b.onclick = async () => { d.asym = d.asym.filter(x => x.id !== b.dataset.asymdel); await save(); rerender(); });
   if($('cvOpenProfile')) $('cvOpenProfile').onclick = () => { profileReturnTo = 'info'; trainerViewMode = 'profile'; renderClientProfile(id); };
   document.querySelectorAll('.cv-ct').forEach(inp => inp.onchange = async () => { d.contact[inp.dataset.k] = inp.value.trim(); await save(); if(inp.dataset.k === 'phone') rerender(); });
+}
+
+/* ============ DIETA ============
+   Biblioteka posilkow: kv_store 'meal_library'. Dieta klienta: tabela app_client_diets (client_id, data jsonb).
+   Zdjecia: Supabase Storage, publiczny kubelek 'meal-photos'. Bez emoji w interfejsie - wlasne ikony SVG. */
+const dietCache = {};
+let mealLibrary = null;
+let dietsTableMissing = false;
+const DIET_DAYS = ['Pon','Wt','Śr','Czw','Pt','Sob','Ndz'];
+const DIET_SLOTS = [['sn','Śniadanie'],['pr','Przekąska'],['ob','Obiad'],['ko','Kolacja']];
+const MEAL_CATS = { sn:'Śniadanie', pr:'Przekąska', ob:'Obiad', ko:'Kolacja' };
+const SHOP_CATS = { w:'Warzywa i owoce', n:'Nabiał i jaja', m:'Mięso i ryby', z:'Zboża i pieczywo', i:'Inne' };
+const MEAL_BG = { sn:'#F6E3C7', pr:'#EFE6DA', ob:'#F3DCCB', ko:'#E6EFD6' };
+const DI = {
+  plan:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M8.5 14.5l2 2 4-4"/></svg>`,
+  diet:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3v7a2 2 0 0 0 4 0V3M8 3v18"/><path d="M17 3c-1.7 0-3 2.2-3 5s1.3 4 3 4v9"/></svg>`,
+  cart:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h2.5l2.2 10.5a1.5 1.5 0 0 0 1.5 1.2h7.9a1.5 1.5 0 0 0 1.5-1.1L20.5 8H6.4"/><circle cx="10" cy="19.5" r="1.3"/><circle cx="17" cy="19.5" r="1.3"/></svg>`,
+  plate:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/></svg>`,
+  swap:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h14l-3.5-3.5M20 16H6l3.5 3.5"/></svg>`,
+  trend:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 17l5.5-5.5 4 4 7-7"/><path d="M15 8.5h5v5"/></svg>`,
+  lock:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9.5" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>`,
+  user:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8.5" r="4"/><path d="M4.5 20.5c1.6-3.6 4.3-5.2 7.5-5.2s5.9 1.6 7.5 5.2"/></svg>`,
+  clock:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>`,
+  check:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>`
+};
+const dIcon = (k, cls) => DI[k].replace('<svg ', `<svg class="${cls || 'di'}" `);
+const CV_ICON_DIET = `<svg viewBox="0 0 64 64" width="64" height="64"><circle cx="32" cy="32" r="32" fill="#F5F4F1"/><circle cx="32" cy="32" r="31" fill="none" stroke="#E1DFDA" stroke-width="2"/>
+  <g fill="none" stroke="#1C1C1C" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M24 18v10a3 3 0 0 0 6 0V18M27 18v28"/><path d="M40 18c-2.4 0-4 3-4 7s1.6 5.5 4 5.5V46"/></g>
+  <circle cx="45" cy="19" r="3.6" fill="#E8604A"/></svg>`;
+const numv = v => { const n = parseFloat(String(v == null ? '' : v).replace(',', '.')); return isNaN(n) ? 0 : n; };
+function isDietTableError(err){ const t = ((err && err.code) || '') + ' ' + ((err && err.message) || ''); return /42P01|PGRST205|does not exist|schema cache/i.test(t); }
+function normDiet(d){
+  d = (d && typeof d === 'object') ? d : {};
+  return { active: !!d.active, hidden: (typeof d.hidden === 'boolean') ? d.hidden : undefined,
+    target: Object.assign({ k:'', b:'', t:'', w:'' }, d.target || {}), calc: Object.assign({ sex:'M', pal:'1.55', goal:'0' }, d.calc || {}),
+    week: d.week || {}, done: d.done || {}, swaps: d.swaps || {}, swapLog: Array.isArray(d.swapLog) ? d.swapLog : [] };
+}
+async function loadMealLibrary(force){
+  if(mealLibrary && !force) return mealLibrary;
+  const v = await safeGet('meal_library');
+  mealLibrary = Array.isArray(v) ? v : [];
+  return mealLibrary;
+}
+async function loadDiet(id, force){
+  if(!force && Object.prototype.hasOwnProperty.call(dietCache, id)) return dietCache[id];
+  try{
+    const { data, error } = await sbClient.from('app_client_diets').select('data').eq('client_id', id).maybeSingle();
+    if(error){ if(isDietTableError(error)) dietsTableMissing = true; dietCache[id] = null; return null; }
+    dietsTableMissing = false;
+    dietCache[id] = data ? normDiet(data.data) : null;
+    return dietCache[id];
+  }catch(e){ dietCache[id] = null; return null; }
+}
+async function loadAllDiets(){
+  try{
+    const { data, error } = await sbClient.from('app_client_diets').select('client_id,data');
+    if(error){ if(isDietTableError(error)) dietsTableMissing = true; return; }
+    dietsTableMissing = false;
+    clients.forEach(c => { dietCache[c.id] = null; });
+    (data || []).forEach(r => { dietCache[r.client_id] = normDiet(r.data); });
+  }catch(e){}
+}
+/* Zapis = pobierz swieza wersje, zmien TYLKO to, co trzeba, zapisz (bez nadpisywania zmian z innego urzadzenia) */
+async function saveDietPatch(id, mutate){
+  setStatus('Zapisywanie…');
+  for(let attempt = 0; attempt < 3; attempt++){
+    try{
+      const { data, error: rErr } = await sbClient.from('app_client_diets').select('data').eq('client_id', id).maybeSingle();
+      if(rErr){ if(isDietTableError(rErr)){ dietsTableMissing = true; break; } throw rErr; }
+      const fresh = normDiet(data && data.data);
+      mutate(fresh);
+      const stamp = new Date().toISOString();
+      const res = (data && !isTrainerUser)
+        ? await sbClient.from('app_client_diets').update({ data: fresh, updated_at: stamp }).eq('client_id', id)
+        : await sbClient.from('app_client_diets').upsert({ client_id: id, data: fresh, updated_at: stamp });
+      if(!res.error){ dietCache[id] = fresh; dietsTableMissing = false; setStatus('Zapisano'); setTimeout(() => setStatus(''), 1200); return true; }
+      if(isDietTableError(res.error)){ dietsTableMissing = true; break; }
+      console.warn('Dieta - blad zapisu:', res.error);
+    }catch(e){ console.warn(e); }
+    await new Promise(r => setTimeout(r, 800 * (attempt + 1)));
+  }
+  setStatus('');
+  alert(dietsTableMissing ? 'W bazie brakuje jeszcze tabeli na diety (app_client_diets).\nWklej polecenie z instrukcji w Supabase. Ta zmiana NIE została zapisana.' : 'Nie udało się zapisać. Sprawdź internet i spróbuj ponownie.');
+  return false;
+}
+function dietHiddenEffective(c, d){ return (d && typeof d.hidden === 'boolean') ? d.hidden : (themeKeyForOrg(c.groupId) === 'akademia'); }
+function dietTabState(c){ const d = dietCache[c.id]; if(d && d.active) return 'active'; return dietHiddenEffective(c, d) ? 'hidden' : 'teaser'; }
+function mealById(id){ return (mealLibrary || []).find(m => m.id === id) || null; }
+function weekdayIdx(ds){ const [y, m, d] = ds.split('-').map(Number); return (new Date(y, m - 1, d).getDay() + 6) % 7; }
+function mondayOfStr(ds){ return addDaysToDateStr(ds, -weekdayIdx(ds)); }
+function effectiveMeal(d, ds, slot){
+  if(!d) return null;
+  const sw = d.swaps[ds + '|' + slot];
+  const id = sw || (d.week[DIET_DAYS[weekdayIdx(ds)]] || {})[slot];
+  return id ? mealById(id) : null;
+}
+function mealAlternatives(m){
+  const k = numv(m.kcal), b = numv(m.b);
+  return (mealLibrary || []).filter(a => a.category === m.category && a.id !== m.id && Math.abs(numv(a.kcal) - k) <= k * 0.1 && Math.abs(numv(a.b) - b) <= 8);
+}
+function mealPhotoHtml(m, h){
+  if(m && m.photo) return `<div class="meal-ph" style="height:${h}px;"><img src="${escapeHtml(m.photo)}" alt=""></div>`;
+  return `<div class="meal-ph" style="height:${h}px;background:${MEAL_BG[(m && m.category) || 'sn']};">${dIcon('plate', 'meal-ph-ic')}</div>`;
+}
+function macrosHtml(m){ return `<div class="mac"><b class="mk">${numv(m.kcal)} kcal</b><b class="mb">B ${numv(m.b)}</b><b class="mt">T ${numv(m.t)}</b><b class="mw">W ${numv(m.w)}</b></div>`; }
+function mealDetailHtml(m){
+  const steps = (m.steps || []).filter(Boolean);
+  return `${mealPhotoHtml(m, 180)}<div class="md-body">
+    <div class="md-cat">${escapeHtml(MEAL_CATS[m.category] || '')}${m.minutes ? ` · ${dIcon('clock', 'di-inline')} ${escapeHtml(String(m.minutes))} min` : ''}</div>
+    <h3 class="md-nm">${escapeHtml(m.name)}</h3>${macrosHtml(m)}
+    <h4 class="md-h">Składniki:</h4>
+    <ul class="md-ing">${(m.ingredients || []).map(i => `<li><span>${escapeHtml(i.name)}</span><b>${escapeHtml(String(i.qty || ''))} ${escapeHtml(i.unit || '')}</b></li>`).join('') || '<li><span>—</span></li>'}</ul>
+    <h4 class="md-h">Sposób przygotowania:</h4>
+    <ol class="md-steps">${steps.map(st => `<li>${escapeHtml(st)}</li>`).join('') || '<li>—</li>'}</ol></div>`;
+}
+
+/* ---------- Biblioteka posilkow (trener) ---------- */
+let mealSearch = '';
+function renderMealLibraryView(){
+  const q = plSearchKey(mealSearch).split(/\s+/).filter(Boolean);
+  const list = (mealLibrary || []).filter(m => q.every(t => plSearchKey(m.name + ' ' + (MEAL_CATS[m.category] || '')).includes(t)));
+  $('main').innerHTML = `<div class="section-title"><div class="bar"></div><h2>Biblioteka posiłków</h2></div>
+    <div class="section-desc">Posiłki do jadłospisów: zdjęcie, składniki (z nich robi się lista zakupów), przepis, kcal i makro.</div>
+    <div class="lib-search-bar"><input id="mealSearch" placeholder="Szukaj posiłku…" autocomplete="off" value="${escapeHtml(mealSearch)}"><button class="btn" id="mealAddBtn">+ Dodaj posiłek</button></div>
+    ${dietsTableMissing ? '<div class="cv-alert" style="background:#FFF4E5;border-color:#F3C88B;"><div><b>Brakuje tabeli diet w bazie.</b> Wklej polecenie z instrukcji Supabase — biblioteka działa, ale przypisywanie diet klientom będzie możliwe po tym kroku.</div></div>' : ''}
+    <div class="meal-grid">${list.map(m => `<div class="meal-card" data-meal="${escapeHtml(m.id)}">${mealPhotoHtml(m, 110)}<div class="meal-cb"><div class="meal-cn">${escapeHtml(m.name)}</div><div class="meal-cc">${escapeHtml(MEAL_CATS[m.category] || '')}</div>${macrosHtml(m)}</div></div>`).join('') || '<div class="empty-state">Brak posiłków. Dodaj pierwszy przyciskiem „+ Dodaj posiłek”.</div>'}</div>`;
+  $('mealSearch').oninput = e => { mealSearch = e.target.value; const pos = e.target.selectionStart; renderMealLibraryView(); const inp = $('mealSearch'); inp.focus(); inp.setSelectionRange(pos, pos); };
+  $('mealAddBtn').onclick = () => openMealEditor(null);
+  document.querySelectorAll('[data-meal]').forEach(c => c.onclick = () => openMealPreview(c.dataset.meal));
+}
+function mealModal(html){
+  let el = $('mealModalBg');
+  if(!el){ el = document.createElement('div'); el.id = 'mealModalBg'; el.className = 'meal-modal-bg'; document.body.appendChild(el); }
+  el.innerHTML = `<div class="meal-modal"><span class="meal-x" id="mealModalX">✕</span>${html}</div>`;
+  el.style.display = 'flex';
+  el.onclick = ev => { if(ev.target === el) closeMealModal(); };
+  $('mealModalX').onclick = closeMealModal;
+}
+function closeMealModal(){ const el = $('mealModalBg'); if(el) el.style.display = 'none'; }
+function openMealPreview(id){
+  const m = mealById(id); if(!m) return;
+  mealModal(mealDetailHtml(m) + `<div class="md-acts"><button class="btn" id="mealEditBtn">Edytuj posiłek</button><button class="btn ghost" id="mealDelBtn">Usuń</button></div>`);
+  $('mealEditBtn').onclick = () => openMealEditor(id);
+  $('mealDelBtn').onclick = async () => {
+    if(!confirm(`Usunąć „${m.name}” z biblioteki?\n\nJeśli jest w czyimś jadłospisie, to miejsce zostanie puste.`)) return;
+    const fresh = (await safeGet('meal_library')) || [];
+    const list = fresh.filter(x => x.id !== id);
+    if(await persistWithFeedback('meal_library', list)){ mealLibrary = list; closeMealModal(); renderMealLibraryView(); }
+  };
+}
+async function compressImage(file, maxDim){
+  const url = URL.createObjectURL(file);
+  try{
+    const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = url; });
+    const sc = Math.min(1, maxDim / Math.max(img.width, img.height));
+    const cv = document.createElement('canvas'); cv.width = Math.round(img.width * sc); cv.height = Math.round(img.height * sc);
+    cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+    return await new Promise(res => cv.toBlob(res, 'image/jpeg', 0.82));
+  } finally { URL.revokeObjectURL(url); }
+}
+function openMealEditor(id){
+  const src = id ? mealById(id) : null;
+  const m = src ? JSON.parse(JSON.stringify(src)) : { id: 'm_' + Date.now(), name:'', category:'sn', minutes:'', kcal:'', b:'', t:'', w:'', ingredients:[{name:'', qty:'', unit:'g', cat:'w'}], steps:[], photo:'' };
+  const ingRow = (ig, i) => `<div class="me-ing" data-i="${i}"><input class="cv-input" data-f="name" placeholder="Składnik" value="${escapeHtml(ig.name || '')}"><input class="cv-input" data-f="qty" placeholder="Ilość" value="${escapeHtml(String(ig.qty || ''))}" style="width:70px;"><input class="cv-input" data-f="unit" placeholder="j." value="${escapeHtml(ig.unit || '')}" style="width:62px;"><select class="cv-input" data-f="cat" style="width:130px;">${Object.entries(SHOP_CATS).map(([k, l]) => `<option value="${k}" ${ig.cat === k ? 'selected' : ''}>${l}</option>`).join('')}</select><span class="cv-x" data-rm="${i}">✕</span></div>`;
+  const draw = () => {
+    mealModal(`<div class="me-wrap"><h3 style="margin:0 0 10px;">${src ? 'Edytuj posiłek' : 'Nowy posiłek'}</h3>
+      <div class="me-photo">${mealPhotoHtml(m, 130)}<div class="me-photo-acts"><label class="btn ghost small" style="cursor:pointer;">Wgraj zdjęcie<input type="file" id="mePhoto" accept="image/*" style="display:none;"></label>${m.photo ? '<button class="btn ghost small" id="mePhotoRm">Usuń zdjęcie</button>' : ''}<div class="cv-small">Zdjęcie z telefonu albo z Canvy. Zmniejszy się automatycznie.</div></div></div>
+      <div class="me-grid"><label>Nazwa</label><input class="cv-input" id="meName" value="${escapeHtml(m.name)}" placeholder="np. Owsianka z jabłkiem">
+        <label>Kategoria</label><select class="cv-input" id="meCat">${Object.entries(MEAL_CATS).map(([k, l]) => `<option value="${k}" ${m.category === k ? 'selected' : ''}>${l}</option>`).join('')}</select>
+        <label>Czas (min)</label><input class="cv-input" id="meMin" value="${escapeHtml(String(m.minutes || ''))}" style="width:90px;">
+        <label>kcal / B / T / W</label><div style="display:flex;gap:6px;"><input class="cv-input" id="meK" placeholder="kcal" value="${escapeHtml(String(m.kcal || ''))}"><input class="cv-input" id="meB" placeholder="B" value="${escapeHtml(String(m.b || ''))}"><input class="cv-input" id="meT" placeholder="T" value="${escapeHtml(String(m.t || ''))}"><input class="cv-input" id="meW" placeholder="W" value="${escapeHtml(String(m.w || ''))}"></div></div>
+      <h4 class="md-h">Składniki:</h4><div id="meIngs">${m.ingredients.map(ingRow).join('')}</div><button class="btn ghost small" id="meIngAdd">+ Dodaj składnik</button>
+      <h4 class="md-h">Sposób przygotowania <span class="cv-small" style="font-weight:400;">(każdy krok w nowej linii)</span>:</h4>
+      <textarea class="cv-input" id="meSteps" rows="5">${escapeHtml((m.steps || []).join('\n'))}</textarea>
+      <div class="md-acts"><button class="btn" id="meSave">Zapisz posiłek</button><button class="btn ghost" id="meCancel">Anuluj</button></div></div>`);
+    const sync = () => {
+      m.name = $('meName').value.trim(); m.category = $('meCat').value; m.minutes = $('meMin').value.trim();
+      m.kcal = $('meK').value.trim(); m.b = $('meB').value.trim(); m.t = $('meT').value.trim(); m.w = $('meW').value.trim();
+      m.ingredients = [...document.querySelectorAll('.me-ing')].map(r => ({ name: r.querySelector('[data-f="name"]').value.trim(), qty: r.querySelector('[data-f="qty"]').value.trim(), unit: r.querySelector('[data-f="unit"]').value.trim(), cat: r.querySelector('[data-f="cat"]').value }));
+      m.steps = $('meSteps').value.split('\n').map(x => x.trim()).filter(Boolean);
+    };
+    $('meIngAdd').onclick = () => { sync(); m.ingredients.push({ name:'', qty:'', unit:'g', cat:'w' }); draw(); };
+    document.querySelectorAll('[data-rm]').forEach(x => x.onclick = () => { sync(); m.ingredients.splice(+x.dataset.rm, 1); draw(); });
+    $('meCancel').onclick = closeMealModal;
+    if($('mePhotoRm')) $('mePhotoRm').onclick = () => { sync(); m.photo = ''; draw(); };
+    $('mePhoto').onchange = async e => {
+      const f = e.target.files && e.target.files[0]; if(!f) return;
+      sync(); setStatus('Wgrywam zdjęcie…');
+      try{
+        const blob = await compressImage(f, 1000);
+        const path = `meals/${m.id}_${Date.now()}.jpg`;
+        const up = await sbClient.storage.from('meal-photos').upload(path, blob, { contentType: 'image/jpeg', upsert: true });
+        if(up.error) throw up.error;
+        m.photo = sbClient.storage.from('meal-photos').getPublicUrl(path).data.publicUrl;
+        setStatus('');
+      }catch(err){ setStatus(''); console.warn(err); alert('Nie udało się wgrać zdjęcia. Sprawdź, czy w Supabase jest utworzone miejsce na zdjęcia (krok z instrukcji).'); }
+      draw();
+    };
+    $('meSave').onclick = async () => {
+      sync();
+      if(!m.name){ alert('Wpisz nazwę posiłku.'); return; }
+      m.ingredients = m.ingredients.filter(i => i.name);
+      const fresh = (await safeGet('meal_library')) || [];
+      const i = fresh.findIndex(x => x.id === m.id);
+      if(i >= 0) fresh[i] = m; else fresh.push(m);
+      if(await persistWithFeedback('meal_library', fresh)){ mealLibrary = fresh; closeMealModal(); if(trainerViewMode === 'meals') renderMealLibraryView(); toast('Zapisano posiłek'); }
+    };
+  };
+  draw();
+}
+
+/* ---------- Dieta klienta (trener) ---------- */
+let dietEditDay = 'Pon';
+function renderClientDiet(){
+  const c = clients.find(cl => cl.id === selectedClientId); if(!c) return;
+  const d = dietCache[c.id] || normDiet(null);
+  const st = dietTabState(c);
+  const dayPlan = d.week[dietEditDay] || {};
+  const sum = DIET_SLOTS.reduce((a, [k]) => { const m = mealById(dayPlan[k]); if(m){ a.k += numv(m.kcal); a.b += numv(m.b); a.t += numv(m.t); a.w += numv(m.w); } return a; }, { k:0, b:0, t:0, w:0 });
+  const tk = numv(d.target.k);
+  const today = todayKey();
+  let eaten = 0, planned = 0;
+  for(let i = 0; i < 7; i++){ const ds = addDaysToDateStr(today, -i); DIET_SLOTS.forEach(([k]) => { if(effectiveMeal(d, ds, k)){ planned++; if(d.done[ds + '|' + k]) eaten++; } }); }
+  const opts = cat => '<option value="">— brak —</option>' + (mealLibrary || []).filter(m => m.category === cat).map(m => `<option value="${escapeHtml(m.id)}" ${dayPlan[cat] === m.id ? 'selected' : ''}>${escapeHtml(m.name)}</option>`).join('');
+  $('main').innerHTML = clientViewTopHtml(c, 'diet') + personHeadHtml(c, notesCache[c.id])
+    + (dietsTableMissing ? '<div class="cv-alert" style="background:#FFF4E5;border-color:#F3C88B;"><div><b>Brakuje tabeli diet w bazie.</b> Wklej polecenie z instrukcji w Supabase (SQL Editor). Do tego czasu zmiany diety się nie zapiszą.</div></div>' : '')
+    + `<div class="cv-grid2">
+      <div class="cv-card"><h4>Dostęp klienta</h4>
+        <label class="diet-cb"><input type="checkbox" id="dActive" ${d.active ? 'checked' : ''}> <b>Dieta aktywna</b> — klient widzi Dietę i Zakupy</label>
+        <label class="diet-cb ${d.active ? 'dis' : ''}"><input type="checkbox" id="dHidden" ${!d.active && dietHiddenEffective(c, d) ? 'checked' : ''} ${d.active ? 'disabled' : ''}> Ukryj zakładkę Dieta</label>
+        <div class="cv-small" style="margin-top:6px;">Teraz klient widzi: <b>${st === 'active' ? 'swoją dietę' : st === 'teaser' ? 'zachętę do diety' : 'brak zakładki Dieta'}</b>.</div>
+        <div class="cv-small" style="margin-top:8px;">Ostatnie 7 dni: zjedzone <b>${eaten}/${planned}</b> posiłków.</div></div>
+      <div class="cv-card"><h4>Cele dzienne</h4>
+        <div class="diet-tg"><label>kcal<input class="cv-input" data-tg="k" value="${escapeHtml(String(d.target.k))}"></label><label>Białko (g)<input class="cv-input" data-tg="b" value="${escapeHtml(String(d.target.b))}"></label><label>Tłuszcz (g)<input class="cv-input" data-tg="t" value="${escapeHtml(String(d.target.t))}"></label><label>Węgl. (g)<input class="cv-input" data-tg="w" value="${escapeHtml(String(d.target.w))}"></label></div>
+        <div class="cv-row"><select id="dSex"><option value="M" ${d.calc.sex === 'M' ? 'selected' : ''}>mężczyzna</option><option value="K" ${d.calc.sex === 'K' ? 'selected' : ''}>kobieta</option></select>
+          <select id="dPal">${[['1.2','mała aktywność'],['1.375','lekka'],['1.55','średnia'],['1.725','duża']].map(([v, l]) => `<option value="${v}" ${d.calc.pal === v ? 'selected' : ''}>${l}</option>`).join('')}</select>
+          <select id="dGoal">${[['-15','redukcja (−15%)'],['0','utrzymanie'],['10','masa (+10%)']].map(([v, l]) => `<option value="${v}" ${d.calc.goal === v ? 'selected' : ''}>${l}</option>`).join('')}</select>
+          <button class="btn ghost small" id="dCalc">Wylicz z danych klienta</button></div>
+        <div class="cv-small">Wzór Mifflin-St Jeor z masy, wzrostu i wieku (z Pomiarów); białko 2,0 g/kg, tłuszcz 0,9 g/kg, reszta węglowodany. To podpowiedź — zmień, jeśli trzeba.</div></div></div>
+    <div class="cv-card" style="margin-top:14px;"><h4>Jadłospis tygodniowy <button class="btn ghost small" id="dGoMeals" style="float:right;">Biblioteka posiłków</button></h4>
+      <div class="diet-days">${DIET_DAYS.map(dd => `<span class="client-org-chip ${dd === dietEditDay ? 'active' : ''}" data-dday="${dd}">${dd}</span>`).join('')}</div>
+      ${DIET_SLOTS.map(([k, l]) => { const m = mealById(dayPlan[k]); return `<div class="diet-slot"><div class="diet-slot-l">${l}</div><select class="cv-input" data-slot="${k}">${opts(k)}</select><div class="diet-slot-k">${m ? numv(m.kcal) + ' kcal · B ' + numv(m.b) : ''}</div></div>`; }).join('')}
+      <div class="diet-sum"><b>Suma dnia: ${sum.k} kcal</b> · B ${sum.b} · T ${sum.t} · W ${sum.w}${tk ? `<div class="cv-bar" style="flex:1;min-width:120px;margin:0;"><i style="width:${Math.min(100, Math.round(sum.k / tk * 100))}%"></i></div>${Math.round(sum.k / tk * 100)}% celu` : ''}</div>
+      ${(mealLibrary || []).length ? '' : '<div class="cv-small" style="margin-top:8px;">Biblioteka posiłków jest pusta — najpierw dodaj posiłki.</div>'}</div>
+    ${d.swapLog.length ? `<div class="cv-card" style="margin-top:14px;"><h4>Zamiany klienta</h4>${d.swapLog.slice(-10).reverse().map(x => { const a = mealById(x.from), b = mealById(x.to); return `<div class="cv-inj"><div>${escapeHtml(x.date)} · ${escapeHtml(MEAL_CATS[x.slot] || '')}: <b>${escapeHtml(a ? a.name : '?')}</b> → <b>${escapeHtml(b ? b.name : '?')}</b></div><span class="cv-pill" style="margin-left:auto;">${x.perm ? 'na stałe' : 'tylko ten dzień'}</span></div>`; }).join('')}</div>` : ''}`;
+  bindClientViewTop();
+  const id = c.id;
+  const rer = () => { if(selectedClientId === id && clientView === 'diet') renderClientDiet(); };
+  $('dActive').onchange = async e => { await saveDietPatch(id, x => { x.active = e.target.checked; }); rer(); };
+  $('dHidden').onchange = async e => { await saveDietPatch(id, x => { x.hidden = e.target.checked; }); rer(); };
+  document.querySelectorAll('[data-tg]').forEach(inp => inp.onchange = async () => { await saveDietPatch(id, x => { x.target[inp.dataset.tg] = inp.value.trim(); }); rer(); });
+  document.querySelectorAll('[data-dday]').forEach(ch => ch.onclick = () => { dietEditDay = ch.dataset.dday; rer(); });
+  document.querySelectorAll('[data-slot]').forEach(sel => sel.onchange = async () => { const slot = sel.dataset.slot, val = sel.value || null; await saveDietPatch(id, x => { x.week[dietEditDay] = x.week[dietEditDay] || {}; x.week[dietEditDay][slot] = val; }); rer(); });
+  $('dGoMeals').onclick = () => $('showMealsBtn').click();
+  $('dCalc').onclick = async () => {
+    const wl = (c.weightLog || []).slice().sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+    const w = wl.length ? numv(wl[wl.length - 1].weight) : 0, h = numv(c.height), a = clientAge(c);
+    if(!w || !h || a === null){ alert('Do wyliczenia potrzebne są: masa ciała, wzrost i data urodzenia.\nUzupełnij je w Informacje → Pomiary.'); return; }
+    const sex = $('dSex').value, pal = $('dPal').value, goal = $('dGoal').value;
+    const bmr = 10 * w + 6.25 * h - 5 * a + (sex === 'M' ? 5 : -161);
+    const k = Math.round(bmr * numv(pal) * (1 + numv(goal) / 100) / 50) * 50;
+    const pb = Math.round(2.0 * w), pt = Math.round(0.9 * w), pw = Math.max(0, Math.round((k - pb * 4 - pt * 9) / 4));
+    await saveDietPatch(id, x => { x.calc = { sex, pal, goal }; x.target = { k: String(k), b: String(pb), t: String(pt), w: String(pw) }; });
+    rer();
+  };
+}
+
+/* ---------- Kolumna Dieta na liscie klientow ---------- */
+function rosterDietCellHtml(c){
+  const d = dietCache[c.id];
+  const st = dietTabState(c);
+  return `<label class="diet-cb"><input type="checkbox" data-dietflag="active" ${d && d.active ? 'checked' : ''}> aktywna</label>
+    <label class="diet-cb ${d && d.active ? 'dis' : ''}"><input type="checkbox" data-dietflag="hidden" ${st === 'hidden' ? 'checked' : ''} ${d && d.active ? 'disabled' : ''}> ukryj</label>
+    <span class="diet-st ${st}">${st === 'active' ? 'widzi dietę' : st === 'teaser' ? 'widzi zachętę' : 'ukryta'}</span>`;
+}
+function renderDietBulk(){
+  const el = $('dietBulk'); if(!el) return;
+  el.innerHTML = `<span>Zakładka Dieta dla całej grupy:</span>` + clientGroups.map(g => `<span class="diet-bulk-g"><b>${escapeHtml(g.name)}</b><button class="btn ghost small" data-bulk="${g.id}" data-val="1">ukryj</button><button class="btn ghost small" data-bulk="${g.id}" data-val="0">pokaż zachętę</button></span>`).join('');
+  el.querySelectorAll('[data-bulk]').forEach(b => b.onclick = async () => {
+    const list = clients.filter(c => c.groupId === b.dataset.bulk && !(dietCache[c.id] && dietCache[c.id].active));
+    if(!list.length) return;
+    if(!confirm(`${b.dataset.val === '1' ? 'Ukryć' : 'Pokazać'} zakładkę Dieta dla ${list.length} ${plPlural(list.length, 'osoby', 'osób', 'osób')} bez aktywnej diety?`)) return;
+    for(const c of list) await saveDietPatch(c.id, x => { x.hidden = b.dataset.val === '1'; });
+    renderRosterRows();
+  });
+}
+
+/* ============ DIETA - PANEL KLIENTA ============ */
+let aMainTab = 'plan', aDietDate = null, aDietDetail = null, aDietSwap = null, aDietPick = null;
+function renderAthleteNav(){
+  let nav = document.getElementById('aBottomNav');
+  if(!nav){ nav = document.createElement('div'); nav.id = 'aBottomNav'; nav.className = 'a-bnav'; document.body.appendChild(nav); }
+  const c = aClientId ? clients.find(x => x.id === aClientId) : null;
+  const st = c ? dietTabState(c) : 'hidden';
+  const shell = document.getElementById('appShell');
+  const show = !!(currentTab === 'sportowiec' && c && st !== 'hidden' && shell && shell.style.display !== 'none');
+  document.body.classList.toggle('has-bnav', show);
+  if(!show){ nav.style.display = 'none'; return; }
+  const items = [['plan','Plan','plan'],['diet','Dieta','diet']].concat(st === 'active' ? [['shop','Zakupy','cart']] : []);
+  if(aMainTab === 'shop' && st !== 'active') aMainTab = 'diet';
+  nav.style.display = 'flex';
+  nav.innerHTML = items.map(([k, l, ic]) => `<div class="${aMainTab === k ? 'on' : ''}" data-mt="${k}">${dIcon(ic, 'di')}<span>${l}</span>${k === 'diet' && st === 'teaser' ? '<i class="a-bnav-dot"></i>' : ''}</div>`).join('');
+  nav.querySelectorAll('[data-mt]').forEach(b => b.onclick = () => { aMainTab = b.dataset.mt; aDietDetail = null; aDietSwap = null; aDietPick = null; refreshAthleteView(); renderAthleteNav(); window.scrollTo(0, 0); });
+}
+function dietTeaserHtml(){
+  const sample = [['sn','Owsianka z jabłkiem i masłem orzechowym','520 kcal · B 22'],['pr','Jogurt grecki z orzechami','260 kcal · B 16']];
+  return `<div class="dt">
+    <div class="dt-hero">${dIcon('plate', 'dt-deco')}<div class="dt-kick">Dieta od Twojego trenera</div><h2>Plan treningowy już masz. Czas na plan na talerzu.</h2><p>Te same cele, ten sam trener — teraz także w kuchni.</p></div>
+    <ul class="dt-ben">
+      <li><span class="dt-bi">${dIcon('plate', '')}</span><span><b>Konkretne posiłki, nie tabelki</b>Zdjęcie, składniki i przepis krok po kroku — wiesz dokładnie, co zjeść.</span></li>
+      <li><span class="dt-bi">${dIcon('swap', '')}</span><span><b>Nie smakuje? Zamieniasz</b>Jednym kliknięciem na posiłek o podobnych kaloriach i białku.</span></li>
+      <li><span class="dt-bi">${dIcon('cart', '')}</span><span><b>Lista zakupów robi się sama</b>Na cały tydzień, pogrupowana jak w sklepie.</span></li>
+      <li><span class="dt-bi">${dIcon('trend', '')}</span><span><b>Trener widzi postępy</b>I koryguje jadłospis razem z planem treningowym.</span></li>
+    </ul>
+    <div class="dt-peek"><div class="dt-blur">${sample.map(x => `<div class="dm dm-mini"><div class="meal-ph" style="height:56px;width:56px;background:${MEAL_BG[x[0]]};">${dIcon('plate', 'meal-ph-ic')}</div><div><div class="dm-cat">${MEAL_CATS[x[0]]}</div><div class="dm-n">${x[1]}</div><div class="cv-small">${x[2]}</div></div></div>`).join('')}</div><div class="dt-peek-l"><span>${dIcon('lock', '')}przykładowy dzień</span></div></div>
+    <div class="dt-contact"><span class="dt-ci">${dIcon('user', '')}</span><div><b>Skontaktuj się z trenerem</b><span>Porozmawiamy o Twoim celu i dobierzemy jadłospis.</span></div></div>
+    <div class="dt-fine">Bez zobowiązań.</div></div>`;
+}
+function renderAthleteDietView(body){
+  const c = clients.find(x => x.id === aClientId);
+  const st = dietTabState(c);
+  const d = dietCache[c.id];
+  if(aMainTab === 'diet' && st === 'teaser'){ body.innerHTML = dietTeaserHtml(); return; }
+  if(!aDietDate) aDietDate = todayKey();
+  if(aMainTab === 'shop'){ renderDietShop(body, c, d); return; }
+  const rer = () => renderAthleteDietView(body);
+  const date = aDietDate;
+  if(aDietDetail){
+    const m = effectiveMeal(d, date, aDietDetail);
+    if(m){
+      const key = date + '|' + aDietDetail;
+      body.innerHTML = `<div class="dm-back" id="dmBack">‹ Wróć do dnia</div><div class="md-card">${mealDetailHtml(m)}
+        <div class="dm-row" style="padding:0 14px 14px;"><span class="dm-chk ${d.done[key] ? 'on' : ''}" data-chk="${aDietDetail}">${d.done[key] ? dIcon('check', '') : ''}</span><b style="font-size:13px;">${d.done[key] ? 'Zjedzone' : 'Oznacz jako zjedzone'}</b></div></div>`;
+      $('dmBack').onclick = () => { aDietDetail = null; rer(); };
+      body.querySelectorAll('[data-chk]').forEach(b => b.onclick = () => toggleMealDone(c.id, date, b.dataset.chk, rer));
+      return;
+    }
+    aDietDetail = null;
+  }
+  const mon = mondayOfStr(date);
+  const today = todayKey();
+  const items = DIET_SLOTS.map(([k, l]) => ({ k, l, m: effectiveMeal(d, date, k) })).filter(x => x.m);
+  const eatenK = items.filter(x => d.done[date + '|' + x.k]).reduce((a, x) => a + numv(x.m.kcal), 0);
+  const tk = numv(d.target.k);
+  body.innerHTML = `<div class="dm-week"><span class="dm-wnav" data-wk="-7">‹</span>${DIET_DAYS.map((l, i) => { const ds = addDaysToDateStr(mon, i); return `<span class="dm-day ${ds === date ? 'on' : ''} ${ds === today ? 'today' : ''}" data-day="${ds}"><b>${l}</b>${ds.slice(8)}</span>`; }).join('')}<span class="dm-wnav" data-wk="7">›</span></div>
+    <div class="dm-prog"><b>${eatenK}${tk ? ' / ' + tk : ''} kcal</b> · zjedzone ${items.filter(x => d.done[date + '|' + x.k]).length}/${items.length}${tk ? `<div class="cv-bar"><i style="width:${Math.min(100, Math.round(eatenK / tk * 100))}%"></i></div>` : ''}</div>
+    ${items.map(x => {
+      const key = date + '|' + x.k, done = !!d.done[key], swapped = !!d.swaps[key];
+      const alts = mealAlternatives(x.m);
+      let swapBox = '';
+      if(aDietSwap === x.k){
+        if(aDietPick && aDietPick.slot === x.k){
+          const pm = mealById(aDietPick.id);
+          swapBox = `<div class="dm-alts"><div style="font-size:12.5px;margin-bottom:8px;">Zamienić na <b>${escapeHtml(pm ? pm.name : '')}</b>?</div>
+            <div class="dm-row" style="gap:6px;"><button class="btn small" data-swapgo="day">Tylko dziś</button><button class="btn small" data-swapgo="perm">Na stałe</button><button class="btn ghost small" data-swapgo="cancel">Anuluj</button></div>
+            <div class="cv-small" style="margin-top:6px;">„Na stałe” = w każdy ${DIET_DAYS[weekdayIdx(date)].toLowerCase()} zamiast „${escapeHtml(x.m.name)}”.</div></div>`;
+        } else {
+          swapBox = `<div class="dm-alts">${alts.map(a => `<div class="dm-alt" data-pick="${escapeHtml(a.id)}">${mealPhotoHtml(a, 40)}<span class="dm-alt-n">${escapeHtml(a.name)}</span><span class="dm-alt-d">${numv(a.kcal) - numv(x.m.kcal) >= 0 ? '+' : ''}${numv(a.kcal) - numv(x.m.kcal)} kcal<br>B ${numv(a.b) - numv(x.m.b) >= 0 ? '+' : ''}${numv(a.b) - numv(x.m.b)} g</span></div>`).join('')}</div>`;
+        }
+      }
+      return `<div class="dm ${done ? 'done' : ''}" data-slotcard="${x.k}"><div data-open="${x.k}" class="dm-phw">${mealPhotoHtml(x.m, 120)}</div><div class="dm-b">
+        <div class="dm-cat">${x.l}${swapped ? ' · zamienione' : ''}</div>
+        <div class="dm-row"><span class="dm-chk ${done ? 'on' : ''}" data-chk="${x.k}">${done ? dIcon('check', '') : ''}</span><span class="dm-n" data-open="${x.k}">${escapeHtml(x.m.name)}</span></div>
+        ${macrosHtml(x.m)}
+        <div class="dm-row" style="margin-top:6px;"><span class="dm-more" data-open="${x.k}">Składniki i przepis ›</span>${alts.length ? `<span class="dm-swap" data-swap="${x.k}">${dIcon('swap', '')}Zamień</span>` : ''}</div>
+        ${swapBox}</div></div>`;
+    }).join('') || '<div class="empty-state">Na ten dzień trener nie ułożył jeszcze posiłków.</div>'}`;
+  body.querySelectorAll('[data-day]').forEach(b => b.onclick = () => { aDietDate = b.dataset.day; aDietSwap = null; aDietPick = null; rer(); });
+  body.querySelectorAll('[data-wk]').forEach(b => b.onclick = () => { aDietDate = addDaysToDateStr(aDietDate, +b.dataset.wk); aDietSwap = null; aDietPick = null; rer(); });
+  body.querySelectorAll('[data-open]').forEach(b => b.onclick = () => { aDietDetail = b.dataset.open; aDietSwap = null; aDietPick = null; rer(); window.scrollTo(0, 0); });
+  body.querySelectorAll('[data-chk]').forEach(b => b.onclick = () => toggleMealDone(c.id, date, b.dataset.chk, rer));
+  body.querySelectorAll('[data-swap]').forEach(b => b.onclick = () => { aDietSwap = aDietSwap === b.dataset.swap ? null : b.dataset.swap; aDietPick = null; rer(); });
+  body.querySelectorAll('[data-pick]').forEach(b => b.onclick = () => { aDietPick = { slot: aDietSwap, id: b.dataset.pick }; rer(); });
+  body.querySelectorAll('[data-swapgo]').forEach(b => b.onclick = async () => {
+    const mode = b.dataset.swapgo;
+    if(mode === 'cancel'){ aDietPick = null; rer(); return; }
+    const slot = aDietPick.slot, toId = aDietPick.id, key = date + '|' + slot, dayName = DIET_DAYS[weekdayIdx(date)];
+    const ok = await saveDietPatch(c.id, x => {
+      x.week[dayName] = x.week[dayName] || {};
+      const from = x.swaps[key] || x.week[dayName][slot] || null;
+      if(mode === 'perm'){ x.week[dayName][slot] = toId; delete x.swaps[key]; }
+      else x.swaps[key] = toId;
+      x.swapLog.push({ at: new Date().toISOString(), date, slot, from, to: toId, perm: mode === 'perm' });
+      if(x.swapLog.length > 60) x.swapLog = x.swapLog.slice(-60);
+    });
+    if(ok){ aDietSwap = null; aDietPick = null; toast(mode === 'perm' ? 'Zamieniono na stałe' : 'Zamieniono na dziś'); }
+    rer();
+  });
+}
+async function toggleMealDone(clientId, date, slot, rer){
+  const key = date + '|' + slot;
+  await saveDietPatch(clientId, x => { if(x.done[key]) delete x.done[key]; else x.done[key] = true; });
+  rer();
+}
+function renderDietShop(body, c, d){
+  const mon = mondayOfStr(aDietDate || todayKey());
+  const map = {};
+  for(let i = 0; i < 7; i++){
+    const ds = addDaysToDateStr(mon, i);
+    DIET_SLOTS.forEach(([k]) => { const m = effectiveMeal(d, ds, k); if(!m) return;
+      (m.ingredients || []).forEach(ig => { if(!ig.name) return;
+        const key = ig.name.trim().toLowerCase() + '|' + (ig.unit || '').trim().toLowerCase();
+        if(!map[key]) map[key] = { name: ig.name.trim(), unit: (ig.unit || '').trim(), qty: 0, n: 0, cat: ig.cat || 'i' };
+        map[key].qty += numv(ig.qty); map[key].n++; }); });
+  }
+  const lsKey = 'moveu_shop_' + c.id + '_' + mon;
+  let got = {}; try{ got = JSON.parse(localStorage.getItem(lsKey) || '{}'); }catch(e){}
+  const items = Object.values(map);
+  const fmtQ = it => it.qty > 0 ? (Math.round(it.qty * 10) / 10) + ' ' + it.unit : '× ' + it.n;
+  body.innerHTML = `<div class="dm-week" style="justify-content:space-between;"><span class="dm-wnav" data-wk="-7">‹</span><b style="font-size:13px;">Lista zakupów · ${mon.slice(8)}.${mon.slice(5,7)} – ${addDaysToDateStr(mon, 6).slice(8)}.${addDaysToDateStr(mon, 6).slice(5,7)}</b><span class="dm-wnav" data-wk="7">›</span></div>
+    <div class="cv-small" style="margin:0 2px 6px;">Liczona z jadłospisu na cały tydzień (z Twoimi zamianami).</div>
+    ${Object.entries(SHOP_CATS).map(([k, label]) => { const its = items.filter(i => (SHOP_CATS[i.cat] ? i.cat : 'i') === k).sort((a, b) => a.name.localeCompare(b.name, 'pl')); if(!its.length) return '';
+      return `<h4 class="shop-h">${label}</h4>${its.map(it => { const id = it.name + '|' + it.unit; return `<div class="shop-i ${got[id] ? 'got' : ''}" data-got="${escapeHtml(id)}"><span class="dm-chk ${got[id] ? 'on' : ''}" style="width:20px;height:20px;">${got[id] ? dIcon('check', '') : ''}</span>${escapeHtml(it.name)}<span class="shop-q">${escapeHtml(fmtQ(it))}</span></div>`; }).join('')}`; }).join('') || '<div class="empty-state">Brak posiłków w tym tygodniu.</div>'}`;
+  body.querySelectorAll('[data-wk]').forEach(b => b.onclick = () => { aDietDate = addDaysToDateStr(aDietDate || todayKey(), +b.dataset.wk); renderDietShop(body, c, d); });
+  body.querySelectorAll('[data-got]').forEach(b => b.onclick = () => { const id = b.dataset.got; got[id] = !got[id]; try{ localStorage.setItem(lsKey, JSON.stringify(got)); }catch(e){} renderDietShop(body, c, d); });
 }
 
 function renderMain(){
@@ -3359,9 +3876,10 @@ function renderRosterView(){
     </div>
 
     <table class="exlist" id="rosterTable">
-      <thead><tr><th>Imię i nazwisko</th><th>Organizacja</th><th>Podgrupa</th><th>E-mail (do logowania)</th><th></th></tr></thead>
+      <thead><tr><th>Imię i nazwisko</th><th>Organizacja</th><th>Podgrupa</th><th>E-mail (do logowania)</th><th>Dieta</th><th></th></tr></thead>
       <tbody id="rosterRows"></tbody>
     </table>
+    <div class="diet-bulk" id="dietBulk"></div>
 
     <div class="tools-panel" style="margin-top:20px;">
       <h4>Kopia zapasowa (opcjonalnie — dane i tak są w Supabase)</h4>
@@ -3372,6 +3890,8 @@ function renderRosterView(){
       </div>
     </div>
   `;
+  renderDietBulk();
+  loadAllDiets().then(() => { if(trainerViewMode === 'roster' && $('rosterRows')) renderRosterRows(); });
   $('exportBackup').onclick = exportBackupData;
   $('importBackup').onclick = () => $('importFile').click();
   $('importFile').onchange = handleImportFile;
@@ -3486,7 +4006,7 @@ function renderOrgList(){
 function renderRosterRows(){
   const tbody = $('rosterRows');
   if(clients.length === 0){
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:16px;">Brak klientów.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:16px;">Brak klientów.</td></tr>';
     return;
   }
   tbody.innerHTML = '';
@@ -3500,8 +4020,15 @@ function renderRosterRows(){
       <td><select class="roster-org"></select></td>
       <td><select class="roster-sub"></select></td>
       <td><span class="roster-email-edit" style="cursor:text;color:${c.email?'var(--text)':'var(--muted)'};">${c.email ? escapeHtml(c.email) : '— kliknij, żeby dodać —'}</span></td>
+      <td class="diet-cell">${rosterDietCellHtml(c)}</td>
       <td><button class="rm-btn" title="Usuń">✕</button></td>
     `;
+    tr.querySelectorAll('[data-dietflag]').forEach(cb => cb.onchange = async () => {
+      const flag = cb.dataset.dietflag, val = cb.checked;
+      cb.disabled = true;
+      await saveDietPatch(c.id, d => { d[flag] = val; });
+      renderRosterRows();
+    });
     tr.querySelector('.roster-org').innerHTML = orgSelectHtml;
     tr.querySelector('.roster-sub').innerHTML = subSelectHtml;
 
@@ -5822,6 +6349,7 @@ function currentThemeContext(){
   return {key: orgId ? themeKeyForOrg(orgId) : null, sub, ctx: !!(aRosterMode || aHomeOrgId)};
 }
 function applyContextTheme(){
+  renderAthleteNav();
   const t = currentThemeContext();
   if(t.key){ document.body.dataset.theme = t.key; } else { delete document.body.dataset.theme; }
   const img = $('brandAkademiaImg');
@@ -5952,8 +6480,10 @@ async function selectRosterPerson(id){
   // swiezy plan z bazy - chyba ze czeka niewyslany zapis wynikow tej osoby (kolejka offline)
   if(!getOfflineQueue().some(q => q.clientId === id)) delete plansCache[id];
   await ensurePlanLoaded(id);
+  await Promise.all([loadDiet(id, true), loadMealLibrary()]);
   setStatus('');
   if(aClientId !== id) return; // w miedzyczasie ktos kliknal inna osobe
+  aMainTab = 'plan'; aDietDetail = null; aDietSwap = null; aDietPick = null;
   aSelectedDateStr = aManualDate || pickDefaultDay(plansCache[id] || {});
   if(aSelectedDateStr){ const [y, m] = aSelectedDateStr.split('-'); aViewDate = new Date(parseInt(y, 10), parseInt(m, 10) - 1, 1); }
   aFlyoutOpen = false;
@@ -5984,8 +6514,10 @@ async function selectAthleteClient(clientId){
   aClientId = clientId;
   setStatus('Ładowanie planu…');
   await ensurePlanLoaded(aClientId);
+  await Promise.all([loadDiet(aClientId, true), loadMealLibrary()]);
   setStatus('');
   aDetailExId = null;
+  aMainTab = 'plan'; aDietDetail = null; aDietSwap = null; aDietPick = null;
   const plan = plansCache[aClientId] || {};
   const todayStr = fmtDate(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
   const today = plan[todayStr];
@@ -5998,6 +6530,11 @@ let aFlyoutOpen = true;
 
 function renderAthleteBody(container){
   const body = container || $('athleteBody');
+  if(aMainTab !== 'plan' && aClientId){
+    const cc = clients.find(x => x.id === aClientId);
+    if(cc && dietTabState(cc) !== 'hidden'){ renderAthleteDietView(body); renderAthleteNav(); return; }
+    aMainTab = 'plan';
+  }
   body.innerHTML = `
     <div class="icon-rail">
       <div class="icon-tab ${aFlyoutOpen?'active':''}" id="aTabCalendar" title="Kalendarz">
