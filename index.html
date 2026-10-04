@@ -816,6 +816,28 @@
   .lib-note-hint{font-size:11.5px;color:var(--muted);background:var(--surface-2);border-radius:7px;padding:5px 8px;margin-bottom:6px;}
   .lib-note-card{border-left-color:#3E7CB1;} .lib-note-card .icon{color:#3E7CB1;}
   .a-note-card .icon svg{display:block;color:#E8604A;} .lib-note-card .icon svg{color:#3E7CB1;}
+
+  /* ===== Klienci - spojny widok ===== */
+  .rl-top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px;}
+  .rl-actions{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;}
+  .rl-search{width:100%;max-width:380px;border:1px solid var(--line);border-radius:9px;padding:9px 11px;font-size:13px;background:var(--surface);margin:2px 0 10px;font-family:inherit;color:var(--text);}
+  .rl-list{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;}
+  .rl-head,.rl-row{display:grid;grid-template-columns:2.2fr 1.6fr 1.1fr 1.2fr 1.1fr 80px;align-items:center;gap:10px;padding:10px 14px;}
+  .rl-head{background:var(--surface-2);font-size:10px;text-transform:uppercase;letter-spacing:.3px;color:var(--muted);font-weight:700;}
+  .rl-row{border-top:1px solid var(--line);font-size:13px;cursor:pointer;}
+  .rl-row:hover{background:#FBFAF8;} .rl-row.on{background:#FFF7F4;}
+  .rl-who{display:flex;align-items:center;gap:10px;min-width:0;} .rl-who b{display:block;} .rl-who small{color:var(--muted);font-size:11px;}
+  .rl-av{width:32px;height:32px;border-radius:50%;background:#FDEBD6;display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:11px;flex-shrink:0;color:#1C1C1C;}
+  .rl-pill{display:inline-block;font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:9px;white-space:nowrap;}
+  .rl-pill.ok{background:#E3F4E9;color:#2E9E5B;} .rl-pill.warn{background:#FFF4E5;color:#B9781F;}
+  .rl-bar{height:7px;border-radius:4px;background:var(--surface-2);overflow:hidden;margin-top:3px;} .rl-bar i{display:block;height:100%;}
+  .rl-drawer-bg{position:fixed;inset:0;background:rgba(0,0,0,.28);display:none;z-index:280;}
+  .rl-drawer{position:absolute;top:0;right:0;bottom:0;width:360px;max-width:100%;background:var(--surface);box-shadow:-10px 0 30px rgba(0,0,0,.15);padding:18px;display:flex;flex-direction:column;gap:8px;overflow-y:auto;}
+  .rl-drawer > label{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;margin-top:4px;}
+  .rl-dh{display:flex;align-items:center;gap:10px;margin-bottom:4px;} .rl-dh h3{font-size:16px;margin:0;flex:1;}
+  .rl-dbtns{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+  .rl-ddel{margin-top:auto;padding-top:14px;border-top:1px solid var(--line);}
+  @media (max-width:900px){ .rl-head{display:none;} .rl-row{grid-template-columns:1fr 1fr;} }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -2087,6 +2109,10 @@ function clientListItem(c, labelText){
 }
 
 function renderClientList(){
+  renderClientListInner();
+  if(trainerViewMode === 'roster' && $('rosterRows')) renderRosterRows();
+}
+function renderClientListInner(){
   renderClientOrgFilterChips();
   const list = $('clientList');
   list.innerHTML = '';
@@ -2173,7 +2199,9 @@ async function deleteClient(id){
   renderClientList();
 }
 
-async function selectClient(id){
+let cvFromRoster = false;
+async function selectClient(id, opts){
+  cvFromRoster = !!(opts && opts.fromRoster);
   trainerViewMode = 'clients';
   selectedClientId = id;
   renderClientList();
@@ -2232,7 +2260,7 @@ $('completedTrainingsBtn').onclick = () => navigateTo(async () => {
 $('backNavBtn').onclick = goBackInApp;
 
 $('copyAppLinkBtn').onclick = async () => {
-  const link = window.location.origin + window.location.pathname;
+  const link = 'https://trening.moveu.studio/';
   try{
     await navigator.clipboard.writeText(link);
     toast('Link skopiowany: ' + link);
@@ -2316,11 +2344,12 @@ function clientGroupLabel(c){
   return [org ? org.name : '', sub ? sub.name : ''].filter(Boolean).join(' · ');
 }
 function clientViewTopHtml(c, view){
-  return `<div class="cv-top"><div class="cv-crumbs"><span class="cv-lnk" id="cvCrumb">${escapeHtml(c.name)}</span> › ${view === 'plan' ? 'Plan' : view === 'diet' ? 'Dieta' : 'Informacje'}</div>
+  return `<div class="cv-top"><div class="cv-crumbs">${cvFromRoster ? '<span class="cv-lnk" id="cvBackRoster">Klienci</span> › ' : ''}<span class="cv-lnk" id="cvCrumb">${escapeHtml(c.name)}</span> › ${view === 'plan' ? 'Plan' : view === 'diet' ? 'Dieta' : 'Informacje'}</div>
     <div class="cv-switch"><div class="${view === 'plan' ? 'on' : ''}" data-cv="plan">Plan</div><div class="${view === 'info' ? 'on' : ''}" data-cv="info">Informacje</div><div class="${view === 'diet' ? 'on' : ''}" data-cv="diet">Dieta</div></div></div>`;
 }
 function bindClientViewTop(){
   if($('cvCrumb')) $('cvCrumb').onclick = () => { clientView = 'choose'; showClientView(); };
+  if($('cvBackRoster')) $('cvBackRoster').onclick = () => $('showRosterBtn').click();
   document.querySelectorAll('.cv-switch [data-cv]').forEach(b => b.onclick = () => { clientView = b.dataset.cv; setLastClientView(clientView); showClientView(); });
 }
 async function refreshClientAlert(){
@@ -2354,7 +2383,7 @@ function personHeadHtml(c, d){
 function renderClientChooser(){
   const c = clients.find(cl => cl.id === selectedClientId);
   const d = notesCache[c.id];
-  $('main').innerHTML = personHeadHtml(c, d) + `<div class="cv-pick">
+  $('main').innerHTML = (cvFromRoster ? `<div class="cv-top"><div class="cv-crumbs"><span class="cv-lnk" id="cvBackRoster">Klienci</span> › ${escapeHtml(c.name)}</div></div>` : '') + personHeadHtml(c, d) + `<div class="cv-pick">
       <div class="cv-pick-title">Co chcesz otworzyć?</div>
       <div class="cv-grid">
         <div class="cv-tile" data-go="plan"><div class="cv-logo">${CV_ICON_PLAN}</div><div class="cv-nm">Plan treningowy</div><div class="cv-ds">kalendarz i treningi</div></div>
@@ -2364,6 +2393,7 @@ function renderClientChooser(){
       <div class="cv-hint">Wybór zostanie zapamiętany — kolejne osoby otworzą się od razu w tym widoku. Wrócisz tu, klikając imię u góry.</div>
     </div>`;
   document.querySelectorAll('.cv-tile').forEach(t => t.onclick = () => { clientView = t.dataset.go; setLastClientView(clientView); showClientView(); });
+  if($('cvBackRoster')) $('cvBackRoster').onclick = () => $('showRosterBtn').click();
   if(!d) loadClientNotes(c.id).then(() => { if(selectedClientId === c.id && clientView === 'choose') renderClientChooser(); });
 }
 
@@ -3191,34 +3221,35 @@ async function importMealsFromFile(file){
 }
 
 /* ---------- Klienci: filtr grup / rocznikow ---------- */
-let rosterOrgFilter = 'all', rosterSubFilter = 'all';
+/* Zakladka Klienci uzywa TYCH SAMYCH filtrow i wyszukiwarki co lista po lewej - zawsze sa zgodne */
+function rosterOrgState(){ return clientListPicked ? (clientListOrgFilter || 'all') : 'all'; }
 function rosterFilteredClients(){
+  const org = rosterOrgState(), sub = clientListSubFilter, q = ($('clientSearchInput').value || '').trim().toLowerCase();
   return clients.filter(c => {
-    if(rosterOrgFilter === 'all') return true;
-    if(rosterOrgFilter === 'none') return !c.groupId;
-    if(c.groupId !== rosterOrgFilter) return false;
-    if(rosterSubFilter === 'all') return true;
-    if(rosterSubFilter === 'none') return !c.subgroupId;
-    return c.subgroupId === rosterSubFilter;
+    if(q && !c.name.toLowerCase().includes(q)) return false;
+    if(org === 'all') return true;
+    if(c.groupId !== org) return false;
+    if(!sub || q) return true;
+    if(sub === '__none__') return !c.subgroupId;
+    return c.subgroupId === sub;
   }).sort((a, b) => surnameKey(a.name).localeCompare(surnameKey(b.name), 'pl'));
 }
 function renderRosterFilters(){
   const el = $('rosterFilters'); if(!el) return;
+  const org = rosterOrgState(), sub = clientListSubFilter;
   const cnt = fn => clients.filter(fn).length;
-  const noOrg = cnt(c => !c.groupId);
-  let html = `<div class="roster-frow"><span class="client-org-chip ${rosterOrgFilter === 'all' ? 'active' : ''}" data-rorg="all">Wszyscy (${clients.length})</span>`
-    + clientGroups.map(g => `<span class="client-org-chip ${rosterOrgFilter === g.id ? 'active' : ''}" data-rorg="${g.id}">${escapeHtml(g.name)} (${cnt(c => c.groupId === g.id)})</span>`).join('')
-    + (noOrg ? `<span class="client-org-chip ${rosterOrgFilter === 'none' ? 'active' : ''}" data-rorg="none">Bez organizacji (${noOrg})</span>` : '') + '</div>';
-  const subs = clientSubgroups.filter(sg => sg.orgId === rosterOrgFilter);
+  let html = `<div class="roster-frow"><span class="client-org-chip ${org === 'all' && clientListPicked ? 'active' : (org === 'all' && !clientListPicked ? 'active' : '')}" data-rorg="all">Wszyscy (${clients.length})</span>`
+    + clientGroups.map(g => `<span class="client-org-chip ${org === g.id ? 'active' : ''}" data-rorg="${g.id}">${escapeHtml(g.name)} (${cnt(c => c.groupId === g.id)})</span>`).join('') + '</div>';
+  const subs = org !== 'all' ? clientSubgroups.filter(sg => sg.orgId === org) : [];
   if(subs.length){
-    const noSub = cnt(c => c.groupId === rosterOrgFilter && !c.subgroupId);
-    html += `<div class="roster-frow sub"><span class="client-org-chip ${rosterSubFilter === 'all' ? 'active' : ''}" data-rsub="all">Wszystkie roczniki</span>`
-      + subs.map(sg => `<span class="client-org-chip ${rosterSubFilter === sg.id ? 'active' : ''}" data-rsub="${sg.id}">${escapeHtml(sg.name)} (${cnt(c => c.subgroupId === sg.id)})</span>`).join('')
-      + (noSub ? `<span class="client-org-chip ${rosterSubFilter === 'none' ? 'active' : ''}" data-rsub="none">Bez rocznika (${noSub})</span>` : '') + '</div>';
+    const noSub = cnt(c => c.groupId === org && !c.subgroupId);
+    html += `<div class="roster-frow sub"><span class="client-org-chip ${!sub ? 'active' : ''}" data-rsub="">Wszystkie roczniki</span>`
+      + subs.map(sg => `<span class="client-org-chip ${sub === sg.id ? 'active' : ''}" data-rsub="${sg.id}">${escapeHtml(sg.name)} (${cnt(c => c.subgroupId === sg.id)})</span>`).join('')
+      + (noSub ? `<span class="client-org-chip ${sub === '__none__' ? 'active' : ''}" data-rsub="__none__">Bez rocznika (${noSub})</span>` : '') + '</div>';
   }
   el.innerHTML = html;
-  el.querySelectorAll('[data-rorg]').forEach(ch => ch.onclick = () => { rosterOrgFilter = ch.dataset.rorg; rosterSubFilter = 'all'; renderRosterRows(); });
-  el.querySelectorAll('[data-rsub]').forEach(ch => ch.onclick = () => { rosterSubFilter = ch.dataset.rsub; renderRosterRows(); });
+  el.querySelectorAll('[data-rorg]').forEach(ch => ch.onclick = () => { clientListPicked = true; clientListOrgFilter = ch.dataset.rorg === 'all' ? null : ch.dataset.rorg; clientListSubFilter = null; renderClientList(); });
+  el.querySelectorAll('[data-rsub]').forEach(ch => ch.onclick = () => { clientListPicked = true; clientListSubFilter = ch.dataset.rsub || null; renderClientList(); });
 }
 
 /* ============ POSTEPY: frekwencja, testy sily, rekordy ============ */
@@ -4347,10 +4378,10 @@ async function addLibraryExercise(){
 function renderRosterView(){
   const main = $('main');
   main.innerHTML = `
-    <div class="section-title"><div class="bar"></div><h2>Klienci</h2></div>
-    <div class="section-desc">Dodawanie klientów, organizacje, podgrupy, dane podstawowe i profile.</div>
+    <div class="rl-top"><div class="section-title" style="margin:0;"><div class="bar"></div><h2>Klienci</h2></div>
+      <div class="rl-actions"><button class="btn" data-rpanel="rpAdd">+ Dodaj klienta</button><button class="btn ghost" data-rpanel="rpOrg">Organizacje i roczniki</button><button class="btn ghost" data-rpanel="rpBak">Kopia zapasowa</button></div></div>
 
-    <div class="tools-panel">
+    <div class="tools-panel rl-panel" id="rpAdd" style="display:none;">
       <h4>Dodaj nowego klienta</h4>
       <div class="tools-row">
         <input id="newClientName2" placeholder="Imię i nazwisko">
@@ -4361,7 +4392,7 @@ function renderRosterView(){
       </div>
     </div>
 
-    <div class="tools-panel">
+    <div class="tools-panel rl-panel" id="rpOrg" style="display:none;">
       <h4>Organizacje i podgrupy</h4>
       <div id="orgList"></div>
       <div class="tools-row" style="margin-top:8px;">
@@ -4370,14 +4401,7 @@ function renderRosterView(){
       </div>
     </div>
 
-    <div id="rosterFilters" class="roster-filters"></div>
-    <table class="exlist" id="rosterTable">
-      <thead><tr><th>Imię i nazwisko</th><th>Organizacja</th><th>Podgrupa</th><th>E-mail (do logowania)</th><th>Dieta</th><th></th></tr></thead>
-      <tbody id="rosterRows"></tbody>
-    </table>
-    <div class="diet-bulk" id="dietBulk"></div>
-
-    <div class="tools-panel" style="margin-top:20px;">
+    <div class="tools-panel rl-panel" id="rpBak" style="display:none;">
       <h4>Kopia zapasowa (opcjonalnie — dane i tak są w Supabase)</h4>
       <div class="tools-row">
         <button class="btn ghost" id="exportBackup">⬇ Eksportuj backup</button>
@@ -4385,7 +4409,16 @@ function renderRosterView(){
         <input type="file" id="importFile" accept="application/json" style="display:none;">
       </div>
     </div>
+
+    <div id="rosterFilters" class="roster-filters"></div>
+    <input id="rosterSearch" class="rl-search" placeholder="Szukaj po imieniu lub nazwisku…" autocomplete="off">
+    <div class="rl-list"><div class="rl-head"><div>Osoba</div><div>Grupa</div><div>Logowanie</div><div>Frekwencja 30 dni</div><div>Dieta</div><div></div></div><div id="rosterRows"></div></div>
+    <div class="diet-bulk" id="dietBulk"></div>
   `;
+  document.querySelectorAll('[data-rpanel]').forEach(b => b.onclick = () => { const el = $(b.dataset.rpanel); const show = el.style.display === 'none'; document.querySelectorAll('.rl-panel').forEach(x => x.style.display = 'none'); el.style.display = show ? '' : 'none'; });
+  $('rosterSearch').value = $('clientSearchInput').value || '';
+  $('rosterSearch').oninput = e => { $('clientSearchInput').value = e.target.value; renderClientList(); };
+  Promise.all(clients.map(c => ensurePlanLoaded(c.id))).then(() => { if(trainerViewMode === 'roster' && $('rosterRows')) renderRosterRows(); });
   renderDietBulk();
   loadAllDiets().then(() => { if(trainerViewMode === 'roster' && $('rosterRows')) renderRosterRows(); });
   $('exportBackup').onclick = exportBackupData;
@@ -4499,72 +4532,77 @@ function renderOrgList(){
   });
 }
 
+function rosterAtt30(c){
+  const plan = plansCache[c.id]; if(!plan) return null;
+  const today = todayKey(), from = addDaysToDateStr(today, -29);
+  let planned = 0, done = 0;
+  Object.keys(plan).forEach(ds => { const d = plan[ds]; if(ds < from || ds > today || !d || !d.exercises || !d.exercises.length) return; planned++; if(dayIsDone(d)) done++; });
+  return { planned, done };
+}
 function renderRosterRows(){
-  const tbody = $('rosterRows');
-  if(clients.length === 0){
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:16px;">Brak klientów.</td></tr>';
-    return;
-  }
+  const box = $('rosterRows'); if(!box) return;
   renderRosterFilters();
+  if($('rosterSearch') && document.activeElement !== $('rosterSearch')) $('rosterSearch').value = $('clientSearchInput').value || '';
   const shown = rosterFilteredClients();
-  tbody.innerHTML = shown.length ? '' : '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:16px;">Brak osób w tej grupie.</td></tr>';
-  shown.forEach(c => {
-    const tr = document.createElement('tr');
-    const orgSelectHtml = '<option value="">Bez organizacji</option>' + clientGroups.map(g => `<option value="${g.id}" ${g.id===c.groupId?'selected':''}>${escapeHtml(g.name)}</option>`).join('');
-    const subsForOrg = clientSubgroups.filter(s => s.orgId === c.groupId);
-    const subSelectHtml = '<option value="">Bez podgrupy</option>' + subsForOrg.map(s => `<option value="${s.id}" ${s.id===c.subgroupId?'selected':''}>${escapeHtml(s.name)}</option>`).join('');
-    tr.innerHTML = `
-      <td><span class="roster-name-link" style="cursor:pointer;color:var(--accent);font-weight:600;text-decoration:underline;">${escapeHtml(c.name)}</span></td>
-      <td><select class="roster-org"></select></td>
-      <td><select class="roster-sub"></select></td>
-      <td><span class="roster-email-edit" style="cursor:text;color:${c.email?'var(--text)':'var(--muted)'};">${c.email ? escapeHtml(c.email) : '— kliknij, żeby dodać —'}</span></td>
-      <td class="diet-cell">${rosterDietCellHtml(c)}</td>
-      <td><button class="rm-btn" title="Usuń">✕</button></td>
-    `;
-    tr.querySelectorAll('[data-dietflag]').forEach(cb => cb.onchange = async () => {
-      const flag = cb.dataset.dietflag, val = cb.checked;
-      cb.disabled = true;
-      await saveDietPatch(c.id, d => { d[flag] = val; });
-      renderRosterRows();
-    });
-    tr.querySelector('.roster-org').innerHTML = orgSelectHtml;
-    tr.querySelector('.roster-sub').innerHTML = subSelectHtml;
-
-    tr.querySelector('.roster-name-link').onclick = () => {
-      trainerViewMode = 'profile';
-      profileClientId = c.id;
-      renderClientProfile(c.id);
-    };
-    tr.querySelector('.roster-org').onchange = async function(){
-      c.groupId = this.value || null;
-      c.subgroupId = null; // zmiana organizacji czyści wybraną podgrupę
-      await saveClientRow(c);
-      renderRosterRows(); renderClientList();
-    };
-    tr.querySelector('.roster-sub').onchange = async function(){
-      c.subgroupId = this.value || null;
-      await saveClientRow(c);
-      renderRosterRows();
-    };
-    tr.querySelector('.roster-email-edit').onclick = function(){
-      const input = document.createElement('input');
-      input.type = 'email';
-      input.value = c.email || '';
-      input.placeholder = 'np. kasia@przyklad.pl';
-      input.style.cssText = 'width:100%;background:var(--bg);border:1px solid var(--accent-dim);border-radius:5px;padding:4px 6px;font-size:12.5px;';
-      this.replaceWith(input);
-      input.focus(); input.select();
-      input.onblur = async () => {
-        const val = input.value.trim();
-        c.email = val || null;
-        await saveClientRow(c);
-        renderRosterRows();
-      };
-      input.onkeydown = e => { if(e.key==='Enter') input.blur(); };
-    };
-    tr.querySelector('.rm-btn').onclick = () => deleteClient(c.id);
-    tbody.appendChild(tr);
+  const ini = n => n.split(/\s+/).map(w => w[0] || '').slice(0, 2).join('').toUpperCase();
+  box.innerHTML = shown.map(c => {
+    const org = clientGroups.find(g => g.id === c.groupId), sub = clientSubgroups.find(x => x.id === c.subgroupId);
+    const a = rosterAtt30(c), pc = a && a.planned ? Math.round(a.done / a.planned * 100) : null;
+    const st = dietTabState(c);
+    return `<div class="rl-row ${c.id === selectedClientId ? 'on' : ''}" data-cid="${c.id}">
+      <div class="rl-who"><span class="rl-av">${escapeHtml(ini(c.name))}</span><div><b>${escapeHtml(c.name)}</b><small>kliknij, aby otworzyć</small></div></div>
+      <div>${org ? escapeHtml(org.name) : '<span class="cv-small">bez organizacji</span>'}${sub ? `<br><small class="cv-small">${escapeHtml(sub.name)}</small>` : ''}</div>
+      <div>${c.email ? '<span class="rl-pill ok">ma konto</span>' : '<span class="rl-pill warn">bez e-maila</span>'}</div>
+      <div>${a === null ? '<span class="cv-small">…</span>' : a.planned ? `<b>${a.done}/${a.planned}</b> <small class="cv-small">${pc}%</small><div class="rl-bar"><i style="width:${pc}%;background:${pc >= 80 ? '#2E9E5B' : '#E8A33A'}"></i></div>` : '<span class="cv-small">brak planu</span>'}</div>
+      <div><span class="diet-st ${st}">${st === 'active' ? 'dieta aktywna' : st === 'teaser' ? 'widzi zachętę' : 'dieta ukryta'}</span></div>
+      <div><button class="btn ghost small rl-edit" data-edit="${c.id}">Edytuj</button></div></div>`;
+  }).join('') || '<div class="empty-state" style="padding:22px;">Brak osób w tej grupie.</div>';
+  box.querySelectorAll('[data-cid]').forEach(r => r.onclick = ev => {
+    if(ev.target.closest('[data-edit]')) return;
+    const id = r.dataset.cid;
+    navigateTo(() => selectClient(id, { fromRoster: true }));
   });
+  box.querySelectorAll('[data-edit]').forEach(b => b.onclick = ev => { ev.stopPropagation(); openRosterEdit(b.dataset.edit); });
+}
+function openRosterEdit(id){
+  const c = clients.find(x => x.id === id); if(!c) return;
+  let el = $('rlDrawerBg');
+  if(!el){ el = document.createElement('div'); el.id = 'rlDrawerBg'; el.className = 'rl-drawer-bg'; document.body.appendChild(el); }
+  const d = dietCache[c.id];
+  let orgSel = c.groupId || '';
+  const draw = () => {
+    const subs = clientSubgroups.filter(x => x.orgId === orgSel);
+    el.innerHTML = `<div class="rl-drawer"><div class="rl-dh"><h3>Edytuj: ${escapeHtml(c.name)}</h3><button class="btn ghost small" id="rlClose">Zamknij</button></div>
+      <label>Imię i nazwisko</label><input class="cv-input" id="rlName" value="${escapeHtml(c.name)}">
+      <label>Organizacja</label><select class="cv-input" id="rlOrg"><option value="">Bez organizacji</option>${clientGroups.map(g => `<option value="${g.id}" ${g.id === orgSel ? 'selected' : ''}>${escapeHtml(g.name)}</option>`).join('')}</select>
+      <label>Rocznik / podgrupa</label><select class="cv-input" id="rlSub"><option value="">— brak —</option>${subs.map(x => `<option value="${x.id}" ${x.id === c.subgroupId ? 'selected' : ''}>${escapeHtml(x.name)}</option>`).join('')}</select>
+      <label>E-mail do logowania</label><input class="cv-input" id="rlMail" type="email" value="${escapeHtml(c.email || '')}" placeholder="brak — osoba nie loguje się sama">
+      <label>Dieta</label>
+      <label class="diet-cb"><input type="checkbox" id="rlDietA" ${d && d.active ? 'checked' : ''}> dieta aktywna</label>
+      <label class="diet-cb ${d && d.active ? 'dis' : ''}"><input type="checkbox" id="rlDietH" ${dietTabState(c) === 'hidden' ? 'checked' : ''} ${d && d.active ? 'disabled' : ''}> ukryj zakładkę Dieta</label>
+      <div class="rl-dbtns"><button class="btn" id="rlSave">Zapisz</button><button class="btn ghost" id="rlOpen">Otwórz kartę osoby</button></div>
+      <div class="rl-ddel"><button class="btn ghost" id="rlDel" style="color:#B4472E;">Usuń klienta</button></div></div>`;
+    el.style.display = 'block';
+    $('rlClose').onclick = close;
+    el.onclick = ev => { if(ev.target === el) close(); };
+    $('rlOrg').onchange = e => { orgSel = e.target.value; draw(); };
+    $('rlDietA').onchange = e => { $('rlDietH').disabled = e.target.checked; };
+    $('rlSave').onclick = async () => {
+      const name = $('rlName').value.trim();
+      if(!name){ alert('Wpisz imię i nazwisko.'); return; }
+      const newGroup = $('rlOrg').value || null, newSub = $('rlSub').value || null, newMail = $('rlMail').value.trim() || null;
+      const changed = name !== c.name || newGroup !== (c.groupId || null) || newSub !== (c.subgroupId || null) || newMail !== (c.email || null);
+      if(changed){ c.name = name; c.groupId = newGroup; c.subgroupId = newSub; c.email = newMail; await saveClientRow(c); }
+      const wantA = $('rlDietA').checked, wantH = $('rlDietH').checked;
+      const curA = !!(d && d.active), curH = dietTabState(c) === 'hidden';
+      if(wantA !== curA || (!wantA && wantH !== curH)) await saveDietPatch(c.id, x => { x.active = wantA; if(!wantA) x.hidden = wantH; });
+      close(); renderClientList(); toast('Zapisano: ' + c.name);
+    };
+    $('rlOpen').onclick = () => { close(); navigateTo(() => selectClient(c.id, { fromRoster: true })); };
+    $('rlDel').onclick = async () => { close(); await deleteClient(c.id); if(trainerViewMode === 'roster') renderRosterRows(); };
+  };
+  const close = () => { el.style.display = 'none'; };
+  draw();
 }
 
 /* ============ PROFIL KLIENTA: MASA CIAŁA I OBWODY ============ */
