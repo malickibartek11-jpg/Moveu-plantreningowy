@@ -838,6 +838,29 @@
   .rl-dbtns{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
   .rl-ddel{margin-top:auto;padding-top:14px;border-top:1px solid var(--line);}
   @media (max-width:900px){ .rl-head{display:none;} .rl-row{grid-template-columns:1fr 1fr;} }
+
+  /* ===== wpisy sportowca ===== */
+  .cal-cell{position:relative;}
+  .cal-flag{position:absolute;top:2px;right:3px;color:#3E7CB1;line-height:0;} .cal-flag svg{width:10px;height:10px;}
+  .cal-ev{font-size:9px;color:#3E7CB1;font-weight:700;line-height:1.1;text-align:center;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 2px;}
+  .ev-add{width:100%;margin-top:10px;background:#3E7CB1;color:#fff;border:none;border-radius:10px;padding:10px;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit;}
+  .ev-list{margin:6px 0 10px;}
+  .ev-card{display:flex;align-items:center;gap:10px;background:#EAF1F9;border:1px solid #C9DBEE;border-radius:10px;padding:9px 11px;margin-bottom:6px;font-size:13px;}
+  .ev-ic{width:30px;height:30px;border-radius:50%;background:#3E7CB1;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;} .ev-ic svg{width:16px;height:16px;}
+  .ev-tx b{display:block;} .ev-tx small{color:var(--muted);}
+  .ev-del{margin-left:auto;color:var(--muted);cursor:pointer;font-size:12px;padding:4px 6px;}
+  .ev-trainer-h{font-size:10.5px;text-transform:uppercase;letter-spacing:.3px;font-weight:700;color:#3E7CB1;margin-bottom:4px;}
+  .ev-sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:flex-end;justify-content:center;z-index:320;}
+  .ev-sheet{background:var(--bg);width:100%;max-width:520px;border-radius:20px 20px 0 0;padding:16px 16px calc(20px + env(safe-area-inset-bottom));}
+  .ev-sheet h3{font-size:16px;margin:0 0 6px;font-family:'Space Grotesk',sans-serif;}
+  .ev-lab{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;margin:10px 0 5px;}
+  .ev-chips{display:flex;gap:6px;flex-wrap:wrap;}
+  .ev-chip{padding:7px 12px;border-radius:16px;border:1.5px solid var(--line);background:var(--surface);font-weight:700;font-size:12.5px;cursor:pointer;}
+  .ev-chip.on{background:#3E7CB1;color:#fff;border-color:#3E7CB1;}
+  .ev-row{display:flex;gap:8px;}
+  .ev-inp{width:100%;border:1px solid var(--line);border-radius:10px;padding:10px;font-size:15px;font-family:inherit;background:var(--surface);color:var(--text);}
+  .ev-save{width:100%;margin-top:14px;background:#1C1C1C;color:#fff;border:none;border-radius:12px;padding:13px;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit;}
+  .ev-cancel{width:100%;margin-top:6px;background:transparent;border:none;color:var(--muted);font-weight:600;font-size:13px;padding:8px;cursor:pointer;font-family:inherit;}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -851,7 +874,7 @@
     <h2>MoveU <span style="color:var(--muted);font-weight:500;">Studio</span></h2>
     <p class="login-sub">Zaloguj się e-mailem, żeby zobaczyć swój plan.</p>
     <div id="loginStep1">
-      <input type="email" id="loginEmail" placeholder="Twój e-mail" autocomplete="email">
+      <input type="email" id="loginEmail" placeholder="Twój e-mail" autocomplete="email" autocapitalize="off" autocorrect="off" spellcheck="false">
       <button class="btn" id="sendMagicLinkBtn" style="width:100%;padding:12px;">Wyślij kod logowania</button>
     </div>
     <div id="loginStep2" style="display:none;">
@@ -870,6 +893,7 @@
   <div class="login-box">
     <h2>Brak dostępu</h2>
     <p class="login-sub">Ten adres e-mail nie jest przypisany do żadnego klienta ani konta trenera. Skontaktuj się ze swoim trenerem, żeby to poprawić.</p>
+    <p class="login-sub" id="noAccessEmail" style="font-weight:700;color:var(--text);word-break:break-all;"></p>
     <button class="btn ghost ✕" id="logoutFromNoAccess" style="width:100%;padding:12px;">Wyloguj się</button>
   </div>
 </div>
@@ -1006,7 +1030,8 @@ function showLoginGate(){
   $('loginStatus').textContent = '';
   $('loginStatus').className = 'login-status';
 }
-function showNoAccessGate(){
+function showNoAccessGate(email){
+  if($('noAccessEmail')) $('noAccessEmail').textContent = email ? 'Zalogowano jako: ' + email + ' — podaj ten adres trenerowi.' : '';
   $('loginGate').style.display = 'none';
   $('appShell').style.display = 'none';
   $('noAccessGate').style.display = 'flex';
@@ -1032,7 +1057,7 @@ async function handleAuthResult(session){
     showLoginGate();
     return;
   }
-  const email = (session.user.email || '').toLowerCase();
+  const email = normEmail(session.user.email) || '';
 
   if(!appStarted){
     appStarted = true;
@@ -1047,9 +1072,9 @@ async function handleAuthResult(session){
     return;
   }
 
-  const matchedClient = clients.find(c => c.email && c.email.toLowerCase() === email);
+  const matchedClient = clients.find(c => c.email && normEmail(c.email) === email);
   if(!matchedClient){
-    showNoAccessGate();
+    showNoAccessGate(email);
     return;
   }
   showAppShell();
@@ -1059,7 +1084,7 @@ async function handleAuthResult(session){
 let pendingLoginEmail = '';
 
 $('sendMagicLinkBtn').onclick = async () => {
-  const email = $('loginEmail').value.trim();
+  const email = normEmail($('loginEmail').value) || '';
   const statusEl = $('loginStatus');
   statusEl.className = 'login-status';
   if(!email){ statusEl.textContent = 'Wpisz adres e-mail.'; statusEl.className = 'login-status error'; return; }
@@ -1292,9 +1317,16 @@ function clientRowToJs(row){
     onlineActive: row.online_active || false, onlineTotal: row.online_total || 0
   };
 }
+/* E-mail zawsze bez spacji i malymi literami - inaczej logowanie nie znajdzie klienta */
+function normEmail(e){ const v = String(e || '').replace(/[\s\u200B-\u200D\uFEFF]+/g, '').toLowerCase(); return v || null; }
+/* Czy ten e-mail ma juz inna osoba? (dwie osoby z jednym adresem = logowanie do cudzego planu) */
+function emailTakenBy(email, exceptId){
+  const e = normEmail(email); if(!e) return null;
+  return clients.find(x => x.id !== exceptId && normEmail(x.email) === e) || null;
+}
 function clientJsToRow(c){
   return {
-    id: c.id, name: c.name, email: c.email || null,
+    id: c.id, name: c.name, email: normEmail(c.email),
     group_id: c.groupId || null, subgroup_id: c.subgroupId || null,
     dob: c.dob || null, height: c.height || null,
     weight_log: c.weightLog || [], measurements_log: c.measurementsLog || [],
@@ -1950,6 +1982,10 @@ function computeLabel(idx){
   const pos = (idx % 2) + 1;
   return letter + pos;
 }
+function restForLabel(label){
+  const letter = String(label || '').trim().charAt(0).toUpperCase();
+  return letter === 'A' ? '120"' : letter === 'B' ? '90"' : letter === 'C' ? '60"' : '30"';
+}
 function relabelExercises(day){
   let warmupIdx = 0, mainIdx = 0;
   day.exercises.forEach(ex => {
@@ -2183,7 +2219,7 @@ function startEditClientName(nameEl, c){
 
 async function addNewClient(name, groupId, subgroupId, email){
   const id = 'c_' + Date.now();
-  const newClient = {id, name, groupId: groupId || null, subgroupId: subgroupId || null, email: email || null, weightLog:[], measurementsLog:[]};
+  const newClient = {id, name, groupId: groupId || null, subgroupId: subgroupId || null, email: normEmail(email), weightLog:[], measurementsLog:[]};
   const ok = await saveClientRow(newClient);
   if(ok) clients.push(newClient);
   renderClientList();
@@ -2362,7 +2398,7 @@ async function refreshClientAlert(){
 async function showClientView(){
   const c = clients.find(cl => cl.id === selectedClientId);
   if(!c) return;
-  if(clientView === 'plan'){ renderMain(); return; }
+  if(clientView === 'plan'){ await loadEvents(c.id); if(selectedClientId === c.id && clientView === 'plan') renderMain(); return; }
   if(clientView === 'info'){ await Promise.all([loadClientNotes(c.id), ensurePlanLoaded(c.id)]); if(selectedClientId === c.id && clientView === 'info') renderClientInfo(); return; }
   if(clientView === 'diet'){ await Promise.all([loadDiet(c.id, true), loadMealLibrary()]); if(selectedClientId === c.id && clientView === 'diet') renderClientDiet(); return; }
   renderClientChooser();
@@ -3393,6 +3429,82 @@ function libNoteCardHtml(ex){
   return `<div class="a-note-card lib-note-card"><div class="icon">${LIB_NOTE_ICON}</div><div class="txt"><b>Stałe uwagi</b><br>${escapeHtml(n).replace(/\n/g, '<br>')}</div></div>`;
 }
 
+/* ============ WPISY SPORTOWCA W KALENDARZU (mecz, turniej...) ============
+   Tabela app_client_events. Dodaje i usuwa sportowiec na swoim koncie; trener tylko widzi. */
+const eventsCache = {};
+let eventsTableMissing = false;
+const EV_KINDS = ['Mecz', 'Turniej', 'Trening w klubie', 'Wyjazd', 'Inne'];
+const EV_FLAG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4M5 4h11l-2 4 2 4H5"/></svg>`;
+function isEventsTableError(err){ const t = ((err && err.code) || '') + ' ' + ((err && err.message) || ''); return /42P01|PGRST205|does not exist|schema cache/i.test(t); }
+async function loadEvents(clientId){
+  try{
+    const { data, error } = await sbClient.from('app_client_events').select('*').eq('client_id', clientId);
+    if(error){ if(isEventsTableError(error)) eventsTableMissing = true; eventsCache[clientId] = []; return []; }
+    eventsTableMissing = false;
+    eventsCache[clientId] = (data || []).sort((a, b) => (a.date + (a.time || '')).localeCompare(b.date + (b.time || '')));
+    return eventsCache[clientId];
+  }catch(e){ eventsCache[clientId] = []; return []; }
+}
+function eventsOn(clientId, ds){ return (eventsCache[clientId] || []).filter(e => e.date === ds); }
+function eventLabel(e){ return escapeHtml(e.title) + (e.time ? ' · ' + escapeHtml(String(e.time).slice(0, 5)) : ''); }
+function eventsCardHtml(clientId, ds, canDelete){
+  const evs = eventsOn(clientId, ds);
+  if(!evs.length) return '';
+  return `<div class="ev-list">${evs.map(e => `<div class="ev-card"><span class="ev-ic">${EV_FLAG}</span><div class="ev-tx"><b>${eventLabel(e)}</b>${e.note ? `<small>${escapeHtml(e.note)}</small>` : ''}</div>${canDelete ? `<span class="ev-del" data-evdel="${escapeHtml(e.id)}">Usuń</span>` : ''}</div>`).join('')}</div>`;
+}
+function bindEventDeletes(root, clientId, after){
+  (root || document).querySelectorAll('[data-evdel]').forEach(b => b.onclick = async () => {
+    if(!confirm('Usunąć ten wpis?')) return;
+    const { error } = await sbClient.from('app_client_events').delete().eq('id', b.dataset.evdel);
+    if(error){ alert('Nie udało się usunąć wpisu. Spróbuj ponownie.\n\nSzczegóły: ' + [error.code, error.message].filter(Boolean).join(' · ')); return; }
+    eventsCache[clientId] = (eventsCache[clientId] || []).filter(e => e.id !== b.dataset.evdel);
+    after && after();
+  });
+}
+function openEventSheet(){
+  const clientId = aClientId; if(!clientId) return;
+  let kind = 'Mecz';
+  let el = document.getElementById('evSheetBg');
+  if(!el){ el = document.createElement('div'); el.id = 'evSheetBg'; el.className = 'ev-sheet-bg'; document.body.appendChild(el); }
+  const defDate = aSelectedDateStr || todayKey();
+  const draw = (keep) => {
+    const d = keep ? $('evDate').value : defDate, t = keep ? $('evTime').value : '', n = keep ? $('evNote').value : '', other = keep && $('evOther') ? $('evOther').value : '';
+    el.innerHTML = `<div class="ev-sheet"><h3>Nowy wpis w kalendarzu</h3>
+      <div class="ev-lab">Co</div><div class="ev-chips">${EV_KINDS.map(k => `<span class="ev-chip ${k === kind ? 'on' : ''}" data-kind="${k}">${k}</span>`).join('')}</div>
+      ${kind === 'Inne' ? `<input class="ev-inp" id="evOther" placeholder="Co to za wydarzenie?" value="${escapeHtml(other)}" style="margin-top:8px;">` : ''}
+      <div class="ev-row"><div style="flex:1;"><div class="ev-lab">Data</div><input class="ev-inp" type="date" id="evDate" value="${escapeHtml(d)}"></div>
+        <div style="width:130px;"><div class="ev-lab">Godzina</div><input class="ev-inp" type="time" id="evTime" value="${escapeHtml(t)}"></div></div>
+      <div class="ev-lab">Notatka (opcjonalnie)</div><input class="ev-inp" id="evNote" placeholder="np. wyjazd, Kędzierzyn" value="${escapeHtml(n)}">
+      <button class="ev-save" id="evSave">Dodaj wpis</button><button class="ev-cancel" id="evCancel">Anuluj</button></div>`;
+    el.style.display = 'flex';
+    el.onclick = ev => { if(ev.target === el) el.style.display = 'none'; };
+    $('evCancel').onclick = () => { el.style.display = 'none'; };
+    el.querySelectorAll('[data-kind]').forEach(c => c.onclick = () => { kind = c.dataset.kind; draw(true); });
+    $('evSave').onclick = async () => {
+      const date = $('evDate').value;
+      const title = kind === 'Inne' ? ($('evOther').value.trim() || 'Inne') : kind;
+      if(!date){ alert('Wybierz datę.'); return; }
+      const row = { id: 'ev_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6), client_id: clientId, date, time: $('evTime').value || null, title, note: $('evNote').value.trim() || null };
+      $('evSave').disabled = true;
+      const { error } = await sbClient.from('app_client_events').insert(row);
+      if(error){
+        $('evSave').disabled = false;
+        alert(isEventsTableError(error) ? 'Wpisy w kalendarzu nie są jeszcze włączone w bazie. Daj znać trenerowi.' : 'Nie udało się dodać wpisu. Spróbuj ponownie.\n\nSzczegóły: ' + [error.code, error.message].filter(Boolean).join(' · '));
+        return;
+      }
+      (eventsCache[clientId] = eventsCache[clientId] || []).push(row);
+      eventsCache[clientId].sort((a, b) => (a.date + (a.time || '')).localeCompare(b.date + (b.time || '')));
+      el.style.display = 'none';
+      aSelectedDateStr = date;
+      const [yy, mm] = date.split('-').map(Number); aViewDate = new Date(yy, mm - 1, 1);
+      if($('aCalGrid')) renderAthleteCalendar();
+      renderAthleteDay();
+      toast('Dodano wpis — trener też go widzi');
+    };
+  };
+  draw(false);
+}
+
 function renderMain(){
   const client = clients.find(c => c.id === selectedClientId);
   if(!client){ return; }
@@ -3469,7 +3581,8 @@ function renderCalendar(){
     if(dateStr === todayStr) cell.classList.add('today');
     const dayData = plan[dateStr];
     const dotClass = isDayOverdue(dayData, dateStr) ? 'dot-overdue' : getDayDotClass(dayData);
-    cell.innerHTML = `${d}` + (dotClass ? `<div class="dot ${dotClass}"></div>` : '');
+    const evsT = eventsOn(selectedClientId, dateStr);
+    cell.innerHTML = `${d}` + (dotClass ? `<div class="dot ${dotClass}"></div>` : '') + (evsT.length ? `<span class="cal-flag">${EV_FLAG}</span><div class="cal-ev">${escapeHtml(evsT[0].title)}${evsT[0].time ? ' ' + escapeHtml(String(evsT[0].time).slice(0,5)) : ''}</div>` : '');
     cell.onclick = () => { selectedDateStr = dateStr; renderCalendar(); renderDayPanel(); };
     grid.appendChild(cell);
   }
@@ -3496,6 +3609,7 @@ function renderDayPanel(){
 
   holder.innerHTML = `
     <div class="day-panel">
+      ${!editingTemplateMode && eventsOn(selectedClientId, selectedDateStr).length ? `<div class="ev-trainer-h">Wpis zawodnika</div>${eventsCardHtml(selectedClientId, selectedDateStr, false)}` : ''}
       ${isOverdue ? `
       <div class="overdue-alert">
         <div class="overdue-txt">Ten dzień jest <b>zaległy</b> — minęła data, a trening nie został wykonany.</div>
@@ -3697,6 +3811,8 @@ function renderDayPanel(){
         splitLR:false, setsRight:'', setsLeft:'', note:'', rpeProgression:false, targetRpe:'', rpe:null, clientNote:'', log:[]
       });
       relabelExercises(day);
+      // domyslna przerwa wg litery serii (tylko nowo dodane cwiczenia glowne): A 120 s, B 90 s, C 60 s, D i dalej 30 s
+      if(cat !== 'warmup'){ const added = day.exercises[day.exercises.length - 1]; added.rest = restForLabel(added.label); }
       sel.value = '';
       $('exHint-' + cat).textContent = '';
       await persistCurrentDayFn();
@@ -4385,7 +4501,7 @@ function renderRosterView(){
       <h4>Dodaj nowego klienta</h4>
       <div class="tools-row">
         <input id="newClientName2" placeholder="Imię i nazwisko">
-        <input id="newClientEmail2" type="email" placeholder="E-mail (do logowania)">
+        <input id="newClientEmail2" type="email" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="E-mail (do logowania)">
         <select id="newClientGroup2"></select>
         <select id="newClientSubgroup2"></select>
         <button class="btn" id="confirmAdd2">+ Dodaj klienta</button>
@@ -4433,6 +4549,8 @@ function renderRosterView(){
     const name = $('newClientName2').value.trim();
     if(!name){ toast('Wpisz imię i nazwisko'); return; }
     const email = $('newClientEmail2').value.trim();
+    const takenAdd = emailTakenBy(email, null);
+    if(takenAdd){ alert(`Ten e-mail jest już przypisany do: ${takenAdd.name}.\n\nJeden adres = jedna osoba (inaczej po zalogowaniu ktoś trafi do cudzego planu).`); return; }
     const groupId = $('newClientGroup2').value || null;
     const subgroupId = $('newClientSubgroup2').value || null;
     await addNewClient(name, groupId, subgroupId, email);
@@ -4576,7 +4694,7 @@ function openRosterEdit(id){
       <label>Imię i nazwisko</label><input class="cv-input" id="rlName" value="${escapeHtml(c.name)}">
       <label>Organizacja</label><select class="cv-input" id="rlOrg"><option value="">Bez organizacji</option>${clientGroups.map(g => `<option value="${g.id}" ${g.id === orgSel ? 'selected' : ''}>${escapeHtml(g.name)}</option>`).join('')}</select>
       <label>Rocznik / podgrupa</label><select class="cv-input" id="rlSub"><option value="">— brak —</option>${subs.map(x => `<option value="${x.id}" ${x.id === c.subgroupId ? 'selected' : ''}>${escapeHtml(x.name)}</option>`).join('')}</select>
-      <label>E-mail do logowania</label><input class="cv-input" id="rlMail" type="email" value="${escapeHtml(c.email || '')}" placeholder="brak — osoba nie loguje się sama">
+      <label>E-mail do logowania</label><input class="cv-input" id="rlMail" type="email" autocapitalize="off" autocorrect="off" spellcheck="false" value="${escapeHtml(c.email || '')}" placeholder="brak — osoba nie loguje się sama">
       <label>Dieta</label>
       <label class="diet-cb"><input type="checkbox" id="rlDietA" ${d && d.active ? 'checked' : ''}> dieta aktywna</label>
       <label class="diet-cb ${d && d.active ? 'dis' : ''}"><input type="checkbox" id="rlDietH" ${dietTabState(c) === 'hidden' ? 'checked' : ''} ${d && d.active ? 'disabled' : ''}> ukryj zakładkę Dieta</label>
@@ -4590,7 +4708,9 @@ function openRosterEdit(id){
     $('rlSave').onclick = async () => {
       const name = $('rlName').value.trim();
       if(!name){ alert('Wpisz imię i nazwisko.'); return; }
-      const newGroup = $('rlOrg').value || null, newSub = $('rlSub').value || null, newMail = $('rlMail').value.trim() || null;
+      const newGroup = $('rlOrg').value || null, newSub = $('rlSub').value || null, newMail = normEmail($('rlMail').value);
+      const takenEd = emailTakenBy(newMail, c.id);
+      if(takenEd){ alert(`Ten e-mail jest już przypisany do: ${takenEd.name}.\n\nJeden adres = jedna osoba.`); return; }
       const changed = name !== c.name || newGroup !== (c.groupId || null) || newSub !== (c.subgroupId || null) || newMail !== (c.email || null);
       if(changed){ c.name = name; c.groupId = newGroup; c.subgroupId = newSub; c.email = newMail; await saveClientRow(c); }
       const wantA = $('rlDietA').checked, wantH = $('rlDietH').checked;
@@ -7028,7 +7148,7 @@ async function selectRosterPerson(id){
   // swiezy plan z bazy - chyba ze czeka niewyslany zapis wynikow tej osoby (kolejka offline)
   if(!getOfflineQueue().some(q => q.clientId === id)) delete plansCache[id];
   await ensurePlanLoaded(id);
-  await Promise.all([loadDiet(id, true), loadMealLibrary()]);
+  await Promise.all([loadDiet(id, true), loadMealLibrary(), loadEvents(id)]);
   setStatus('');
   if(aClientId !== id) return; // w miedzyczasie ktos kliknal inna osobe
   aMainTab = 'plan'; aDietDetail = null; aDietSwap = null; aDietPick = null;
@@ -7062,7 +7182,7 @@ async function selectAthleteClient(clientId){
   aClientId = clientId;
   setStatus('Ładowanie planu…');
   await ensurePlanLoaded(aClientId);
-  await Promise.all([loadDiet(aClientId, true), loadMealLibrary()]);
+  await Promise.all([loadDiet(aClientId, true), loadMealLibrary(), loadEvents(aClientId)]);
   setStatus('');
   aDetailExId = null;
   aMainTab = 'plan'; aDietDetail = null; aDietSwap = null; aDietPick = null;
@@ -7110,6 +7230,7 @@ function renderAthleteBody(container){
             <button id="aNextMonth">→</button>
           </div>
           <div class="cal-grid" id="aCalGrid"></div>
+          ${isTrainerUser ? '' : '<button class="ev-add" id="evAddBtn">+ Dodaj wpis (mecz, turniej…)</button>'}
         </div>
       </div>
       <div class="a-content" id="aDayHolder"><div class="empty-state">${aRosterMode ? 'Brak zaplanowanego treningu — otwórz kalendarz (zakładka KALENDARZ).' : 'Wybierz dzień w kalendarzu z lewej.'}</div></div>
@@ -7124,6 +7245,7 @@ function renderAthleteBody(container){
 }
 
 function renderAthleteCalendar(){
+  if($('evAddBtn')) $('evAddBtn').onclick = openEventSheet;
   const plan = plansCache[aClientId] || {};
   const y = aViewDate.getFullYear(), m = aViewDate.getMonth();
   const monthNames = ['Styczeń','Luty','Marzec','Kwiecień','Maj','Czerwiec','Lipiec','Sierpień','Wrzesień','Październik','Listopad','Grudzień'];
@@ -7149,8 +7271,10 @@ function renderAthleteCalendar(){
     if(dateStr === todayStr) cell.classList.add('today');
     const dotClass = isDayOverdue(dayData, dateStr) ? 'dot-overdue' : getDayDotClass(dayData);
     const hasExercises = !!dotClass;
-    cell.innerHTML = `${d}` + (dotClass ? `<div class="dot ${dotClass}"></div>` : '');
-    if(hasExercises){
+    const hasEv = eventsOn(aClientId, dateStr).length > 0;
+    if(hasEv) cell.classList.remove('nodata');
+    cell.innerHTML = `${d}` + (dotClass ? `<div class="dot ${dotClass}"></div>` : '') + (hasEv ? `<span class="cal-flag">${EV_FLAG}</span>` : '');
+    if(hasExercises || hasEv){
       cell.onclick = () => { aSelectedDateStr = dateStr; if(aRosterMode) aManualDate = dateStr; aDetailExId = null; renderAthleteCalendar(); renderAthleteDay(); };
     }
     grid.appendChild(cell);
@@ -7161,6 +7285,12 @@ function renderAthleteDay(){
   const holder = $('aDayHolder');
   const plan = plansCache[aClientId] || {};
   const day = plan[aSelectedDateStr];
+  const evHtmlA = aSelectedDateStr ? eventsCardHtml(aClientId, aSelectedDateStr, !isTrainerUser) : '';
+  if(!day && evHtmlA){
+    holder.innerHTML = `<div class="a-daylabel"><h2>${escapeHtml(aSelectedDateStr)}</h2></div>${evHtmlA}<div class="empty-state" style="margin-top:8px;">Brak treningu w tym dniu.</div>`;
+    bindEventDeletes(holder, aClientId, () => { if($('aCalGrid')) renderAthleteCalendar(); renderAthleteDay(); });
+    return;
+  }
   if(!day){
     if(aRosterMode){
       holder.innerHTML = aSelectedDateStr
@@ -7210,6 +7340,7 @@ function renderAthleteDay(){
 
   holder.innerHTML = `
     <div class="a-daylabel"><h2>${aSelectedDateStr}</h2>${day.exercises.some(e=>e.isTest) ? '<span class="badge-test">TEST</span>':''}${(aRosterMode && aManualDate) ? '<button class="a-today-btn" id="aTodayBtn">↺ Dziś</button><span class="a-pin">📌 ten dzień zostaje przy zmianie osoby</span>' : ''}</div>
+    ${evHtmlA}
     ${titleCardHtml}
     ${sectionHtml('warmup','Rozgrzewka')}
     ${sectionHtml('main','Ćwiczenia główne')}
@@ -7229,6 +7360,7 @@ function renderAthleteDay(){
 $('aExerciseModal').addEventListener('click', (e) => {
   if(e.target.id === 'aExerciseModal') closeExerciseModal();
   if($('aTodayBtn')) $('aTodayBtn').onclick = athleteBackToToday;
+  bindEventDeletes(holder, aClientId, () => { if($('aCalGrid')) renderAthleteCalendar(); renderAthleteDay(); });
 });
 
 function openExerciseModal(exId, day){
