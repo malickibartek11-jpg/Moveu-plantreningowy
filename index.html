@@ -866,6 +866,7 @@
   .vb-head{display:flex;align-items:center;justify-content:space-between;font-size:10.5px;text-transform:uppercase;letter-spacing:.3px;color:var(--muted);font-weight:700;margin:10px 2px 6px;}
   .vb-link{display:flex;align-items:center;gap:4px;color:#3E7CB1;font-size:12px;font-weight:700;text-transform:none;letter-spacing:0;cursor:pointer;}
   .vb-link svg{width:15px;height:15px;}
+  .vb-preview{opacity:.6;}
   .vb-mini{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);margin:8px 2px 4px;cursor:pointer;}
   .vb-mini b{color:var(--text);} .vb-ok{color:#2E9E5B;font-weight:700;}
   .vb-ic{width:15px;height:15px;color:#3E7CB1;flex-shrink:0;}
@@ -905,6 +906,31 @@
   .vid-player video{width:100%;max-height:420px;display:block;background:#000;}
   .vid-gone{background:var(--surface-2);border-radius:10px;padding:14px;text-align:center;color:var(--muted);font-size:12.5px;}
   .vid-quote{background:var(--surface-2);border-radius:8px;padding:7px 10px;font-size:13px;margin:8px 0;}
+
+  /* ===== wpisy - wariant B ===== */
+  .cal-evi{position:absolute;top:2px;right:2px;width:14px;height:14px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;line-height:0;}
+  .cal-evi svg{width:9px;height:9px;}
+  .ev-ic{color:#fff;}
+  .ev-fab{position:fixed;right:18px;bottom:calc(22px + env(safe-area-inset-bottom));width:56px;height:56px;border-radius:50%;background:#1C1C1C;color:#fff;display:none;align-items:center;justify-content:center;box-shadow:0 8px 22px rgba(0,0,0,.3);cursor:pointer;z-index:140;}
+  body.has-bnav .ev-fab{bottom:calc(84px + env(safe-area-inset-bottom));}
+  .ev-fab svg{width:24px;height:24px;}
+  .ev-steps{display:flex;gap:4px;margin-bottom:10px;} .ev-steps i{flex:1;height:4px;border-radius:2px;background:var(--line);} .ev-steps i.on{background:#1C1C1C;}
+  .ev-sub{font-size:12px;color:var(--muted);margin:-2px 0 10px;}
+  .ev-back{color:#3E7CB1;font-weight:700;cursor:pointer;}
+  .ev-tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+  .ev-tile{background:var(--surface);border:2px solid var(--line);border-radius:14px;padding:12px 4px;text-align:center;cursor:pointer;font-size:12px;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:6px;}
+  .ev-tile .ev-ic{width:40px;height:40px;} .ev-tile .ev-ic svg{width:20px;height:20px;}
+  .ev-h2{display:flex;align-items:center;gap:8px;}
+  .ev-ic-s{width:26px !important;height:26px !important;} .ev-ic-s svg{width:14px !important;height:14px !important;}
+  .ev-inp-s{width:auto;min-width:120px;padding:6px 8px;font-size:13px;}
+  .ev-chip.on{background:#1C1C1C;border-color:#1C1C1C;color:#fff;}
+
+  /* kalendarz trenera: stale kolumny, wpis jako mala ikonka */
+  .cal-grid{grid-template-columns:repeat(7,minmax(0,1fr));}
+  .cal-cell{min-width:0;overflow:hidden;}
+  .ev-tline{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
+  .ev-tline-i{display:inline-flex;align-items:center;gap:6px;background:var(--surface-2);border:1px solid var(--line);border-radius:16px;padding:4px 10px 4px 4px;font-size:12px;}
+  .ev-ic-xs{width:20px !important;height:20px !important;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;} .ev-ic-xs svg{width:11px;height:11px;}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -3046,7 +3072,17 @@ function renderDietBulk(){
 
 /* ============ DIETA - PANEL KLIENTA ============ */
 let aMainTab = 'plan', aDietDate = null, aDietDetail = null, aDietSwap = null, aDietPick = null;
+function renderEventFab(){
+  let fab = document.getElementById('evFab');
+  if(!fab){ fab = document.createElement('div'); fab.id = 'evFab'; fab.className = 'ev-fab'; fab.title = 'Dodaj wpis (mecz, turniej…)';
+    fab.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>`;
+    fab.onclick = () => openEventSheet(); document.body.appendChild(fab); }
+  const shell = document.getElementById('appShell');
+  const show = !isTrainerUser && currentTab === 'sportowiec' && !!aClientId && aMainTab === 'plan' && shell && shell.style.display !== 'none';
+  fab.style.display = show ? 'flex' : 'none';
+}
 function renderAthleteNav(){
+  renderEventFab();
   let nav = document.getElementById('aBottomNav');
   if(!nav){ nav = document.createElement('div'); nav.id = 'aBottomNav'; nav.className = 'a-bnav'; document.body.appendChild(nav); }
   const c = aClientId ? clients.find(x => x.id === aClientId) : null;
@@ -3488,6 +3524,15 @@ function libNoteCardHtml(ex){
 const eventsCache = {};
 let eventsTableMissing = false;
 const EV_KINDS = ['Mecz', 'Turniej', 'Trening w klubie', 'Wyjazd', 'Inne'];
+const EV_META = {
+  'Mecz': { color: '#E8604A', svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><path d="M12 3c2.5 3 2.5 15 0 18M3 12h18"/></svg>` },
+  'Turniej': { color: '#E8A33A', svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M9 20h6"/></svg>` },
+  'Trening w klubie': { color: '#3E7CB1', svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 5-3.5 8-7 10-3.5-2-7-5-7-10V6z"/></svg>` },
+  'Wyjazd': { color: '#7B61B8', svg: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="13" rx="3"/><path d="M4 11h16M8 17v3M16 17v3"/></svg>` },
+  'Inne': { color: '#767268', svg: `<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="5"/></svg>` }
+};
+function evMeta(title){ return EV_META[title] || EV_META['Inne']; }
+function evIconHtml(title, cls){ const m = evMeta(title); return `<span class="${cls || 'ev-ic'}" style="background:${m.color}">${m.svg}</span>`; }
 const EV_FLAG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4M5 4h11l-2 4 2 4H5"/></svg>`;
 function isEventsTableError(err){ const t = ((err && err.code) || '') + ' ' + ((err && err.message) || ''); return /42P01|PGRST205|does not exist|schema cache/i.test(t); }
 async function loadEvents(clientId){
@@ -3504,7 +3549,7 @@ function eventLabel(e){ return escapeHtml(e.title) + (e.time ? ' · ' + escapeHt
 function eventsCardHtml(clientId, ds, canDelete){
   const evs = eventsOn(clientId, ds);
   if(!evs.length) return '';
-  return `<div class="ev-list">${evs.map(e => `<div class="ev-card"><span class="ev-ic">${EV_FLAG}</span><div class="ev-tx"><b>${eventLabel(e)}</b>${e.note ? `<small>${escapeHtml(e.note)}</small>` : ''}</div>${canDelete ? `<span class="ev-del" data-evdel="${escapeHtml(e.id)}">Usuń</span>` : ''}</div>`).join('')}</div>`;
+  return `<div class="ev-list">${evs.map(e => `<div class="ev-card" style="background:${evMeta(e.title).color}14;border-color:${evMeta(e.title).color}55;">${evIconHtml(e.title)}<div class="ev-tx"><b>${eventLabel(e)}</b>${e.note ? `<small>${escapeHtml(e.note)}</small>` : ''}</div>${canDelete ? `<span class="ev-del" data-evdel="${escapeHtml(e.id)}">Usuń</span>` : ''}</div>`).join('')}</div>`;
 }
 function bindEventDeletes(root, clientId, after){
   (root || document).querySelectorAll('[data-evdel]').forEach(b => b.onclick = async () => {
@@ -3517,28 +3562,42 @@ function bindEventDeletes(root, clientId, after){
 }
 function openEventSheet(){
   const clientId = aClientId; if(!clientId) return;
-  let kind = 'Mecz';
   let el = document.getElementById('evSheetBg');
   if(!el){ el = document.createElement('div'); el.id = 'evSheetBg'; el.className = 'ev-sheet-bg'; document.body.appendChild(el); }
-  const defDate = aSelectedDateStr || todayKey();
-  const draw = (keep) => {
-    const d = keep ? $('evDate').value : defDate, t = keep ? $('evTime').value : '', n = keep ? $('evNote').value : '', other = keep && $('evOther') ? $('evOther').value : '';
-    el.innerHTML = `<div class="ev-sheet"><h3>Nowy wpis w kalendarzu</h3>
-      <div class="ev-lab">Co</div><div class="ev-chips">${EV_KINDS.map(k => `<span class="ev-chip ${k === kind ? 'on' : ''}" data-kind="${k}">${k}</span>`).join('')}</div>
-      ${kind === 'Inne' ? `<input class="ev-inp" id="evOther" placeholder="Co to za wydarzenie?" value="${escapeHtml(other)}" style="margin-top:8px;">` : ''}
-      <div class="ev-row"><div style="flex:1;"><div class="ev-lab">Data</div><input class="ev-inp" type="date" id="evDate" value="${escapeHtml(d)}"></div>
-        <div style="width:130px;"><div class="ev-lab">Godzina</div><input class="ev-inp" type="time" id="evTime" value="${escapeHtml(t)}"></div></div>
-      <div class="ev-lab">Notatka (opcjonalnie)</div><input class="ev-inp" id="evNote" placeholder="np. wyjazd, Kędzierzyn" value="${escapeHtml(n)}">
-      <button class="ev-save" id="evSave">Dodaj wpis</button><button class="ev-cancel" id="evCancel">Anuluj</button></div>`;
+  const today = todayKey();
+  const nextWd = wd => { for(let i = 0; i < 7; i++){ const d = addDaysToDateStr(today, i); if(weekdayIdx(d) === wd) return d; } return today; };
+  const QUICK = [['Dziś', today], ['Jutro', addDaysToDateStr(today, 1)], ['Sobota', nextWd(5)], ['Niedziela', nextWd(6)]];
+  const TIMES = ['10:00', '12:00', '16:00', '18:00', '20:00'];
+  const f = { step: 1, kind: '', date: aSelectedDateStr && aSelectedDateStr >= today ? aSelectedDateStr : today, time: '', note: '', other: '' };
+  const keep = () => { if($('evOther')) f.other = $('evOther').value; if($('evNote')) f.note = $('evNote').value; };
+  const draw = () => {
+    const steps = `<div class="ev-steps"><i class="on"></i><i class="${f.step === 2 ? 'on' : ''}"></i></div>`;
+    if(f.step === 1){
+      el.innerHTML = `<div class="ev-sheet">${steps}<h3>Co się dzieje?</h3><div class="ev-sub">Krok 1 z 2</div>
+        <div class="ev-tiles">${EV_KINDS.map(k => `<div class="ev-tile" data-kind="${k}">${evIconHtml(k)}<span>${k}</span></div>`).join('')}</div>
+        <button class="ev-cancel" id="evCancel">Anuluj</button></div>`;
+    } else {
+      el.innerHTML = `<div class="ev-sheet">${steps}<h3 class="ev-h2">${evIconHtml(f.kind, 'ev-ic ev-ic-s')}${escapeHtml(f.kind)} — kiedy?</h3><div class="ev-sub">Krok 2 z 2 · <span class="ev-back" id="evBack">‹ zmień rodzaj</span></div>
+        ${f.kind === 'Inne' ? `<input class="ev-inp" id="evOther" placeholder="Co to za wydarzenie?" value="${escapeHtml(f.other)}" style="margin-bottom:4px;">` : ''}
+        <div class="ev-lab">Dzień</div><div class="ev-chips">${QUICK.map(([l, d]) => `<span class="ev-chip ${f.date === d ? 'on' : ''}" data-qd="${d}">${l}</span>`).join('')}<input class="ev-inp ev-inp-s" type="date" id="evDate" value="${escapeHtml(f.date)}"></div>
+        <div class="ev-lab">Godzina</div><div class="ev-chips"><span class="ev-chip ${!f.time ? 'on' : ''}" data-qt="">bez godziny</span>${TIMES.map(t => `<span class="ev-chip ${f.time === t ? 'on' : ''}" data-qt="${t}">${t}</span>`).join('')}<input class="ev-inp ev-inp-s" type="time" id="evTime" value="${TIMES.includes(f.time) ? '' : escapeHtml(f.time)}"></div>
+        <div class="ev-lab">Notatka (opcjonalnie)</div><input class="ev-inp" id="evNote" placeholder="np. wyjazd, Kędzierzyn" value="${escapeHtml(f.note)}">
+        <button class="ev-save" id="evSave">Dodaj wpis</button><button class="ev-cancel" id="evCancel">Anuluj</button></div>`;
+    }
     el.style.display = 'flex';
     el.onclick = ev => { if(ev.target === el) el.style.display = 'none'; };
     $('evCancel').onclick = () => { el.style.display = 'none'; };
-    el.querySelectorAll('[data-kind]').forEach(c => c.onclick = () => { kind = c.dataset.kind; draw(true); });
-    $('evSave').onclick = async () => {
-      const date = $('evDate').value;
-      const title = kind === 'Inne' ? ($('evOther').value.trim() || 'Inne') : kind;
-      if(!date){ alert('Wybierz datę.'); return; }
-      const row = { id: 'ev_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6), client_id: clientId, date, time: $('evTime').value || null, title, note: $('evNote').value.trim() || null };
+    el.querySelectorAll('[data-kind]').forEach(t => t.onclick = () => { f.kind = t.dataset.kind; f.step = 2; draw(); });
+    if($('evBack')) $('evBack').onclick = () => { keep(); f.step = 1; draw(); };
+    el.querySelectorAll('[data-qd]').forEach(c => c.onclick = () => { keep(); f.date = c.dataset.qd; draw(); });
+    el.querySelectorAll('[data-qt]').forEach(c => c.onclick = () => { keep(); f.time = c.dataset.qt; draw(); });
+    if($('evDate')) $('evDate').onchange = e => { keep(); if(e.target.value) f.date = e.target.value; draw(); };
+    if($('evTime')) $('evTime').onchange = e => { keep(); f.time = e.target.value; draw(); };
+    if($('evSave')) $('evSave').onclick = async () => {
+      keep();
+      const title = f.kind === 'Inne' ? (f.other.trim() || 'Inne') : f.kind;
+      if(!f.date){ alert('Wybierz dzień.'); return; }
+      const row = { id: 'ev_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6), client_id: clientId, date: f.date, time: f.time || null, title, note: f.note.trim() || null };
       $('evSave').disabled = true;
       const { error } = await sbClient.from('app_client_events').insert(row);
       if(error){
@@ -3549,16 +3608,15 @@ function openEventSheet(){
       (eventsCache[clientId] = eventsCache[clientId] || []).push(row);
       eventsCache[clientId].sort((a, b) => (a.date + (a.time || '')).localeCompare(b.date + (b.time || '')));
       el.style.display = 'none';
-      aSelectedDateStr = date;
-      const [yy, mm] = date.split('-').map(Number); aViewDate = new Date(yy, mm - 1, 1);
+      aSelectedDateStr = f.date;
+      const [yy, mm] = f.date.split('-').map(Number); aViewDate = new Date(yy, mm - 1, 1);
       if($('aCalGrid')) renderAthleteCalendar();
       renderAthleteDay();
       toast('Dodano wpis — trener też go widzi');
     };
   };
-  draw(false);
+  draw();
 }
-
 /* ============ FILM DO TRENERA (klient wysyla film przy cwiczeniu) ============
    Tabela app_client_videos + prywatny kubelek 'client-videos'. Limit 30 s i 50 MB.
    Plik usuwany 24 h po obejrzeniu przez trenera (sprzatanie przy wejsciu trenera); odpowiedz tekstowa zostaje. */
@@ -3610,11 +3668,12 @@ function videoBarHtml(ex){
   if(!videosEnabledFor(c)) return '';
   const v = latestVideoFor(ex);
   const status = v ? `<div class="vb-mini" id="vbMini">${VID_CAM.replace('<svg', '<svg class="vb-ic"')} <b>Film wysłany</b> · ${v.reply ? '<span class="vb-ok">trener odpisał ›</span>' : 'czeka na trenera'}</div>${v.reply ? `<div class="vb-reply" id="vbReply" style="display:none;"><b>Odpowiedź trenera</b>${escapeHtml(v.reply).replace(/\n/g, '<br>')}</div>` : ''}` : '';
-  return `${status}<div class="vb-head"><span>Serie</span>${isTrainerUser ? '' : `<span class="vb-link" id="vbLink">${VID_CAM}${v ? 'Wyślij kolejny film' : 'Film do trenera'}</span>`}</div>
+  return `${status}<div class="vb-head"><span>Serie</span>${isTrainerUser ? `<span class="vb-link vb-preview" id="vbPreview" title="Tak widzi to klient — film wysyła klient na swoim koncie">${VID_CAM}Film do trenera</span>` : `<span class="vb-link" id="vbLink">${VID_CAM}${v ? 'Wyślij kolejny film' : 'Film do trenera'}</span>`}</div>
     <input type="file" id="vbFile" accept="video/*" style="display:none;">`;
 }
 function bindVideoBar(ex, day){
   if($('vbMini') && $('vbReply')) $('vbMini').onclick = () => { const r = $('vbReply'); r.style.display = r.style.display === 'none' ? '' : 'none'; };
+  if($('vbPreview')) $('vbPreview').onclick = () => toast('Podgląd: ten link widzi klient. Film wysyła klient ze swojego konta.');
   if(!$('vbLink')) return;
   $('vbLink').onclick = () => $('vbFile').click();
   $('vbFile').onchange = async e => {
@@ -3826,7 +3885,8 @@ function renderCalendar(){
     const dayData = plan[dateStr];
     const dotClass = isDayOverdue(dayData, dateStr) ? 'dot-overdue' : getDayDotClass(dayData);
     const evsT = eventsOn(selectedClientId, dateStr);
-    cell.innerHTML = `${d}` + (dotClass ? `<div class="dot ${dotClass}"></div>` : '') + (evsT.length ? `<span class="cal-flag">${EV_FLAG}</span><div class="cal-ev">${escapeHtml(evsT[0].title)}${evsT[0].time ? ' ' + escapeHtml(String(evsT[0].time).slice(0,5)) : ''}</div>` : '');
+    cell.innerHTML = `${d}` + (dotClass ? `<div class="dot ${dotClass}"></div>` : '') + (evsT.length ? evIconHtml(evsT[0].title, 'cal-evi') : '');
+    if(evsT.length) cell.title = 'Wpis zawodnika: ' + evsT.map(e => e.title + (e.time ? ' ' + String(e.time).slice(0,5) : '')).join(', ');
     cell.onclick = () => { selectedDateStr = dateStr; renderCalendar(); renderDayPanel(); };
     grid.appendChild(cell);
   }
@@ -3853,7 +3913,7 @@ function renderDayPanel(){
 
   holder.innerHTML = `
     <div class="day-panel">
-      ${!editingTemplateMode && eventsOn(selectedClientId, selectedDateStr).length ? `<div class="ev-trainer-h">Wpis zawodnika</div>${eventsCardHtml(selectedClientId, selectedDateStr, false)}` : ''}
+      ${!editingTemplateMode && eventsOn(selectedClientId, selectedDateStr).length ? `<div class="ev-tline">${eventsOn(selectedClientId, selectedDateStr).map(e => `<span class="ev-tline-i">${evIconHtml(e.title, 'ev-ic ev-ic-xs')}<b>Wpis zawodnika:</b> ${eventLabel(e)}${e.note ? ` <span class="cv-small">· ${escapeHtml(e.note)}</span>` : ''}</span>`).join('')}</div>` : ''}
       ${isOverdue ? `
       <div class="overdue-alert">
         <div class="overdue-txt">Ten dzień jest <b>zaległy</b> — minęła data, a trening nie został wykonany.</div>
@@ -4110,7 +4170,7 @@ function renderExRows(day, category){
     tr.draggable = true;
     const isTestEx = category === 'main' && ex.isTest;
     const exName = resolveExName(ex);
-    const autoInfo = editingTemplateMode ? null : computeSuggestedWeightInfo(selectedClientId, exName, ex.reps, selectedDateStr);
+    const autoInfo = editingTemplateMode ? null : computeSuggestedWeightInfo(selectedClientId, exName, ex.reps, selectedDateStr, ex.targetRpe);
     const autoVal = autoInfo ? autoInfo.value : null;
     const displayVal = ex.suggestedManual ? (ex.suggestedWeight||'') : (autoVal !== null ? String(autoVal) : '');
     const suggTitle = ex.suggestedManual ? 'Wpisane ręcznie (wyczyść pole, żeby wrócić do automatycznej podpowiedzi)' : (autoInfo ? suggestedSourceText(autoInfo) : 'Brak podpowiedzi: brak wcześniejszych treningów tego ćwiczenia (do 10 powt.) i testu 1RM');
@@ -4387,18 +4447,15 @@ function getLatestRpeReport(clientId, exerciseName){
 
 function computeRpeSuggestion(targetRpe, report){
   if(!report) return null;
-  const target = parseFloat(targetRpe);
+  const target = parseFloat(String(targetRpe == null ? '' : targetRpe).replace(',', '.'));
   if(isNaN(target)) return null;
+  const pts = Math.max(-RPE_MAX_PTS, Math.min(RPE_MAX_PTS, target - report.rpe));
   const diff = report.rpe - target;
-  let pct, label;
-  if(diff <= -2){ pct = 0.05; label = 'wyraźnie za lekko'; }
-  else if(diff < 0){ pct = 0.025; label = 'lekko poniżej celu'; }
-  else if(diff === 0){ pct = 0.025; label = 'w sam raz'; }
-  else if(diff === 1){ pct = 0; label = 'trochę za ciężko — ten sam ciężar'; }
-  else { pct = -0.05; label = 'zdecydowanie za ciężko'; }
-  const newWeight = Math.round(report.weight * (1+pct) * 2) / 2;
+  const label = pts > 0 ? `za lekko o ${fmtKg(pts)} pkt RPE` : pts < 0 ? `za ciężko o ${fmtKg(-pts)} pkt RPE` : 'w sam raz';
+  const newWeight = roundLoad(report.weight * (1 + pts * RPE_STEP));
   return { lastRpe: report.rpe, target, lastWeight: report.weight, newWeight, diff, label, date: report.date };
 }
+
 
 function getExerciseSessionBests(clientId, exerciseName){
   const plan = plansCache[clientId] || {};
@@ -4585,34 +4642,82 @@ function lastSessionContinuumBefore(clientId, exerciseName, beforeDate){
   });
   return found;
 }
-function computeSuggestedWeightInfo(clientId, exerciseName, plannedReps, beforeDate){
+/* PODPOWIEDZ CIEZARU (gdy trener nie wpisal recznie) — kolejnosc:
+   1) POPRZEDNI TRENING tego cwiczenia (najswiezszy przed danym dniem):
+      - te same powtorzenia -> najlepszy ciezar z tych serii,
+      - inne powtorzenia -> przeliczenie przez %1RM (kontinuum, serie 1-10 powt.),
+      - KOREKTA RPE: ciezar x (1 + (RPE docelowe - RPE zgloszone) x 2,5%), max +-4 pkt (+-10%).
+        RPE docelowe = z tego dnia (jesli trener ustawil), inaczej z poprzedniego treningu.
+   2) jesli cwiczenia jeszcze nie bylo -> test 1RM (% wg powtorzen). */
+const RPE_STEP = 0.025, RPE_MAX_PTS = 4;
+function roundLoad(w){ return w >= 20 ? Math.round(w / 2.5) * 2.5 : Math.round(w * 2) / 2; }
+function prevSessionOf(clientId, exerciseName, beforeDate){
+  const plan = plansCache[clientId] || {};
+  let found = null;
+  Object.keys(plan).sort().forEach(dateStr => {
+    if(beforeDate && dateStr >= beforeDate) return;
+    const d = plan[dateStr]; if(!d || !d.exercises) return;
+    d.exercises.filter(ex => resolveExName(ex) === exerciseName).forEach(ex => {
+      const sets = [];
+      [].concat(ex.log || [], ex.logRight || [], ex.logLeft || []).forEach(l => {
+        const w = parseFloat(String((l && l.weight) || '').replace(',', '.'));
+        const r = parseInt(l && l.reps) || parseInt(ex.reps) || 0;
+        if(!isNaN(w) && w > 0) sets.push({ w, r });
+      });
+      if(sets.length) found = { date: dateStr, ex, sets };
+    });
+  });
+  return found;
+}
+function computeSuggestedWeightInfo(clientId, exerciseName, plannedReps, beforeDate, targetRpe){
   if(!clientId) return null;
-  // 1) ostatni trening z tymi samymi powtorzeniami
-  const last = lastSessionBestBefore(clientId, exerciseName, plannedReps, beforeDate);
-  if(last) return {value: last.weight, source: 'last', date: last.date};
   const reps = parseInt(plannedReps);
-  // 2) test 1RM
+  const prev = prevSessionOf(clientId, exerciseName, beforeDate);
+  if(prev){
+    let base = null, source = 'last', fromWeight = null, fromReps = null;
+    const same = !isNaN(reps) ? prev.sets.filter(x => x.r === reps) : prev.sets;
+    if(same.length){
+      base = Math.max(...same.map(x => x.w)); fromWeight = base; fromReps = reps || null;
+    } else {
+      let best = null;
+      prev.sets.forEach(x => { if(x.r < 1 || x.r > CONTINUUM_MAX_REPS) return; const e = x.w / (pctForReps(x.r) / 100); if(!best || e > best.e) best = { e, w: x.w, r: x.r }; });
+      if(best && reps >= 1){ base = best.e * pctForReps(reps) / 100; source = 'cont'; fromWeight = best.w; fromReps = best.r; }
+      else { const top = prev.sets.reduce((a, x) => x.w > a.w ? x : a, prev.sets[0]); base = top.w; fromWeight = top.w; fromReps = top.r; }
+    }
+    let rpe = null;
+    const actual = (prev.ex.rpe === 0 || prev.ex.rpe) ? parseFloat(prev.ex.rpe) : NaN;
+    let target = parseFloat(String(targetRpe == null ? '' : targetRpe).replace(',', '.'));
+    if(isNaN(target)) target = parseFloat(String(prev.ex.targetRpe == null ? '' : prev.ex.targetRpe).replace(',', '.'));
+    if(!isNaN(actual) && !isNaN(target)){
+      const pts = Math.max(-RPE_MAX_PTS, Math.min(RPE_MAX_PTS, target - actual));
+      rpe = { actual, target, pts, pct: Math.round(pts * RPE_STEP * 1000) / 10 };
+      base = base * (1 + pts * RPE_STEP);
+    }
+    return { value: roundLoad(base), source, date: prev.date, fromWeight, fromReps, rpe };
+  }
   const test = getLatestTest1RM(clientId, exerciseName);
   if(test){
     const pct = pctForReps(reps || 1);
-    return {value: Math.round(test.oneRM * pct/100 * 2) / 2, source: 'test', date: test.date};
-  }
-  // 3) kontinuum z ostatniego treningu z innymi powtorzeniami
-  if(reps >= 1){
-    const c = lastSessionContinuumBefore(clientId, exerciseName, beforeDate);
-    if(c) return {value: Math.round(c.e1rm * pctForReps(reps)/100 * 2) / 2, source: 'cont', date: c.date, fromWeight: c.weight, fromReps: c.reps};
+    return { value: roundLoad(test.oneRM * pct / 100), source: 'test', date: test.date };
   }
   return null;
 }
-function computeSuggestedWeight(clientId, exerciseName, plannedReps, beforeDate){
-  const info = computeSuggestedWeightInfo(clientId, exerciseName, plannedReps, beforeDate);
+function computeSuggestedWeight(clientId, exerciseName, plannedReps, beforeDate, targetRpe){
+  const info = computeSuggestedWeightInfo(clientId, exerciseName, plannedReps, beforeDate, targetRpe);
   return info ? info.value : null;
 }
+const fmtKg = v => String(v).replace('.', ',');
+function rpeNoteText(r){ if(!r) return ''; return `RPE ${fmtKg(r.actual)} → cel ${fmtKg(r.target)}: ${r.pct > 0 ? '+' : ''}${fmtKg(r.pct)}%`; }
 function suggestedSourceText(info){
   if(!info) return '';
-  if(info.source === 'last') return `Z ostatniego treningu (${info.date}, te same powtórzenia)`;
-  if(info.source === 'cont') return `Przeliczone z ${info.fromWeight} kg × ${info.fromReps} (${info.date}) wg %1RM`;
-  return `Wyliczone z testu 1RM (${info.date})`;
+  if(info.source === 'test') return `Wyliczone z testu 1RM (${info.date}) — tego ćwiczenia jeszcze nie było`;
+  const basis = info.source === 'cont' ? `przeliczone z ${fmtKg(info.fromWeight)} kg × ${info.fromReps} wg %1RM` : `${fmtKg(info.fromWeight)} kg${info.fromReps ? ' × ' + info.fromReps : ''}`;
+  return `Z poprzedniego treningu (${info.date}: ${basis})${info.rpe ? ' · ' + rpeNoteText(info.rpe) : ''}`;
+}
+function suggestedClientLabel(info){
+  if(!info) return '';
+  if(info.source === 'test') return 'z testu 1RM';
+  return `z poprzedniego treningu: ${fmtKg(info.fromWeight)} kg${info.fromReps ? ' × ' + info.fromReps : ''}${info.rpe ? ` przy RPE ${fmtKg(info.rpe.actual)} (cel ${fmtKg(info.rpe.target)}) → ${info.rpe.pct > 0 ? '+' : ''}${fmtKg(info.rpe.pct)}%` : ''}`;
 }
 function buildExerciseHistory(clientId, exerciseName){
   const plan = plansCache[clientId] || {};
@@ -7487,7 +7592,6 @@ function renderAthleteBody(container){
             <button id="aNextMonth">→</button>
           </div>
           <div class="cal-grid" id="aCalGrid"></div>
-          ${isTrainerUser ? '' : '<button class="ev-add" id="evAddBtn">+ Dodaj wpis (mecz, turniej…)</button>'}
         </div>
       </div>
       <div class="a-content" id="aDayHolder"><div class="empty-state">${aRosterMode ? 'Brak zaplanowanego treningu — otwórz kalendarz (zakładka KALENDARZ).' : 'Wybierz dzień w kalendarzu z lewej.'}</div></div>
@@ -7502,7 +7606,6 @@ function renderAthleteBody(container){
 }
 
 function renderAthleteCalendar(){
-  if($('evAddBtn')) $('evAddBtn').onclick = openEventSheet;
   const plan = plansCache[aClientId] || {};
   const y = aViewDate.getFullYear(), m = aViewDate.getMonth();
   const monthNames = ['Styczeń','Luty','Marzec','Kwiecień','Maj','Czerwiec','Lipiec','Sierpień','Wrzesień','Październik','Listopad','Grudzień'];
@@ -7530,7 +7633,7 @@ function renderAthleteCalendar(){
     const hasExercises = !!dotClass;
     const hasEv = eventsOn(aClientId, dateStr).length > 0;
     if(hasEv) cell.classList.remove('nodata');
-    cell.innerHTML = `${d}` + (dotClass ? `<div class="dot ${dotClass}"></div>` : '') + (hasEv ? `<span class="cal-flag">${EV_FLAG}</span>` : '');
+    cell.innerHTML = `${d}` + (dotClass ? `<div class="dot ${dotClass}"></div>` : '') + (hasEv ? evIconHtml(eventsOn(aClientId, dateStr)[0].title, 'cal-evi') : '');
     if(hasExercises || hasEv){
       cell.onclick = () => { aSelectedDateStr = dateStr; if(aRosterMode) aManualDate = dateStr; aDetailExId = null; renderAthleteCalendar(); renderAthleteDay(); };
     }
@@ -7539,6 +7642,7 @@ function renderAthleteCalendar(){
 }
 
 function renderAthleteDay(){
+  renderEventFab();
   const holder = $('aDayHolder');
   const plan = plansCache[aClientId] || {};
   const day = plan[aSelectedDateStr];
@@ -7854,7 +7958,8 @@ function renderAthleteDetail(day){
     : `<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);font-size:12px;">Brak filmu</div>`;
 
   const isThisATest = ex.category === 'main' && ex.isTest;
-  const autoVal = (isThisATest || ex.noWeight) ? null : computeSuggestedWeight(aClientId, exName, ex.reps, aSelectedDateStr);
+  const autoInfoA = (isThisATest || ex.noWeight) ? null : computeSuggestedWeightInfo(aClientId, exName, ex.reps, aSelectedDateStr, ex.targetRpe);
+  const autoVal = autoInfoA ? autoInfoA.value : null;
   let suggestedDisplay = '';
   if(!isThisATest && !ex.noWeight){
     if(ex.suggestedManual && ex.suggestedWeight){
@@ -7910,7 +8015,7 @@ function renderAthleteDetail(day){
         <div><div class="t">PRZERWA</div><div class="v">${escapeHtml(ex.rest)}</div></div>
       `}
     </div>
-    ${(ex.category==='main' && ex.isTest) ? renderTestHistoryBlock(aClientId, exName) : (suggestedDisplay ? `<div class="suggested-label">Sugerowany ciężar (z testu): ${escapeHtml(suggestedDisplay)} kg</div>` : '')}
+    ${(ex.category==='main' && ex.isTest) ? renderTestHistoryBlock(aClientId, exName) : (suggestedDisplay ? `<div class="suggested-label">Sugerowany ciężar: <b>${escapeHtml(fmtKg(suggestedDisplay))} kg</b>${(ex.suggestedManual && ex.suggestedWeight) ? ' · od trenera' : (autoInfoA ? ` · ${escapeHtml(suggestedClientLabel(autoInfoA))}` : '')}</div>` : '')}
     ${videoBarHtml(ex)}
     ${ex.splitLR ? `
       <div class="lr-cols-wrap">
@@ -8139,7 +8244,7 @@ async function exportRangeToExcel(clientId, fromStr, toStr){
       const isTestEx = ex.category==='main' && ex.isTest;
       const exName = resolveExName(ex);
       const exVideo = resolveExVideo(ex);
-      const autoVal = isTestEx ? null : computeSuggestedWeight(clientId, exName, ex.reps);
+      const autoVal = isTestEx ? null : computeSuggestedWeight(clientId, exName, ex.reps, null, ex.targetRpe);
       const suggested = isTestEx ? '— TEST —' : (autoVal!==null?autoVal:'');
       const numSets = Math.min(MAX_EXPORT_SETS, Math.max(1, parseInt(ex.sets)||1));
       const rowFill = isTestEx ? XLS_WARN : null;
