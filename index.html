@@ -1009,6 +1009,12 @@
   .ev-tline{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
   .ev-tline-i{display:inline-flex;align-items:center;gap:6px;background:var(--surface-2);border:1px solid var(--line);border-radius:16px;padding:4px 10px 4px 4px;font-size:12px;}
   .ev-ic-xs{width:20px !important;height:20px !important;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;} .ev-ic-xs svg{width:11px;height:11px;}
+
+  /* ===== Trenerzy ===== */
+  .tr-add{display:flex;gap:8px;margin:4px 0 14px;max-width:560px;} .tr-add input{flex:1;}
+  .tr-grid{grid-template-columns:2.2fr 1.2fr 100px !important;}
+  .tr-owner{background:var(--surface-2);cursor:default;}
+  .rl-row.tr-grid{cursor:default;}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -1081,6 +1087,7 @@
       <button class="add-client-btn" id="showMealsBtn">Biblioteka posiłków</button>
       <button class="add-client-btn" id="showVideosBtn">Filmy do obejrzenia <span class="vid-badge" id="vidBadge" style="display:none;"></span></button>
       <button class="add-client-btn" id="showRosterBtn">👥 Klienci</button>
+      <button class="add-client-btn" id="showTrainersBtn">Trenerzy</button>
       <button class="add-client-btn" id="copyAppLinkBtn">🔗 Skopiuj link aplikacji</button>
     </div>
     <div class="main" id="main">
@@ -1213,7 +1220,7 @@ async function handleAuthResult(session){
     await init();
   }
 
-  if(email === TRAINER_EMAIL.toLowerCase()){
+  if(await checkIsTrainer(email)){
     isTrainerUser = true;
     showAppShell();
     renderCompletedTrainingsButton();
@@ -2438,6 +2445,12 @@ $('showMealsBtn').onclick = () => navigateTo(async () => {
   renderClientList();
   await loadMealLibrary(true);
   renderMealLibraryView();
+});
+$('showTrainersBtn').onclick = () => navigateTo(async () => {
+  trainerViewMode = 'trainers';
+  selectedClientId = null;
+  renderClientList();
+  await renderTrainersView();
 });
 $('showRosterBtn').onclick = () => navigateTo(async () => {
   trainerViewMode = 'roster';
@@ -4381,6 +4394,70 @@ async function renderVideosView(){
     updateVideoBadge(); renderVideosView(); toast('Odpowiedź wysłana');
   });
   document.querySelectorAll('[data-openc]').forEach(b => b.onclick = () => navigateTo(() => selectClient(b.dataset.openc)));
+}
+
+/* ============ TRENERZY: lista osob z pelnym dostepem trenera ============
+   Tabela app_trainers (email, full_access). Wlasciciel (TRAINER_EMAIL) ma dostep zawsze - nie da sie go usunac.
+   Rozpoznanie przy logowaniu: funkcja w bazie is_trainer() (sprawdza wlasciciela i liste). */
+async function checkIsTrainer(email){
+  if(email && email === TRAINER_EMAIL.toLowerCase()) return true;
+  try{
+    const { data, error } = await sbClient.rpc('is_trainer');
+    return !error && data === true;
+  }catch(e){ return false; }
+}
+function isTrainersTableError(err){ const t = ((err && err.code) || '') + ' ' + ((err && err.message) || ''); return /42P01|PGRST205|PGRST202|does not exist|schema cache|Could not find/i.test(t); }
+async function renderTrainersView(){
+  $('main').innerHTML = `<div class="section-title"><div class="bar"></div><h2>Trenerzy</h2></div><div class="section-desc">Ładowanie…</div>`;
+  let rows = [], missing = false;
+  try{
+    const { data, error } = await sbClient.from('app_trainers').select('*');
+    if(error){ if(isTrainersTableError(error)) missing = true; else throw error; }
+    rows = (data || []).filter(r => normEmail(r.email) !== TRAINER_EMAIL.toLowerCase()).sort((a, b) => String(a.added_at || '').localeCompare(String(b.added_at || '')));
+  }catch(e){ console.warn(e); }
+  const me = normEmail((await sbClient.auth.getSession()).data?.session?.user?.email) || '';
+  $('main').innerHTML = `<div class="section-title"><div class="bar"></div><h2>Trenerzy</h2></div>
+    <div class="section-desc">Osoby z dostępem do panelu trenera. Logują się swoim e-mailem jak zwykle (kod z maila). Pełny dostęp = to samo co właściciel: plany, diety, klienci, notatki, biblioteki.</div>
+    ${missing ? '<div class="cv-alert" style="background:#FFF4E5;border-color:#F3C88B;"><div><b>W bazie brakuje jeszcze listy trenerów.</b> Wklej polecenie z supabase-trenerzy.html w Supabase (SQL Editor). Do tego czasu dostęp ma tylko właściciel.</div></div>' : ''}
+    <div class="tr-add"><input class="cv-input" id="trEmail" type="email" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="adres e-mail, np. natalia@gmail.com" ${missing ? 'disabled' : ''}><button class="btn" id="trAddBtn" ${missing ? 'disabled' : ''}>+ Dodaj adres e-mail</button></div>
+    <div class="rl-list"><div class="rl-head tr-grid"><div>E-mail</div><div>Pełny dostęp</div><div></div></div>
+      <div class="rl-row tr-grid tr-owner"><div><b>${escapeHtml(TRAINER_EMAIL)}</b>${me === TRAINER_EMAIL.toLowerCase() ? ' <span class="cv-small">(Ty)</span>' : ''}<br><small class="cv-small">właściciel — dostęp zawsze</small></div><div><label class="diet-cb dis"><input type="checkbox" checked disabled> pełny dostęp</label></div><div></div></div>
+      ${rows.map(r => `<div class="rl-row tr-grid" data-tr="${escapeHtml(r.email)}"><div><b>${escapeHtml(r.email)}</b>${normEmail(r.email) === me ? ' <span class="cv-small">(Ty)</span>' : ''}<br><small class="cv-small">${r.full_access ? 'ma dostęp' : 'dostęp wyłączony'}</small></div>
+        <div><label class="diet-cb"><input type="checkbox" data-trfull="${escapeHtml(r.email)}" ${r.full_access ? 'checked' : ''}> pełny dostęp</label></div>
+        <div><button class="btn ghost small" data-trdel="${escapeHtml(r.email)}" style="color:#B4472E;">Usuń</button></div></div>`).join('')}
+    </div>
+    <div class="cv-small" style="margin-top:10px;">Zmiana działa po ponownym otwarciu aplikacji przez tę osobę (albo odświeżeniu strony).</div>`;
+  if(missing) return;
+  $('trAddBtn').onclick = async () => {
+    const e = normEmail($('trEmail').value);
+    if(!e || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e)){ alert('Wpisz poprawny adres e-mail.'); return; }
+    if(e === TRAINER_EMAIL.toLowerCase() || rows.some(r => normEmail(r.email) === e)){ alert('Ten adres jest już na liście trenerów.'); return; }
+    const asClient = emailTakenBy(e, null);
+    if(asClient && !confirm(`Ten e-mail ma klient „${asClient.name}”.\n\nPo dodaniu ta osoba po zalogowaniu zobaczy PANEL TRENERA (wszystkich klientów), a nie swój plan. Dodać mimo to?`)) return;
+    $('trAddBtn').disabled = true;
+    const { error } = await sbClient.from('app_trainers').insert({ email: e, full_access: true, added_by: me || null });
+    if(error){ $('trAddBtn').disabled = false; alert('Nie udało się dodać.\n\nSzczegóły: ' + [error.code, error.message].filter(Boolean).join(' · ')); return; }
+    toast('Dodano trenera: ' + e);
+    renderTrainersView();
+  };
+  $('trEmail').onkeydown = ev => { if(ev.key === 'Enter') $('trAddBtn').click(); };
+  document.querySelectorAll('[data-trfull]').forEach(cb => cb.onchange = async () => {
+    const e = cb.dataset.trfull, val = cb.checked;
+    if(!val && normEmail(e) === me && !confirm('Wyłączasz dostęp SOBIE. Po odświeżeniu stracisz panel trenera. Kontynuować?')){ cb.checked = true; return; }
+    cb.disabled = true;
+    const { error } = await sbClient.from('app_trainers').update({ full_access: val }).eq('email', e);
+    if(error){ alert('Nie udało się zapisać.\n\nSzczegóły: ' + [error.code, error.message].filter(Boolean).join(' · ')); }
+    else toast(val ? 'Włączono pełny dostęp: ' + e : 'Wyłączono dostęp: ' + e);
+    renderTrainersView();
+  });
+  document.querySelectorAll('[data-trdel]').forEach(b => b.onclick = async () => {
+    const e = b.dataset.trdel;
+    if(!confirm(`Usunąć ${e} z listy trenerów?${normEmail(e) === me ? '\n\nTo TWÓJ adres — stracisz dostęp do panelu trenera.' : ''}`)) return;
+    const { error } = await sbClient.from('app_trainers').delete().eq('email', e);
+    if(error){ alert('Nie udało się usunąć.\n\nSzczegóły: ' + [error.code, error.message].filter(Boolean).join(' · ')); return; }
+    toast('Usunięto: ' + e);
+    renderTrainersView();
+  });
 }
 
 function renderMain(){
