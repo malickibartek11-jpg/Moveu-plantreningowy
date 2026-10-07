@@ -790,8 +790,86 @@
   .imp-row input{width:16px;height:16px;accent-color:#1C1C1C;}
   .imp-row > div{flex:1;min-width:0;}
   .imp-tag{font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:9px;white-space:nowrap;}
+  .imp-tag.miss{background:#FDECE8;color:#B4472E;}
   .imp-tag.new{background:#E3F4E9;color:#2E9E5B;} .imp-tag.upd{background:#EAF0F8;color:#3E7CB1;}
   .roster-filters{margin:4px 0 12px;}
+  /* DIETA-WSP: biblioteka - kategorie i widocznosc; gotowe diety; tydzien klientki; panel klientki */
+  .ml-main{display:flex;gap:8px;margin:10px 0 4px;}
+  .ml-main > div{padding:10px 18px;border-radius:10px;border:1.5px solid var(--line);background:var(--surface);font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:14px;cursor:pointer;color:var(--muted);}
+  .ml-main > div span{font-family:'IBM Plex Sans',sans-serif;font-size:11px;margin-left:4px;opacity:.75;}
+  .ml-main > div.on{background:#1C1C1C;border-color:#1C1C1C;color:#fff;}
+  .ml-sub{margin-top:8px;}
+  .pc-box{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:0 0 8px;}
+  .pc-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:4px;font-size:13px;}
+  .pc-ctl{display:flex;align-items:center;gap:6px;}
+  .pc-btn{width:34px;height:34px;border-radius:9px;background:#1C1C1C;color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;cursor:pointer;user-select:none;}
+  .pc-in{width:56px;height:34px;text-align:center;border:1px solid var(--line);border-radius:9px;font:700 15px 'Space Grotesk',sans-serif;background:var(--surface);color:var(--text);}
+  .kcal-note{font-size:10.5px;color:var(--muted);margin-top:6px;}
+  .mf{background:#6B8E5A;}
+  .me-nutri{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:10px 0 2px;}
+  .me-nutri.warn{background:#FFF4E5;border-color:#F3C88B;}
+  .me-nutri-k{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;font-size:13px;margin-bottom:3px;}
+  .me-ing{flex-wrap:wrap;}
+  .ig-stw{flex-basis:100%;margin:-2px 0 2px 2px;min-height:14px;}
+  .ig-st{font-size:11px;font-weight:700;}
+  .ig-st.ok{color:#2E9E5B;} .ig-st.miss{color:#B4472E;}
+  .ig-add{margin-left:6px;color:#1C1C1C;text-decoration:underline;cursor:pointer;}
+  .p-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;}
+  .p-grid label{font-size:11px;color:var(--muted);display:flex;flex-direction:column;gap:3px;}
+  .p-focus{border-color:#E8604A !important;box-shadow:0 0 0 2px rgba(232,96,74,.25);}
+  /* DIETA-WSP: okno produktu - wymagane pola i kontrola kcal */
+  .p-req{color:#E8604A;font-weight:700;}
+  .p-need{background:#F4F1EA;border-radius:10px;padding:8px 12px;font-size:12.5px;line-height:1.45;margin-bottom:10px;}
+  .p-chk{background:#FFF4E5;border:1px solid #F3C88B;border-radius:10px;padding:8px 12px;font-size:12.5px;margin-top:6px;}
+  .prod-wrap{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:12px;margin-top:8px;}
+  table.prod-tab{width:100%;border-collapse:collapse;font-size:12.5px;min-width:820px;}
+  table.prod-tab th{text-align:left;font-size:10.5px;text-transform:uppercase;color:var(--muted);padding:8px 10px;background:var(--surface-2);}
+  table.prod-tab td{padding:8px 10px;border-top:1px solid var(--line);vertical-align:top;}
+  table.prod-tab tbody tr{cursor:pointer;} table.prod-tab tbody tr:hover{background:#FBFAF8;}
+  .prod-miss{display:flex;gap:12px;background:#FFF4E5;border-color:#F3C88B;}
+  .pm-list{margin-top:8px;max-height:260px;overflow-y:auto;}
+  .pm-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:4px 0;border-top:1px dashed #F3C88B;font-size:12.5px;}
+  .pm-why{font-size:10.5px;font-weight:700;color:#B4472E;}
+  .kcal-warn{font-size:10.5px;font-weight:700;color:#B4472E;background:#FDECE8;border-radius:6px;padding:3px 6px;margin-top:6px;}
+  .kcal-alert{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:#FDECE8;border-color:#F2B8AA;}
+  .kcal-alert > div{flex:1;min-width:220px;}
+  .me-kcal{font-family:'Space Grotesk',sans-serif;font-size:16px;}
+  .me-kcal-old{font-size:11.5px;color:#B4472E;margin-top:3px;}
+  .meal-vis-help{font-size:11.5px;color:var(--muted);margin:-2px 0 4px;}
+  .meal-vis{display:flex;gap:4px;flex-wrap:wrap;margin-top:8px;}
+  .mv-cb{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:700;border:1px solid var(--line);border-radius:7px;padding:3px 6px;cursor:pointer;color:var(--muted);background:var(--surface);user-select:none;}
+  .mv-cb input{width:13px;height:13px;margin:0;accent-color:#1C1C1C;}
+  .mv-cb.on{border-color:#1C1C1C;color:var(--text);background:var(--surface-2);}
+  .po-slot{border-top:1px solid var(--line);padding:8px 0 6px;}
+  .po-h{font-size:11px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:4px;display:flex;align-items:center;gap:6px;}
+  .po-h .cv-small{text-transform:none;font-weight:400;}
+  .po-add{margin-left:auto;text-transform:none;color:#E8604A;cursor:pointer;font-size:12px;}
+  .po-row{display:flex;align-items:center;gap:8px;margin:4px 0;}
+  .po-row select{flex:1;min-width:0;}
+  .po-tag{width:76px;flex-shrink:0;font-size:10.5px;font-weight:700;color:var(--muted);}
+  .po-tag.def{color:#1C1C1C;}
+  .po-k{width:140px;flex-shrink:0;text-align:right;font-size:11.5px;color:var(--muted);}
+  .po-empty{background:#FFF4E5;border-radius:7px;padding:6px 8px;margin-top:4px;}
+  .cw-wrap{overflow-x:auto;}
+  table.cw{width:100%;border-collapse:collapse;font-size:11.5px;min-width:720px;}
+  table.cw th{font-size:10.5px;color:var(--muted);text-align:left;padding:5px 6px;font-weight:700;}
+  table.cw th.cw-today{color:#E8604A;}
+  table.cw td{border:1px solid var(--line);padding:6px;vertical-align:top;line-height:1.3;}
+  table.cw td.cw-pick{background:#FFF1EC;}
+  table.cw td.cw-empty{color:var(--muted);text-align:center;}
+  .cw-done{color:#2E9E5B;margin-right:3px;}
+  .cw-src{display:block;font-size:9.5px;color:#B4472E;font-weight:700;margin-top:2px;}
+  .cw-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--muted);margin-top:8px;align-items:center;}
+  .cw-legend span{display:inline-flex;align-items:center;gap:5px;}
+  .cw-sw{display:inline-block;width:14px;height:10px;border:1px solid var(--line);border-radius:2px;background:var(--surface);}
+  .cw-sw.pick{background:#FFF1EC;}
+  .dm-tabs{display:flex;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:3px;margin-bottom:8px;}
+  .dm-tabs span{flex:1;text-align:center;padding:8px 6px;border-radius:7px;font-size:12.5px;font-weight:700;color:var(--muted);cursor:pointer;}
+  .dm-tabs span.on{background:#1C1C1C;color:#fff;}
+  .dm-cats{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px;}
+  .dm-thumb{width:64px;flex-shrink:0;border-radius:9px;overflow:hidden;}
+  .shop-days{display:flex;gap:5px;flex-wrap:wrap;margin:2px 0 6px;}
+  .shop-quick{display:flex;gap:14px;margin:0 2px 6px;}
   .roster-frow{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px;}
   .roster-frow.sub{padding-left:12px;border-left:2px solid var(--line);}
 
@@ -2707,18 +2785,32 @@ const CV_ICON_DIET = `<svg viewBox="0 0 64 64" width="64" height="64"><circle cx
   <circle cx="45" cy="19" r="3.6" fill="#E8604A"/></svg>`;
 const numv = v => { const n = parseFloat(String(v == null ? '' : v).replace(',', '.')); return isNaN(n) ? 0 : n; };
 function isDietTableError(err){ const t = ((err && err.code) || '') + ' ' + ((err && err.message) || ''); return /42P01|PGRST205|does not exist|schema cache/i.test(t); }
+/* DIETA-WSP: nowy model danych diety klienta (reset): przypisana gotowa dieta + wybory klientki na konkretne dni */
 function normDiet(d){
   d = (d && typeof d === 'object') ? d : {};
-  return { active: !!d.active, hidden: (typeof d.hidden === 'boolean') ? d.hidden : undefined,
-    target: Object.assign({ k:'', b:'', t:'', w:'' }, d.target || {}), calc: Object.assign({ sex:'M', pal:'1.55', goal:'0' }, d.calc || {}),
-    week: d.week || {}, done: d.done || {}, swaps: d.swaps || {}, swapLog: Array.isArray(d.swapLog) ? d.swapLog : [] };
+  return { active: !!d.active, hidden: (typeof d.hidden === 'boolean') ? d.hidden : undefined, planId: d.planId || null,
+    target: Object.assign({ k:'', b:'', t:'', w:'' }, d.target || {}), calc: Object.assign({ sex:'K', pal:'1.55', goal:'0' }, d.calc || {}),
+    done: d.done || {}, picks: (d.picks && typeof d.picks === 'object') ? d.picks : {}, pickLog: Array.isArray(d.pickLog) ? d.pickLog : [] };
 }
-let dietTemplates = null;
+/* DIETA-WSP: gotowe diety (kv_store 'diet_plans'): 7 dni x 4 posilki, w kazdym lista opcji - pierwsza = domyslna */
+const DIET_PLAN_LEVELS = [1800, 2000, 2300, 2500];
+const PLAN_MAX_OPTS = 5, PLAN_MIN_ROWS = 3;
+let dietPlans = null;
+function defaultDietPlans(){ return DIET_PLAN_LEVELS.map(L => ({ id: 'dp_' + L, name: 'Dieta ' + L + ' kcal', level: L, week: {} })); }
+function planById(id){ return (dietPlans || []).find(p => p.id === id) || null; }
+function planOpts(plan, dayName, slot){
+  const a = (((plan && plan.week) || {})[dayName] || {})[slot];
+  return (Array.isArray(a) ? a : (a ? [a] : [])).filter(id => id && mealById(id));
+}
+function dayOptions(d, ds, slot){ return planOpts(planById(d && d.planId), DIET_DAYS[weekdayIdx(ds)], slot); }
+function mealInPlan(m, planId){ return !!m && Array.isArray(m.diets) && m.diets.includes(planId); }
 async function loadMealLibrary(force){
-  if(mealLibrary && !force) return mealLibrary;
-  const [v, t] = await Promise.all([safeGet('meal_library'), isTrainerUser ? safeGet('diet_templates') : Promise.resolve(null)]);
+  if(mealLibrary && dietPlans && !force) return mealLibrary;
+  const [v, p] = await Promise.all([safeGet('meal_library'), safeGet('diet_plans')]);
   mealLibrary = Array.isArray(v) ? v : [];
-  if(isTrainerUser) dietTemplates = Array.isArray(t) ? t : [];
+  dietPlans = Array.isArray(p) ? p : null;
+  if(!dietPlans){ dietPlans = defaultDietPlans(); if(isTrainerUser) await safeSet('diet_plans', dietPlans); }
+  if(isTrainerUser) await loadFoodProducts(force);   /* DIETA-WSP: baza produktow tylko dla trenera */
   return mealLibrary;
 }
 async function loadDiet(id, force){
@@ -2775,22 +2867,30 @@ function dietTabState(c){ const d = dietCache[c.id]; if(d && d.active) return 'a
 function mealById(id){ return (mealLibrary || []).find(m => m.id === id) || null; }
 function weekdayIdx(ds){ const [y, m, d] = ds.split('-').map(Number); return (new Date(y, m - 1, d).getDay() + 6) % 7; }
 function mondayOfStr(ds){ return addDaysToDateStr(ds, -weekdayIdx(ds)); }
+/* DIETA-WSP: posilek dnia = wybor klientki na ten dzien, a jesli go nie ma - opcja domyslna z diety */
 function effectiveMeal(d, ds, slot){
   if(!d) return null;
-  const sw = d.swaps[ds + '|' + slot];
-  const id = sw || (d.week[DIET_DAYS[weekdayIdx(ds)]] || {})[slot];
-  return id ? mealById(id) : null;
+  const p = d.picks[ds + '|' + slot];
+  if(p && mealById(p)) return mealById(p);
+  const o = dayOptions(d, ds, slot);
+  return o.length ? mealById(o[0]) : null;
 }
-function mealAlternatives(m){
-  const k = numv(m.kcal), b = numv(m.b);
-  return (mealLibrary || []).filter(a => a.category === m.category && a.id !== m.id && Math.abs(numv(a.kcal) - k) <= k * 0.1 && Math.abs(numv(a.b) - b) <= 8);
+/* DIETA-WSP: porcja innego posilku, gdyby zastapil dany posilek tego dnia (przeliczona na poziom klientki) */
+function scaledAltFor(d, ds, slot, m){
+  const L = dietLevel(d); if(!L) return scaleMeal(m, 0);
+  return scaleMeal(m, dayTargets(L, dayMealsMap(k => k === slot ? m : effectiveMeal(d, ds, k))).targets[slot]);
 }
+/* DIETA-WSP: to samo dla gotowej diety w edytorze trenera (dzien z opcjami domyslnymi) */
+function scaledInPlan(plan, dayName, slot, m, level){
+  if(!level) return scaleMeal(m, 0);
+  return scaleMeal(m, dayTargets(level, dayMealsMap(k => k === slot ? m : mealById(planOpts(plan, dayName, k)[0]))).targets[slot]);
+}
+function dayLabel(ds){ return DIET_DAYS[weekdayIdx(ds)] + ' ' + ds.slice(8) + '.' + ds.slice(5, 7); }
 function mealPhotoHtml(m, h){
   if(m && m.photo) return `<div class="meal-ph" style="height:${h}px;"><img src="${escapeHtml(m.photo)}" alt=""></div>`;
   return `<div class="meal-ph" style="height:${h}px;background:${MEAL_BG[(m && m.category) || 'sn']};">${dIcon('plate', 'meal-ph-ic')}</div>`;
 }
 /* ===== POZIOMY KCAL: posilek wpisany raz, porcja przeliczana na poziom dnia klienta ===== */
-const DIET_LEVELS = [1500, 1800, 2000, 2200, 2500, 3000];
 const SLOT_SHARE = { sn: 0.25, pr: 0.15, ob: 0.35, ko: 0.25 };
 const COUNT_UNITS = ['szt','sztuka','sztuki','kromka','kromki','plaster','plastry','opakowanie','puszka','łyżka','łyżki','łyżeczka','łyżeczki','garść','jajko','jajka'];
 function roundQty(q, u, name){
@@ -2806,12 +2906,32 @@ function slotSharesFor(slots){
   const sum = slots.reduce((a, k) => a + (SLOT_SHARE[k] || 0), 0) || 1;
   const out = {}; slots.forEach(k => { out[k] = (SLOT_SHARE[k] || 0) / sum; }); return out;
 }
+/* DIETA-WSP: przeliczanie porcji. Posilek liczony ze skladnikow: dobierz mnoznik skladnikow "skalowanych" tak, by trafic w kcal
+   (skladniki stale bez zmian), zaokraglij gramatury, potem policz kcal i makro z RZECZYWISTYCH gramatur.
+   Posilek bez danych skladnikow (stary / makro z pliku): proporcjonalnie jak dotad. */
 function scaleMeal(m, targetKcal){
-  const base = numv(m.kcal);
   if(m.fixed) targetKcal = 0;   // porcja stala - zawsze jak w przepisie
-  if(!targetKcal || !base) return { kcal: base, b: numv(m.b), t: numv(m.t), w: numv(m.w), f: 1, ingredients: (m.ingredients || []).map(i => ({ ...i })) };
+  if(mealCanScaleExact(m)){
+    const ings = m.ingredients || [];
+    const isSc = i => i.name && i.scale !== false && numv(i.qty) > 0;
+    let kS = 0, kF = 0;
+    ings.forEach(i => { if(!i.name) return; const k = kcalFromNutrients(ingredientNutr(i)); if(isSc(i)) kS += k; else kF += k; });
+    const f = (targetKcal && kS > 0) ? Math.max(0.1, (targetKcal - kF) / kS) : 1;
+    const tot = { b: 0, t: 0, w: 0, fib: 0, pol: 0, alk: 0, kwo: 0 };
+    const out = ings.map(i => {
+      if(!i.name) return { ...i };
+      const q = numv(i.qty), sc = isSc(i) && f !== 1;
+      const nq = sc ? roundQty(q * f, i.unit, i.name) : q;
+      const g = q > 0 ? numv(i.g) * nq / q : numv(i.g);
+      const n = ingredientNutr(i, g); NUTR_KEYS.forEach(k => { tot[k] += n[k]; });
+      return { ...i, baseQty: i.qty, qty: sc ? String(nq) : i.qty, scaled: sc && nq !== q };
+    });
+    return { kcal: Math.round(kcalFromNutrients(tot)), b: Math.round(tot.b), t: Math.round(tot.t), w: Math.round(tot.w), fib: Math.round(tot.fib), f, ingredients: out };
+  }
+  const base = numv(m.kcal);
+  if(!targetKcal || !base) return { kcal: Math.round(base), b: numv(m.b), t: numv(m.t), w: numv(m.w), fib: numv(m.fib), f: 1, ingredients: (m.ingredients || []).map(i => ({ ...i })) };
   const f = targetKcal / base;
-  return { kcal: Math.round(targetKcal), b: Math.round(numv(m.b) * f), t: Math.round(numv(m.t) * f), w: Math.round(numv(m.w) * f), f,
+  return { kcal: Math.round(targetKcal), b: Math.round(numv(m.b) * f), t: Math.round(numv(m.t) * f), w: Math.round(numv(m.w) * f), fib: Math.round(numv(m.fib) * f), f,
     ingredients: (m.ingredients || []).map(i => { const q = numv(i.qty); const sc = i.scale !== false && q > 0; const nq = sc ? roundQty(q * f, i.unit, i.name) : q;
       return { ...i, baseQty: i.qty, qty: sc ? String(nq) : i.qty, scaled: sc && nq !== q }; }) };
 }
@@ -2835,30 +2955,90 @@ function scaledMealFor(d, ds, slot){
   const dt = dayTargets(L, dayMealsMap(k => effectiveMeal(d, ds, k)));
   return { m, s: scaleMeal(m, dt.targets[slot]) };
 }
-function scaledForWeek(week, dayName, slot, level){
-  const dayPlan = (week || {})[dayName] || {};
-  const m = mealById(dayPlan[slot]); if(!m) return null;
-  if(!level) return { m, s: scaleMeal(m, 0) };
-  const dt = dayTargets(level, dayMealsMap(k => mealById(dayPlan[k])));
-  return { m, s: scaleMeal(m, dt.targets[slot]) };
+function scaledViewOf(sm){ return { ...sm.m, kcal: sm.s.kcal, b: sm.s.b, t: sm.s.t, w: sm.s.w, fib: sm.s.fib, ingredients: sm.s.ingredients }; }
+/* DIETA-WSP: STALA ZASADA (wlascicielka, 2026-10-05) - energia liczona jak w programach dietetycznych:
+   ze skladnikow (baza produktow, wartosci na 100 g), przeliczniki wg rozporzadzenia UE 1169/2011 zal. XIV.
+   b = bialko, t = tluszcz, w = weglowodany PRZYSWAJALNE (bez blonnika), fib = blonnik, pol = poliole, alk = alkohol, kwo = kwasy organiczne. Liczy aplikacja - bez AI. */
+const ENERGY_FACTORS = { b: 4, t: 9, w: 4, fib: 2, pol: 2.4, alk: 7, kwo: 3 };
+const NUTR_KEYS = ['b', 't', 'w', 'fib', 'pol', 'alk', 'kwo'];
+const NUTR_LABELS = { b: 'Białko', t: 'Tłuszcz', w: 'Węglowodany przyswajalne', fib: 'Błonnik', pol: 'Poliole', alk: 'Alkohol', kwo: 'Kwasy organiczne' };
+function kcalFromNutrients(n){ return NUTR_KEYS.reduce((a, k) => a + numv(n && n[k]) * ENERGY_FACTORS[k], 0); }
+function kcalFromMacros(b, t, w, fib, pol){ return Math.round(kcalFromNutrients({ b, t, w, fib, pol })); }
+const mealHasMacrosCore = m => ['b', 't', 'w'].some(k => numv(m && m[k]) > 0);
+function mealHasMacros(m){ return mealHasMacrosCore(m); }
+const r1 = x => Math.round(x * 10) / 10;
+
+/* ---------- baza produktow (kv_store 'food_products') - widoczna tylko w panelu trenera ---------- */
+const PRODUCT_UNITS = [['szt','1 sztuka'],['kromka','1 kromka'],['plaster','1 plaster'],['łyżka','1 łyżka'],['łyżeczka','1 łyżeczka'],['garść','1 garść'],['szklanka','1 szklanka'],['opakowanie','1 opakowanie'],['puszka','1 puszka']];
+const PRODUCT_SOURCES = ['CIQUAL', 'etykieta', 'ręcznie'];
+let foodProducts = null, productIdx = null;
+const prodKey = s => plSearchKey(String(s || '')).replace(/\s+/g, ' ').trim();
+function rebuildProductIndex(){
+  productIdx = new Map();
+  (foodProducts || []).forEach(p => [p.name].concat(p.aliases || []).forEach(n => { const k = prodKey(n); if(k && !productIdx.has(k)) productIdx.set(k, p); }));
 }
-function scaledViewOf(sm){ return { ...sm.m, kcal: sm.s.kcal, b: sm.s.b, t: sm.s.t, w: sm.s.w, ingredients: sm.s.ingredients }; }
-/* zamienniki: ta sama kategoria; przy poziomie kcal kaloryka jest wyrownana, wiec liczy sie bialko (±10 g) */
-function mealAlternativesScaled(d, ds, slot, m){
-  const L = dietLevel(d);
-  if(!L) return mealAlternatives(m).map(a => ({ ...a, _sk: numv(a.kcal), _sb: numv(a.b) }));
-  const tk = dayTargets(L, dayMealsMap(k => effectiveMeal(d, ds, k))).targets[slot];
-  const cur = scaleMeal(m, tk);
-  const curK = cur.kcal;
-  return (mealLibrary || []).filter(a => a.category === m.category && a.id !== m.id && numv(a.kcal) > 0)
-    .map(a => { const sa = scaleMeal(a, curK); return { ...a, _sk: sa.kcal, _sb: sa.b }; })
-    .filter(a => Math.abs(a._sb - cur.b) <= 10 && (!a.fixed || Math.abs(a._sk - curK) <= curK * 0.1));   // stala porcja tylko gdy kalorycznie pasuje
+function findProduct(name){ if(!productIdx) rebuildProductIndex(); return productIdx.get(prodKey(name)) || null; }
+function productById(id){ return (foodProducts || []).find(p => p.id === id) || null; }
+function productKcal100(p){ return kcalFromNutrients(p && p.per100); }
+async function loadFoodProducts(force){
+  if(foodProducts && !force) return foodProducts;
+  const v = await safeGet('food_products');
+  foodProducts = Array.isArray(v) ? v : [];
+  rebuildProductIndex();
+  return foodProducts;
 }
-function macrosHtml(m, approx){ return `<div class="mac"><b class="mk">${approx ? '≈ ' : ''}${numv(m.kcal)} kcal</b><b class="mb">B ${numv(m.b)}</b><b class="mt">T ${numv(m.t)}</b><b class="mw">W ${numv(m.w)}</b></div>`; }
+/* gramy skladnika: g i ml wprost (ml ~ g), inne jednostki z wag jednostek produktu; null = nieznana waga jednostki */
+function ingredientGrams(ig, p){
+  const q = numv(ig.qty); if(!(q > 0)) return 0;
+  const u = String(ig.unit || '').trim().toLowerCase();
+  if(u === '' || u === 'g' || u === 'ml') return q;
+  if(u === 'kg' || u === 'l') return q * 1000;
+  const w = p && p.units ? numv(p.units[u]) : 0;
+  return w > 0 ? q * w : null;
+}
+/* przypina skladnik do produktu: zapisuje id, migawke wartosci na 100 g i gramy (klientki nie potrzebuja bazy produktow) */
+function linkIngredient(ig){
+  const p = findProduct(ig.name);
+  if(!p){ delete ig.pid; delete ig.n100; delete ig.g; return 'brak'; }
+  ig.pid = p.id; ig.n100 = {}; NUTR_KEYS.forEach(k => { ig.n100[k] = numv(p.per100 && p.per100[k]); });
+  if(p.cat && !ig.catManual) ig.cat = p.cat;
+  const g = ingredientGrams(ig, p);
+  if(g === null){ delete ig.g; return 'waga'; }
+  ig.g = r1(g); return 'ok';
+}
+function ingredientNutr(ig, grams){ const f = (grams == null ? numv(ig.g) : grams) / 100; const o = {}; NUTR_KEYS.forEach(k => { o[k] = numv(ig.n100 && ig.n100[k]) * f; }); return o; }
+/* przelicza posilek ze skladnikow. Gdy wszystkie skladniki sa w bazie - makro i kcal ze skladnikow.
+   Gdy nie: zostaje makro z pliku/importu (jesli bylo), a posilek jest oznaczony listą brakow. */
+function recomputeMealNutrition(m){
+  const ings = (m.ingredients || []).filter(i => i && i.name);
+  const missing = [], noWeight = [], tot = { b: 0, t: 0, w: 0, fib: 0, pol: 0, alk: 0, kwo: 0 };
+  ings.forEach(ig => { const st = linkIngredient(ig);
+    if(st === 'ok'){ const n = ingredientNutr(ig); NUTR_KEYS.forEach(k => { tot[k] += n[k]; }); }
+    else if(st === 'waga') noWeight.push(ig.name + ' (' + ig.unit + ')'); else missing.push(ig.name); });
+  const complete = ings.length > 0 && !missing.length && !noWeight.length;
+  const manual = (m.nutri === 'reczne' || !m.nutri) && mealHasMacros(m);   // starsze posilki / import z makro z pliku
+  if(complete){ NUTR_KEYS.forEach(k => { m[k] = String(r1(tot[k])); }); m.nutri = 'skladniki'; }
+  else if(manual){ m.nutri = 'reczne'; }
+  else { NUTR_KEYS.forEach(k => { m[k] = String(r1(tot[k])); }); m.nutri = 'czesciowe'; }
+  m.missing = missing.concat(noWeight);
+  m.kcal = String(Math.round(kcalFromNutrients(m)));
+  return m;
+}
+function mealIncomplete(m){ return !!(m && m.missing && m.missing.length); }
+/* po zmianie bazy produktow - przelicz wszystkie posilki (zwraca liczbe zmienionych) */
+function relinkMeals(list){
+  let n = 0;
+  (list || []).forEach(m => { const before = JSON.stringify([m.kcal, m.b, m.t, m.w, m.fib, m.pol, m.missing, (m.ingredients || []).map(i => [i.pid, i.g, i.n100])]);
+    recomputeMealNutrition(m);
+    if(before !== JSON.stringify([m.kcal, m.b, m.t, m.w, m.fib, m.pol, m.missing, (m.ingredients || []).map(i => [i.pid, i.g, i.n100])])) n++; });
+  return n;
+}
+function mealCanScaleExact(m){ return m && m.nutri === 'skladniki' && (m.ingredients || []).every(i => !i.name || (i.n100 && i.g != null)); }
+function macrosHtml(m, approx){ return `<div class="mac"><b class="mk">${approx ? '≈ ' : ''}${numv(m.kcal)} kcal</b><b class="mb">B ${numv(m.b)}</b><b class="mt">T ${numv(m.t)}</b><b class="mw">W ${numv(m.w)}</b>${numv(m.fib) ? `<b class="mf">Bł ${Math.round(numv(m.fib))}</b>` : ''}</div>`; }
 function mealDetailHtml(m){
   const steps = (m.steps || []).filter(Boolean);
   return `${mealPhotoHtml(m, 180)}<div class="md-body">
-    <div class="md-cat">${escapeHtml(MEAL_CATS[m.category] || '')}${m.minutes ? ` · ${dIcon('clock', 'di-inline')} ${escapeHtml(String(m.minutes))} min` : ''}</div>
+    <div class="md-cat">${escapeHtml(MEAL_CATS[m.category] || '')}</div>
     <h3 class="md-nm">${escapeHtml(m.name)}</h3>${macrosHtml(m)}
     <h4 class="md-h">Składniki:</h4>
     <ul class="md-ing">${(m.ingredients || []).map(i => `<li><span>${escapeHtml(i.name)}</span><b>${escapeHtml(String(i.qty || ''))} ${escapeHtml(i.unit || '')}</b></li>`).join('') || '<li><span>—</span></li>'}</ul>
@@ -2869,27 +3049,143 @@ function mealDetailHtml(m){
 /* ---------- Biblioteka posilkow (trener) ---------- */
 let mealSearch = '';
 let mealTab = 'meals';
+/* DIETA-WSP: biblioteka posilkow - zakladki kategorii i kwadraciki widocznosci (Baza / diety) */
+let mealCatFilter = 'sn';
+const MEAL_CAT_TABS = [['sn','Śniadania'],['pr','Przekąski'],['ob','Obiady'],['ko','Kolacje']];
 function mealTabsHtml(){
-  return `<div class="cv-tabs" style="margin-top:6px;"><div class="cv-tab ${mealTab === 'meals' ? 'on' : ''}" data-mtab="meals">Posiłki (${(mealLibrary || []).length})</div><div class="cv-tab ${mealTab === 'tpl' ? 'on' : ''}" data-mtab="tpl">Gotowe jadłospisy (${(dietTemplates || []).length})</div></div>`;
+  return `<div class="ml-main"><div class="${mealTab === 'meals' ? 'on' : ''}" data-mtab="meals">Posiłki <span>${(mealLibrary || []).length}</span></div><div class="${mealTab === 'tpl' ? 'on' : ''}" data-mtab="tpl">Diety <span>${(dietPlans || []).length}</span></div><div class="${mealTab === 'prod' ? 'on' : ''}" data-mtab="prod">Produkty <span>${(foodProducts || []).length}</span></div></div>`;
 }
-function bindMealTabs(){ document.querySelectorAll('[data-mtab]').forEach(t => t.onclick = () => { mealTab = t.dataset.mtab; renderMealLibraryView(); }); }
+function mealVisHtml(m){
+  const has = p => (m.diets || []).includes(p.id);
+  return `<div class="meal-vis" data-vis="${escapeHtml(m.id)}"><label class="mv-cb ${m.public ? 'on' : ''}" title="Widoczny dla klientek z aktywną dietą w zakładce Przepisy"><input type="checkbox" data-visk="public" ${m.public ? 'checked' : ''}>Baza</label>`
+    + (dietPlans || []).map(p => `<label class="mv-cb ${has(p) ? 'on' : ''}" title="Można wybrać w: ${escapeHtml(p.name)}"><input type="checkbox" data-visk="${escapeHtml(p.id)}" ${has(p) ? 'checked' : ''}>${escapeHtml(String(p.level || p.name))}</label>`).join('') + '</div>';
+}
+async function setMealVisibility(id, key, on){
+  const fresh = (await safeGet('meal_library')) || [];
+  const m = fresh.find(x => x.id === id); if(!m) return false;
+  if(key === 'public') m.public = on;
+  else { const s = new Set(m.diets || []); if(on) s.add(key); else s.delete(key); m.diets = [...s]; }
+  if(await persistWithFeedback('meal_library', fresh)){ mealLibrary = fresh; return true; }
+  return false;
+}
 function renderMealLibraryView(){
-  if(mealTab === 'tpl'){ renderDietTemplatesView(); return; }
+  if(mealTab === 'tpl'){ renderDietPlansView(); return; }
+  if(mealTab === 'prod'){ renderProductsView(); return; }
   const q = plSearchKey(mealSearch).split(/\s+/).filter(Boolean);
-  const list = (mealLibrary || []).filter(m => q.every(t => plSearchKey(m.name + ' ' + (MEAL_CATS[m.category] || '')).includes(t)));
+  const all = mealLibrary || [];
+  if(!MEAL_CATS[mealCatFilter]) mealCatFilter = 'sn';
+  /* DIETA-WSP: stan liczony na biezaco (kopia) - do oznaczen i banerow; zapis dopiero po "Przelicz teraz" */
+  const liveCopy = JSON.parse(JSON.stringify(all)); const staleN = relinkMeals(liveCopy); const live = new Map(liveCopy.map(m => [m.id, m]));
+  const list = all.filter(m => (q.length || m.category === mealCatFilter) && q.every(t => plSearchKey(m.name + ' ' + (MEAL_CATS[m.category] || '')).includes(t)));
   $('main').innerHTML = `<div class="section-title"><div class="bar"></div><h2>Biblioteka posiłków</h2></div>
-    <div class="section-desc">Posiłek wpisujesz raz (porcja z przepisu) — aplikacja sama przeliczy gramaturę na poziom kcal klienta.</div>
+    <div class="section-desc">Posiłek wpisujesz raz (porcja z przepisu) — aplikacja sama przeliczy gramaturę na poziom kcal klientki.</div>
     ${mealTabsHtml()}
+    <div class="cv-tabs ml-sub">${MEAL_CAT_TABS.map(([k, l]) => `<div class="cv-tab ${mealCatFilter === k && !q.length ? 'on' : ''}" data-mcat="${k}">${l}<span class="cv-n">${all.filter(m => m.category === k).length}</span></div>`).join('')}</div>
     <div class="lib-search-bar"><input id="mealSearch" placeholder="Szukaj posiłku…" autocomplete="off" value="${escapeHtml(mealSearch)}"><button class="btn" id="mealAddBtn">+ Dodaj posiłek</button><button class="btn ghost" id="mealImportBtn">Importuj z Excela</button><input type="file" id="mealImportFile" accept=".xlsx" style="display:none;"></div>
+    <div class="meal-vis-help">Kwadraciki na karcie: <b>Baza</b> — klientki z aktywną dietą widzą posiłek w zakładce Przepisy · <b>${(dietPlans || []).map(p => escapeHtml(String(p.level))).join(' / ')}</b> — posiłek można ustawić w tej diecie.</div>
     ${dietsTableMissing ? '<div class="cv-alert" style="background:#FFF4E5;border-color:#F3C88B;"><div><b>Brakuje tabeli diet w bazie.</b> Wklej polecenie z instrukcji Supabase — biblioteka działa, ale przypisywanie diet klientom będzie możliwe po tym kroku.</div></div>' : ''}
-    <div class="meal-grid">${list.map(m => `<div class="meal-card" data-meal="${escapeHtml(m.id)}">${mealPhotoHtml(m, 110)}<div class="meal-cb"><div class="meal-cn">${escapeHtml(m.name)}</div><div class="meal-cc">${escapeHtml(MEAL_CATS[m.category] || '')}${m.fixed ? ' · porcja stała' : ''}</div>${macrosHtml(m)}</div></div>`).join('') || '<div class="empty-state">Brak posiłków. Dodaj pierwszy przyciskiem „+ Dodaj posiłek”.</div>'}</div>`;
+    ${(() => { const inc = liveCopy.filter(mealIncomplete); const stale = staleN;
+      return (stale ? `<div class="cv-alert kcal-alert"><div><b>${stale} ${plPlural(stale, 'posiłek wymaga', 'posiłki wymagają', 'posiłków wymaga')} przeliczenia</b> — zmieniła się baza produktów albo sposób liczenia (wzór UE z błonnikiem).</div><button class="btn small" id="kcalFixAll">Przelicz teraz</button></div>` : '')
+        + (inc.length ? `<div class="cv-alert kcal-alert"><div><b>${inc.length} ${plPlural(inc.length, 'posiłek ma', 'posiłki mają', 'posiłków ma')} składniki spoza bazy produktów</b> — ich kcal są niepełne albo pochodzą z pliku.</div><button class="btn small ghost" id="goProd">Uzupełnij produkty</button></div>` : ''); })()}
+    ${q.length ? `<div class="cv-small" style="margin:0 0 4px;">Wyniki wyszukiwania ze wszystkich kategorii: ${list.length}</div>` : ''}
+    <div class="meal-grid">${list.map(m => `<div class="meal-card" data-meal="${escapeHtml(m.id)}">${mealPhotoHtml(m, 110)}<div class="meal-cb"><div class="meal-cn">${escapeHtml(m.name)}</div><div class="meal-cc">${escapeHtml(MEAL_CATS[m.category] || '')}${m.fixed ? ' · porcja stała' : ''}</div>${macrosHtml(m)}${(() => { const v = live.get(m.id) || m; return mealIncomplete(v) && v.nutri !== 'reczne' ? `<div class="kcal-warn">niepełne: ${v.missing.length} ${plPlural(v.missing.length, 'składnik', 'składniki', 'składników')} spoza bazy</div>` : v.nutri === 'reczne' ? `<div class="kcal-note">makro z pliku${v.missing && v.missing.length ? ` · ${v.missing.length} poza bazą` : ''}</div>` : ''; })()}${mealVisHtml(m)}</div></div>`).join('') || `<div class="empty-state">${q.length ? 'Nic nie znaleziono.' : `Brak posiłków w zakładce ${escapeHtml(MEAL_CAT_TABS.find(t => t[0] === mealCatFilter)[1])}. Dodaj pierwszy przyciskiem „+ Dodaj posiłek”.`}</div>`}</div>`;
   $('mealSearch').oninput = e => { mealSearch = e.target.value; const pos = e.target.selectionStart; renderMealLibraryView(); const inp = $('mealSearch'); inp.focus(); inp.setSelectionRange(pos, pos); };
   $('mealAddBtn').onclick = () => openMealEditor(null);
   $('mealImportBtn').onclick = () => $('mealImportFile').click();
   $('mealImportFile').onchange = e => { const f = e.target.files && e.target.files[0]; e.target.value = ''; if(f) importMealsFromFile(f); };
   bindMealTabs();
+  document.querySelectorAll('[data-mcat]').forEach(ch => ch.onclick = () => { mealCatFilter = ch.dataset.mcat; mealSearch = ''; renderMealLibraryView(); });
+  if($('kcalFixAll')) $('kcalFixAll').onclick = async () => {
+    const fresh = (await safeGet('meal_library')) || [];
+    const n = relinkMeals(fresh);
+    if(n && await persistWithFeedback('meal_library', fresh)) toast(`Przeliczono ${n} ${plPlural(n, 'posiłek', 'posiłki', 'posiłków')}`);
+    mealLibrary = fresh; renderMealLibraryView();
+  };
+  if($('goProd')) $('goProd').onclick = () => { mealTab = 'prod'; renderMealLibraryView(); };
   document.querySelectorAll('[data-meal]').forEach(c => c.onclick = () => openMealPreview(c.dataset.meal));
+  document.querySelectorAll('.meal-vis').forEach(v => {
+    v.onclick = e => e.stopPropagation();
+    v.querySelectorAll('[data-visk]').forEach(cb => cb.onchange = async () => { cb.disabled = true; await setMealVisibility(v.dataset.vis, cb.dataset.visk, cb.checked); renderMealLibraryView(); });
+  });
 }
+
+/* DIETA-WSP: gotowe diety - edytor tygodnia (opcja domyslna + kolejne do wyboru) */
+let planEditId = null, planEditDay = 'Pon', planAddRow = null;
+async function saveDietPlanPatch(id, mutate){
+  const fresh = (await safeGet('diet_plans')) || defaultDietPlans();
+  const p = fresh.find(x => x.id === id); if(!p) return false;
+  mutate(p);
+  if(await persistWithFeedback('diet_plans', fresh)){ dietPlans = fresh; return true; }
+  return false;
+}
+function planFilledDays(p){ return DIET_DAYS.filter(dd => DIET_SLOTS.some(([k]) => planOpts(p, dd, k).length)).length; }
+function renderDietPlansView(){
+  const list = dietPlans || [];
+  if(!planById(planEditId)) planEditId = list.length ? list[0].id : null;
+  const p = planById(planEditId);
+  let editor = '';
+  if(p){
+    const lvl = numv(p.level);
+    const rowsFor = (k) => {
+      const opts = planOpts(p, planEditDay, k);
+      const pool = (mealLibrary || []).filter(m => m.category === k && mealInPlan(m, p.id));
+      const n = Math.min(PLAN_MAX_OPTS, Math.max(PLAN_MIN_ROWS, opts.length + (opts.length >= PLAN_MIN_ROWS && opts.length < PLAN_MAX_OPTS && planAddRow === k ? 1 : 0)));
+      let html = '';
+      for(let i = 0; i < n; i++){
+        const cur = opts[i] || '';
+        const curM = cur ? mealById(cur) : null;
+        const choices = pool.slice(); if(curM && !choices.includes(curM)) choices.push(curM);
+        const sc = curM ? scaledInPlan(p, planEditDay, k, curM, lvl) : null;
+        html += `<div class="po-row"><span class="po-tag ${i === 0 ? 'def' : ''}">${i === 0 ? 'Domyślny' : 'Opcja ' + (i + 1)}</span>
+          <select class="cv-input" data-popt="${k}" data-i="${i}"><option value="">— ${i === 0 ? 'wybierz posiłek domyślny' : 'brak'} —</option>${choices.map(m => `<option value="${escapeHtml(m.id)}" ${m.id === cur ? 'selected' : ''} ${opts.includes(m.id) && m.id !== cur ? 'disabled' : ''}>${escapeHtml(m.name)}${mealInPlan(m, p.id) ? '' : ' (odznaczony w bibliotece)'}</option>`).join('')}</select>
+          <span class="po-k">${sc ? `${curM.fixed ? '' : '≈ '}${sc.kcal} kcal · B ${sc.b}` : ''}</span></div>`;
+      }
+      const canAdd = n < PLAN_MAX_OPTS && opts.length >= n;
+      return `<div class="po-slot"><div class="po-h">${MEAL_CATS[k]} <span class="cv-small">· w puli tej diety: ${pool.length}</span>${canAdd ? `<span class="po-add" data-poadd="${k}">+ opcja</span>` : ''}</div>${html}
+        ${pool.length ? '' : `<div class="cv-small po-empty">Brak posiłków „${MEAL_CATS[k].toLowerCase()}” zaznaczonych dla tej diety. W bibliotece zaznacz kwadracik „${escapeHtml(String(p.level))}” na karcie posiłku.</div>`}</div>`;
+    };
+    const defs = dayMealsMap(k => mealById(planOpts(p, planEditDay, k)[0]));
+    const sum = Object.keys(defs).reduce((a, k) => { const s = scaledInPlan(p, planEditDay, k, defs[k], lvl); a.k += s.kcal; a.b += s.b; return a; }, { k: 0, b: 0 });
+    const dt = lvl ? dayTargets(lvl, defs) : null;
+    editor = `<div class="cv-card" style="margin-top:12px;">
+      <div class="cv-row" style="margin:0 0 10px;"><input class="cv-input" id="planName" value="${escapeHtml(p.name)}" style="flex:1;min-width:180px;font-weight:700;"><label style="display:flex;align-items:center;gap:6px;">Poziom kcal <input class="cv-input" id="planLevel" value="${escapeHtml(String(p.level || ''))}" style="width:80px;"></label></div>
+      <div class="diet-days">${DIET_DAYS.map(dd => `<span class="client-org-chip ${dd === planEditDay ? 'active' : ''}" data-pday="${dd}">${dd}${DIET_SLOTS.every(([k]) => planOpts(p, dd, k).length) ? ' ✓' : ''}</span>`).join('')}</div>
+      ${DIET_SLOTS.map(([k]) => rowsFor(k)).join('')}
+      ${dt && dt.over ? `<div class="diet-warn-box">Posiłki o stałej porcji mają razem ${dt.fixedK} kcal — więcej niż cały poziom ${lvl}.</div>` : dt && dt.tight ? `<div class="diet-warn-box">Posiłki o stałej porcji zajmują ${dt.fixedK} z ${lvl} kcal — porcje pozostałych posiłków będą bardzo małe.</div>` : ''}
+      <div class="diet-sum">Dzień ${planEditDay} (posiłki domyślne) na ${lvl || '—'} kcal: <b>≈ ${sum.k} kcal · B ${sum.b} g</b></div>
+      <div class="cv-row"><button class="btn ghost small" id="planCopyDay">Skopiuj ${planEditDay} na cały tydzień</button></div>
+      <div class="cv-small" style="margin-top:8px;">Klientka widzi posiłek domyślny i może go zamienić na inną opcję z tego dnia (albo na przepis z bazy). Porcje liczą się na jej indywidualny poziom kcal — ustawiasz go w jej widoku Dieta.</div></div>`;
+  }
+  $('main').innerHTML = `<div class="section-title"><div class="bar"></div><h2>Biblioteka posiłków</h2></div>
+    <div class="section-desc">Gotowe diety układasz raz. Klientce przypisujesz jedną z nich w jej widoku Dieta.</div>
+    ${mealTabsHtml()}
+    <div class="cv-tabs ml-sub">${list.map(x => `<div class="cv-tab ${x.id === planEditId ? 'on' : ''}" data-plan="${escapeHtml(x.id)}">${escapeHtml(x.name)}</div>`).join('')}</div>
+    ${p ? `<div class="cv-small" style="margin:0 0 4px;">${planFilledDays(p)}/7 dni ułożonych · w puli tej diety: ${(mealLibrary || []).filter(m => mealInPlan(m, p.id)).length} posiłków</div>` : ''}
+    ${editor}`;
+  bindMealTabs();
+  document.querySelectorAll('[data-plan]').forEach(e => e.onclick = () => { planEditId = e.dataset.plan; planAddRow = null; renderDietPlansView(); });
+  if(!p) return;
+  $('planName').onchange = async e => { const v = e.target.value.trim(); if(v) await saveDietPlanPatch(p.id, x => { x.name = v; }); renderDietPlansView(); };
+  $('planLevel').onchange = async e => { const v = Math.round(numv(e.target.value)); if(v > 0) await saveDietPlanPatch(p.id, x => { x.level = v; }); renderDietPlansView(); };
+  document.querySelectorAll('[data-pday]').forEach(e => e.onclick = () => { planEditDay = e.dataset.pday; planAddRow = null; renderDietPlansView(); });
+  document.querySelectorAll('[data-poadd]').forEach(e => e.onclick = () => { planAddRow = e.dataset.poadd; renderDietPlansView(); });
+  document.querySelectorAll('[data-popt]').forEach(sel => sel.onchange = async () => {
+    const k = sel.dataset.popt, i = +sel.dataset.i, val = sel.value;
+    await saveDietPlanPatch(p.id, x => {
+      x.week = x.week || {}; x.week[planEditDay] = x.week[planEditDay] || {};
+      const arr = planOpts(x, planEditDay, k).slice();
+      if(val) arr[i] = val; else arr.splice(i, 1);
+      x.week[planEditDay][k] = arr.filter((id, j) => id && arr.indexOf(id) === j);
+    });
+    planAddRow = null; renderDietPlansView();
+  });
+  $('planCopyDay').onclick = async () => {
+    if(!confirm(`Skopiować ${planEditDay} na wszystkie dni tygodnia w „${p.name}”?\n\nObecne posiłki w pozostałych dniach zostaną zastąpione.`)) return;
+    await saveDietPlanPatch(p.id, x => { x.week = x.week || {}; const src = JSON.parse(JSON.stringify(x.week[planEditDay] || {})); DIET_DAYS.forEach(dd => { x.week[dd] = JSON.parse(JSON.stringify(src)); }); });
+    toast('Skopiowano na cały tydzień'); renderDietPlansView();
+  };
+}
+function bindMealTabs(){ document.querySelectorAll('[data-mtab]').forEach(t => t.onclick = () => { mealTab = t.dataset.mtab; renderMealLibraryView(); }); }
 function mealModal(html){
   let el = $('mealModalBg');
   if(!el){ el = document.createElement('div'); el.id = 'mealModalBg'; el.className = 'meal-modal-bg'; document.body.appendChild(el); }
@@ -2920,30 +3216,112 @@ async function compressImage(file, maxDim){
     return await new Promise(res => cv.toBlob(res, 'image/jpeg', 0.82));
   } finally { URL.revokeObjectURL(url); }
 }
+/* DIETA-WSP: sposob przygotowania - automatyczna numeracja krokow (1. 2. 3.) przy wpisywaniu */
+const STEP_NUM_RE = /^\s*\d+[.)]\s*/;
+function stepsToText(steps){ return (steps || []).filter(Boolean).map((x, i) => (i + 1) + '. ' + x).join('\n'); }
+function textToSteps(t){ return String(t || '').split('\n').map(x => x.replace(STEP_NUM_RE, '').trim()).filter(Boolean); }
+function renumberSteps(ta){
+  const pos = ta.selectionStart, before = ta.value.slice(0, pos).split('\n');
+  const lines = ta.value.split('\n'), out = lines.map((l, i) => (i + 1) + '. ' + l.replace(STEP_NUM_RE, ''));
+  ta.value = out.join('\n');
+  const li = before.length - 1, col = before[li].replace(STEP_NUM_RE, '').length;
+  const p = out.slice(0, li).reduce((a, l) => a + l.length + 1, 0) + (li + 1 + '. ').length + col;
+  ta.setSelectionRange(p, p);
+}
+function bindStepsNumbering(ta){
+  if(!ta) return;
+  ta.addEventListener('focus', () => { if(!ta.value.trim()){ ta.value = '1. '; ta.setSelectionRange(3, 3); } });
+  let nLines = ta.value.split('\n').length;
+  ta.addEventListener('keydown', e => {
+    if(e.key === 'Backspace' && ta.selectionStart === ta.selectionEnd){
+      const pos = ta.selectionStart, ls = ta.value.lastIndexOf('\n', pos - 1) + 1, head = ta.value.slice(ls, pos);
+      if(/^\s*\d+[.)]\s*$/.test(head)){   // kursor tuz za numerem -> usun numer (i polacz z poprzednim krokiem)
+        e.preventDefault();
+        const cut = ls > 0 ? ls - 1 : ls;
+        ta.value = ta.value.slice(0, cut) + ta.value.slice(pos);
+        ta.setSelectionRange(cut, cut);
+        if(ta.value.trim()) renumberSteps(ta);
+        nLines = ta.value.split('\n').length;
+      }
+      return;
+    }
+    if(e.key !== 'Enter' || e.shiftKey || e.isComposing) return;
+    e.preventDefault();
+    const pos = ta.selectionStart;
+    ta.value = ta.value.slice(0, pos) + '\n' + ta.value.slice(ta.selectionEnd);
+    ta.setSelectionRange(pos + 1, pos + 1);
+    renumberSteps(ta); nLines = ta.value.split('\n').length;
+  });
+  ta.addEventListener('input', () => { const n = ta.value.split('\n').length; if(n !== nLines){ renumberSteps(ta); nLines = ta.value.split('\n').length; } });
+  ta.addEventListener('blur', () => { const v = ta.value.split('\n').filter(l => l.replace(STEP_NUM_RE, '').trim()); ta.value = v.map((l, i) => (i + 1) + '. ' + l.replace(STEP_NUM_RE, '')).join('\n'); });
+}
+/* DIETA-WSP: edytor posilku - skladniki z bazy produktow, kcal i makro liczone ze skladnikow (bez recznego wpisywania makro) */
+const ING_UNITS = ['g', 'ml', 'szt', 'kromka', 'plaster', 'łyżka', 'łyżeczka', 'garść', 'szklanka', 'opakowanie', 'puszka', 'szczypta'];
+function nutriSummaryHtml(m){
+  const st = m.nutri, miss = m.missing || [];
+  const fmt = x => String(r1(numv(x))).replace('.', ',');
+  return `<div class="me-nutri ${miss.length ? 'warn' : ''}"><div class="me-nutri-k"><b class="me-kcal">${Math.round(numv(m.kcal))} kcal</b> <span>B ${fmt(m.b)} g · T ${fmt(m.t)} g · W ${fmt(m.w)} g · Bł ${fmt(m.fib)} g${numv(m.pol) ? ' · poliole ' + fmt(m.pol) + ' g' : ''}</span></div>
+    <div class="cv-small">${st === 'skladniki' ? 'Na cały przepis, liczone ze składników (baza produktów, przeliczniki UE).' : st === 'reczne' ? 'Makro z pliku/importu — przeliczy się ze składników, gdy wszystkie będą w bazie produktów.' : 'Liczone ze składników, które są w bazie — <b>wartości niepełne</b>.'}${miss.length ? `<br>Brakuje w bazie: <b>${escapeHtml(miss.join(', '))}</b>` : ''}</div></div>`;
+}
+function ingStatusHtml(ig){
+  if(!ig.name) return '<span class="ig-st"></span>';
+  const p = findProduct(ig.name);
+  if(!p) return `<span class="ig-st miss">brak w bazie <span class="ig-add" data-iadd="1">+ dodaj</span></span>`;
+  const g = ingredientGrams(ig, p);
+  if(g === null) return `<span class="ig-st miss">brak wagi 1 ${escapeHtml(ig.unit)} <span class="ig-add" data-iunit="1">+ uzupełnij</span></span>`;
+  const k = Math.round(kcalFromNutrients(ingredientNutr({ n100: p.per100 }, g)));
+  return `<span class="ig-st ok" title="${escapeHtml(p.name)} · ${Math.round(productKcal100(p))} kcal/100 g">${k} kcal${String(ig.unit).toLowerCase() !== 'g' && String(ig.unit).toLowerCase() !== 'ml' ? ` · ${r1(g)} g` : ''}</span>`;
+}
 function openMealEditor(id){
   const src = id ? mealById(id) : null;
-  const m = src ? JSON.parse(JSON.stringify(src)) : { id: 'm_' + Date.now(), name:'', category:'sn', minutes:'', kcal:'', b:'', t:'', w:'', ingredients:[{name:'', qty:'', unit:'g', cat:'w'}], steps:[], photo:'' };
-  const ingRow = (ig, i) => `<div class="me-ing" data-i="${i}"><input class="cv-input" data-f="name" placeholder="Składnik" value="${escapeHtml(ig.name || '')}"><input class="cv-input" data-f="qty" placeholder="Ilość" value="${escapeHtml(String(ig.qty || ''))}" style="width:70px;"><input class="cv-input" data-f="unit" placeholder="j." value="${escapeHtml(ig.unit || '')}" style="width:62px;"><select class="cv-input" data-f="cat" style="width:130px;">${Object.entries(SHOP_CATS).map(([k, l]) => `<option value="${k}" ${ig.cat === k ? 'selected' : ''}>${l}</option>`).join('')}</select><label class="me-sc" title="Zaznaczone = ilość zmienia się razem z kaloriami. Odznacz dla warzyw i przypraw."><input type="checkbox" data-f="scale" ${ig.scale !== false ? 'checked' : ''}>skaluj</label><span class="cv-x" data-rm="${i}">✕</span></div>`;
+  const m = src ? JSON.parse(JSON.stringify(src)) : { id: 'm_' + Date.now(), name:'', category: MEAL_CATS[mealCatFilter] ? mealCatFilter : 'sn', kcal:'', b:'', t:'', w:'', fib:'', pol:'', ingredients:[{name:'', qty:'', unit:'g', cat:'w', scale:true}], steps:[], photo:'', public: false, diets: [] };
+  if(!m.ingredients || !m.ingredients.length) m.ingredients = [{ name:'', qty:'', unit:'g', cat:'w', scale:true }];
+  const ingRow = (ig, i) => `<div class="me-ing" data-i="${i}"><input class="cv-input" data-f="name" list="prodNames" placeholder="Składnik (z bazy produktów)" value="${escapeHtml(ig.name || '')}"><input class="cv-input" data-f="qty" placeholder="Ilość" inputmode="decimal" value="${escapeHtml(String(ig.qty || ''))}" style="width:66px;"><input class="cv-input" data-f="unit" list="ingUnits" placeholder="j." value="${escapeHtml(ig.unit || 'g')}" style="width:74px;"><select class="cv-input" data-f="cat" style="width:118px;">${Object.entries(SHOP_CATS).map(([k, l]) => `<option value="${k}" ${ig.cat === k ? 'selected' : ''}>${l}</option>`).join('')}</select><label class="me-sc" title="Zaznaczone = ilość zmienia się razem z kaloriami. Odznacz dla przypraw i dodatków w stałej ilości."><input type="checkbox" data-f="scale" ${ig.scale !== false ? 'checked' : ''}>skaluj</label><span class="cv-x" data-rm="${i}">✕</span><div class="ig-stw">${ingStatusHtml(ig)}</div></div>`;
   const draw = () => {
+    recomputeMealNutrition(m);
     mealModal(`<div class="me-wrap"><h3 style="margin:0 0 10px;">${src ? 'Edytuj posiłek' : 'Nowy posiłek'}</h3>
+      <datalist id="prodNames">${(foodProducts || []).map(p => [p.name].concat(p.aliases || [])).flat().map(n => `<option value="${escapeHtml(n)}">`).join('')}</datalist>
+      <datalist id="ingUnits">${ING_UNITS.map(u => `<option value="${u}">`).join('')}</datalist>
       <div class="me-photo">${mealPhotoHtml(m, 130)}<div class="me-photo-acts"><label class="btn ghost small" style="cursor:pointer;">Wgraj zdjęcie<input type="file" id="mePhoto" accept="image/*" style="display:none;"></label>${m.photo ? '<button class="btn ghost small" id="mePhotoRm">Usuń zdjęcie</button>' : ''}<div class="cv-small">Zdjęcie z telefonu albo z Canvy. Zmniejszy się automatycznie.</div></div></div>
       <div class="me-grid"><label>Nazwa</label><input class="cv-input" id="meName" value="${escapeHtml(m.name)}" placeholder="np. Owsianka z jabłkiem">
         <label>Kategoria</label><select class="cv-input" id="meCat">${Object.entries(MEAL_CATS).map(([k, l]) => `<option value="${k}" ${m.category === k ? 'selected' : ''}>${l}</option>`).join('')}</select>
-        <label>Czas (min)</label><input class="cv-input" id="meMin" value="${escapeHtml(String(m.minutes || ''))}" style="width:90px;">
-        <label>Porcja stała</label><label class="diet-cb" style="margin:0;"><input type="checkbox" id="meFixed" ${m.fixed ? 'checked' : ''}> nie przeliczaj na poziom kcal (np. pizza, wypieki — przepis by się nie udał)</label>
-        <label>kcal / B / T / W</label><div style="display:flex;gap:6px;"><input class="cv-input" id="meK" placeholder="kcal" value="${escapeHtml(String(m.kcal || ''))}"><input class="cv-input" id="meB" placeholder="B" value="${escapeHtml(String(m.b || ''))}"><input class="cv-input" id="meT" placeholder="T" value="${escapeHtml(String(m.t || ''))}"><input class="cv-input" id="meW" placeholder="W" value="${escapeHtml(String(m.w || ''))}"></div></div>
-      <h4 class="md-h">Składniki: <span class="cv-small" style="font-weight:400;">(„skaluj” = ilość rośnie i maleje z kaloriami; odznacz dla warzyw i przypraw)</span></h4><div id="meIngs">${m.ingredients.map(ingRow).join('')}</div><button class="btn ghost small" id="meIngAdd">+ Dodaj składnik</button>
-      <h4 class="md-h">Sposób przygotowania <span class="cv-small" style="font-weight:400;">(każdy krok w nowej linii)</span>:</h4>
-      <textarea class="cv-input" id="meSteps" rows="5">${escapeHtml((m.steps || []).join('\n'))}</textarea>
+        <label>Widoczność</label><div class="meal-vis" style="margin:0;"><label class="mv-cb ${m.public ? 'on' : ''}"><input type="checkbox" id="meVisPub" ${m.public ? 'checked' : ''}>Baza (Przepisy u klientek)</label>${(dietPlans || []).map(p => `<label class="mv-cb ${(m.diets || []).includes(p.id) ? 'on' : ''}"><input type="checkbox" data-mevis="${escapeHtml(p.id)}" ${(m.diets || []).includes(p.id) ? 'checked' : ''}>${escapeHtml(String(p.level || p.name))}</label>`).join('')}</div>
+        <label>Porcja stała</label><label class="diet-cb" style="margin:0;"><input type="checkbox" id="meFixed" ${m.fixed ? 'checked' : ''}> nie przeliczaj na poziom kcal (np. pizza, wypieki — przepis by się nie udał)</label></div>
+      <h4 class="md-h">Składniki: <span class="cv-small" style="font-weight:400;">(wpisz nazwę z bazy produktów i ilość — kcal i makro policzą się same)</span></h4><div id="meIngs">${m.ingredients.map(ingRow).join('')}</div><button class="btn ghost small" id="meIngAdd">+ Dodaj składnik</button>
+      <div id="meNutri">${nutriSummaryHtml(m)}</div>
+      <h4 class="md-h">Sposób przygotowania <span class="cv-small" style="font-weight:400;">(Enter = kolejny krok, numery dodają się same)</span>:</h4>
+      <textarea class="cv-input" id="meSteps" rows="6" placeholder="1. ">${escapeHtml(stepsToText(m.steps))}</textarea>
       <div class="md-acts"><button class="btn" id="meSave">Zapisz posiłek</button><button class="btn ghost" id="meCancel">Anuluj</button></div></div>`);
+    const readIngs = () => { m.ingredients = [...document.querySelectorAll('.me-ing')].map((r, i) => {
+      const prev = m.ingredients[i] || {}, cat = r.querySelector('[data-f="cat"]').value;
+      return { name: r.querySelector('[data-f="name"]').value.trim(), qty: r.querySelector('[data-f="qty"]').value.trim().replace(',', '.'), unit: r.querySelector('[data-f="unit"]').value.trim() || 'g', cat, catManual: prev.catManual || (prev.cat && prev.cat !== cat && !!prev.pid) || false, scale: r.querySelector('[data-f="scale"]').checked }; }); };
     const sync = () => {
-      m.name = $('meName').value.trim(); m.category = $('meCat').value; m.minutes = $('meMin').value.trim(); m.fixed = $('meFixed').checked;
-      m.kcal = $('meK').value.trim(); m.b = $('meB').value.trim(); m.t = $('meT').value.trim(); m.w = $('meW').value.trim();
-      m.ingredients = [...document.querySelectorAll('.me-ing')].map(r => ({ name: r.querySelector('[data-f="name"]').value.trim(), qty: r.querySelector('[data-f="qty"]').value.trim(), unit: r.querySelector('[data-f="unit"]').value.trim(), cat: r.querySelector('[data-f="cat"]').value, scale: r.querySelector('[data-f="scale"]').checked }));
-      m.steps = $('meSteps').value.split('\n').map(x => x.trim()).filter(Boolean);
+      m.name = $('meName').value.trim(); m.category = $('meCat').value; m.fixed = $('meFixed').checked;
+      readIngs();
+      m.steps = textToSteps($('meSteps').value);
+      m.public = $('meVisPub').checked; m.diets = [...document.querySelectorAll('[data-mevis]:checked')].map(cb => cb.dataset.mevis);
     };
-    $('meIngAdd').onclick = () => { sync(); m.ingredients.push({ name:'', qty:'', unit:'g', cat:'w' }); draw(); };
-    document.querySelectorAll('[data-rm]').forEach(x => x.onclick = () => { sync(); m.ingredients.splice(+x.dataset.rm, 1); draw(); });
+    /* przeliczenie na zywo bez przerysowania okna (nie gubi kursora) */
+    const live = () => {
+      readIngs(); recomputeMealNutrition(m);
+      document.querySelectorAll('.me-ing').forEach((r, i) => { const ig = m.ingredients[i]; r.querySelector('.ig-stw').innerHTML = ingStatusHtml(ig);
+        const p = findProduct(ig.name); if(p && !ig.catManual) r.querySelector('[data-f="cat"]').value = p.cat || r.querySelector('[data-f="cat"]').value; });
+      $('meNutri').innerHTML = nutriSummaryHtml(m);
+      bindIngAdds();
+    };
+    const bindIngAdds = () => {
+      document.querySelectorAll('.me-ing [data-iadd]').forEach(b => b.onclick = () => { const r = b.closest('.me-ing'); const ig = m.ingredients[+r.dataset.i];
+        openProductEditor(null, { name: ig.name, cat: ig.cat, after: () => { sync(); draw(); } }); });
+      document.querySelectorAll('.me-ing [data-iunit]').forEach(b => b.onclick = () => { const r = b.closest('.me-ing'); const ig = m.ingredients[+r.dataset.i]; const p = findProduct(ig.name);
+        if(p) openProductEditor(p.id, { focusUnit: String(ig.unit).toLowerCase(), after: () => { sync(); draw(); } }); });
+    };
+    let liveT = null;
+    $('meIngs').addEventListener('input', () => { clearTimeout(liveT); liveT = setTimeout(live, 250); });
+    $('meIngs').addEventListener('change', live);
+    bindIngAdds();
+    bindStepsNumbering($('meSteps'));
+    $('meIngAdd').onclick = () => { sync(); m.ingredients.push({ name:'', qty:'', unit:'g', cat:'w', scale:true }); draw(); const ins = document.querySelectorAll('.me-ing [data-f="name"]'); if(ins.length) ins[ins.length - 1].focus(); };
+    document.querySelectorAll('[data-rm]').forEach(x => x.onclick = () => { sync(); m.ingredients.splice(+x.dataset.rm, 1); if(!m.ingredients.length) m.ingredients.push({ name:'', qty:'', unit:'g', cat:'w', scale:true }); draw(); });
     $('meCancel').onclick = closeMealModal;
     if($('mePhotoRm')) $('mePhotoRm').onclick = () => { sync(); m.photo = ''; draw(); };
     $('mePhoto').onchange = async e => {
@@ -2963,6 +3341,10 @@ function openMealEditor(id){
       sync();
       if(!m.name){ alert('Wpisz nazwę posiłku.'); return; }
       m.ingredients = m.ingredients.filter(i => i.name);
+      if(!m.ingredients.length){ alert('Dodaj składniki — kcal i makro liczą się ze składników.'); return; }
+      recomputeMealNutrition(m);
+      if(m.missing.length && !confirm(`Tych składników nie ma w bazie produktów (albo brakuje wagi jednostki):\n${m.missing.join(', ')}\n\nZapisać mimo to? Posiłek będzie oznaczony jako niepełny, a kcal przeliczą się same, gdy dodasz produkty.`)) return;
+      delete m.minutes;
       const fresh = (await safeGet('meal_library')) || [];
       const i = fresh.findIndex(x => x.id === m.id);
       if(i >= 0) fresh[i] = m; else fresh.push(m);
@@ -2971,72 +3353,238 @@ function openMealEditor(id){
   };
   draw();
 }
+/* DIETA-WSP: zakladka Produkty (tylko panel trenera) - baza produktow z wartosciami na 100 g */
+let prodSearch = '';
+function productUsage(){ const u = {}; (mealLibrary || []).forEach(m => (m.ingredients || []).forEach(i => { if(i.pid) u[i.pid] = (u[i.pid] || 0) + 1; })); return u; }
+function missingIngredients(){
+  const map = {};
+  (mealLibrary || []).forEach(m => (m.ingredients || []).forEach(i => {
+    if(!i.name) return;
+    const p = findProduct(i.name);
+    let why = null;
+    if(!p) why = 'brak';
+    else if(ingredientGrams(i, p) === null) why = 'waga';
+    if(!why) return;
+    const k = prodKey(i.name) + '|' + why + (why === 'waga' ? '|' + String(i.unit).toLowerCase() : '');
+    if(!map[k]) map[k] = { name: i.name, why, unit: i.unit, cat: i.cat, meals: new Set(), pid: p ? p.id : null };
+    map[k].meals.add(m.name);
+  }));
+  return Object.values(map).sort((a, b) => b.meals.size - a.meals.size || a.name.localeCompare(b.name, 'pl'));
+}
+async function saveProducts(list, msg){
+  if(!(await persistWithFeedback('food_products', list))) return false;
+  foodProducts = list; rebuildProductIndex();
+  // przelicz posilki, w ktorych sa te produkty (i dopnij skladniki, ktore teraz pasuja)
+  const fresh = (await safeGet('meal_library')) || [];
+  const changed = relinkMeals(fresh);
+  if(changed){ if(await persistWithFeedback('meal_library', fresh)) mealLibrary = fresh; }
+  else mealLibrary = fresh;
+  if(msg) toast(msg + (changed ? ` · przeliczono posiłki: ${changed}` : ''));
+  return true;
+}
+function renderProductsView(){
+  const all = foodProducts || [];
+  const q = plSearchKey(prodSearch).split(/\s+/).filter(Boolean);
+  const list = all.filter(p => q.every(t => plSearchKey(p.name + ' ' + (p.aliases || []).join(' ')).includes(t))).sort((a, b) => a.name.localeCompare(b.name, 'pl'));
+  const usage = productUsage();
+  const miss = missingIngredients();
+  const fmt = x => { const v = numv(x); return v ? String(r1(v)).replace('.', ',') : '0'; };
+  $('main').innerHTML = `<div class="section-title"><div class="bar"></div><h2>Biblioteka posiłków</h2></div>
+    <div class="section-desc">Baza produktów — z niej aplikacja liczy kcal i makro posiłków. Widzisz ją tylko Ty.</div>
+    ${mealTabsHtml()}
+    <div class="lib-search-bar"><input id="prodSearch" placeholder="Szukaj produktu…" autocomplete="off" value="${escapeHtml(prodSearch)}"><button class="btn" id="prodAddBtn">+ Dodaj produkt</button><button class="btn ghost" id="prodImportBtn">Importuj z Excela</button><input type="file" id="prodImportFile" accept=".xlsx" style="display:none;"></div>
+    <div class="meal-vis-help">Wartości na 100 g. Energia: białko × 4 + tłuszcz × 9 + węglowodany przyswajalne × 4 + błonnik × 2 + poliole × 2,4 + alkohol × 7 + kwasy organiczne × 3 (rozporządzenie UE 1169/2011).</div>
+    ${miss.length ? `<div class="cv-alert prod-miss"><div style="flex:1;min-width:0;"><b>Składniki z posiłków, których brakuje w bazie (${miss.length})</b> — dopóki ich nie uzupełnisz, kcal tych posiłków są niepełne.
+      <div class="pm-list">${miss.slice(0, 40).map((x, i) => `<div class="pm-row"><span><b>${escapeHtml(x.name)}</b>${x.why === 'waga' ? ` <span class="pm-why">brak wagi: 1 ${escapeHtml(x.unit)}</span>` : ''} <span class="cv-small">· ${x.meals.size} ${plPlural(x.meals.size, 'posiłek', 'posiłki', 'posiłków')}</span></span><button class="btn ghost small" data-pmiss="${i}">${x.why === 'waga' ? 'Uzupełnij wagę' : 'Dodaj'}</button></div>`).join('')}${miss.length > 40 ? `<div class="cv-small">…i ${miss.length - 40} więcej</div>` : ''}</div></div></div>` : ''}
+    <div class="prod-wrap"><table class="prod-tab"><thead><tr><th>Produkt</th><th>Dział</th><th>kcal</th><th>B</th><th>T</th><th>W</th><th>Bł.</th><th>Jednostki</th><th>Źródło</th><th>W posiłkach</th></tr></thead>
+      <tbody>${list.map(p => `<tr data-prod="${escapeHtml(p.id)}"><td><b>${escapeHtml(p.name)}</b>${(p.aliases || []).length ? `<div class="cv-small">${escapeHtml(p.aliases.join(', '))}</div>` : ''}</td><td>${escapeHtml(SHOP_CATS[p.cat] || '')}</td><td><b>${Math.round(productKcal100(p))}</b></td><td>${fmt(p.per100.b)}</td><td>${fmt(p.per100.t)}</td><td>${fmt(p.per100.w)}</td><td>${fmt(p.per100.fib)}</td>
+        <td class="cv-small">${Object.entries(p.units || {}).filter(([, v]) => numv(v) > 0).map(([u, v]) => `${escapeHtml(u)} ${fmt(v)} g`).join(', ') || '—'}</td><td class="cv-small">${escapeHtml(p.src || '')}</td><td>${usage[p.id] || 0}</td></tr>`).join('') || `<tr><td colspan="10" class="empty-state">${all.length ? 'Nic nie znaleziono.' : 'Baza jest pusta. Dodaj produkt albo zaimportuj bazę z Excela.'}</td></tr>`}</tbody></table></div>`;
+  bindMealTabs();
+  $('prodSearch').oninput = e => { prodSearch = e.target.value; const pos = e.target.selectionStart; renderProductsView(); const inp = $('prodSearch'); inp.focus(); inp.setSelectionRange(pos, pos); };
+  $('prodAddBtn').onclick = () => openProductEditor(null, {});
+  $('prodImportBtn').onclick = () => $('prodImportFile').click();
+  $('prodImportFile').onchange = e => { const f = e.target.files && e.target.files[0]; e.target.value = ''; if(f) importProductsFromFile(f); };
+  document.querySelectorAll('[data-prod]').forEach(r => r.onclick = () => openProductEditor(r.dataset.prod));
+  document.querySelectorAll('[data-pmiss]').forEach(b => b.onclick = () => { const x = miss[+b.dataset.pmiss];
+    if(x.why === 'waga') openProductEditor(x.pid, { focusUnit: String(x.unit).toLowerCase() }); else openProductEditor(null, { name: x.name, cat: x.cat }); });
+}
+/* okno produktu - osobna warstwa nad edytorem posilku */
+function productModal(html){
+  let el = $('prodModalBg');
+  if(!el){ el = document.createElement('div'); el.id = 'prodModalBg'; el.className = 'meal-modal-bg'; el.style.zIndex = 320; document.body.appendChild(el); }
+  el.innerHTML = `<div class="meal-modal"><span class="meal-x" id="prodModalX">✕</span>${html}</div>`;
+  el.style.display = 'flex';
+  el.onclick = ev => { if(ev.target === el) closeProductModal(); };
+  $('prodModalX').onclick = closeProductModal;
+}
+function closeProductModal(){ const el = $('prodModalBg'); if(el) el.style.display = 'none'; }
+function openProductEditor(id, opts){
+  opts = opts || {};
+  const src = id ? productById(id) : null;
+  const p = src ? JSON.parse(JSON.stringify(src)) : { id: 'p_' + Date.now(), name: opts.name || '', aliases: [], cat: SHOP_CATS[opts.cat] ? opts.cat : 'i', per100: { b: '', t: '', w: '', fib: '', pol: '', alk: '', kwo: '' }, units: {}, src: 'etykieta', srcNote: '' };
+  const num = v => (v === '' || v == null) ? '' : String(v).replace('.', ',');
+  /* DIETA-WSP: okno produktu - oznaczenie pol wymaganych, lista "co jest potrzebne" i kontrola kcal z etykiety */
+  productModal(`<div class="me-wrap"><h3 style="margin:0 0 10px;">${src ? 'Edytuj produkt' : 'Nowy produkt'}</h3>
+    <div class="p-need"><b>Potrzebne, żeby produkt liczył się w przepisach:</b> nazwa (taka jak w przepisie), dział sklepu, białko, tłuszcz i węglowodany na 100 g (0, gdy produkt ich nie ma). Błonnik i poliole — gdy są na etykiecie. Waga 1 sztuki / kromki — gdy w przepisie podajesz sztuki. Pola z <span class="p-req">*</span> są wymagane.</div>
+    <div class="me-grid"><label>Nazwa <span class="p-req">*</span></label><input class="cv-input" id="pName" value="${escapeHtml(p.name)}" placeholder="np. Płatki owsiane">
+      <label>Inne nazwy</label><input class="cv-input" id="pAlias" value="${escapeHtml((p.aliases || []).join(', '))}" placeholder="po przecinku, np. Owsiane płatki górskie">
+      <label>Dział sklepu <span class="p-req">*</span></label><select class="cv-input" id="pCat">${Object.entries(SHOP_CATS).map(([k, l]) => `<option value="${k}" ${p.cat === k ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
+    <h4 class="md-h">Wartości na 100 g</h4>
+    <div class="p-grid">${NUTR_KEYS.map(k => `<label><span>${k === 'w' ? 'Węglowodany (z etykiety)' : NUTR_LABELS[k]}${k === 'alk' || k === 'kwo' ? ' (opcj.)' : ''} (g)${['b', 't', 'w'].includes(k) ? ' <span class="p-req">*</span>' : ''}</span><input class="cv-input" data-pn="${k}" inputmode="decimal" value="${escapeHtml(num(k === 'w' && p.per100.w !== '' && p.per100.w != null ? r1(numv(p.per100.w) + numv(p.per100.pol)) : p.per100[k]))}"></label>`).join('')}
+      <label>Energia (wylicza aplikacja)<b id="pKcal" class="me-kcal">${Math.round(productKcal100(p))} kcal</b></label>
+      <label>kcal z etykiety (kontrola, opcj.)<input class="cv-input" id="pLabelKcal" inputmode="decimal" value="${escapeHtml(num(p.labelKcal))}" placeholder="np. 64"></label></div>
+    <div id="pKcalChk" class="p-chk" style="display:none;"></div>
+    <div class="cv-small" style="margin-top:4px;">Przepisz wartości dokładnie z etykiety (wiersz „Węglowodany” — bez błonnika). Poliole wpisz, gdy etykieta je podaje (batony, słodziki): aplikacja sama odejmie je od węglowodanów, bo na etykiecie UE węglowodany zawierają poliole. Brak błonnika na etykiecie = 0.</div>
+    <h4 class="md-h">Waga jednostek <span class="cv-small" style="font-weight:400;">(potrzebna, gdy w przepisie piszesz np. „2 szt”, „1 kromka”)</span></h4>
+    <div class="p-grid">${PRODUCT_UNITS.map(([u, l]) => `<label>${l} (g)<input class="cv-input" data-pu="${u}" inputmode="decimal" value="${escapeHtml(num((p.units || {})[u]))}"></label>`).join('')}</div>
+    <div class="me-grid" style="margin-top:10px;"><label>Źródło danych</label><div style="display:flex;gap:6px;"><select class="cv-input" id="pSrc" style="width:130px;">${PRODUCT_SOURCES.map(s => `<option ${p.src === s ? 'selected' : ''}>${s}</option>`).join('')}</select><input class="cv-input" id="pSrcNote" value="${escapeHtml(p.srcNote || '')}" placeholder="np. kod CIQUAL, marka produktu"></div></div>
+    <div class="md-acts"><button class="btn" id="pSave">Zapisz produkt</button><button class="btn ghost" id="pCancel">Anuluj</button>${src ? '<button class="btn ghost" id="pDel" style="margin-left:auto;">Usuń</button>' : ''}</div></div>`);
+  const read = () => {
+    p.name = $('pName').value.trim(); p.aliases = $('pAlias').value.split(',').map(x => x.trim()).filter(Boolean); p.cat = $('pCat').value;
+    document.querySelectorAll('[data-pn]').forEach(i => { p.per100[i.dataset.pn] = i.value.trim() === '' ? '' : r1(numv(i.value)); });
+    /* DIETA-WSP: pole „Węglowodany (z etykiety)” zawiera poliole - w bazie trzymamy przyswajalne bez polioli */
+    if(p.per100.w !== '') p.per100.w = r1(Math.max(0, numv(p.per100.w) - numv(p.per100.pol)));
+    p.units = {}; document.querySelectorAll('[data-pu]').forEach(i => { const v = numv(i.value); if(v > 0) p.units[i.dataset.pu] = r1(v); });
+    p.src = $('pSrc').value; p.srcNote = $('pSrcNote').value.trim();
+    const lk = numv($('pLabelKcal').value); if(lk > 0) p.labelKcal = r1(lk); else delete p.labelKcal;
+  };
+  /* DIETA-WSP: kontrola - kcal wyliczone z wartosci vs kcal z etykiety (tolerancja 5%, min. 2 kcal) */
+  const kcalCheck = () => { const lk = numv(p.labelKcal); if(!(lk > 0) || NUTR_KEYS.slice(0, 3).some(k => p.per100[k] === '')) return null;
+    const calc = Math.round(productKcal100(p)), d = calc - lk; return Math.abs(d) > Math.max(2, lk * 0.05) ? { calc, lk, pct: Math.round(d / lk * 100) } : null; };
+  const showCheck = () => { const c = kcalCheck(), el = $('pKcalChk');
+    if(!c){ el.style.display = 'none'; return; }
+    el.style.display = ''; el.innerHTML = `Wyliczone <b>${c.calc} kcal</b>, na etykiecie <b>${c.lk} kcal</b> (różnica ${c.pct > 0 ? '+' : ''}${c.pct}%). Sprawdź przecinki i czy wartości są na 100 g. Jeśli etykieta nie podaje błonnika, wynik bywa trochę niższy niż na opakowaniu.`; };
+  const refresh = () => { read(); $('pKcal').textContent = Math.round(productKcal100(p)) + ' kcal'; showCheck(); };
+  document.querySelectorAll('[data-pn]').forEach(i => i.addEventListener('input', refresh));
+  $('pLabelKcal').addEventListener('input', refresh);
+  if(p.labelKcal) showCheck();
+  if(opts.focusUnit){ const f = document.querySelector(`[data-pu="${opts.focusUnit}"]`); if(f){ f.focus(); f.classList.add('p-focus'); } }
+  $('pCancel').onclick = closeProductModal;
+  $('pSave').onclick = async () => {
+    read();
+    if(!p.name){ alert('Wpisz nazwę produktu.'); return; }
+    /* DIETA-WSP: zera dozwolone (sol, kawa, woda) - wymagane wypelnione B, T, W */
+    if(NUTR_KEYS.slice(0, 3).some(k => p.per100[k] === '' || p.per100[k] == null)){ alert('Wpisz białko, tłuszcz i węglowodany na 100 g (wpisz 0, jeśli produkt ich nie zawiera — np. sól, kawa).'); return; }
+    const fresh = (await safeGet('food_products')) || [];
+    const clash = fresh.find(x => x.id !== p.id && [x.name].concat(x.aliases || []).some(n => [p.name].concat(p.aliases).some(m => prodKey(m) === prodKey(n))));
+    if(clash){ alert(`Nazwa „${p.name}” (albo inna nazwa) jest już użyta w produkcie „${clash.name}”.`); return; }
+    const chk = kcalCheck();
+    if(chk && !confirm(`Wyliczone kcal (${chk.calc}) różnią się od etykiety (${chk.lk}) o ${Math.abs(chk.pct)}%.\n\nMożliwa literówka w wartościach. Zapisać mimo to?`)) return;
+    const i = fresh.findIndex(x => x.id === p.id);
+    if(i >= 0) fresh[i] = p; else fresh.push(p);
+    if(await saveProducts(fresh, 'Zapisano produkt')){ closeProductModal(); if(typeof opts.after === 'function') opts.after(p); else if(trainerViewMode === 'meals' && mealTab === 'prod') renderProductsView(); }
+  };
+  if($('pDel')) $('pDel').onclick = async () => {
+    const used = productUsage()[p.id] || 0;
+    if(!confirm(`Usunąć produkt „${p.name}”?${used ? `\n\nJest w ${used} składnikach posiłków — te posiłki zostaną oznaczone jako niepełne.` : ''}`)) return;
+    const fresh = ((await safeGet('food_products')) || []).filter(x => x.id !== p.id);
+    if(await saveProducts(fresh, 'Usunięto produkt')){ closeProductModal(); if(trainerViewMode === 'meals' && mealTab === 'prod') renderProductsView(); }
+  };
+}
+
+/* ---------- import produktow z Excela (arkusz "Produkty") ---------- */
+const PROD_IMPORT_UNITS = { 'szt': 'szt', 'kromk': 'kromka', 'plastr': 'plaster', 'łyżk': 'łyżka', 'łyżeczk': 'łyżeczka', 'garś': 'garść', 'szklank': 'szklanka', 'opakowani': 'opakowanie', 'puszk': 'puszka' };
+async function parseProductWorkbook(buf){
+  const wb = new ExcelJS.Workbook();
+  await wb.xlsx.load(buf);
+  const sh = wb.getWorksheet('Produkty');
+  if(!sh) throw new Error('W pliku brakuje arkusza „Produkty”.');
+  const out = [], errors = [];
+  xlRows(sh).forEach(o => {
+    const name = xlCol(o, 'nazwa'); if(!name) return;
+    const per100 = { b: r1(numv(xlCol(o, 'białko'))), t: r1(numv(xlCol(o, 'tłuszcz'))), w: r1(Math.max(0, numv(xlCol(o, 'węglowodany')) - numv(xlCol(o, 'poliole')))) /* DIETA-WSP: węglowodany z etykiety zawierają poliole */, fib: r1(numv(xlCol(o, 'błonnik'))), pol: r1(numv(xlCol(o, 'poliole'))), alk: r1(numv(xlCol(o, 'alkohol'))), kwo: r1(numv(xlCol(o, 'kwasy'))) };
+    /* DIETA-WSP: pomijamy tylko wiersze z pustymi B/T/W - zera sa poprawne (sol, przyprawy, kawa) */
+    if(['białko', 'tłuszcz', 'węglowodany'].some(h => String(xlCol(o, h)).trim() === '')){ errors.push(`wiersz ${o.__row}: „${name}” — brak wartości na 100 g`); return; }
+    const units = {};
+    Object.keys(o).forEach(h => { if(!h.startsWith('waga')) return; const k = Object.keys(PROD_IMPORT_UNITS).find(x => h.includes(x)); const v = numv(o[h]); if(k && v > 0) units[PROD_IMPORT_UNITS[k]] = r1(v); });
+    const dep = IMPORT_DEPS[xlCol(o, 'dział').toLowerCase()] || 'i';
+    const srcTxt = xlCol(o, 'źródło'); const src = PRODUCT_SOURCES.find(s => srcTxt.toLowerCase().startsWith(s.toLowerCase())) || 'ręcznie';
+    out.push({ name, aliases: xlCol(o, 'inne nazwy').split(',').map(x => x.trim()).filter(Boolean), cat: dep, per100, units, src, srcNote: srcTxt });
+  });
+  return { products: out, errors };
+}
+async function importProductsFromFile(file){
+  if(typeof ExcelJS === 'undefined'){ alert('Nie udało się wczytać modułu do plików Excel. Odśwież stronę i spróbuj ponownie.'); return; }
+  let parsed;
+  try{ parsed = await parseProductWorkbook(await file.arrayBuffer()); }
+  catch(e){ alert(e.message || 'Nie udało się odczytać pliku.'); return; }
+  const fresh = (await safeGet('food_products')) || [];
+  const byKey = new Map(fresh.map(p => [prodKey(p.name), p]));
+  const rows = parsed.products.map((p, i) => ({ i, p, upd: byKey.has(prodKey(p.name)) }));
+  productModal(`<div class="me-wrap"><h3 style="margin:0 0 6px;">Import produktów</h3>
+    <div class="cv-small" style="margin-bottom:10px;">Znaleziono ${rows.length}: nowe ${rows.filter(r => !r.upd).length}, do aktualizacji ${rows.filter(r => r.upd).length}.</div>
+    ${parsed.errors.length ? `<div class="cv-alert" style="background:#FFF4E5;border-color:#F3C88B;"><div><b>Pominięte (${parsed.errors.length}):</b><br>${parsed.errors.slice(0, 12).map(escapeHtml).join('<br>')}</div></div>` : ''}
+    <div class="imp-list">${rows.map(r => `<label class="imp-row"><input type="checkbox" data-pimp="${r.i}" checked><div><b>${escapeHtml(r.p.name)}</b><div class="cv-small">${Math.round(productKcal100(r.p))} kcal · B ${r.p.per100.b} · T ${r.p.per100.t} · W ${r.p.per100.w} · Bł ${r.p.per100.fib} · ${escapeHtml(r.p.src)}</div></div><span class="imp-tag ${r.upd ? 'upd' : 'new'}">${r.upd ? 'zaktualizuje' : 'nowy'}</span></label>`).join('') || '<div class="empty-state">Brak produktów do importu.</div>'}</div>
+    <div class="md-acts" style="padding:12px 0 0;"><button class="btn" id="pimpGo" ${rows.length ? '' : 'disabled'}>Importuj zaznaczone</button><button class="btn ghost" id="pimpCancel">Anuluj</button></div></div>`);
+  $('pimpCancel').onclick = closeProductModal;
+  if(!rows.length) return;
+  $('pimpGo').onclick = async () => {
+    const pick = [...document.querySelectorAll('[data-pimp]:checked')].map(cb => rows[+cb.dataset.pimp].p);
+    if(!pick.length){ alert('Nic nie zaznaczono.'); return; }
+    const cur = (await safeGet('food_products')) || [];
+    let added = 0, updated = 0;
+    pick.forEach((p, k) => { const i = cur.findIndex(x => prodKey(x.name) === prodKey(p.name));
+      if(i >= 0){ cur[i] = { ...cur[i], ...p, id: cur[i].id }; updated++; } else { cur.push({ id: 'p_' + Date.now() + '_' + k, ...p }); added++; } });
+    if(await saveProducts(cur, `Produkty: nowe ${added}, zaktualizowane ${updated}`)){ closeProductModal(); mealTab = 'prod'; renderProductsView(); }
+  };
+}
 
 /* ---------- Dieta klienta (trener) ---------- */
-let dietEditDay = 'Pon';
+/* DIETA-WSP: dieta klientki w panelu trenera - przypisanie gotowej diety, indywidualny poziom kcal, podglad tygodnia z wyborami */
+let dietWeekStart = null;
 function renderClientDiet(){
   const c = clients.find(cl => cl.id === selectedClientId); if(!c) return;
   const d = dietCache[c.id] || normDiet(null);
   const st = dietTabState(c);
-  const dayPlan = d.week[dietEditDay] || {};
-  const lvl = dietLevel(d);
-  const sum = DIET_SLOTS.reduce((a, [k]) => { const sm = scaledForWeek(d.week, dietEditDay, k, lvl); if(sm){ a.k += sm.s.kcal; a.b += sm.s.b; a.t += sm.s.t; a.w += sm.s.w; } return a; }, { k:0, b:0, t:0, w:0 });
-  const tk = numv(d.target.k);
+  const plan = planById(d.planId);
   const today = todayKey();
+  if(!dietWeekStart) dietWeekStart = mondayOfStr(today);
   let eaten = 0, planned = 0;
   for(let i = 0; i < 7; i++){ const ds = addDaysToDateStr(today, -i); DIET_SLOTS.forEach(([k]) => { if(effectiveMeal(d, ds, k)){ planned++; if(d.done[ds + '|' + k]) eaten++; } }); }
-  const opts = cat => '<option value="">— brak —</option>' + (mealLibrary || []).filter(m => m.category === cat).map(m => `<option value="${escapeHtml(m.id)}" ${dayPlan[cat] === m.id ? 'selected' : ''}>${escapeHtml(m.name)}</option>`).join('');
+  const days = DIET_DAYS.map((l, i) => addDaysToDateStr(dietWeekStart, i));
+  const cell = (ds, k) => {
+    const m = effectiveMeal(d, ds, k); if(!m) return '<td class="cw-empty">—</td>';
+    const picked = !!d.picks[ds + '|' + k], fromBase = picked && !dayOptions(d, ds, k).includes(m.id), done = !!d.done[ds + '|' + k];
+    return `<td class="${picked ? 'cw-pick' : ''}" title="${picked ? (fromBase ? 'wybór klientki z bazy' : 'wybór klientki z opcji diety') : 'posiłek domyślny'}">${done ? '<span class="cw-done">' + dIcon('check', 'di-inline') + '</span>' : ''}${escapeHtml(m.name)}${fromBase ? '<span class="cw-src">z bazy</span>' : ''}</td>`;
+  };
   $('main').innerHTML = clientViewTopHtml(c, 'diet') + personHeadHtml(c, notesCache[c.id])
     + (dietsTableMissing ? '<div class="cv-alert" style="background:#FFF4E5;border-color:#F3C88B;"><div><b>Brakuje tabeli diet w bazie.</b> Wklej polecenie z instrukcji w Supabase (SQL Editor). Do tego czasu zmiany diety się nie zapiszą.</div></div>' : '')
     + `<div class="cv-grid2">
       <div class="cv-card"><h4>Dostęp klienta</h4>
-        <label class="diet-cb"><input type="checkbox" id="dActive" ${d.active ? 'checked' : ''}> <b>Dieta aktywna</b> — klient widzi Dietę i Zakupy</label>
+        <label class="diet-cb"><input type="checkbox" id="dActive" ${d.active ? 'checked' : ''}> <b>Dieta aktywna</b> — klientka widzi Dietę, Przepisy i Zakupy</label>
         <label class="diet-cb ${d.active ? 'dis' : ''}"><input type="checkbox" id="dHidden" ${!d.active && dietHiddenEffective(c, d) ? 'checked' : ''} ${d.active ? 'disabled' : ''}> Ukryj zakładkę Dieta</label>
-        <div class="cv-small" style="margin-top:6px;">Teraz klient widzi: <b>${st === 'active' ? 'swoją dietę' : st === 'teaser' ? 'zachętę do diety' : 'brak zakładki Dieta'}</b>.</div>
+        <div class="cv-small" style="margin-top:6px;">Teraz klientka widzi: <b>${st === 'active' ? (plan ? 'swoją dietę' : 'dietę bez przypisanego jadłospisu') : st === 'teaser' ? 'zachętę do diety' : 'brak zakładki Dieta'}</b>.</div>
         <div class="cv-small" style="margin-top:8px;">Ostatnie 7 dni: zjedzone <b>${eaten}/${planned}</b> posiłków.</div></div>
-      <div class="cv-card"><h4>Cele dzienne</h4>
-        <div class="diet-lv"><span>Poziom diety:</span>${DIET_LEVELS.map(L => `<span class="client-org-chip ${numv(d.target.k) === L ? 'active' : ''}" data-lvl="${L}">${L}</span>`).join('')}</div>
-        <div class="cv-small" style="margin:-2px 0 8px;">Posiłki przeliczą się na ten poziom (podział dnia: śniadanie 25% · przekąska 15% · obiad 35% · kolacja 25%).</div>
+      <div class="cv-card"><h4>Dieta i kalorie</h4>
+        <div class="cv-row" style="margin-top:0;"><select id="dPlan" class="cv-input" style="flex:1;"><option value="">— wybierz gotową dietę —</option>${(dietPlans || []).map(p => `<option value="${escapeHtml(p.id)}" ${p.id === d.planId ? 'selected' : ''}>${escapeHtml(p.name)}</option>`).join('')}</select><button class="btn ghost small" id="dGoMeals">Diety</button></div>
+        <div class="cv-small" style="margin:4px 0 8px;">Po wybraniu diety poziom kcal ustawi się na poziom diety. Możesz go zmienić niżej — porcje przeliczą się na indywidualny poziom klientki.</div>
         <div class="diet-tg"><label>kcal<input class="cv-input" data-tg="k" value="${escapeHtml(String(d.target.k))}"></label><label>Białko (g)<input class="cv-input" data-tg="b" value="${escapeHtml(String(d.target.b))}"></label><label>Tłuszcz (g)<input class="cv-input" data-tg="t" value="${escapeHtml(String(d.target.t))}"></label><label>Węgl. (g)<input class="cv-input" data-tg="w" value="${escapeHtml(String(d.target.w))}"></label></div>
-        <div class="cv-row"><select id="dSex"><option value="M" ${d.calc.sex === 'M' ? 'selected' : ''}>mężczyzna</option><option value="K" ${d.calc.sex === 'K' ? 'selected' : ''}>kobieta</option></select>
+        ${plan && numv(d.target.k) && numv(d.target.k) !== numv(plan.level) ? `<div class="cv-small" style="margin-top:6px;">Indywidualnie: <b>${numv(d.target.k)} kcal</b> (dieta bazowa: ${numv(plan.level)} kcal).</div>` : ''}
+        <div class="cv-row"><select id="dSex"><option value="K" ${d.calc.sex === 'K' ? 'selected' : ''}>kobieta</option><option value="M" ${d.calc.sex === 'M' ? 'selected' : ''}>mężczyzna</option></select>
           <select id="dPal">${[['1.2','mała aktywność'],['1.375','lekka'],['1.55','średnia'],['1.725','duża']].map(([v, l]) => `<option value="${v}" ${d.calc.pal === v ? 'selected' : ''}>${l}</option>`).join('')}</select>
           <select id="dGoal">${[['-15','redukcja (−15%)'],['0','utrzymanie'],['10','masa (+10%)']].map(([v, l]) => `<option value="${v}" ${d.calc.goal === v ? 'selected' : ''}>${l}</option>`).join('')}</select>
           <button class="btn ghost small" id="dCalc">Wylicz z danych klienta</button></div>
         <div class="cv-small">Wzór Mifflin-St Jeor z masy, wzrostu i wieku (z Pomiarów); białko 2,0 g/kg, tłuszcz 0,9 g/kg, reszta węglowodany. To podpowiedź — zmień, jeśli trzeba.</div></div></div>
-    <div class="cv-card" style="margin-top:14px;"><h4>Jadłospis tygodniowy <button class="btn ghost small" id="dGoMeals" style="float:right;">Biblioteka posiłków</button></h4>
-      <div class="cv-row" style="margin:0 0 6px;"><select id="dTplSel"><option value="">— wybierz gotowy jadłospis —</option>${(dietTemplates || []).map(t => `<option value="${escapeHtml(t.id)}">${escapeHtml(t.name)}</option>`).join('')}</select>
-        <button class="btn small" id="dTplApply">Wstaw jadłospis</button><button class="btn ghost small" id="dTplSave">Zapisz ten jako gotowy jadłospis</button></div>
-      <div class="diet-days">${DIET_DAYS.map(dd => `<span class="client-org-chip ${dd === dietEditDay ? 'active' : ''}" data-dday="${dd}">${dd}</span>`).join('')}</div>
-      ${DIET_SLOTS.map(([k, l]) => { const sm = scaledForWeek(d.week, dietEditDay, k, lvl); const warn = sm && lvl && !sm.m.fixed && (sm.s.f < 0.6 || sm.s.f > 1.6); return `<div class="diet-slot"><div class="diet-slot-l">${l}</div><select class="cv-input" data-slot="${k}">${opts(k)}</select><div class="diet-slot-k">${sm ? (lvl && !sm.m.fixed ? '≈ ' : '') + sm.s.kcal + ' kcal · B ' + sm.s.b + (lvl ? `<br><span class="${warn ? 'diet-warn' : ''}">${sm.m.fixed ? 'porcja stała' : 'porcja ×' + sm.s.f.toFixed(2)}${warn ? ' — duża zmiana' : ''}</span>` : '') : ''}</div></div>`; }).join('')}
-      ${(() => { if(!lvl) return ''; const dt = dayTargets(lvl, dayMealsMap(k => mealById(dayPlan[k]))); return dt.over ? `<div class="diet-warn-box">Posiłki o stałej porcji mają razem ${dt.fixedK} kcal — więcej niż cały poziom ${lvl}.</div>` : dt.tight ? `<div class="diet-warn-box">Posiłki o stałej porcji zajmują ${dt.fixedK} z ${lvl} kcal — na resztę dnia zostaje tylko ${Math.round(dt.rest)} kcal, porcje innych posiłków będą bardzo małe.</div>` : ''; })()}
-      <div class="diet-sum"><b>Suma dnia: ${lvl ? '≈ ' : ''}${sum.k} kcal</b> · ${numv(d.target.b) ? `<span class="${sum.b < numv(d.target.b) * 0.9 ? 'diet-warn' : 'diet-good'}">B ${sum.b} / cel ${numv(d.target.b)} g</span>` : 'B ' + sum.b} · T ${sum.t} · W ${sum.w}${tk ? `<div class="cv-bar" style="flex:1;min-width:120px;margin:0;"><i style="width:${Math.min(100, Math.round(sum.k / tk * 100))}%"></i></div>${Math.round(sum.k / tk * 100)}% celu` : ''}</div>
-      ${(mealLibrary || []).length ? '' : '<div class="cv-small" style="margin-top:8px;">Biblioteka posiłków jest pusta — najpierw dodaj posiłki.</div>'}</div>
-    ${d.swapLog.length ? `<div class="cv-card" style="margin-top:14px;"><h4>Zamiany klienta</h4>${d.swapLog.slice(-10).reverse().map(x => { const a = mealById(x.from), b = mealById(x.to); return `<div class="cv-inj"><div>${escapeHtml(x.date)} · ${escapeHtml(MEAL_CATS[x.slot] || '')}: <b>${escapeHtml(a ? a.name : '?')}</b> → <b>${escapeHtml(b ? b.name : '?')}</b></div><span class="cv-pill" style="margin-left:auto;">${x.perm ? 'na stałe' : 'tylko ten dzień'}</span></div>`; }).join('')}</div>` : ''}`;
+    <div class="cv-card" style="margin-top:14px;"><h4>Tydzień klientki${plan ? ' · ' + escapeHtml(plan.name) : ''}</h4>
+      ${plan ? `<div class="dm-week" style="justify-content:space-between;margin-bottom:6px;"><span class="dm-wnav" data-cwk="-7">‹</span><b style="font-size:13px;">${dayLabel(days[0])} – ${dayLabel(days[6])}</b><span class="dm-wnav" data-cwk="7">›</span></div>
+      <div class="cw-wrap"><table class="cw"><thead><tr><th></th>${days.map(ds => `<th class="${ds === today ? 'cw-today' : ''}">${dayLabel(ds)}</th>`).join('')}</tr></thead>
+        <tbody>${DIET_SLOTS.map(([k, l]) => `<tr><th>${l}</th>${days.map(ds => cell(ds, k)).join('')}</tr>`).join('')}</tbody></table></div>
+      <div class="cw-legend"><span><i class="cw-sw"></i>posiłek domyślny</span><span><i class="cw-sw pick"></i>wybór klientki</span><span>${dIcon('check', 'di-inline')} zjedzone</span></div>`
+      : '<div class="cv-small">Wybierz gotową dietę powyżej — tu zobaczysz tydzień klientki z jej wyborami.</div>'}</div>
+    ${d.pickLog.length ? `<div class="cv-card" style="margin-top:14px;"><h4>Wybory klientki</h4>${d.pickLog.slice(-10).reverse().map(x => { const a = mealById(x.from), b = mealById(x.to); return `<div class="cv-inj"><div>${escapeHtml(dayLabel(x.date))} · ${escapeHtml(MEAL_CATS[x.slot] || '')}: <b>${escapeHtml(a ? a.name : '—')}</b> → <b>${escapeHtml(b ? b.name : '?')}</b></div><span class="cv-pill" style="margin-left:auto;">${x.src === 'baza' ? 'z bazy' : 'opcja diety'}</span></div>`; }).join('')}</div>` : ''}`;
   bindClientViewTop();
   const id = c.id;
   const rer = () => { if(selectedClientId === id && clientView === 'diet') renderClientDiet(); };
   $('dActive').onchange = async e => { await saveDietPatch(id, x => { x.active = e.target.checked; }); rer(); };
   $('dHidden').onchange = async e => { await saveDietPatch(id, x => { x.hidden = e.target.checked; }); rer(); };
+  $('dPlan').onchange = async e => {
+    const p = planById(e.target.value);
+    await saveDietPatch(id, x => { x.planId = p ? p.id : null; if(p) x.target.k = String(p.level); });
+    if(p) toast(`Przypisano „${p.name}”`); rer();
+  };
   document.querySelectorAll('[data-tg]').forEach(inp => inp.onchange = async () => { await saveDietPatch(id, x => { x.target[inp.dataset.tg] = inp.value.trim(); }); rer(); });
-  document.querySelectorAll('[data-dday]').forEach(ch => ch.onclick = () => { dietEditDay = ch.dataset.dday; rer(); });
-  document.querySelectorAll('[data-slot]').forEach(sel => sel.onchange = async () => { const slot = sel.dataset.slot, val = sel.value || null; await saveDietPatch(id, x => { x.week[dietEditDay] = x.week[dietEditDay] || {}; x.week[dietEditDay][slot] = val; }); rer(); });
-  $('dGoMeals').onclick = () => $('showMealsBtn').click();
-  document.querySelectorAll('[data-lvl]').forEach(ch => ch.onclick = async () => { await saveDietPatch(id, x => { x.target.k = ch.dataset.lvl; }); rer(); });
-  $('dTplApply').onclick = async () => {
-    const t = (dietTemplates || []).find(x => x.id === $('dTplSel').value);
-    if(!t){ alert('Wybierz jadłospis z listy.'); return; }
-    const hasWeek = DIET_DAYS.some(dd => Object.values(d.week[dd] || {}).some(Boolean));
-    if(hasWeek && !confirm(`Zastąpić obecny jadłospis klienta jadłospisem „${t.name}”?`)) return;
-    await saveDietPatch(id, x => { x.week = JSON.parse(JSON.stringify(t.week || {})); x.swaps = {}; });
-    toast(`Wstawiono „${t.name}”`); rer();
-  };
-  $('dTplSave').onclick = async () => {
-    const name = (prompt('Nazwa jadłospisu (np. „Jadłospis A”):') || '').trim();
-    if(!name) return;
-    const fresh = (await safeGet('diet_templates')) || [];
-    fresh.push({ id: 'dt_' + Date.now(), name, week: JSON.parse(JSON.stringify(d.week || {})) });
-    if(await persistWithFeedback('diet_templates', fresh)){ dietTemplates = fresh; toast('Zapisano jadłospis „' + name + '”'); rer(); }
-  };
+  document.querySelectorAll('[data-cwk]').forEach(b => b.onclick = () => { dietWeekStart = addDaysToDateStr(dietWeekStart, +b.dataset.cwk); rer(); });
+  $('dGoMeals').onclick = () => { mealTab = 'tpl'; if(d.planId) planEditId = d.planId; $('showMealsBtn').click(); };
   $('dCalc').onclick = async () => {
     const wl = (c.weightLog || []).slice().sort((a, b) => (a.date || '').localeCompare(b.date || ''));
     const w = wl.length ? numv(wl[wl.length - 1].weight) : 0, h = numv(c.height), a = clientAge(c);
@@ -3103,13 +3651,44 @@ function dietTeaserHtml(){
     <div class="dt-hero">${dIcon('plate', 'dt-deco')}<div class="dt-kick">Dieta od Twojego trenera</div><h2>Plan treningowy już masz. Czas na plan na talerzu.</h2><p>Te same cele, ten sam trener — teraz także w kuchni.</p></div>
     <ul class="dt-ben">
       <li><span class="dt-bi">${dIcon('plate', '')}</span><span><b>Konkretne posiłki, nie tabelki</b>Zdjęcie, składniki i przepis krok po kroku — wiesz dokładnie, co zjeść.</span></li>
-      <li><span class="dt-bi">${dIcon('swap', '')}</span><span><b>Nie smakuje? Zamieniasz</b>Jednym kliknięciem na posiłek o podobnych kaloriach i białku.</span></li>
-      <li><span class="dt-bi">${dIcon('cart', '')}</span><span><b>Lista zakupów robi się sama</b>Na cały tydzień, pogrupowana jak w sklepie.</span></li>
+      <li><span class="dt-bi">${dIcon('swap', '')}</span><span><b>Nie smakuje? Wybierasz</b>Do każdego posiłku masz kilka propozycji, a do tego bazę przepisów.</span></li>
+      <li><span class="dt-bi">${dIcon('cart', '')}</span><span><b>Lista zakupów robi się sama</b>Na dni, które wybierzesz — pogrupowana jak w sklepie.</span></li>
       <li><span class="dt-bi">${dIcon('trend', '')}</span><span><b>Trener widzi postępy</b>I koryguje jadłospis razem z planem treningowym.</span></li>
     </ul>
     <div class="dt-peek"><div class="dt-blur">${sample.map(x => `<div class="dm dm-mini"><div class="meal-ph" style="height:56px;width:56px;background:${MEAL_BG[x[0]]};">${dIcon('plate', 'meal-ph-ic')}</div><div><div class="dm-cat">${MEAL_CATS[x[0]]}</div><div class="dm-n">${x[1]}</div><div class="cv-small">${x[2]}</div></div></div>`).join('')}</div><div class="dt-peek-l"><span>${dIcon('lock', '')}przykładowy dzień</span></div></div>
     <div class="dt-contact"><span class="dt-ci">${dIcon('user', '')}</span><div><b>Skontaktuj się z trenerem</b><span>Porozmawiamy o Twoim celu i dobierzemy jadłospis.</span></div></div>
     <div class="dt-fine">Bez zobowiązań.</div></div>`;
+}
+/* DIETA-WSP: panel klientki - "Mój jadłospis" (opcje z diety na dany dzien) i "Przepisy" (baza ogolnodostepna) */
+let aDietTab = 'plan', aBaseCat = 'sn';
+/* DIETA-WSP: porcje w przepisach z bazy (tylko widok przepisu - nie zmienia jadlospisu ani listy zakupow) */
+let aBasePortions = 1;
+const PORTION_STEP = 0.5, PORTION_MAX = 10;
+function fmtPortions(p){ return String(p).replace('.', ','); }
+function portionsLabel(p){ return p === 1 ? '1 porcja' : (Number.isInteger(p) ? p + ' ' + plPlural(p, 'porcja', 'porcje', 'porcji') : fmtPortions(p) + ' porcji'); }
+function ingredientsForPortions(ings, p){
+  return (ings || []).map(i => { const q = numv(i.qty); if(!(q > 0) || p === 1) return { ...i };
+    const nq = roundQty(q * p, i.unit, i.name); return { ...i, qty: String(nq).replace('.', ',') }; });
+}
+function portionsCtlHtml(p, sc){
+  return `<div class="pc-box"><div class="pc-row"><b>Porcje</b><div class="pc-ctl"><span class="pc-btn" data-pstep="-1" aria-label="mniej">−</span><input id="basePortions" class="pc-in" inputmode="decimal" value="${fmtPortions(p)}" aria-label="Liczba porcji"><span class="pc-btn" data-pstep="1" aria-label="więcej">+</span></div></div>
+    <div class="cv-small">${p === 1 ? 'Ilości na 1 porcję. Gotujesz dla dwóch osób albo na dwa dni? Zwiększ liczbę porcji.' : `Ilości składników na <b>${portionsLabel(p)}</b> (razem ≈ ${Math.round(sc.kcal * p)} kcal). Kalorie i makro wyżej są na 1 porcję.`}</div></div>`;
+}
+async function setDietPick(clientId, date, slot, toId, src){
+  const key = date + '|' + slot;
+  return saveDietPatch(clientId, x => {
+    const def = planOpts(planById(x.planId), DIET_DAYS[weekdayIdx(date)], slot)[0] || null;
+    const prev = x.picks[key] || def;
+    if(prev === toId) return;
+    if(toId === def) delete x.picks[key]; else x.picks[key] = toId;
+    x.pickLog.push({ at: new Date().toISOString(), date, slot, from: prev, to: toId, src });
+    if(x.pickLog.length > 60) x.pickLog = x.pickLog.slice(-60);
+  });
+}
+function publicMeals(cat){ return (mealLibrary || []).filter(m => m.public && (!cat || m.category === cat)); }
+function dietWeekStripHtml(date){
+  const mon = mondayOfStr(date), today = todayKey();
+  return `<div class="dm-week"><span class="dm-wnav" data-wk="-7">‹</span>${DIET_DAYS.map((l, i) => { const ds = addDaysToDateStr(mon, i); return `<span class="dm-day ${ds === date ? 'on' : ''} ${ds === today ? 'today' : ''}" data-day="${ds}"><b>${l}</b>${ds.slice(8)}</span>`; }).join('')}<span class="dm-wnav" data-wk="7">›</span></div>`;
 }
 function renderAthleteDietView(body){
   const c = clients.find(x => x.id === aClientId);
@@ -3120,6 +3699,46 @@ function renderAthleteDietView(body){
   if(aMainTab === 'shop'){ renderDietShop(body, c, d); return; }
   const rer = () => renderAthleteDietView(body);
   const date = aDietDate;
+  const hasBase = publicMeals().length > 0;
+  if(!hasBase) aDietTab = 'plan';
+  const tabs = hasBase ? `<div class="dm-tabs"><span class="${aDietTab === 'plan' ? 'on' : ''}" data-dtab="plan">Mój jadłospis</span><span class="${aDietTab === 'base' ? 'on' : ''}" data-dtab="base">Przepisy</span></div>` : '';
+  const bindCommon = () => {
+    body.querySelectorAll('[data-dtab]').forEach(b => b.onclick = () => { aDietTab = b.dataset.dtab; aDietDetail = null; aDietSwap = null; aDietPick = null; rer(); });
+    body.querySelectorAll('[data-day]').forEach(b => b.onclick = () => { aDietDate = b.dataset.day; aDietSwap = null; rer(); });
+    body.querySelectorAll('[data-wk]').forEach(b => b.onclick = () => { aDietDate = addDaysToDateStr(aDietDate, +b.dataset.wk); aDietSwap = null; rer(); });
+  };
+  /* --- Przepisy: baza ogolnodostepna --- */
+  if(aDietTab === 'base'){
+    if(aDietPick){
+      const m = mealById(aDietPick);
+      if(m){
+        const slot = m.category, cur = effectiveMeal(d, date, slot);
+        const sc = scaledAltFor(d, date, slot, m);
+        const P = aBasePortions;
+        body.innerHTML = `<div class="dm-back" id="dmBack">‹ Wróć do przepisów</div><div class="md-card">${mealDetailHtml({ ...m, kcal: sc.kcal, b: sc.b, t: sc.t, w: sc.w, ingredients: ingredientsForPortions(sc.ingredients, P) }).replace('<h4 class="md-h">Składniki:</h4>', '<h4 class="md-h">Składniki:</h4>' + portionsCtlHtml(P, sc))}
+          <div style="padding:0 14px 14px;">${cur && cur.id === m.id ? `<div class="cv-small"><b>To jest Twój posiłek na ${escapeHtml(dayLabel(date))}.</b></div>` : `<button class="btn" id="basePick" style="width:100%;padding:12px;">Wybierz na ${escapeHtml(dayLabel(date))} jako ${escapeHtml(MEAL_CATS[slot].toLowerCase())}</button>
+          <div class="cv-small" style="margin-top:6px;">Zastąpi „${escapeHtml(cur ? cur.name : '—')}” tylko w tym dniu. Porcja jest już przeliczona na Twój dzień.</div>`}</div></div>`;
+        $('dmBack').onclick = () => { aDietPick = null; rer(); };
+        const setP = v => { v = Math.round(numv(v) / PORTION_STEP) * PORTION_STEP; if(!(v > 0)) v = PORTION_STEP; aBasePortions = Math.min(PORTION_MAX, v); const y = window.scrollY; rer(); window.scrollTo(0, y); };
+        body.querySelectorAll('[data-pstep]').forEach(b => b.onclick = () => setP(aBasePortions + PORTION_STEP * +b.dataset.pstep));
+        $('basePortions').onchange = e => setP(String(e.target.value).replace(',', '.'));
+        $('basePortions').onkeydown = e => { if(e.key === 'Enter') e.target.blur(); };
+        if($('basePick')) $('basePick').onclick = async () => { if(await setDietPick(c.id, date, slot, m.id, 'baza')){ toast('Wybrano na ' + dayLabel(date)); aDietPick = null; aDietTab = 'plan'; } rer(); window.scrollTo(0, 0); };
+        return;
+      }
+      aDietPick = null;
+    }
+    const list = publicMeals(aBaseCat);
+    body.innerHTML = tabs + dietWeekStripHtml(date)
+      + `<div class="cv-small" style="margin:0 2px 8px;">Wybierasz posiłek na: <b>${escapeHtml(dayLabel(date))}</b>. Kalorie są przeliczone na Twój dzień.</div>
+      <div class="dm-cats">${DIET_SLOTS.map(([k]) => `<span class="client-org-chip ${aBaseCat === k ? 'active' : ''}" data-bcat="${k}">${MEAL_CAT_TABS.find(t => t[0] === k)[1]} (${publicMeals(k).length})</span>`).join('')}</div>
+      ${list.map(m => { const sc = scaledAltFor(d, date, m.category, m); return `<div class="dm dm-mini" data-bmeal="${escapeHtml(m.id)}" style="cursor:pointer;"><div class="dm-thumb">${mealPhotoHtml(m, 64)}</div><div style="min-width:0;"><div class="dm-n">${escapeHtml(m.name)}</div><div class="cv-small">${m.fixed ? '' : '≈ '}${sc.kcal} kcal · B ${sc.b} g</div></div></div>`; }).join('') || '<div class="empty-state">Brak przepisów w tej kategorii.</div>'}`;
+    bindCommon();
+    body.querySelectorAll('[data-bcat]').forEach(b => b.onclick = () => { aBaseCat = b.dataset.bcat; rer(); });
+    body.querySelectorAll('[data-bmeal]').forEach(b => b.onclick = () => { aDietPick = b.dataset.bmeal; aBasePortions = 1; rer(); window.scrollTo(0, 0); });
+    return;
+  }
+  /* --- Moj jadlospis --- */
   if(aDietDetail){
     const m = effectiveMeal(d, date, aDietDetail);
     if(m){
@@ -3133,53 +3752,39 @@ function renderAthleteDietView(body){
     }
     aDietDetail = null;
   }
-  const mon = mondayOfStr(date);
-  const today = todayKey();
   const items = DIET_SLOTS.map(([k, l]) => { const sm = scaledMealFor(d, date, k); return sm ? { k, l, m: sm.m, s: sm.s } : null; }).filter(Boolean);
   const eatenK = items.filter(x => d.done[date + '|' + x.k]).reduce((a, x) => a + x.s.kcal, 0);
   const tk = numv(d.target.k);
-  body.innerHTML = `<div class="dm-week"><span class="dm-wnav" data-wk="-7">‹</span>${DIET_DAYS.map((l, i) => { const ds = addDaysToDateStr(mon, i); return `<span class="dm-day ${ds === date ? 'on' : ''} ${ds === today ? 'today' : ''}" data-day="${ds}"><b>${l}</b>${ds.slice(8)}</span>`; }).join('')}<span class="dm-wnav" data-wk="7">›</span></div>
-    <div class="dm-prog"><b>${eatenK}${tk ? ' / ' + tk : ''} kcal</b> · zjedzone ${items.filter(x => d.done[date + '|' + x.k]).length}/${items.length}${tk ? `<div class="cv-bar"><i style="width:${Math.min(100, Math.round(eatenK / tk * 100))}%"></i></div>` : ''}</div>
+  body.innerHTML = tabs + dietWeekStripHtml(date)
+    + `<div class="dm-prog"><b>${eatenK}${tk ? ' / ' + tk : ''} kcal</b> · zjedzone ${items.filter(x => d.done[date + '|' + x.k]).length}/${items.length}${tk ? `<div class="cv-bar"><i style="width:${Math.min(100, Math.round(eatenK / tk * 100))}%"></i></div>` : ''}</div>
     ${items.map(x => {
-      const key = date + '|' + x.k, done = !!d.done[key], swapped = !!d.swaps[key];
-      const alts = mealAlternativesScaled(d, date, x.k, x.m);
+      const key = date + '|' + x.k, done = !!d.done[key];
+      const opts = dayOptions(d, date, x.k);
+      const others = opts.filter(id => id !== x.m.id).map(mealById).filter(Boolean);
+      const fromBase = !opts.includes(x.m.id);
+      const nBase = publicMeals(x.k).length;
       let swapBox = '';
       if(aDietSwap === x.k){
-        if(aDietPick && aDietPick.slot === x.k){
-          const pm = mealById(aDietPick.id);
-          swapBox = `<div class="dm-alts"><div style="font-size:12.5px;margin-bottom:8px;">Zamienić na <b>${escapeHtml(pm ? pm.name : '')}</b>?</div>
-            <div class="dm-row" style="gap:6px;"><button class="btn small" data-swapgo="day">Tylko dziś</button><button class="btn small" data-swapgo="perm">Na stałe</button><button class="btn ghost small" data-swapgo="cancel">Anuluj</button></div>
-            <div class="cv-small" style="margin-top:6px;">„Na stałe” = w każdy ${DIET_DAYS[weekdayIdx(date)].toLowerCase()} zamiast „${escapeHtml(x.m.name)}”.</div></div>`;
-        } else {
-          swapBox = `<div class="dm-alts">${alts.map(a => `<div class="dm-alt" data-pick="${escapeHtml(a.id)}">${mealPhotoHtml(a, 40)}<span class="dm-alt-n">${escapeHtml(a.name)}</span><span class="dm-alt-d">${a._sk - x.s.kcal >= 0 ? '+' : ''}${a._sk - x.s.kcal} kcal<br>B ${a._sb - x.s.b >= 0 ? '+' : ''}${a._sb - x.s.b} g</span></div>`).join('')}</div>`;
-        }
+        swapBox = `<div class="dm-alts">${others.map(a => { const sa = scaledAltFor(d, date, x.k, a); return `<div class="dm-alt" data-opt="${escapeHtml(a.id)}">${mealPhotoHtml(a, 40)}<span class="dm-alt-n">${escapeHtml(a.name)}${a.id === opts[0] ? ' <span class="cv-small">(domyślny)</span>' : ''}</span><span class="dm-alt-d">${a.fixed ? '' : '≈ '}${sa.kcal} kcal<br>B ${sa.b} g</span></div>`; }).join('')}
+          ${nBase ? `<div class="dm-more" data-tobase="${x.k}" style="margin-top:6px;">Wszystkie ${MEAL_CAT_TABS.find(t => t[0] === x.k)[1].toLowerCase()} z przepisów (${nBase}) ›</div>` : ''}
+          <div class="cv-small" style="margin-top:6px;">Zmiana dotyczy tylko ${escapeHtml(dayLabel(date))}.</div></div>`;
       }
+      const canSwap = others.length > 0 || nBase > 0;
       return `<div class="dm ${done ? 'done' : ''}" data-slotcard="${x.k}"><div data-open="${x.k}" class="dm-phw">${mealPhotoHtml(x.m, 120)}</div><div class="dm-b">
-        <div class="dm-cat">${x.l}${swapped ? ' · zamienione' : ''}</div>
+        <div class="dm-cat">${x.l}${d.picks[key] ? (fromBase ? ' · z przepisów' : ' · Twój wybór') : ''}</div>
         <div class="dm-row"><span class="dm-chk ${done ? 'on' : ''}" data-chk="${x.k}">${done ? dIcon('check', '') : ''}</span><span class="dm-n" data-open="${x.k}">${escapeHtml(x.m.name)}</span></div>
-        ${macrosHtml(x.s, !!dietLevel(d))}
-        <div class="dm-row" style="margin-top:6px;"><span class="dm-more" data-open="${x.k}">Składniki i przepis ›</span>${alts.length ? `<span class="dm-swap" data-swap="${x.k}">${dIcon('swap', '')}Zamień</span>` : ''}</div>
+        ${macrosHtml(x.s, !!dietLevel(d) && !x.m.fixed)}
+        <div class="dm-row" style="margin-top:6px;"><span class="dm-more" data-open="${x.k}">Składniki i przepis ›</span>${canSwap ? `<span class="dm-swap" data-swap="${x.k}">${dIcon('swap', '')}Zmień${others.length ? ' (' + others.length + ')' : ''}</span>` : ''}</div>
         ${swapBox}</div></div>`;
-    }).join('') || '<div class="empty-state">Na ten dzień trener nie ułożył jeszcze posiłków.</div>'}`;
-  body.querySelectorAll('[data-day]').forEach(b => b.onclick = () => { aDietDate = b.dataset.day; aDietSwap = null; aDietPick = null; rer(); });
-  body.querySelectorAll('[data-wk]').forEach(b => b.onclick = () => { aDietDate = addDaysToDateStr(aDietDate, +b.dataset.wk); aDietSwap = null; aDietPick = null; rer(); });
-  body.querySelectorAll('[data-open]').forEach(b => b.onclick = () => { aDietDetail = b.dataset.open; aDietSwap = null; aDietPick = null; rer(); window.scrollTo(0, 0); });
+    }).join('') || `<div class="empty-state">${d.planId ? 'Na ten dzień trener nie ułożył jeszcze posiłków.' : 'Trener jeszcze nie przypisał Ci diety.'}${hasBase ? ' Zajrzyj do zakładki Przepisy.' : ''}</div>`}`;
+  bindCommon();
+  body.querySelectorAll('[data-open]').forEach(b => b.onclick = () => { aDietDetail = b.dataset.open; aDietSwap = null; rer(); window.scrollTo(0, 0); });
   body.querySelectorAll('[data-chk]').forEach(b => b.onclick = () => toggleMealDone(c.id, date, b.dataset.chk, rer));
-  body.querySelectorAll('[data-swap]').forEach(b => b.onclick = () => { aDietSwap = aDietSwap === b.dataset.swap ? null : b.dataset.swap; aDietPick = null; rer(); });
-  body.querySelectorAll('[data-pick]').forEach(b => b.onclick = () => { aDietPick = { slot: aDietSwap, id: b.dataset.pick }; rer(); });
-  body.querySelectorAll('[data-swapgo]').forEach(b => b.onclick = async () => {
-    const mode = b.dataset.swapgo;
-    if(mode === 'cancel'){ aDietPick = null; rer(); return; }
-    const slot = aDietPick.slot, toId = aDietPick.id, key = date + '|' + slot, dayName = DIET_DAYS[weekdayIdx(date)];
-    const ok = await saveDietPatch(c.id, x => {
-      x.week[dayName] = x.week[dayName] || {};
-      const from = x.swaps[key] || x.week[dayName][slot] || null;
-      if(mode === 'perm'){ x.week[dayName][slot] = toId; delete x.swaps[key]; }
-      else x.swaps[key] = toId;
-      x.swapLog.push({ at: new Date().toISOString(), date, slot, from, to: toId, perm: mode === 'perm' });
-      if(x.swapLog.length > 60) x.swapLog = x.swapLog.slice(-60);
-    });
-    if(ok){ aDietSwap = null; aDietPick = null; toast(mode === 'perm' ? 'Zamieniono na stałe' : 'Zamieniono na dziś'); }
+  body.querySelectorAll('[data-swap]').forEach(b => b.onclick = () => { aDietSwap = aDietSwap === b.dataset.swap ? null : b.dataset.swap; rer(); });
+  body.querySelectorAll('[data-tobase]').forEach(b => b.onclick = () => { aBaseCat = b.dataset.tobase; aDietTab = 'base'; aDietSwap = null; rer(); window.scrollTo(0, 0); });
+  body.querySelectorAll('[data-opt]').forEach(b => b.onclick = async () => {
+    const slot = aDietSwap;
+    if(await setDietPick(c.id, date, slot, b.dataset.opt, 'opcja')){ aDietSwap = null; toast('Zmieniono na ' + dayLabel(date)); }
     rer();
   });
 }
@@ -3188,81 +3793,39 @@ async function toggleMealDone(clientId, date, slot, rer){
   await saveDietPatch(clientId, x => { if(x.done[key]) delete x.done[key]; else x.done[key] = true; });
   rer();
 }
+/* DIETA-WSP: lista zakupow na wybrane dni (domyslnie 7 dni od dzis), liczona z posilkow wybranych przez klientke */
+let aShopStart = null, aShopDays = null;
 function renderDietShop(body, c, d){
-  const mon = mondayOfStr(aDietDate || todayKey());
+  if(!aShopStart) aShopStart = todayKey();
+  const days = DIET_DAYS.map((l, i) => addDaysToDateStr(aShopStart, i));
+  if(!aShopDays) aShopDays = new Set(days);
+  const sel = days.filter(x => aShopDays.has(x));
   const map = {};
-  for(let i = 0; i < 7; i++){
-    const ds = addDaysToDateStr(mon, i);
+  sel.forEach(ds => {
     DIET_SLOTS.forEach(([k]) => { const sm = scaledMealFor(d, ds, k); if(!sm) return;
       (sm.s.ingredients || []).forEach(ig => { if(!ig.name) return;
         const key = ig.name.trim().toLowerCase() + '|' + (ig.unit || '').trim().toLowerCase();
         if(!map[key]) map[key] = { name: ig.name.trim(), unit: (ig.unit || '').trim(), qty: 0, n: 0, cat: ig.cat || 'i' };
         map[key].qty += numv(ig.qty); map[key].n++; }); });
-  }
-  const lsKey = 'moveu_shop_' + c.id + '_' + mon;
+  });
+  const lsKey = 'moveu_shop_' + c.id + '_' + aShopStart;
   let got = {}; try{ got = JSON.parse(localStorage.getItem(lsKey) || '{}'); }catch(e){}
   const items = Object.values(map);
   const fmtQ = it => it.qty > 0 ? (Math.round(it.qty * 10) / 10) + ' ' + it.unit : '× ' + it.n;
-  body.innerHTML = `<div class="dm-week" style="justify-content:space-between;"><span class="dm-wnav" data-wk="-7">‹</span><b style="font-size:13px;">Lista zakupów · ${mon.slice(8)}.${mon.slice(5,7)} – ${addDaysToDateStr(mon, 6).slice(8)}.${addDaysToDateStr(mon, 6).slice(5,7)}</b><span class="dm-wnav" data-wk="7">›</span></div>
-    <div class="cv-small" style="margin:0 2px 6px;">Liczona z jadłospisu na cały tydzień (z Twoimi zamianami).</div>
-    ${Object.entries(SHOP_CATS).map(([k, label]) => { const its = items.filter(i => (SHOP_CATS[i.cat] ? i.cat : 'i') === k).sort((a, b) => a.name.localeCompare(b.name, 'pl')); if(!its.length) return '';
-      return `<h4 class="shop-h">${label}</h4>${its.map(it => { const id = it.name + '|' + it.unit; return `<div class="shop-i ${got[id] ? 'got' : ''}" data-got="${escapeHtml(id)}"><span class="dm-chk ${got[id] ? 'on' : ''}" style="width:20px;height:20px;">${got[id] ? dIcon('check', '') : ''}</span>${escapeHtml(it.name)}<span class="shop-q">${escapeHtml(fmtQ(it))}</span></div>`; }).join('')}`; }).join('') || '<div class="empty-state">Brak posiłków w tym tygodniu.</div>'}`;
-  body.querySelectorAll('[data-wk]').forEach(b => b.onclick = () => { aDietDate = addDaysToDateStr(aDietDate || todayKey(), +b.dataset.wk); renderDietShop(body, c, d); });
-  body.querySelectorAll('[data-got]').forEach(b => b.onclick = () => { const id = b.dataset.got; got[id] = !got[id]; try{ localStorage.setItem(lsKey, JSON.stringify(got)); }catch(e){} renderDietShop(body, c, d); });
+  const rer = () => renderDietShop(body, c, d);
+  body.innerHTML = `<div class="dm-week" style="justify-content:space-between;"><span class="dm-wnav" data-swk="-7">‹</span><b style="font-size:13px;">Lista zakupów · ${dayLabel(days[0])} – ${dayLabel(days[6])}</b><span class="dm-wnav" data-swk="7">›</span></div>
+    <div class="shop-days">${days.map(ds => `<span class="client-org-chip ${aShopDays.has(ds) ? 'active' : ''}" data-sday="${ds}">${dayLabel(ds)}</span>`).join('')}</div>
+    <div class="shop-quick"><span class="dm-more" data-sall="1">Zaznacz wszystkie dni</span><span class="dm-more" data-sall="0">Odznacz wszystkie</span></div>
+    <div class="cv-small" style="margin:0 2px 6px;">${sel.length ? `Produkty na: <b>${sel.length === 7 ? '7 dni' : sel.map(dayLabel).join(', ')}</b> — z posiłków, które masz na te dni (z Twoimi wyborami).` : 'Zaznacz dni, na które robisz zakupy.'}</div>
+    ${sel.length ? (Object.entries(SHOP_CATS).map(([k, label]) => { const its = items.filter(i => (SHOP_CATS[i.cat] ? i.cat : 'i') === k).sort((a, b) => a.name.localeCompare(b.name, 'pl')); if(!its.length) return '';
+      return `<h4 class="shop-h">${label}</h4>${its.map(it => { const id = it.name + '|' + it.unit; return `<div class="shop-i ${got[id] ? 'got' : ''}" data-got="${escapeHtml(id)}"><span class="dm-chk ${got[id] ? 'on' : ''}" style="width:20px;height:20px;">${got[id] ? dIcon('check', '') : ''}</span>${escapeHtml(it.name)}<span class="shop-q">${escapeHtml(fmtQ(it))}</span></div>`; }).join('')}`; }).join('') || '<div class="empty-state">Brak posiłków w wybranych dniach.</div>') : ''}`;
+  body.querySelectorAll('[data-swk]').forEach(b => b.onclick = () => { aShopStart = addDaysToDateStr(aShopStart, +b.dataset.swk); aShopDays = null; rer(); });
+  body.querySelectorAll('[data-sday]').forEach(b => b.onclick = () => { const ds = b.dataset.sday; if(aShopDays.has(ds)) aShopDays.delete(ds); else aShopDays.add(ds); rer(); });
+  body.querySelectorAll('[data-sall]').forEach(b => b.onclick = () => { aShopDays = new Set(b.dataset.sall === '1' ? days : []); rer(); });
+  body.querySelectorAll('[data-got]').forEach(b => b.onclick = () => { const id = b.dataset.got; got[id] = !got[id]; try{ localStorage.setItem(lsKey, JSON.stringify(got)); }catch(e){} rer(); });
 }
 
 /* ---------- Gotowe jadlospisy (szablony diet) ---------- */
-let tplEditId = null, tplEditDay = 'Pon', tplPreviewLvl = 2000;
-async function saveDietTemplate(t){
-  const fresh = (await safeGet('diet_templates')) || [];
-  const i = fresh.findIndex(x => x.id === t.id);
-  if(i >= 0) fresh[i] = t; else fresh.push(t);
-  if(await persistWithFeedback('diet_templates', fresh)){ dietTemplates = fresh; return true; }
-  return false;
-}
-function renderDietTemplatesView(){
-  const list = dietTemplates || [];
-  const t = list.find(x => x.id === tplEditId);
-  let editor = '';
-  if(t){
-    const dayPlan = (t.week || {})[tplEditDay] || {};
-    const sum = DIET_SLOTS.reduce((a, [k]) => { const sm = scaledForWeek(t.week, tplEditDay, k, tplPreviewLvl); if(sm){ a.k += sm.s.kcal; a.b += sm.s.b; } return a; }, { k:0, b:0 });
-    const opts = cat => '<option value="">— brak —</option>' + (mealLibrary || []).filter(m => m.category === cat).map(m => `<option value="${escapeHtml(m.id)}" ${dayPlan[cat] === m.id ? 'selected' : ''}>${escapeHtml(m.name)}</option>`).join('');
-    editor = `<div class="cv-card" style="margin-top:12px;"><div class="cv-row" style="margin:0 0 8px;"><input class="cv-input" id="tplName" value="${escapeHtml(t.name)}" style="flex:1;font-weight:700;"><button class="btn ghost small" id="tplDel">Usuń jadłospis</button></div>
-      <div class="diet-days">${DIET_DAYS.map(dd => `<span class="client-org-chip ${dd === tplEditDay ? 'active' : ''}" data-tday="${dd}">${dd}</span>`).join('')}</div>
-      ${DIET_SLOTS.map(([k, l]) => `<div class="diet-slot"><div class="diet-slot-l">${l}</div><select class="cv-input" data-tslot="${k}">${opts(k)}</select></div>`).join('')}
-      <div class="diet-lv" style="margin-top:10px;"><span>Podgląd na poziomie:</span>${DIET_LEVELS.map(L => `<span class="client-org-chip ${L === tplPreviewLvl ? 'active' : ''}" data-tlvl="${L}">${L}</span>`).join('')}</div>
-      <div class="diet-sum">Dzień ${tplEditDay} na ${tplPreviewLvl} kcal: <b>≈ ${sum.k} kcal · B ${sum.b} g</b></div>
-      <div class="cv-small" style="margin-top:6px;">Jadłospis układasz bez liczenia kalorii. Klientowi wstawiasz go w jego widoku Dieta i wybierasz poziom — porcje przeliczą się same.</div></div>`;
-  }
-  $('main').innerHTML = `<div class="section-title"><div class="bar"></div><h2>Biblioteka posiłków</h2></div>
-    <div class="section-desc">Gotowy jadłospis układasz raz i dajesz wielu klientom — każdemu na jego poziomie kcal.</div>
-    ${mealTabsHtml()}
-    <div class="lib-search-bar"><button class="btn" id="tplNew">+ Nowy jadłospis</button></div>
-    <div class="tpl-list">${list.map(x => { const filled = DIET_DAYS.filter(dd => Object.values((x.week || {})[dd] || {}).some(Boolean)).length;
-      return `<div class="tpl-item ${x.id === tplEditId ? 'on' : ''}" data-tpl="${escapeHtml(x.id)}"><b>${escapeHtml(x.name)}</b><span class="cv-small">${filled}/7 dni ułożonych</span></div>`; }).join('') || '<div class="empty-state">Brak gotowych jadłospisów.</div>'}</div>
-    ${editor}`;
-  bindMealTabs();
-  $('tplNew').onclick = async () => {
-    const name = (prompt('Nazwa jadłospisu (np. „Jadłospis A”):') || '').trim(); if(!name) return;
-    const nt = { id: 'dt_' + Date.now(), name, week: {} };
-    if(await saveDietTemplate(nt)){ tplEditId = nt.id; tplEditDay = 'Pon'; renderDietTemplatesView(); }
-  };
-  document.querySelectorAll('[data-tpl]').forEach(e => e.onclick = () => { tplEditId = e.dataset.tpl; renderDietTemplatesView(); });
-  if(!t) return;
-  $('tplName').onchange = async e => { t.name = e.target.value.trim() || t.name; await saveDietTemplate(t); renderDietTemplatesView(); };
-  $('tplDel').onclick = async () => {
-    if(!confirm(`Usunąć jadłospis „${t.name}”?\n\nKlienci, którym go wstawiłeś, zachowają swoje kopie.`)) return;
-    const fresh = ((await safeGet('diet_templates')) || []).filter(x => x.id !== t.id);
-    if(await persistWithFeedback('diet_templates', fresh)){ dietTemplates = fresh; tplEditId = null; renderDietTemplatesView(); }
-  };
-  document.querySelectorAll('[data-tday]').forEach(e => e.onclick = () => { tplEditDay = e.dataset.tday; renderDietTemplatesView(); });
-  document.querySelectorAll('[data-tlvl]').forEach(e => e.onclick = () => { tplPreviewLvl = +e.dataset.tlvl; renderDietTemplatesView(); });
-  document.querySelectorAll('[data-tslot]').forEach(sel => sel.onchange = async () => {
-    t.week = t.week || {}; t.week[tplEditDay] = t.week[tplEditDay] || {}; t.week[tplEditDay][sel.dataset.tslot] = sel.value || null;
-    await saveDietTemplate(t); renderDietTemplatesView();
-  });
-}
 
 /* ---------- Import posilkow z Excela (wzor-posilki-MoveU.xlsx) ---------- */
 const IMPORT_CATS = { 'śniadanie':'sn', 'sniadanie':'sn', 'przekąska':'pr', 'przekaska':'pr', 'obiad':'ob', 'kolacja':'ko' };
@@ -3296,17 +3859,20 @@ async function parseMealWorkbook(buf){
   await wb.xlsx.load(buf);
   const shM = wb.getWorksheet('Posiłki'), shS = wb.getWorksheet('Składniki');
   if(!shM || !shS) throw new Error('W pliku brakuje arkuszy „Posiłki” i „Składniki”. Użyj wzoru wzor-posilki-MoveU.xlsx.');
-  const errors = [], meals = [], byName = {};
+  const errors = [], meals = [], byName = {}, pre = [];
   xlRows(shM).forEach(o => {
     const name = xlCol(o, 'nazwa posiłku'); if(!name) return;
     const catLabel = xlCol(o, 'kategoria').toLowerCase(), cat = IMPORT_CATS[catLabel];
-    const kcal = numv(xlCol(o, 'kcal'));
+    /* DIETA-WSP: makro z pliku jest tylko zapasowe - po imporcie posilek liczy sie ze skladnikow (baza produktow), gdy wszystkie sa w bazie */
+    const xb = xlCol(o, 'białko'), xt = xlCol(o, 'tłuszcz'), xw = xlCol(o, 'węglowodany'), xf = xlCol(o, 'błonnik');
     if(!cat){ errors.push(`Posiłki, wiersz ${o.__row}: „${name}” — brak albo zła kategoria.`); return; }
-    if(!kcal){ errors.push(`Posiłki, wiersz ${o.__row}: „${name}” — brak kcal.`); return; }
     if(byName[name.toLowerCase()]){ errors.push(`Posiłki, wiersz ${o.__row}: „${name}” — nazwa powtórzona, pominięto.`); return; }
-    const m = { name, category: cat, minutes: xlCol(o, 'czas'), kcal: String(kcal), b: xlCol(o, 'białko'), t: xlCol(o, 'tłuszcz'), w: xlCol(o, 'węglowodany'),
+    const hasM = numv(xb) > 0 || numv(xt) > 0 || numv(xw) > 0;
+    const m = { name, category: cat, nutri: hasM ? 'reczne' : 'czesciowe', kcal: '', b: hasM ? xb : '', t: hasM ? xt : '', w: hasM ? xw : '', fib: hasM ? xf : '',
       steps: xlCol(o, 'sposób').split(/\r?\n/).map(x => x.trim()).filter(Boolean), photo: xlCol(o, 'link'), fixed: xlCol(o, 'porcja stała').toLowerCase() === 'tak', ingredients: [] };
     byName[name.toLowerCase()] = m; meals.push(m);
+    /* DIETA-WSP: kolumna „Importować? (tak/nie)” - wstepne zaznaczenie w podgladzie importu (brak kolumny lub pusta = zaznaczony) */
+    const imp = xlCol(o, 'importować').toLowerCase(); pre.push(imp === '' || imp === 'tak');
   });
   xlRows(shS).forEach(o => {
     const mealName = xlCol(o, 'nazwa posiłku'); if(!mealName) return;
@@ -3316,7 +3882,7 @@ async function parseMealWorkbook(buf){
     if(!ing || !qty){ errors.push(`Składniki, wiersz ${o.__row}: brak nazwy składnika albo ilości.`); return; }
     m.ingredients.push({ name: ing, qty: String(numv(qty) || qty), unit, cat: IMPORT_DEPS[xlCol(o, 'dział').toLowerCase()] || 'i', scale: xlCol(o, 'skalować').toLowerCase() !== 'nie' });
   });
-  return { meals, errors };
+  return { meals, errors, pre };
 }
 async function importMealsFromFile(file){
   if(typeof ExcelJS === 'undefined'){ alert('Nie udało się wczytać modułu do plików Excel. Odśwież stronę i spróbuj ponownie.'); return; }
@@ -3324,14 +3890,23 @@ async function importMealsFromFile(file){
   try{ parsed = await parseMealWorkbook(await file.arrayBuffer()); }
   catch(e){ alert(e.message || 'Nie udało się odczytać pliku.'); return; }
   const exist = new Map((mealLibrary || []).map(m => [m.name.trim().toLowerCase(), m]));
+  await loadFoodProducts(true);
+  parsed.meals.forEach(recomputeMealNutrition);   /* DIETA-WSP: dopasowanie skladnikow do bazy produktow */
   const rows = parsed.meals.map((m, i) => ({ i, m, upd: exist.has(m.name.toLowerCase()) }));
+  const tagOf = m => m.nutri === 'skladniki' ? '<span class="imp-tag new">ze składników</span>' : m.nutri === 'reczne' ? `<span class="imp-tag upd" title="Brakuje w bazie: ${escapeHtml(m.missing.join(', '))}">makro z pliku · brak ${m.missing.length}</span>` : `<span class="imp-tag miss" title="Brakuje w bazie: ${escapeHtml(m.missing.join(', '))}">niepełne · brak ${m.missing.length}</span>`;
   mealModal(`<div class="me-wrap"><h3 style="margin:0 0 6px;">Import z Excela</h3>
-    <div class="cv-small" style="margin-bottom:10px;">Znaleziono ${rows.length} ${plPlural(rows.length, 'posiłek', 'posiłki', 'posiłków')}: nowe ${rows.filter(r => !r.upd).length}, do aktualizacji ${rows.filter(r => r.upd).length}. Odznacz te, których nie chcesz (np. przykłady ze wzoru).</div>
+    <div class="cv-small" style="margin-bottom:10px;">Znaleziono ${rows.length} ${plPlural(rows.length, 'posiłek', 'posiłki', 'posiłków')}: nowe ${rows.filter(r => !r.upd).length}, do aktualizacji ${rows.filter(r => r.upd).length}. Zaznaczone: <b id="impCnt">${rows.filter(r => parsed.pre[r.i]).length}</b>. Wstępny wybór pochodzi z kolumny „Importować?” w pliku — możesz go tu zmienić.<br>Kcal i makro liczą się ze składników z bazy produktów. Posiłki z brakami możesz zaimportować — przeliczą się same, gdy uzupełnisz produkty.</div>
     ${parsed.errors.length ? `<div class="cv-alert" style="background:#FFF4E5;border-color:#F3C88B;"><div><b>Pominięte wiersze (${parsed.errors.length}):</b><br>${parsed.errors.slice(0, 12).map(escapeHtml).join('<br>')}${parsed.errors.length > 12 ? '<br>…' : ''}</div></div>` : ''}
-    <div class="imp-list">${rows.map(r => `<label class="imp-row"><input type="checkbox" data-imp="${r.i}" checked><div><b>${escapeHtml(r.m.name)}</b><div class="cv-small">${escapeHtml(MEAL_CATS[r.m.category])} · ${escapeHtml(r.m.kcal)} kcal · składników: ${r.m.ingredients.length} · kroków: ${r.m.steps.length}</div></div><span class="imp-tag ${r.upd ? 'upd' : 'new'}">${r.upd ? 'zaktualizuje' : 'nowy'}</span></label>`).join('') || '<div class="empty-state">Brak posiłków do importu.</div>'}</div>
+    ${rows.length > 1 ? '<div style="display:flex;gap:6px;margin-bottom:6px;"><button class="btn ghost" id="impAll" style="padding:4px 10px;font-size:12px;">Zaznacz wszystkie</button><button class="btn ghost" id="impNone" style="padding:4px 10px;font-size:12px;">Odznacz wszystkie</button></div>' : ''}
+    <div class="imp-list">${rows.map(r => `<label class="imp-row"><input type="checkbox" data-imp="${r.i}" ${parsed.pre[r.i] ? 'checked' : ''}><div><b>${escapeHtml(r.m.name)}</b><div class="cv-small">${escapeHtml(MEAL_CATS[r.m.category])} · ${escapeHtml(r.m.kcal)} kcal · składników: ${r.m.ingredients.length} · kroków: ${r.m.steps.length}${r.upd ? ' · zaktualizuje istniejący' : ''}</div></div>${tagOf(r.m)}</label>`).join('') || '<div class="empty-state">Brak posiłków do importu.</div>'}</div>
     <div class="md-acts" style="padding:12px 0 0;"><button class="btn" id="impGo" ${rows.length ? '' : 'disabled'}>Importuj zaznaczone</button><button class="btn ghost" id="impCancel">Anuluj</button></div></div>`);
   $('impCancel').onclick = closeMealModal;
   if(!rows.length) return;
+  /* DIETA-WSP: licznik zaznaczonych + zaznacz/odznacz wszystkie */
+  const impCount = () => { $('impCnt').textContent = document.querySelectorAll('[data-imp]:checked').length; };
+  document.querySelectorAll('[data-imp]').forEach(cb => cb.addEventListener('change', impCount));
+  if($('impAll')) $('impAll').onclick = () => { document.querySelectorAll('[data-imp]').forEach(cb => cb.checked = true); impCount(); };
+  if($('impNone')) $('impNone').onclick = () => { document.querySelectorAll('[data-imp]').forEach(cb => cb.checked = false); impCount(); };
   $('impGo').onclick = async () => {
     const pick = [...document.querySelectorAll('[data-imp]:checked')].map(cb => rows[+cb.dataset.imp].m);
     if(!pick.length){ alert('Nic nie zaznaczono.'); return; }
