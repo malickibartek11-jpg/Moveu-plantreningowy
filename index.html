@@ -931,33 +931,6 @@
   .ev-tline{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
   .ev-tline-i{display:inline-flex;align-items:center;gap:6px;background:var(--surface-2);border:1px solid var(--line);border-radius:16px;padding:4px 10px 4px 4px;font-size:12px;}
   .ev-ic-xs{width:20px !important;height:20px !important;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;} .ev-ic-xs svg{width:11px;height:11px;}
-
-  /* ===== bol + gotowosc ===== */
-  .pain-row .rpe-pill{opacity:.55;} .pain-row .rpe-pill.selected{opacity:1;}
-  .pain-where{margin-top:8px;min-height:auto;}
-  .pain-hint{font-size:12px;color:#B4472E;background:#FDECE8;border-radius:7px;padding:5px 8px;margin-bottom:6px;}
-  .pain-alert{background:#FDECE8;border-color:#F2B8AA;}
-  .pain-up{color:#B4472E;font-weight:700;font-size:12px;} .pain-down{color:#2E9E5B;font-weight:700;font-size:12px;}
-  .pain-chip{display:inline-flex;width:22px;height:22px;border-radius:50%;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;margin-right:3px;}
-  .pain-chip.p0{background:#2E9E5B;} .pain-chip.p1{background:#C9BE47;} .pain-chip.p2{background:#E87E35;} .pain-chip.p3{background:#B4472E;}
-  .well-card{background:var(--surface);border:1.5px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:12px;}
-  .well-h{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15px;margin-bottom:6px;}
-  .well-h .cv-small{font-family:'IBM Plex Sans',sans-serif;font-weight:400;margin-left:4px;}
-  .well-q{padding:6px 0;border-top:1px solid var(--line);}
-  .well-l{font-size:12.5px;font-weight:700;margin-bottom:5px;}
-  .well-opts{display:flex;gap:6px;}
-  .well-o{flex:1;height:36px;border-radius:9px;border:1.5px solid var(--line);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;cursor:pointer;background:var(--surface);}
-  .well-o.on.v1{background:#B4472E;color:#fff;border-color:#B4472E;} .well-o.on.v2{background:#E87E35;color:#fff;border-color:#E87E35;}
-  .well-o.on.v3{background:#E8B93F;color:#fff;border-color:#E8B93F;} .well-o.on.v4{background:#8AB94E;color:#fff;border-color:#8AB94E;} .well-o.on.v5{background:#2E9E5B;color:#fff;border-color:#2E9E5B;}
-  .well-o.sm{width:26px;height:26px;flex:none;font-size:12px;border-radius:50%;display:inline-flex;cursor:default;}
-  .well-ends{display:flex;justify-content:space-between;font-size:10.5px;color:var(--muted);margin-top:3px;}
-  .well-btns{display:flex;gap:8px;margin-top:10px;} .well-btns .btn{flex:1;}
-  .well-done{font-size:12.5px;border-radius:10px;padding:8px 12px;margin-bottom:12px;}
-  .well-edit{color:#3E7CB1;font-weight:700;cursor:pointer;margin-left:6px;}
-  .well-pill{display:inline-block;font-size:11px;font-weight:700;padding:3px 9px;border-radius:10px;}
-  .well-green{background:#E3F4E9;color:#2E9E5B;} .well-yellow{background:#FFF4E5;color:#B9781F;} .well-red{background:#FDECE8;color:#B4472E;}
-  .well-sum{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 12px;}
-  .well-grid{grid-template-columns:2fr 1.3fr .7fr .7fr .7fr .7fr 1.6fr !important;}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -1028,7 +1001,6 @@
       <button class="add-client-btn" id="showOnlineBtn">💻 Treningi online</button>
       <button class="add-client-btn" id="showLibraryBtn" style="margin-top:14px;">📚 Biblioteka ćwiczeń</button>
       <button class="add-client-btn" id="showMealsBtn">Biblioteka posiłków</button>
-      <button class="add-client-btn" id="showReadyBtn">Gotowość dziś</button>
       <button class="add-client-btn" id="showVideosBtn">Filmy do obejrzenia <span class="vid-badge" id="vidBadge" style="display:none;"></span></button>
       <button class="add-client-btn" id="showRosterBtn">👥 Klienci</button>
       <button class="add-client-btn" id="copyAppLinkBtn">🔗 Skopiuj link aplikacji</button>
@@ -2375,12 +2347,6 @@ $('showLibraryBtn').onclick = () => navigateTo(async () => {
   renderClientList();
   renderLibraryView();
 });
-$('showReadyBtn').onclick = () => navigateTo(async () => {
-  trainerViewMode = 'ready';
-  selectedClientId = null;
-  renderClientList();
-  await renderReadinessView();
-});
 $('showVideosBtn').onclick = () => navigateTo(async () => {
   trainerViewMode = 'videos';
   selectedClientId = null;
@@ -2507,12 +2473,12 @@ async function refreshClientAlert(){
   const d = await loadClientNotes(id);
   const h = $('cvAlertHolder');
   if(!h || selectedClientId !== id) return;
-  h.innerHTML = ((d && d.alert) ? `<div class="cv-alert">⚠️ <div><b>Uwaga:</b> ${escapeHtml(d.alert)}</div></div>` : '') + painFlagHtml(id);
+  h.innerHTML = (d && d.alert) ? `<div class="cv-alert">⚠️ <div><b>Uwaga:</b> ${escapeHtml(d.alert)}</div></div>` : '';
 }
 async function showClientView(){
   const c = clients.find(cl => cl.id === selectedClientId);
   if(!c) return;
-  if(clientView === 'plan'){ await Promise.all([loadEvents(c.id), ensurePlanLoaded(c.id)]); if(selectedClientId === c.id && clientView === 'plan') renderMain(); return; }
+  if(clientView === 'plan'){ await loadEvents(c.id); if(selectedClientId === c.id && clientView === 'plan') renderMain(); return; }
   if(clientView === 'info'){ await Promise.all([loadClientNotes(c.id), ensurePlanLoaded(c.id)]); if(selectedClientId === c.id && clientView === 'info') renderClientInfo(); return; }
   if(clientView === 'diet'){ await Promise.all([loadDiet(c.id, true), loadMealLibrary()]); if(selectedClientId === c.id && clientView === 'diet') renderClientDiet(); return; }
   renderClientChooser();
@@ -2638,7 +2604,6 @@ function renderClientInfo(){
         <h4 style="margin-top:14px;">📈 Ból w czasie <span class="cv-small" style="font-weight:400;">z notatek z wpisanym bólem</span></h4>
         ${pains.length ? `<div class="cv-spark">${pains.map(n => `<i style="height:${Math.max(6, n.pain * 10)}%" title="${escapeHtml((n.date||'') + ': ' + n.pain + '/10')}"></i>`).join('')}</div>` : '<div class="cv-small">Brak danych.</div>'}</div>
       </div>
-      ${painSectionHtml(id)}
       <div class="cv-privacy">🔒 <b>Te informacje widzi tylko trener.</b> Osoba logująca się na własne konto nie ma do nich dostępu.</div>`;
   }
   if(infoTab === 'post') body = clientProgressHtml(id);
@@ -3843,117 +3808,6 @@ async function renderVideosView(){
   document.querySelectorAll('[data-openc]').forEach(b => b.onclick = () => navigateTo(() => selectClient(b.dataset.openc)));
 }
 
-/* ============ BOL PRZY CWICZENIU (zglaszany przez klienta, 0-10) ============ */
-function painEntries(clientId){
-  const plan = plansCache[clientId] || {}, out = [];
-  Object.keys(plan).sort().forEach(ds => {
-    ((plan[ds] && plan[ds].exercises) || []).forEach(ex => {
-      if(ex.pain === 0 || ex.pain) out.push({ date: ds, name: resolveExName(ex), pain: parseInt(ex.pain) || 0, where: ex.painWhere || '' });
-    });
-  });
-  return out;
-}
-function painByExercise(clientId){
-  const by = {};
-  painEntries(clientId).forEach(e => { (by[e.name] = by[e.name] || []).push(e); });
-  return by;
-}
-/* Flaga: bol >= 5 w ostatnich 14 dniach albo rosnacy przy tym samym cwiczeniu (2 ostatnie wpisy, wzrost) */
-function painAlerts(clientId){
-  const since = addDaysToDateStr(todayKey(), -14), out = [];
-  Object.entries(painByExercise(clientId)).forEach(([name, list]) => {
-    const last = list[list.length - 1], prev = list.length > 1 ? list[list.length - 2] : null;
-    if(last.date < since || last.pain === 0) return;
-    const rising = prev && last.pain > prev.pain;
-    if(last.pain >= 5 || rising) out.push({ name, last, prev, rising });
-  });
-  return out.sort((a, b) => b.last.pain - a.last.pain);
-}
-function painFlagHtml(clientId){
-  const a = painAlerts(clientId); if(!a.length) return '';
-  return `<div class="cv-alert pain-alert"><div><b>Ból zgłoszony przez klienta:</b> ${a.map(x => `${escapeHtml(x.name)} <b>${x.last.pain}/10</b>${x.last.where ? ' (' + escapeHtml(x.last.where) + ')' : ''}${x.rising ? ` <span class="pain-up">rośnie: ${x.prev.pain} → ${x.last.pain}</span>` : ''} · ${escapeHtml(shortD(x.last.date))}`).join('<br>')}</div></div>`;
-}
-function painSectionHtml(clientId){
-  const by = painByExercise(clientId);
-  const names = Object.keys(by).filter(n => by[n].some(e => e.pain > 0)).sort((a, b) => by[b][by[b].length - 1].date.localeCompare(by[a][by[a].length - 1].date));
-  return `<div class="cv-card" style="margin-top:14px;"><h4>Ból przy ćwiczeniach <span class="cv-small" style="font-weight:400;">zgłaszany przez klienta po ćwiczeniu (0–10)</span></h4>
-    ${names.length ? `<table class="report-table"><tr><th>Ćwiczenie</th><th>Ostatnie zgłoszenia (od najstarszego)</th><th>Ostatnio</th><th>Gdzie</th></tr>
-      ${names.map(n => { const l = by[n].slice(-6), last = l[l.length - 1], prev = l.length > 1 ? l[l.length - 2] : null;
-        const trend = prev ? (last.pain > prev.pain ? '<span class="pain-up">↑ rośnie</span>' : last.pain < prev.pain ? '<span class="pain-down">↓ spada</span>' : '<span class="cv-small">bez zmian</span>') : '';
-        return `<tr><td><b>${escapeHtml(n)}</b></td><td>${l.map(e => `<span class="pain-chip p${Math.min(3, Math.ceil(e.pain / 3))}" title="${escapeHtml(e.date)}">${e.pain}</span>`).join('')} ${trend}</td><td>${escapeHtml(shortD(last.date))}</td><td>${escapeHtml(last.where || '—')}</td></tr>`; }).join('')}</table>`
-      : '<div class="cv-small">Brak zgłoszonego bólu. Klient zaznacza ból w oknie ćwiczenia, pod oceną RPE.</div>'}</div>`;
-}
-
-/* ============ GOTOWOSC PRZED TRENINGIEM (wellness) ============
-   Zapisywana w dniu planu: day.wellness = {sleep, fatigue, soreness, mood, at} (1-5, 5 = najlepiej).
-   Pytamy tylko w dniu treningu (dzis). Suma 4-20: >=15 zielony, 11-14 zolty, <=10 albo ktorakolwiek 1 = czerwony. */
-const WELL_Q = [
-  ['sleep', 'Sen', 'bardzo źle', 'bardzo dobrze'],
-  ['fatigue', 'Zmęczenie', 'bardzo zmęczony', 'wypoczęty'],
-  ['soreness', 'Zakwasy / bolesność', 'bardzo duże', 'brak'],
-  ['mood', 'Nastrój', 'bardzo zły', 'bardzo dobry']
-];
-function wellnessScore(w){
-  if(!w || w.skipped) return null;
-  const vals = WELL_Q.map(([k]) => parseInt(w[k]) || 0);
-  if(vals.some(v => !v)) return null;
-  const sum = vals.reduce((a, b) => a + b, 0);
-  const level = (sum <= 10 || vals.includes(1)) ? 'red' : sum <= 14 ? 'yellow' : 'green';
-  return { sum, level };
-}
-let wellDraft = null;
-function wellnessCardHtml(day){
-  if(isTrainerUser || aSelectedDateStr !== todayKey() || !day || !day.exercises || !day.exercises.length) return '';
-  if(day.wellness && (day.wellness.skipped || wellnessScore(day.wellness))){
-    const sc = wellnessScore(day.wellness);
-    return sc ? `<div class="well-done well-${sc.level}">Gotowość na dziś: <b>${sc.sum}/20</b> · zapisane <span class="well-edit" id="wellEdit">zmień</span></div>` : '';
-  }
-  wellDraft = wellDraft && wellDraft.date === aSelectedDateStr ? wellDraft : { date: aSelectedDateStr };
-  return `<div class="well-card"><div class="well-h">Jak się dziś czujesz? <span class="cv-small">30 sekund przed treningiem</span></div>
-    ${WELL_Q.map(([k, l, lo, hi]) => `<div class="well-q"><div class="well-l">${l}</div><div class="well-opts">${[1,2,3,4,5].map(v => `<span class="well-o ${wellDraft[k] === v ? 'on' : ''} v${v}" data-wk="${k}" data-wv="${v}">${v}</span>`).join('')}</div><div class="well-ends"><span>${lo}</span><span>${hi}</span></div></div>`).join('')}
-    <div class="well-btns"><button class="btn" id="wellSave">Zapisz</button><button class="btn ghost" id="wellSkip">Pomiń</button></div></div>`;
-}
-function bindWellnessCard(day){
-  const rer = () => renderAthleteDay();
-  document.querySelectorAll('[data-wk]').forEach(o => o.onclick = () => { wellDraft[o.dataset.wk] = +o.dataset.wv; rer(); });
-  if($('wellEdit')) $('wellEdit').onclick = () => { wellDraft = Object.assign({ date: aSelectedDateStr }, day.wellness || {}); delete wellDraft.skipped; day.wellness = null; rer(); };
-  if($('wellSkip')) $('wellSkip').onclick = async () => { day.wellness = { skipped: true, at: new Date().toISOString() }; await saveResultWithOfflineBackup(aClientId, aSelectedDateStr, day); rer(); };
-  if($('wellSave')) $('wellSave').onclick = async () => {
-    if(WELL_Q.some(([k]) => !wellDraft[k])){ alert('Zaznacz wszystkie 4 odpowiedzi (1–5).'); return; }
-    day.wellness = { sleep: wellDraft.sleep, fatigue: wellDraft.fatigue, soreness: wellDraft.soreness, mood: wellDraft.mood, at: new Date().toISOString() };
-    await saveResultWithOfflineBackup(aClientId, aSelectedDateStr, day);
-    toast('Zapisano — trener zobaczy Twoją gotowość');
-    rer();
-  };
-}
-function wellnessLineHtml(w){
-  const sc = wellnessScore(w);
-  if(!sc) return '';
-  return `<span class="well-pill well-${sc.level}" title="Sen ${w.sleep} · Zmęczenie ${w.fatigue} · Zakwasy ${w.soreness} · Nastrój ${w.mood} (5 = najlepiej)">Gotowość ${sc.sum}/20</span>`;
-}
-/* ---------- Trener: Gotowosc dzis ---------- */
-async function renderReadinessView(){
-  $('main').innerHTML = `<div class="section-title"><div class="bar"></div><h2>Gotowość dziś</h2></div><div class="section-desc">Ładowanie…</div>`;
-  await Promise.all(clients.map(c => ensurePlanLoaded(c.id)));
-  const today = todayKey();
-  const rows = clients.map(c => { const d = (plansCache[c.id] || {})[today]; if(!d || !d.exercises || !d.exercises.length) return null;
-    const sc = wellnessScore(d.wellness); return { c, d, sc, skipped: !!(d.wellness && d.wellness.skipped), alerts: painAlerts(c.id) }; }).filter(Boolean);
-  const order = r => r.sc ? ({ red: 0, yellow: 1, green: 2 })[r.sc.level] : 3;
-  rows.sort((a, b) => order(a) - order(b) || surnameKey(a.c.name).localeCompare(surnameKey(b.c.name), 'pl'));
-  const cnt = l => rows.filter(r => r.sc && r.sc.level === l).length;
-  $('main').innerHTML = `<div class="section-title"><div class="bar"></div><h2>Gotowość dziś</h2></div>
-    <div class="section-desc">Osoby z treningiem zaplanowanym na dziś. Każda odpowiedź 1–5 (5 = najlepiej), suma 4–20. Czerwony: ≤ 10 albo któraś odpowiedź = 1.</div>
-    <div class="well-sum"><span class="well-pill well-red">${cnt('red')} słabo</span><span class="well-pill well-yellow">${cnt('yellow')} średnio</span><span class="well-pill well-green">${cnt('green')} dobrze</span><span class="cv-small">${rows.filter(r => !r.sc).length} bez odpowiedzi</span></div>
-    <div class="rl-list"><div class="rl-head well-grid"><div>Osoba</div><div>Gotowość</div><div>Sen</div><div>Zmęcz.</div><div>Zakwasy</div><div>Nastrój</div><div>Ból</div></div>
-    ${rows.map(r => { const w = r.d.wellness || {};
-      const cell = k => r.sc ? `<span class="well-o v${w[k]} on sm">${w[k]}</span>` : '<span class="cv-small">—</span>';
-      return `<div class="rl-row well-grid" data-cid="${r.c.id}"><div><b>${escapeHtml(r.c.name)}</b><br><small class="cv-small">${escapeHtml(r.d.title || 'Trening')}</small></div>
-        <div>${r.sc ? wellnessLineHtml(w) : `<span class="cv-small">${r.skipped ? 'pominięte' : 'jeszcze nie wypełnione'}</span>`}</div>
-        <div>${cell('sleep')}</div><div>${cell('fatigue')}</div><div>${cell('soreness')}</div><div>${cell('mood')}</div>
-        <div>${r.alerts.length ? r.alerts.map(a => `<span class="pain-up">${escapeHtml(a.name)} ${a.last.pain}/10</span>`).join('<br>') : '<span class="cv-small">—</span>'}</div></div>`; }).join('') || '<div class="empty-state" style="padding:22px;">Nikt nie ma dziś zaplanowanego treningu.</div>'}</div>`;
-  document.querySelectorAll('.rl-row[data-cid]').forEach(r => r.onclick = () => navigateTo(async () => { localStorage.setItem('moveu_client_view', 'plan'); await selectClient(r.dataset.cid); selectedDateStr = today; renderCalendar(); renderDayPanel(); }));
-}
-
 function renderMain(){
   const client = clients.find(c => c.id === selectedClientId);
   if(!client){ return; }
@@ -4059,7 +3913,6 @@ function renderDayPanel(){
 
   holder.innerHTML = `
     <div class="day-panel">
-      ${!editingTemplateMode && day && day.wellness && wellnessScore(day.wellness) ? `<div class="ev-tline">${wellnessLineHtml(day.wellness)}<span class="cv-small">Sen ${day.wellness.sleep} · Zmęczenie ${day.wellness.fatigue} · Zakwasy ${day.wellness.soreness} · Nastrój ${day.wellness.mood} (5 = najlepiej)</span></div>` : ''}
       ${!editingTemplateMode && eventsOn(selectedClientId, selectedDateStr).length ? `<div class="ev-tline">${eventsOn(selectedClientId, selectedDateStr).map(e => `<span class="ev-tline-i">${evIconHtml(e.title, 'ev-ic ev-ic-xs')}<b>Wpis zawodnika:</b> ${eventLabel(e)}${e.note ? ` <span class="cv-small">· ${escapeHtml(e.note)}</span>` : ''}</span>`).join('')}</div>` : ''}
       ${isOverdue ? `
       <div class="overdue-alert">
@@ -4504,7 +4357,6 @@ function renderExRows(day, category){
     trN.innerHTML = `
       <td></td>
       <td colspan="11">
-        ${(parseInt(ex.pain) || 0) > 0 ? `<div class="pain-hint">Klient zgłosił ból: <b>${parseInt(ex.pain)}/10</b>${ex.painWhere ? ' — ' + escapeHtml(ex.painWhere) : ''}</div>` : ''}
         ${libNoteFor(ex) ? `<div class="lib-note-hint">Stałe uwagi z biblioteki (klient widzi zawsze): ${escapeHtml(libNoteFor(ex))}</div>` : ''}
         <span class="note-label">Notatka dla klienta na ten dzień (widoczna w jego widoku)</span>
         <input class="note-input" data-nf="note" value="${escapeHtml(ex.note||'')}" placeholder="np. Trzymaj plecy w neutralu...">
@@ -7850,7 +7702,6 @@ function renderAthleteDay(){
   holder.innerHTML = `
     <div class="a-daylabel"><h2>${aSelectedDateStr}</h2>${day.exercises.some(e=>e.isTest) ? '<span class="badge-test">TEST</span>':''}${(aRosterMode && aManualDate) ? '<button class="a-today-btn" id="aTodayBtn">↺ Dziś</button><span class="a-pin">📌 ten dzień zostaje przy zmianie osoby</span>' : ''}</div>
     ${evHtmlA}
-    ${wellnessCardHtml(day)}
     ${titleCardHtml}
     ${sectionHtml('warmup','Rozgrzewka')}
     ${sectionHtml('main','Ćwiczenia główne')}
@@ -7866,7 +7717,6 @@ function renderAthleteDay(){
     it.onclick = () => openExerciseModal(it.dataset.exid, day);
   });
   bindEventDeletes(holder, aClientId, () => { if($('aCalGrid')) renderAthleteCalendar(); renderAthleteDay(); });
-  bindWellnessCard(day);
 }
 
 $('aExerciseModal').addEventListener('click', (e) => {
@@ -8194,9 +8044,6 @@ function renderAthleteDetail(day){
       <div class="feedback-label">Jak ciężkie było to ćwiczenie? (RPE)</div>
       <div class="rpe-row" id="rpeRow"></div>
       <div class="rpe-scale-labels"><span>Bardzo lekko</span><span>Maksymalny wysiłek</span></div>
-      <div class="feedback-label" style="margin-top:14px;">Czy coś bolało przy tym ćwiczeniu? (0 = nie)</div>
-      <div class="rpe-row pain-row" id="painRow"></div>
-      <div id="painWhereWrap" style="display:${(parseInt(ex.pain) || 0) > 0 ? '' : 'none'};"><input class="note-textarea pain-where" id="painWhere" placeholder="Gdzie? np. kolano lewe, dolny odcinek pleców" value="${escapeHtml(ex.painWhere || '')}"></div>
       <div class="note-label">Twoja notatka (opcjonalnie)</div>
       <textarea class="note-textarea" id="clientNoteInput" placeholder="Napisz, jak poszło — np. co bolało, co było za ciężkie/za lekkie...">${escapeHtml(ex.clientNote||'')}</textarea>
     </div>
@@ -8218,25 +8065,6 @@ function renderAthleteDetail(day){
     };
     rpeRowEl.appendChild(pill);
   }
-  const painRowEl = $('painRow');
-  const PAIN_COLORS = ['#2E9E5B','#8AB94E','#C9BE47','#E8B93F','#E89A3A','#E87E35','#E8632E','#D6472E','#C43D2B','#B4472E','#8F2F1E'];
-  for(let i = 0; i <= 10; i++){
-    const pill = document.createElement('div');
-    const cur = (ex.pain === 0 || ex.pain) ? parseInt(ex.pain) : null;
-    pill.className = 'rpe-pill' + (cur === i ? ' selected' : '');
-    pill.style.background = i === 0 ? '#2E9E5B' : PAIN_COLORS[i];
-    pill.textContent = i;
-    pill.onclick = async () => {
-      ex.pain = i; ex.painAt = new Date().toISOString();
-      if(i === 0) ex.painWhere = '';
-      painRowEl.querySelectorAll('.rpe-pill').forEach(p => p.classList.remove('selected'));
-      pill.classList.add('selected');
-      $('painWhereWrap').style.display = i > 0 ? '' : 'none';
-      await saveResultWithOfflineBackup(aClientId, aSelectedDateStr, day);
-    };
-    painRowEl.appendChild(pill);
-  }
-  $('painWhere').onchange = async () => { ex.painWhere = $('painWhere').value.trim(); await saveResultWithOfflineBackup(aClientId, aSelectedDateStr, day); };
   $('clientNoteInput').onchange = async () => {
     ex.clientNote = $('clientNoteInput').value;
     await saveResultWithOfflineBackup(aClientId, aSelectedDateStr, day);
