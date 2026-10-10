@@ -1052,6 +1052,24 @@
   .modal-close.rpe-dim{opacity:.35;}
   .eq-sel{font-size:12.5px;padding:4px 6px;border-radius:7px;border:1px solid var(--line);background:#fff;}
   .eq-auto{display:block;font-size:10.5px;color:var(--muted);margin-top:2px;}.eq-warn{color:#9A5B00;}
+
+  .rpe-info-link{display:inline-flex;align-items:center;gap:4px;white-space:nowrap;color:var(--text);text-transform:none;letter-spacing:0;font-weight:600;font-size:11.5px;cursor:pointer;}
+  .rpe-info-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:4000;display:flex;align-items:flex-end;justify-content:center;}
+  .rpe-info-sheet{background:#fff;color:#1C1C1C;width:100%;max-width:480px;border-radius:20px 20px 0 0;padding:16px 16px 22px;max-height:90vh;overflow-y:auto;}
+  .rpe-info-sheet .grab{width:40px;height:4px;border-radius:4px;background:#D9D6D0;margin:0 auto 12px;}
+  .rpe-info-sheet h3{margin:0 0 4px;font-size:19px;}
+  .rpe-info-sheet .lead{color:#5E5A52;font-size:13.5px;margin:0 0 12px;line-height:1.45;}
+  .rpe-info-scale{border:1px solid var(--line);border-radius:12px;padding:10px 8px 8px;}
+  .rpe-info-scale .srow{display:grid;grid-template-columns:34px repeat(11,1fr);gap:3px;align-items:center;}
+  .rpe-info-scale .srow+.srow{margin-top:5px;}
+  .rpe-info-scale .h{font-size:10px;font-weight:700;color:var(--muted);}
+  .rpe-info-scale .cell{height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:12px;color:#fff;}
+  .rpe-info-scale .cell.rir{background:#F1EFEB;color:#3A3A3A;height:26px;}
+  .rpe-info-scale .sl{display:flex;justify-content:space-between;font-size:10.5px;color:var(--muted);margin:5px 0 0 37px;}
+  .rpe-info-leg{margin-top:12px;display:grid;gap:6px;}
+  .rpe-info-leg div{display:flex;gap:10px;align-items:center;font-size:13px;padding:7px 10px;border-radius:10px;background:#FAF9F7;}
+  .rpe-info-leg .n{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:14px;min-width:62px;white-space:nowrap;}
+  .rpe-info-leg .n small{font-size:10px;font-weight:600;color:var(--muted);display:block;}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -5593,6 +5611,30 @@ function noWeightProgFlag(clientId, ex, beforeDate){
   return null;
 }
 /* czy u klienta dziala automat + obowiazkowe RPE */
+function exTargetRpe(ex){ const t = pf(ex && ex.targetRpe); return isNaN(t) ? PROG_DEFAULT_RPE : t; }
+/* okienko "Objasnienie skali" RPE / RIR (bez celu - zeby nie podpowiadac klientowi) */
+function openRpeInfoSheet(){
+  const C = ['#2E9E5B','#3EA55C','#5CAE55','#8AB94E','#C9BE47','#E8B93F','#E89A3A','#E87E35','#E8632E','#D6472E','#B4472E'];
+  const L = [[10,'Maksimum — nie dałbyś rady zrobić ani jednego więcej'],[9,'Zostało 1 powtórzenie w zapasie'],[8,'Zostały 2 powtórzenia w zapasie'],[7,'Zostały 3 powtórzenia — szybko i pewnie'],[6,'4 i więcej w zapasie — lekko, rozgrzewkowo']];
+  let bg = document.getElementById('rpeInfoBg');
+  if(bg) bg.remove();
+  bg = document.createElement('div');
+  bg.id = 'rpeInfoBg'; bg.className = 'rpe-info-bg';
+  bg.innerHTML = `<div class="rpe-info-sheet"><div class="grab"></div>
+    <h3>Co to jest RPE?</h3>
+    <p class="lead">RPE to skala <b>0–10</b>: jak ciężka była seria. Najprościej liczyć to przez <b>RIR</b> — ile powtórzeń jeszcze dałbyś radę zrobić, zanim byłoby „na maksa”.</p>
+    <div class="rpe-info-scale">
+      <div class="srow"><div class="h">RPE</div>${C.map((c, i) => `<div class="cell" style="background:${c}">${i}</div>`).join('')}</div>
+      <div class="srow"><div class="h">RIR</div>${C.map((c, i) => `<div class="cell rir">${10 - i}</div>`).join('')}</div>
+      <div class="sl"><span>bardzo lekko</span><span>maksimum</span></div>
+    </div>
+    <div class="rpe-info-leg">${L.map(([r, t]) => `<div><span class="n">RPE ${r}<small>RIR ${10 - r}${r === 6 ? '+' : ''}</small></span><span>${t}</span></div>`).join('')}</div>
+    <button class="btn" id="rpeInfoOk" style="width:100%;margin-top:14px;padding:13px;">Rozumiem</button></div>`;
+  document.body.appendChild(bg);
+  const close = () => bg.remove();
+  bg.onclick = e => { if(e.target === bg) close(); };
+  bg.querySelector('#rpeInfoOk').onclick = close;
+}
 function progActive(ex){ return ex && ex.category === 'main' && !ex.noWeight && !ex.isInterval && !ex.isTest && !ex.progOff; }
 const fmtKg = v => String(v).replace('.', ',');
 function rpeNoteText(r){ if(!r) return ''; return `RPE ${fmtKg(r.actual)} / cel ${fmtKg(r.target)}`; }
@@ -8603,7 +8645,7 @@ function renderAthleteDay(){
           </div>
           <div>
             <div class="nm2">${escapeHtml(resolveExName(ex))}</div>
-            <div class="sub2">${escapeHtml(ex.sets)} X ${escapeHtml(ex.reps)}${(() => { if(ex.category !== 'main') return ''; const wi = athleteWeightInfo(aClientId, ex, aSelectedDateStr); return wi.display ? ` · <span class="a-sub-kg">${escapeHtml(fmtKg(wi.display))} kg</span>${wi.progKg ? '<span class="a-sub-up">↑</span>' : ''}` : ''; })()}</div>
+            <div class="sub2">${escapeHtml(ex.sets)} X ${escapeHtml(ex.reps)}${(() => { if(ex.category !== 'main') return ''; const wi = athleteWeightInfo(aClientId, ex, aSelectedDateStr); return (wi.display ? ` · <span class="a-sub-kg">${escapeHtml(fmtKg(wi.display))} kg</span>${wi.progKg ? '<span class="a-sub-up">↑</span>' : ''}` : '') + (progActive(ex) ? ` · <span class="a-sub-kg">RPE ${escapeHtml(fmtKg(exTargetRpe(ex)))}</span>` : ''); })()}</div>
           </div>
           <div class="chev2">›</div>
         </div>`;
@@ -8956,6 +8998,7 @@ function renderAthleteDetail(day){
       ` : `
         <div><div class="t">TEMPO</div><div class="v">${escapeHtml(ex.tempo)}</div></div>
         <div><div class="t">PRZERWA</div><div class="v">${escapeHtml(ex.rest)}</div></div>
+        ${needRpe ? `<div><div class="t">RPE</div><div class="v">${escapeHtml(fmtKg(exTargetRpe(ex)))}</div></div>` : ''}
       `}
     </div>
     ${(ex.category==='main' && ex.isTest) ? renderTestHistoryBlock(aClientId, exName) : (wiA.progKg ? `<div class="a-prog-card"><div class="l"><div class="ic">${A_PROG_ICON}</div>Twój progres</div><div class="v">+${escapeHtml(fmtKg(wiA.progKg))} kg</div></div>` : '')}
@@ -8984,7 +9027,7 @@ function renderAthleteDetail(day){
     </table>
     `}
     <div class="feedback-section">
-      <div class="feedback-label">Jak ciężkie było to ćwiczenie? (RPE)</div>
+      <div class="feedback-label" style="display:flex;justify-content:space-between;align-items:center;gap:8px;"><span>Jak ciężkie było to ćwiczenie? (RPE)</span><a class="rpe-info-link" id="aRpeInfo"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 11v6M12 7.5v.5"/></svg>Objaśnienie skali</a></div>
       <div class="rpe-row" id="rpeRow"></div>
       <div class="rpe-scale-labels"><span>Bardzo lekko</span><span>Maksymalny wysiłek</span></div>
       <div class="rpe-need-msg" id="aRpeNeedMsg" style="display:none;">⛔ Zaznacz RPE, żeby zakończyć ćwiczenie</div>
@@ -9037,6 +9080,7 @@ function renderAthleteDetail(day){
     }
     return true;
   };
+  if($('aRpeInfo')) $('aRpeInfo').onclick = openRpeInfoSheet;
   $('aModalCloseBtn').onclick = requestCloseExerciseModal;
   $('aDoneBtn').onclick = requestCloseExerciseModal;
   applyRpeLock();
