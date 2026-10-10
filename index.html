@@ -1012,9 +1012,46 @@
 
   /* ===== Trenerzy ===== */
   .tr-add{display:flex;gap:8px;margin:4px 0 14px;max-width:560px;} .tr-add input{flex:1;}
-  .tr-grid{grid-template-columns:2.2fr 1.2fr 100px !important;}
+  .tr-grid{grid-template-columns:2fr 1.1fr 1.6fr 90px !important;}
+  .tr-groups{position:relative;}
+  .rl-list.tr-list{overflow:visible;}
+  .rl-list.tr-list .rl-head{border-radius:12px 12px 0 0;}
+  .tr-groups summary{list-style:none;cursor:pointer;border:1px solid var(--line);border-radius:8px;padding:6px 28px 6px 10px;background:var(--surface);font-size:12.5px;position:relative;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:260px;}
+  .tr-groups summary::-webkit-details-marker{display:none;}
+  .tr-groups summary::after{content:'▾';position:absolute;right:9px;top:50%;transform:translateY(-50%);color:var(--muted);}
+  .tr-groups .tr-gpop{position:absolute;z-index:30;top:calc(100% + 4px);left:0;min-width:240px;max-height:320px;overflow-y:auto;background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:0 10px 28px rgba(0,0,0,.14);padding:8px;}
+  .tr-gpop label{display:flex;align-items:center;gap:8px;padding:5px 6px;border-radius:6px;font-size:12.5px;cursor:pointer;}
+  .tr-gpop label:hover{background:var(--surface-2);}
+  .tr-gpop .org{font-weight:700;}.tr-gpop .sub{padding-left:24px;}
+  .tr-gpop .all{border-bottom:1px solid var(--line);margin-bottom:4px;padding-bottom:7px;font-weight:700;}
   .tr-owner{background:var(--surface-2);cursor:default;}
   .rl-row.tr-grid{cursor:default;}
+
+  /* ===== PROGRESJA v2 ===== */
+  .pg-badge{display:inline-flex;align-items:center;gap:3px;margin-top:4px;font-size:11px;font-weight:600;line-height:1.2;padding:3px 7px;border-radius:999px;white-space:nowrap;cursor:pointer;}
+  .pg-up{background:#E3F4E9;color:#1F7A45;}.pg-dn{background:#FBE7E1;color:#B4472E;}.pg-eq{background:#ECEAE5;color:#5E5A52;}
+  .pg-fl{background:#FFF1D6;color:#9A5B00;border:1px solid #F2C46B;}.pg-new{background:#E8EEF8;color:#2F5FA8;}.pg-man{background:#ECEAE5;color:#5E5A52;cursor:default;}
+  .pg-why{margin-top:6px;background:#FFFFFF;border:1px solid var(--line);border-radius:10px;padding:9px 11px;font-size:12px;line-height:1.4;min-width:260px;box-shadow:0 6px 18px rgba(0,0,0,.08);text-align:left;}
+  .pg-why table{width:100%;border-collapse:collapse;margin-top:4px;}.pg-why td{padding:3px 0;border-bottom:1px solid #EFEDE9;vertical-align:top;}.pg-why td:last-child{text-align:right;font-weight:600;padding-left:10px;}
+  .pg-why-foot{color:var(--muted);font-size:11px;margin-top:6px;}
+  .pg-flagbox{border:1px solid #F2C46B;background:#FFF8EA;border-radius:12px;padding:10px 14px;margin:4px 0 10px;}
+  .pg-flagbox .t{font-weight:700;color:#9A5B00;font-size:13px;margin-bottom:4px;}
+  .pg-flagbox .r{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:12.5px;padding:6px 0;border-top:1px solid #F5DFB0;}
+  .pg-flagbox .r:first-of-type{border-top:0;}.pg-flagbox .btns{white-space:nowrap;}
+  .pg-mini{font-size:11.5px;font-weight:600;padding:5px 9px;border-radius:8px;border:1px solid var(--line);background:#fff;cursor:pointer;margin-left:4px;color:#1C1C1C;}
+  .pg-flag-tr td{border-bottom:0!important;}
+  .a-prog-card{display:flex;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin:0 0 12px;}
+  .a-prog-card .l{display:flex;align-items:center;gap:10px;color:#1F7A45;font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;}
+  .a-prog-card .ic{width:36px;height:36px;border-radius:10px;background:#E3F4E9;display:flex;align-items:center;justify-content:center;color:#1F7A45;}
+  .a-prog-card .v{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:24px;color:#1F7A45;}
+  .a-sub-kg{font-weight:600;color:var(--text);}
+  .a-sub-up{display:inline-block;margin-left:4px;padding:0 6px;border-radius:999px;background:#E3F4E9;color:#1F7A45;font-weight:700;font-size:11px;}
+  .feedback-section.rpe-need{border:2px solid #D6472E;background:#FDF1EE;}
+  .rpe-need-msg{color:#B4472E;font-weight:600;font-size:12.5px;margin:8px 0 10px;}
+  #aDoneBtn.rpe-dis{background:#D9D6D0!important;color:#8A867E!important;border-color:#D9D6D0!important;}
+  .modal-close.rpe-dim{opacity:.35;}
+  .eq-sel{font-size:12.5px;padding:4px 6px;border-radius:7px;border:1px solid var(--line);background:#fff;}
+  .eq-auto{display:block;font-size:10.5px;color:var(--muted);margin-top:2px;}.eq-warn{color:#9A5B00;}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -1222,6 +1259,11 @@ async function handleAuthResult(session){
 
   if(await checkIsTrainer(email)){
     isTrainerUser = true;
+    await loadMyTrainerScope(email);
+    if(trainerGroupScope){
+      clients = applyTrainerScope(clients);
+      if($('showTrainersBtn')) $('showTrainersBtn').style.display = 'none';   // trener z ograniczonym zakresem nie zarzadza trenerami
+    }
     showAppShell();
     renderCompletedTrainingsButton();
     setTimeout(() => { computeCompletionBuckets(14, false).catch(e => console.warn(e)); }, 1200);
@@ -1501,11 +1543,27 @@ async function refreshClientsFromDB(){
   if(isTrainerUser) loadAllVideos(true).then(cleanupViewedVideos).catch(e => console.warn(e));
 }
 
+/* ===== Zakres grup trenera (app_trainers.groups): null / [] = wszystkie grupy =====
+   UWAGA: to ukrycie w aplikacji (filtr listy klientow), a nie blokada w bazie. */
+let trainerGroupScope = null;
+function clientInScope(c){ if(!trainerGroupScope) return true; return trainerGroupScope.has(c.groupId) || (!!c.subgroupId && trainerGroupScope.has(c.subgroupId)); }
+function applyTrainerScope(list){ return trainerGroupScope ? list.filter(clientInScope) : list; }
+async function loadMyTrainerScope(email){
+  trainerGroupScope = null;
+  if(!email || email === TRAINER_EMAIL.toLowerCase()) return;
+  try{
+    const { data, error } = await sbClient.from('app_trainers').select('*').eq('email', email);
+    if(error) return;
+    const row = Array.isArray(data) ? data.find(r => normEmail(r.email) === email) : data;
+    const g = row && row.groups;
+    if(Array.isArray(g) && g.length) trainerGroupScope = new Set(g);
+  }catch(e){}
+}
 async function loadClientsFromDB(){
   try{
     const { data, error } = await sbClient.from('app_clients').select('*');
     if(error){ console.error('Blad wczytywania klientow:', error); return []; }
-    const list = (data || []).map(clientRowToJs);
+    const list = applyTrainerScope((data || []).map(clientRowToJs));
     list.forEach(c => { clientPendingBase[c.id] = deepClone(c.pendingCompletions || []); });
     return list;
   }catch(e){ console.error('Wyjatek wczytywania klientow:', e); return []; }
@@ -2724,7 +2782,14 @@ function renderClientInfo(){
     const k = d.contact;
     const wa = (k.phone || '').replace(/[^0-9]/g, '');
     body = `<div class="cv-grid2"><div class="cv-card"><h4>📇 Kontakt</h4><div class="cv-form">
-        <label>E-mail (logowanie)</label><div class="cv-ro">${escapeHtml(c.email || '— brak (osoba nie loguje się sama)')}</div>
+        <label>E-mail (logowanie)</label><div class="cv-mail-box">
+          <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+            <input class="cv-input" id="cvMail" type="email" autocapitalize="off" autocorrect="off" spellcheck="false" value="${escapeHtml(c.email || '')}" placeholder="np. jan.kowalski@gmail.com" style="flex:1;min-width:180px;">
+            <button class="btn small" id="cvMailSave">${c.email ? 'Zmień' : '+ Dodaj'}</button>
+            ${c.email ? '<button class="btn ghost small" id="cvMailDel" style="color:#B4472E;">Usuń</button>' : ''}
+          </div>
+          <div class="cv-small" id="cvMailMsg" style="margin-top:4px;">${c.email ? '✓ Osoba loguje się tym adresem (kod z maila).' : 'Brak — osoba nie loguje się sama. Dodaj e-mail, żeby mogła wejść do aplikacji.'}</div>
+        </div>
         <label>Telefon</label><input class="cv-input cv-ct" data-k="phone" value="${escapeHtml(k.phone)}" placeholder="+48 …">
         <label>Instagram</label><input class="cv-input cv-ct" data-k="ig" value="${escapeHtml(k.ig)}" placeholder="@…">
         <label>WhatsApp</label><div>${wa ? `<a href="https://wa.me/${wa}" target="_blank" rel="noopener">otwórz czat</a>` : '<span class="cv-small">wpisz telefon</span>'}</div></div></div>
@@ -2743,6 +2808,30 @@ function renderClientInfo(){
   const uid = () => 'n_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
   const rerender = () => { if(selectedClientId === id && clientView === 'info') renderClientInfo(); };
   if($('cvGoal')) $('cvGoal').onchange = async e => { d.goal = e.target.value.trim(); await save(); };
+  if($('cvMailSave')) $('cvMailSave').onclick = async () => {
+    const msg = $('cvMailMsg');
+    const val = normEmail($('cvMail').value);
+    const bad = t => { msg.textContent = '⚠️ ' + t; msg.style.color = '#B4472E'; };
+    if(!val){ bad('Wpisz adres e-mail.'); return; }
+    if(!/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(val)){ bad('To nie wygląda na adres e-mail (np. jan@gmail.com).'); return; }
+    if(val === normEmail(c.email)){ msg.textContent = 'Bez zmian.'; msg.style.color = ''; return; }
+    if(val === TRAINER_EMAIL.toLowerCase()){ bad('To adres trenera — klient nie może go mieć.'); return; }
+    const taken = emailTakenBy(val, c.id);
+    if(taken){ bad(`Ten adres ma już ${taken.name}. Jeden e-mail = jedna osoba.`); return; }
+    const old = c.email;
+    c.email = val;
+    if(!(await saveClientRow(c))){ c.email = old; bad('Nie udało się zapisać. Spróbuj ponownie.'); return; }
+    toast(old ? 'Zmieniono e-mail' : 'Dodano e-mail — osoba może się logować');
+    rerender();
+  };
+  if($('cvMailDel')) $('cvMailDel').onclick = async () => {
+    if(!confirm(`Usunąć e-mail ${c.email}? Osoba nie będzie mogła się zalogować (plan i historia zostają).`)) return;
+    const old = c.email;
+    c.email = null;
+    if(!(await saveClientRow(c))){ c.email = old; return; }
+    toast('Usunięto e-mail');
+    rerender();
+  };
   if($('cvPos')) $('cvPos').onchange = async e => { d.position = e.target.value.trim(); await save(); rerender(); };
   if($('cvNoteAdd')) $('cvNoteAdd').onclick = async () => {
     const text = $('cvNoteTxt').value.trim();
@@ -4407,6 +4496,23 @@ async function checkIsTrainer(email){
   }catch(e){ return false; }
 }
 function isTrainersTableError(err){ const t = ((err && err.code) || '') + ' ' + ((err && err.message) || ''); return /42P01|PGRST205|PGRST202|does not exist|schema cache|Could not find/i.test(t); }
+function trGroupsSummary(groups){
+  if(!Array.isArray(groups) || !groups.length) return 'Wszystkie grupy';
+  const names = groups.map(id => { const o = clientGroups.find(g => g.id === id); if(o) return o.name; const sg = clientSubgroups.find(x => x.id === id); if(sg){ const org = clientGroups.find(g => g.id === sg.orgId); return (org ? org.name + ' · ' : '') + sg.name; } return null; }).filter(Boolean);
+  if(!names.length) return 'Wszystkie grupy';
+  return names.length > 2 ? names.slice(0, 2).join(', ') + ` +${names.length - 2}` : names.join(', ');
+}
+function trGroupsDropdownHtml(r){
+  const sel = new Set(Array.isArray(r.groups) ? r.groups : []);
+  const items = clientGroups.map(org => {
+    const orgOn = sel.has(org.id);
+    const subs = clientSubgroups.filter(sg => sg.orgId === org.id);
+    return `<label class="org"><input type="checkbox" data-gid="${escapeHtml(org.id)}" data-org="1" ${orgOn ? 'checked' : ''}> ${escapeHtml(org.name)} <span class="cv-small" style="font-weight:400;">(cała)</span></label>`
+      + subs.map(sg => `<label class="sub"><input type="checkbox" data-gid="${escapeHtml(sg.id)}" data-parent="${escapeHtml(org.id)}" ${sel.has(sg.id) ? 'checked' : ''} ${orgOn ? 'disabled' : ''}> ${escapeHtml(sg.name)}</label>`).join('');
+  }).join('');
+  return `<details class="tr-groups" data-trg="${escapeHtml(r.email)}"><summary>${escapeHtml(trGroupsSummary(r.groups))}</summary><div class="tr-gpop">
+    <label class="all"><input type="checkbox" data-gall="1" ${sel.size ? '' : 'checked'}> Wszystkie grupy</label>${items || '<div class="cv-small">Brak grup — dodaj je w Klientach.</div>'}</div></details>`;
+}
 async function renderTrainersView(){
   $('main').innerHTML = `<div class="section-title"><div class="bar"></div><h2>Trenerzy</h2></div><div class="section-desc">Ładowanie…</div>`;
   let rows = [], missing = false;
@@ -4415,19 +4521,48 @@ async function renderTrainersView(){
     if(error){ if(isTrainersTableError(error)) missing = true; else throw error; }
     rows = (data || []).filter(r => normEmail(r.email) !== TRAINER_EMAIL.toLowerCase()).sort((a, b) => String(a.added_at || '').localeCompare(String(b.added_at || '')));
   }catch(e){ console.warn(e); }
+  const groupsColMissing = !missing && rows.length > 0 && !rows.some(r => 'groups' in r);
   const me = normEmail((await sbClient.auth.getSession()).data?.session?.user?.email) || '';
   $('main').innerHTML = `<div class="section-title"><div class="bar"></div><h2>Trenerzy</h2></div>
     <div class="section-desc">Osoby z dostępem do panelu trenera. Logują się swoim e-mailem jak zwykle (kod z maila). Pełny dostęp = to samo co właściciel: plany, diety, klienci, notatki, biblioteki.</div>
     ${missing ? '<div class="cv-alert" style="background:#FFF4E5;border-color:#F3C88B;"><div><b>W bazie brakuje jeszcze listy trenerów.</b> Wklej polecenie z supabase-trenerzy.html w Supabase (SQL Editor). Do tego czasu dostęp ma tylko właściciel.</div></div>' : ''}
     <div class="tr-add"><input class="cv-input" id="trEmail" type="email" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="adres e-mail, np. natalia@gmail.com" ${missing ? 'disabled' : ''}><button class="btn" id="trAddBtn" ${missing ? 'disabled' : ''}>+ Dodaj adres e-mail</button></div>
-    <div class="rl-list"><div class="rl-head tr-grid"><div>E-mail</div><div>Pełny dostęp</div><div></div></div>
-      <div class="rl-row tr-grid tr-owner"><div><b>${escapeHtml(TRAINER_EMAIL)}</b>${me === TRAINER_EMAIL.toLowerCase() ? ' <span class="cv-small">(Ty)</span>' : ''}<br><small class="cv-small">właściciel — dostęp zawsze</small></div><div><label class="diet-cb dis"><input type="checkbox" checked disabled> pełny dostęp</label></div><div></div></div>
+    ${groupsColMissing ? '<div class="cv-alert" style="background:#FFF4E5;border-color:#F3C88B;"><div><b>Żeby zapisać grupy trenera, w bazie brakuje jednej kolumny.</b> Wklej w Supabase (SQL Editor): <code>alter table public.app_trainers add column if not exists groups jsonb;</code></div></div>' : ''}
+    <div class="rl-list tr-list"><div class="rl-head tr-grid"><div>E-mail</div><div>Pełny dostęp</div><div>Grupy, które widzi</div><div></div></div>
+      <div class="rl-row tr-grid tr-owner"><div><b>${escapeHtml(TRAINER_EMAIL)}</b>${me === TRAINER_EMAIL.toLowerCase() ? ' <span class="cv-small">(Ty)</span>' : ''}<br><small class="cv-small">właściciel — dostęp zawsze</small></div><div><label class="diet-cb dis"><input type="checkbox" checked disabled> pełny dostęp</label></div><div class="cv-small">wszystkie grupy</div><div></div></div>
       ${rows.map(r => `<div class="rl-row tr-grid" data-tr="${escapeHtml(r.email)}"><div><b>${escapeHtml(r.email)}</b>${normEmail(r.email) === me ? ' <span class="cv-small">(Ty)</span>' : ''}<br><small class="cv-small">${r.full_access ? 'ma dostęp' : 'dostęp wyłączony'}</small></div>
         <div><label class="diet-cb"><input type="checkbox" data-trfull="${escapeHtml(r.email)}" ${r.full_access ? 'checked' : ''}> pełny dostęp</label></div>
+        <div>${trGroupsDropdownHtml(r)}</div>
         <div><button class="btn ghost small" data-trdel="${escapeHtml(r.email)}" style="color:#B4472E;">Usuń</button></div></div>`).join('')}
     </div>
-    <div class="cv-small" style="margin-top:10px;">Zmiana działa po ponownym otwarciu aplikacji przez tę osobę (albo odświeżeniu strony).</div>`;
+    <div class="cv-small" style="margin-top:10px;">Zmiana działa po ponownym otwarciu aplikacji przez tę osobę (albo odświeżeniu strony). Pełny dostęp = cała biblioteka ćwiczeń, plany treningowe i cały panel diety. Grupy decydują, których klientów ta osoba widzi.</div>`;
   if(missing) return;
+  document.querySelectorAll('.tr-groups').forEach(dd => {
+    dd.addEventListener('toggle', () => { if(dd.open) document.querySelectorAll('.tr-groups[open]').forEach(o => { if(o !== dd) o.open = false; }); });
+    const em = dd.dataset.trg;
+    const boxes = () => [...dd.querySelectorAll('input[data-gid]')];
+    const allCb = dd.querySelector('input[data-gall]');
+    const save = async () => {
+      const ids = boxes().filter(b => b.checked).map(b => b.dataset.gid);
+      const val = ids.length ? ids : null;
+      const { error } = await sbClient.from('app_trainers').update({ groups: val }).eq('email', em);
+      if(error){
+        alert(/groups|column|schema cache|PGRST204|42703/i.test((error.code || '') + ' ' + (error.message || ''))
+          ? 'W bazie brakuje kolumny na grupy. Wklej w Supabase (SQL Editor):\n\nalter table public.app_trainers add column if not exists groups jsonb;'
+          : 'Nie udało się zapisać grup.\n\nSzczegóły: ' + [error.code, error.message].filter(Boolean).join(' · '));
+        renderTrainersView(); return;
+      }
+      const r = rows.find(x => normEmail(x.email) === normEmail(em)); if(r) r.groups = val;
+      dd.querySelector('summary').textContent = trGroupsSummary(val);
+      toast('Zapisano grupy: ' + trGroupsSummary(val));
+    };
+    allCb.onchange = async () => { if(allCb.checked){ boxes().forEach(b => b.checked = false); await save(); } else allCb.checked = !boxes().some(b => b.checked); };
+    boxes().forEach(b => b.onchange = async () => {
+      if(b.dataset.org){ dd.querySelectorAll(`input[data-parent="${b.dataset.gid}"]`).forEach(x => { x.checked = false; x.disabled = b.checked; }); }
+      allCb.checked = !boxes().some(x => x.checked);
+      await save();
+    });
+  });
   $('trAddBtn').onclick = async () => {
     const e = normEmail($('trEmail').value);
     if(!e || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e)){ alert('Wpisz poprawny adres e-mail.'); return; }
@@ -4812,17 +4947,45 @@ function renderDayPanel(){
 
 let dragFromIdx = null;
 
+/* ramka "Progresja do sprawdzenia" w edytorze dnia */
+function renderProgFlagsRow(tbody, day, items){
+  const rows = [];
+  items.forEach(ex => {
+    if(ex.progFlagAck || ex.isTest || ex.isInterval || ex.progOff) return;
+    const name = resolveExName(ex);
+    if(ex.noWeight){
+      const fl = noWeightProgFlag(selectedClientId, ex, selectedDateStr);
+      if(fl) rows.push({ ex, name, text: fl, cut: null });
+      return;
+    }
+    if(ex.suggestedManual && ex.suggestedWeight) return;
+    const info = computeSuggestedWeightInfo(selectedClientId, name, ex.reps, selectedDateStr, ex.targetRpe, {});
+    if(info && info.flag) rows.push({ ex, name, text: info.flag, cut: info.source === 'last' ? eqDn1(info.value, info.eq) : null });
+  });
+  if(!rows.length) return;
+  const tr = document.createElement('tr');
+  tr.className = 'pg-flag-tr';
+  tr.innerHTML = `<td colspan="14"><div class="pg-flagbox"><div class="t">⚑ Progresja do sprawdzenia (${rows.length})</div>
+    ${rows.map((r, i) => `<div class="r"><span><b>${escapeHtml(r.name)}</b> — ${escapeHtml(r.text)}</span><span class="btns">
+      ${r.cut != null ? `<button class="pg-mini" data-pgcut="${i}">Ustaw ${fmtKg(r.cut)} kg</button>` : ''}<button class="pg-mini" data-pgok="${i}">OK, zostaw</button></span></div>`).join('')}
+    </div></td>`;
+  tr.querySelectorAll('[data-pgok]').forEach(b => b.onclick = async () => { rows[+b.dataset.pgok].ex.progFlagAck = true; await persistCurrentDayFn(); renderDayPanel(); });
+  tr.querySelectorAll('[data-pgcut]').forEach(b => b.onclick = async () => { const r = rows[+b.dataset.pgcut]; r.ex.suggestedWeight = String(r.cut); r.ex.suggestedManual = true; await persistCurrentDayFn(); renderDayPanel(); });
+  tbody.appendChild(tr);
+}
+
 function renderExRows(day, category){
   const tbody = $('exRows-' + category);
   tbody.innerHTML = '';
   const items = day.exercises.filter(ex => ex.category === category);
+  if(category === 'main' && !editingTemplateMode && selectedClientId) renderProgFlagsRow(tbody, day, items);
   items.forEach(ex => {
     const idx = day.exercises.indexOf(ex);
     const tr = document.createElement('tr');
     tr.draggable = true;
     const isTestEx = category === 'main' && ex.isTest;
     const exName = resolveExName(ex);
-    const autoInfo = editingTemplateMode ? null : computeSuggestedWeightInfo(selectedClientId, exName, ex.reps, selectedDateStr, ex.targetRpe);
+    const autoInfo = (editingTemplateMode || ex.noWeight || ex.isInterval) ? null : computeSuggestedWeightInfo(selectedClientId, exName, ex.reps, selectedDateStr, ex.targetRpe, { progOff: !!ex.progOff || category !== 'main' });
     const autoVal = autoInfo ? autoInfo.value : null;
     const displayVal = ex.suggestedManual ? (ex.suggestedWeight||'') : (autoVal !== null ? String(autoVal) : '');
     const suggTitle = ex.suggestedManual ? 'Wpisane ręcznie (wyczyść pole, żeby wrócić do automatycznej podpowiedzi)' : (autoInfo ? suggestedSourceText(autoInfo) : 'Brak podpowiedzi: brak wcześniejszych treningów tego ćwiczenia (do 10 powt.) i testu 1RM');
@@ -4843,12 +5006,12 @@ function renderExRows(day, category){
       <td><input class="pill-input" data-f="reps" value="${ex.reps}"></td>
       <td><input class="pill-input" data-f="tempo" value="${ex.tempo}"></td>
       <td><input class="pill-input" data-f="rest" value="${ex.rest}"></td>
-      <td>${isTestEx ? '<span style="color:var(--warn);font-size:11px;">to jest test</span>' : `<input class="pill-input" data-f="suggestedWeight" value="${displayVal}" placeholder="${editingTemplateMode ? 'auto' : 'kg'}" title="${escapeHtml(editingTemplateMode ? 'Puste = aplikacja zaproponuje ciężar każdej osobie' : suggTitle)}">`}</td>
+      <td>${isTestEx ? '<span style="color:var(--warn);font-size:11px;">to jest test</span>' : `<input class="pill-input" data-f="suggestedWeight" value="${displayVal}" placeholder="${editingTemplateMode ? 'auto' : 'kg'}" title="${escapeHtml(editingTemplateMode ? 'Puste = aplikacja zaproponuje ciężar każdej osobie' : suggTitle)}">${(editingTemplateMode || category !== 'main') ? '' : progBadgeHtml(autoInfo, !!(ex.suggestedManual && ex.suggestedWeight), ex.id)}`}</td>
       ${lastIconCell}
       <td><label class="test-toggle"><input type="checkbox" class="noweight-check" ${ex.noWeight?'checked':''}></label></td>
       <td><label class="test-toggle"><input type="checkbox" class="interval-check" ${ex.isInterval?'checked':''}></label></td>
       <td><label class="test-toggle"><input type="checkbox" class="splitlr-check" ${ex.splitLR?'checked':''}></label></td>
-      <td><label class="test-toggle"><input type="checkbox" class="rpeprog-check" ${ex.rpeProgression?'checked':''}></label></td>
+      <td><label class="test-toggle"><input type="checkbox" class="rpeprog-check" ${ex.progOff?'':'checked'} title="Automatyczna progresja ciężaru + obowiązkowe RPE u klienta. Odznacz, jeśli nie chcesz automatu przy tym ćwiczeniu."></label></td>
       ${testCell}
       <td><button class="rm-btn" title="Usuń">✕</button></td>
     `;
@@ -4871,7 +5034,7 @@ function renderExRows(day, category){
       renderDayPanel();
     };
     tr.querySelector('.rpeprog-check').onchange = async (e) => {
-      ex.rpeProgression = e.target.checked;
+      ex.progOff = !e.target.checked;
       await persistCurrentDayFn();
       renderDayPanel();
     };
@@ -4883,6 +5046,10 @@ function renderExRows(day, category){
         renderCalendar();
       };
     }
+    tr.querySelectorAll('[data-pgwhy]').forEach(b => b.onclick = () => {
+      const el = document.getElementById('pgwhy-' + b.dataset.pgwhy);
+      if(el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+    });
     tr.querySelectorAll('input[data-f]').forEach(inp => {
       inp.onchange = async () => {
         const field = inp.dataset.f;
@@ -5020,10 +5187,9 @@ function renderExRows(day, category){
     };
     tbody.appendChild(trN);
 
-    if(ex.rpeProgression){
+    if(category === 'main' && !ex.progOff && !ex.noWeight && !ex.isInterval && !ex.isTest){
       const exNameForRpe = resolveExName(ex);
       const report = getLatestRpeReport(selectedClientId, exNameForRpe);
-      const suggestion = computeRpeSuggestion(ex.targetRpe, report);
       const trR = document.createElement('tr');
       trR.className = 'interval-subrow';
       trR.innerHTML = `
@@ -5031,26 +5197,14 @@ function renderExRows(day, category){
         <td colspan="11">
           <div class="rpe-panel">
             <div class="rpe-field">
-              <label>Docelowe RPE</label>
-              <input class="rpe-target-input" value="${escapeHtml(ex.targetRpe||'')}" placeholder="np. 8">
+              <label>Cel RPE</label>
+              <input class="rpe-target-input" value="${escapeHtml(ex.targetRpe||'')}" placeholder="${PROG_DEFAULT_RPE}">
             </div>
             ${report ? `
             <div class="rpe-history">
               <div class="lbl">Ostatnio zgłoszone (${escapeHtml(report.date)})</div>
               <div class="val">RPE ${report.rpe}</div>
             </div>` : `<div class="rpe-history"><div class="lbl">Ostatnio zgłoszone</div><div class="val" style="color:var(--muted);font-size:11px;">— brak jeszcze danych —</div></div>`}
-            ${suggestion ? `
-            <div class="suggestion-card">
-              <div class="suggestion-icon">📈</div>
-              <div class="suggestion-text">
-                Klient zgłosił RPE ${suggestion.lastRpe}, cel to ${suggestion.target} — <b>${escapeHtml(suggestion.label)}</b>.<br>
-                Sugerowany ciężar: <b>${suggestion.lastWeight} kg → ${suggestion.newWeight} kg</b>
-              </div>
-              <div class="suggestion-btns">
-                <button class="btn-apply">Zastosuj</button>
-                <button class="btn-dismiss">Odrzuć</button>
-              </div>
-            </div>` : ''}
           </div>
         </td>
       `;
@@ -5059,17 +5213,6 @@ function renderExRows(day, category){
         await persistCurrentDayFn();
         renderDayPanel();
       };
-      if(suggestion){
-        trR.querySelector('.btn-apply').onclick = async () => {
-          ex.suggestedWeight = String(suggestion.newWeight);
-          ex.suggestedManual = true;
-          await persistCurrentDayFn();
-          renderDayPanel();
-        };
-        trR.querySelector('.btn-dismiss').onclick = () => {
-          trR.querySelector('.suggestion-card').remove();
-        };
-      }
       tbody.appendChild(trR);
     }
   });
@@ -5097,16 +5240,6 @@ function getLatestRpeReport(clientId, exerciseName){
   return latest;
 }
 
-function computeRpeSuggestion(targetRpe, report){
-  if(!report) return null;
-  const target = parseFloat(String(targetRpe == null ? '' : targetRpe).replace(',', '.'));
-  if(isNaN(target)) return null;
-  const pts = Math.max(-RPE_MAX_PTS, Math.min(RPE_MAX_PTS, target - report.rpe));
-  const diff = report.rpe - target;
-  const label = pts > 0 ? `za lekko o ${fmtKg(pts)} pkt RPE` : pts < 0 ? `za ciężko o ${fmtKg(-pts)} pkt RPE` : 'w sam raz';
-  const newWeight = roundLoad(report.weight * (1 + pts * RPE_STEP));
-  return { lastRpe: report.rpe, target, lastWeight: report.weight, newWeight, diff, label, date: report.date };
-}
 
 
 function getExerciseSessionBests(clientId, exerciseName){
@@ -5294,82 +5427,206 @@ function lastSessionContinuumBefore(clientId, exerciseName, beforeDate){
   });
   return found;
 }
-/* PODPOWIEDZ CIEZARU (gdy trener nie wpisal recznie) — kolejnosc:
-   1) POPRZEDNI TRENING tego cwiczenia (najswiezszy przed danym dniem):
-      - te same powtorzenia -> najlepszy ciezar z tych serii,
-      - inne powtorzenia -> przeliczenie przez %1RM (kontinuum, serie 1-10 powt.),
-      - KOREKTA RPE: ciezar x (1 + (RPE docelowe - RPE zgloszone) x 2,5%), max +-4 pkt (+-10%).
-        RPE docelowe = z tego dnia (jesli trener ustawil), inaczej z poprzedniego treningu.
-   2) jesli cwiczenia jeszcze nie bylo -> test 1RM (% wg powtorzen). */
+/* ============ PROGRESJA v2 (powtorzenia + RPE + sprzet) ============
+   Zasada: dobieramy ciezar do powtorzen. % wykonania = suma zrobionych / suma zaplanowanych
+   (pusta seria = jakby jej nie bylo w planie). Ciezar bazowy = najwiekszy ciezar z poprzedniego treningu.
+   Porownanie z ostatnim treningiem z TA SAMA liczba powtorzen; jesli takiego nie bylo -> ostatni dowolny + przeliczenie %1RM.
+   ponad plan -> +2,5% za kazde powt. ponad plan (srednio na serie) | 100% + RPE < cel -> +2,5% za pkt (bez limitu)
+   100% + RPE >= cel lub brak RPE -> bez zmian | 90-99% -> bez zmian (15+ powt.: 80-100%) | 85-89% -> -1 krok
+   70-84% -> -7,5% | <70% -> -10% + flaga | 2x z rzedu 90-99% -> bez zmian + flaga | skok >10% -> flaga
+   Krok: sztanga 2,5 kg | hantle 1 kg do 10 kg, potem 2,5 kg | maszyna/wyciag 5 kg. Zmiana zawsze min. 1 krok.
+   Podzial P/L -> wg slabszej strony. Recznie wpisany ciezar trenera zawsze wygrywa (tu nie liczony). */
+const PROG_DEFAULT_RPE = 8;
 const RPE_STEP = 0.025, RPE_MAX_PTS = 4;
 function roundLoad(w){ return w >= 20 ? Math.round(w / 2.5) * 2.5 : Math.round(w * 2) / 2; }
-function prevSessionOf(clientId, exerciseName, beforeDate){
+const EQ_LABELS = { bar:'Sztanga', db:'Hantle', mach:'Maszyna / wyciąg', bw:'Masa ciała' };
+const EQ_SHORT = { bar:'sztanga', db:'hantle', mach:'maszyna', bw:'masa ciała' };
+function guessEquipment(name){
+  const n = plSearchKey(name);
+  if(/hantl|\bdb\b|dumbbell/.test(n)) return 'db';
+  if(/wyciag|maszyn|brama|linka|linki|\bcable\b/.test(n)) return 'mach';
+  if(/podciag|pompk|\bdipy?\b|deska|plank|brzuszk|masa ciala|bodyweight|\btrx\b/.test(n)) return 'bw';
+  if(/sztang|przysiad|martwy|wyciskanie|hip thrust|rwanie|zarzut|good morning|wypychanie/.test(n)) return 'bar';
+  return null;
+}
+function libEntryFor(name){ return (library||[]).find(l => l.name === name) || null; }
+function equipmentInfo(name){
+  const lib = libEntryFor(name);
+  if(lib && lib.equipment) return { eq: lib.equipment, auto: false, known: true };
+  const g = guessEquipment(name);
+  return { eq: g || 'bar', auto: true, known: !!g };
+}
+function eqStep(w, eq){ return eq === 'db' ? (w < 10 ? 1 : 2.5) : eq === 'mach' ? 5 : 2.5; }
+function eqSnap(x, eq){
+  if(eq === 'db'){ if(x <= 10) return Math.max(1, Math.round(x)); return 10 + Math.round((x - 10) / 2.5) * 2.5; }
+  const s = eqStep(x, eq); return Math.max(s, Math.round(x / s) * s);
+}
+function eqUp1(w, eq){ if(eq === 'db') return w < 10 ? Math.min(10, Math.floor(w) + 1) : eqSnap(w, eq) + 2.5; return eqSnap(w, eq) + eqStep(w, eq); }
+function eqDn1(w, eq){ if(eq === 'db') return w <= 10 ? Math.max(1, Math.ceil(w) - 1) : Math.max(10, eqSnap(w, eq) - 2.5); return Math.max(eqStep(w, eq), eqSnap(w, eq) - eqStep(w, eq)); }
+function eqMove(w, f, eq){
+  if(!f) return eqSnap(w, eq);
+  let n = eqSnap(w * (1 + f / 100), eq);
+  if(f > 0 && n <= w) n = eqUp1(w, eq);
+  if(f < 0 && n >= w) n = eqDn1(w, eq);
+  return n;
+}
+const pf = v => parseFloat(String(v == null ? '' : v).replace(',', '.'));
+/* statystyki jednej strony / logu: tylko wpisane serie; puste powt. przy wpisanym ciezarze = plan */
+function progLogStats(log, plannedReps, fallbackW){
+  const sets = [];
+  (log || []).forEach(l => {
+    if(!l) return;
+    const hasW = String(l.weight || '').trim() !== '', hasR = String(l.reps || '').trim() !== '';
+    if(!hasW && !hasR) return;
+    let w = pf(l.weight); if(isNaN(w) || w <= 0) w = fallbackW;
+    let r = parseInt(l.reps); if(isNaN(r)) r = plannedReps;
+    if(!(w > 0)) return;
+    sets.push({ w, r });
+  });
+  if(!sets.length || !(plannedReps > 0)) return null;
+  const done = sets.reduce((a, s) => a + s.r, 0), planned = sets.length * plannedReps;
+  return { sets, reps: sets.map(s => s.r), done, planned, pct: done / planned, top: Math.max(...sets.map(s => s.w)) };
+}
+function progExStats(ex){
+  const plannedReps = parseInt(ex.reps);
+  const fb = ex.suggestedManual ? pf(ex.suggestedWeight) : NaN;
+  if(ex.splitLR){
+    const a = progLogStats(ex.logRight, plannedReps, fb), b = progLogStats(ex.logLeft, plannedReps, fb);
+    if(a && b) return (a.pct < b.pct || (a.pct === b.pct && a.top < b.top)) ? Object.assign({ side:'prawa' }, a) : Object.assign({ side:'lewa' }, b);
+    return a || b;
+  }
+  return progLogStats(ex.log, plannedReps, fb);
+}
+/* wszystkie wczesniejsze sesje tego cwiczenia z zapisanym wynikiem (od najstarszej) */
+function progSessionsBefore(clientId, exerciseName, beforeDate){
   const plan = plansCache[clientId] || {};
-  let found = null;
+  const out = [];
   Object.keys(plan).sort().forEach(dateStr => {
     if(beforeDate && dateStr >= beforeDate) return;
     const d = plan[dateStr]; if(!d || !d.exercises) return;
-    d.exercises.filter(ex => resolveExName(ex) === exerciseName).forEach(ex => {
-      const sets = [];
-      [].concat(ex.log || [], ex.logRight || [], ex.logLeft || []).forEach(l => {
-        const w = parseFloat(String((l && l.weight) || '').replace(',', '.'));
-        const r = parseInt(l && l.reps) || parseInt(ex.reps) || 0;
-        if(!isNaN(w) && w > 0) sets.push({ w, r });
-      });
-      if(sets.length) found = { date: dateStr, ex, sets };
+    d.exercises.filter(ex => resolveExName(ex) === exerciseName && !ex.isTest).forEach(ex => {
+      const st = progExStats(ex);
+      if(st) out.push({ date: dateStr, ex, st, reps: parseInt(ex.reps) });
     });
   });
-  return found;
+  return out;
 }
-function computeSuggestedWeightInfo(clientId, exerciseName, plannedReps, beforeDate, targetRpe){
+function progDecide(st, plannedReps, rpe, target, eq, prevPct){
+  const p = st.pct, P = Math.round(p * 100), hi = plannedReps >= 15, w = st.top;
+  let f = 0, one = false, rule, flag = null;
+  const hasRpe = !isNaN(rpe);
+  if(p > 1){
+    const over = (st.done - st.planned) / st.sets.length, fo = over * 2.5;
+    const fr = hasRpe && target - rpe > 0 ? (target - rpe) * 2.5 : 0;
+    f = Math.max(fo, fr);
+    rule = fr > fo ? `ponad plan + RPE ${fmtKg(rpe)} (cel ${fmtKg(target)}) → +${fmtKg(+fr.toFixed(1))}%` : `ponad plan o ${fmtKg(+over.toFixed(1))} powt./serię → +${fmtKg(+fo.toFixed(1))}%`;
+  } else if(p === 1){
+    if(!hasRpe) rule = '100%, brak RPE → bez zmian';
+    else if(target - rpe > 0){ f = (target - rpe) * 2.5; rule = `100% + RPE ${fmtKg(rpe)} (cel ${fmtKg(target)}) → +2,5% × ${fmtKg(target - rpe)} = +${fmtKg(f)}%`; }
+    else rule = `100% + RPE ${fmtKg(rpe)} (cel ${fmtKg(target)}) → bez zmian`;
+  } else if(p >= 0.9 || (hi && p >= 0.8)){
+    rule = `${P}% powtórzeń → bez zmian`;
+    if(prevPct != null && prevPct < 1 && (prevPct >= 0.9 || (hi && prevPct >= 0.8))) flag = `2. trening z rzędu niedokończony (${P}%). Ciężar zostawiony — Ty decydujesz.`;
+  } else if(p >= 0.85){ one = true; rule = `${P}% powtórzeń → −1 krok (${EQ_SHORT[eq] || 'sztanga'})`; }
+  else if(p >= 0.7){ f = -7.5; rule = `${P}% powtórzeń → −7,5%`; }
+  else { f = -10; rule = `${P}% powtórzeń → −10%`; flag = `Duża porażka: ${P}% powtórzeń (${st.reps.join('/')}). Ciężar −10% — sprawdź, co się stało.`; }
+  if(f > 10) flag = `Skok +${fmtKg(+f.toFixed(1))}% naraz (RPE ${fmtKg(rpe)} przy celu ${fmtKg(target)}) — sprawdź, czy RPE jest wiarygodne.`;
+  const nk = one ? eqDn1(w, eq) : eqMove(w, f, eq);
+  return { nk, f, one, rule, flag, raw: one ? null : w * (1 + f / 100), P };
+}
+/* opts: { progOff } */
+function computeSuggestedWeightInfo(clientId, exerciseName, plannedReps, beforeDate, targetRpe, opts){
   if(!clientId) return null;
+  opts = opts || {};
   const reps = parseInt(plannedReps);
-  const prev = prevSessionOf(clientId, exerciseName, beforeDate);
-  if(prev){
-    let base = null, source = 'last', fromWeight = null, fromReps = null;
-    const same = !isNaN(reps) ? prev.sets.filter(x => x.r === reps) : prev.sets;
-    if(same.length){
-      base = Math.max(...same.map(x => x.w)); fromWeight = base; fromReps = reps || null;
-    } else {
-      let best = null;
-      prev.sets.forEach(x => { if(x.r < 1 || x.r > CONTINUUM_MAX_REPS) return; const e = x.w / (pctForReps(x.r) / 100); if(!best || e > best.e) best = { e, w: x.w, r: x.r }; });
-      if(best && reps >= 1){ base = best.e * pctForReps(reps) / 100; source = 'cont'; fromWeight = best.w; fromReps = best.r; }
-      else { const top = prev.sets.reduce((a, x) => x.w > a.w ? x : a, prev.sets[0]); base = top.w; fromWeight = top.w; fromReps = top.r; }
+  const eqi = equipmentInfo(exerciseName), eq = eqi.eq;
+  const all = progSessionsBefore(clientId, exerciseName, beforeDate);
+  if(all.length){
+    const sameAll = !isNaN(reps) ? all.filter(s => s.reps === reps) : [];
+    const prev = sameAll.length ? sameAll[sameAll.length - 1] : all[all.length - 1];
+    const prev2 = sameAll.length >= 2 ? sameAll[sameAll.length - 2] : null;
+    const st = prev.st;
+    const base = { source:'last', date: prev.date, fromWeight: st.top, fromReps: prev.reps, done: st.reps, P: Math.round(st.pct * 100), eq, eqAuto: eqi.auto, eqKnown: eqi.known, side: st.side || null };
+    if(opts.progOff){
+      return Object.assign(base, { value: eqSnap(st.top, eq), rule: 'progresja wyłączona — ciężar z poprzedniego treningu', flag: null, rpe: null, conv: false });
     }
-    let rpe = null;
-    const actual = (prev.ex.rpe === 0 || prev.ex.rpe) ? parseFloat(prev.ex.rpe) : NaN;
-    let target = parseFloat(String(targetRpe == null ? '' : targetRpe).replace(',', '.'));
-    if(isNaN(target)) target = parseFloat(String(prev.ex.targetRpe == null ? '' : prev.ex.targetRpe).replace(',', '.'));
-    if(!isNaN(actual) && !isNaN(target)){
-      const pts = Math.max(-RPE_MAX_PTS, Math.min(RPE_MAX_PTS, target - actual));
-      rpe = { actual, target, pts, pct: Math.round(pts * RPE_STEP * 1000) / 10 };
-      base = base * (1 + pts * RPE_STEP);
+    const actual = (prev.ex.rpe === 0 || prev.ex.rpe) ? pf(prev.ex.rpe) : NaN;
+    let target = pf(prev.ex.targetRpe); if(isNaN(target)) target = pf(targetRpe); if(isNaN(target)) target = PROG_DEFAULT_RPE;
+    const d = progDecide(st, prev.reps, actual, target, eq, prev2 ? prev2.st.pct : null);
+    let value = d.nk, conv = false;
+    if(!isNaN(reps) && reps >= 1 && prev.reps !== reps && prev.reps >= 1){
+      value = eqSnap(d.nk * pctForReps(reps) / pctForReps(prev.reps), eq); conv = true;
     }
-    return { value: roundLoad(base), source, date: prev.date, fromWeight, fromReps, rpe };
+    return Object.assign(base, { value, rule: d.rule, flag: d.flag, raw: d.raw, f: d.f, conv,
+      rpe: isNaN(actual) ? null : { actual, target } });
   }
   const test = getLatestTest1RM(clientId, exerciseName);
   if(test){
     const pct = pctForReps(reps || 1);
-    return { value: roundLoad(test.oneRM * pct / 100), source: 'test', date: test.date };
+    return { value: eqSnap(test.oneRM * pct / 100, eq), source: 'test', date: test.date, eq, eqAuto: eqi.auto, eqKnown: eqi.known };
   }
   return null;
 }
-function computeSuggestedWeight(clientId, exerciseName, plannedReps, beforeDate, targetRpe){
-  const info = computeSuggestedWeightInfo(clientId, exerciseName, plannedReps, beforeDate, targetRpe);
+function computeSuggestedWeight(clientId, exerciseName, plannedReps, beforeDate, targetRpe, opts){
+  const info = computeSuggestedWeightInfo(clientId, exerciseName, plannedReps, beforeDate, targetRpe, opts);
   return info ? info.value : null;
 }
+/* flaga dla cwiczen bez ciezaru: 100% + RPE ponizej celu */
+function noWeightProgFlag(clientId, ex, beforeDate){
+  const name = resolveExName(ex), reps = parseInt(ex.reps);
+  const plan = plansCache[clientId] || {};
+  let last = null;
+  Object.keys(plan).sort().forEach(ds => {
+    if(beforeDate && ds >= beforeDate) return;
+    const d = plan[ds]; if(!d || !d.exercises) return;
+    d.exercises.filter(e => resolveExName(e) === name).forEach(e => {
+      const rr = (e.log || []).map(l => parseInt(l && l.reps)).filter(x => !isNaN(x));
+      if(rr.length) last = { e, rr, ds };
+    });
+  });
+  if(!last) return null;
+  const pr = parseInt(last.e.reps) || reps; if(!(pr > 0)) return null;
+  const pct = last.rr.reduce((a, b) => a + b, 0) / (last.rr.length * pr);
+  const rpe = (last.e.rpe === 0 || last.e.rpe) ? pf(last.e.rpe) : NaN;
+  let target = pf(last.e.targetRpe); if(isNaN(target)) target = PROG_DEFAULT_RPE;
+  if(pct >= 1 && !isNaN(rpe) && rpe < target) return `${last.rr.join('/')} zrobione, RPE ${fmtKg(rpe)} (cel ${fmtKg(target)}). Ćwiczenie bez ciężaru — dodać obciążenie albo powtórzenia?`;
+  return null;
+}
+/* czy u klienta dziala automat + obowiazkowe RPE */
+function progActive(ex){ return ex && ex.category === 'main' && !ex.noWeight && !ex.isInterval && !ex.isTest && !ex.progOff; }
 const fmtKg = v => String(v).replace('.', ',');
-function rpeNoteText(r){ if(!r) return ''; return `RPE ${fmtKg(r.actual)} → cel ${fmtKg(r.target)}: ${r.pct > 0 ? '+' : ''}${fmtKg(r.pct)}%`; }
+function rpeNoteText(r){ if(!r) return ''; return `RPE ${fmtKg(r.actual)} / cel ${fmtKg(r.target)}`; }
 function suggestedSourceText(info){
   if(!info) return '';
   if(info.source === 'test') return `Wyliczone z testu 1RM (${info.date}) — tego ćwiczenia jeszcze nie było`;
-  const basis = info.source === 'cont' ? `przeliczone z ${fmtKg(info.fromWeight)} kg × ${info.fromReps} wg %1RM` : `${fmtKg(info.fromWeight)} kg${info.fromReps ? ' × ' + info.fromReps : ''}`;
-  return `Z poprzedniego treningu (${info.date}: ${basis})${info.rpe ? ' · ' + rpeNoteText(info.rpe) : ''}`;
+  return `Z poprzedniego treningu (${info.date}: ${fmtKg(info.fromWeight)} kg, ${info.done.join('/')}) · ${info.rule}`;
 }
 function suggestedClientLabel(info){
   if(!info) return '';
   if(info.source === 'test') return 'z testu 1RM';
-  return `z poprzedniego treningu: ${fmtKg(info.fromWeight)} kg${info.fromReps ? ' × ' + info.fromReps : ''}${info.rpe ? ` przy RPE ${fmtKg(info.rpe.actual)} (cel ${fmtKg(info.rpe.target)}) → ${info.rpe.pct > 0 ? '+' : ''}${fmtKg(info.rpe.pct)}%` : ''}`;
+  return 'z poprzedniego treningu';
+}
+/* plakietka + panel "Skad ten ciezar?" dla trenera */
+function progBadgeHtml(info, manual, exId){
+  if(manual) return `<div class="pg-badge pg-man" title="Twój ciężar wygrywa z algorytmem">✎ ręcznie</div>`;
+  if(!info) return '';
+  if(info.source === 'test') return `<div class="pg-badge pg-new" data-pgwhy="${exId}">z testu 1RM</div>${progWhyHtml(info, exId)}`;
+  const diff = Math.round((info.value - info.fromWeight) * 100) / 100;
+  const cls = info.flag ? 'pg-fl' : diff > 0 ? 'pg-up' : diff < 0 ? 'pg-dn' : 'pg-eq';
+  const txt = (info.flag ? '⚑ ' : '') + (diff > 0 ? `↑ +${fmtKg(diff)} kg` : diff < 0 ? `↓ −${fmtKg(-diff)} kg` : '= bez zmian');
+  return `<div class="pg-badge ${cls}" data-pgwhy="${exId}" title="Kliknij: skąd ten ciężar?">${txt}</div>${progWhyHtml(info, exId)}`;
+}
+function progWhyHtml(info, exId){
+  let rows;
+  if(info.source === 'test') rows = `<tr><td>Test 1RM</td><td>${escapeHtml(info.date)}</td></tr>`;
+  else rows = `<tr><td>Poprzedni trening</td><td>${escapeHtml(info.date)} · ${fmtKg(info.fromWeight)} kg × ${info.fromReps}</td></tr>
+    <tr><td>Zrobione${info.side ? ` (słabsza: ${info.side})` : ''}</td><td>${info.done.join('/')} = ${info.P}%</td></tr>
+    <tr><td>RPE klienta / cel</td><td>${info.rpe ? `${fmtKg(info.rpe.actual)} / ${fmtKg(info.rpe.target)}` : 'brak'}</td></tr>
+    <tr><td>Reguła</td><td>${escapeHtml(info.rule)}</td></tr>
+    ${info.conv ? `<tr><td>Inne powtórzenia niż ostatnio</td><td>przeliczone wg %1RM</td></tr>` : ''}`;
+  rows += `<tr><td>Sprzęt (krok)</td><td>${EQ_LABELS[info.eq] || 'Sztanga'}${info.eqAuto ? (info.eqKnown ? ' · auto z nazwy' : ' · nie rozpoznano') : ''}</td></tr>
+    <tr><td><b>Wynik</b></td><td><b>${fmtKg(info.value)} kg</b></td></tr>`;
+  return `<div class="pg-why" id="pgwhy-${exId}" style="display:none;"><b>Skąd ${fmtKg(info.value)} kg?</b><table>${rows}</table><div class="pg-why-foot">Wpisz inną wartość w polu — Twój ciężar zawsze wygrywa.</div></div>`;
 }
 function buildExerciseHistory(clientId, exerciseName){
   const plan = plansCache[clientId] || {};
@@ -7132,7 +7389,7 @@ function renderLibraryView(){
     </div>
 
     <table class="exlist" id="libFullTable">
-      <thead><tr><th>Nazwa</th><th>Link YouTube</th><th>Grupa</th><th>Stałe uwagi</th><th style="text-align:center;">Nie MoveU</th><th></th></tr></thead>
+      <thead><tr><th>Nazwa</th><th>Link YouTube</th><th title="Krok ciężaru w progresji: sztanga 2,5 kg · hantle 1 kg do 10 kg, potem 2,5 kg · maszyna/wyciąg 5 kg · masa ciała bez zmiany ciężaru">Sprzęt</th><th>Grupa</th><th>Stałe uwagi</th><th style="text-align:center;">Nie MoveU</th><th></th></tr></thead>
       <tbody id="libFullRows"></tbody>
     </table>
   `;
@@ -7212,7 +7469,7 @@ function renderLibFullTable(){
     : `${library.length} ${plPlural(library.length, 'ćwiczenie', 'ćwiczenia', 'ćwiczeń')}`;
   if(clr) clr.style.display = libSearchQuery ? '' : 'none';
   if(rows.length === 0){
-    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:16px;">${tokens.length ? 'Brak ćwiczeń pasujących do „' + escapeHtml(libSearchQuery.trim()) + '”.' : 'Brak ćwiczeń w tej grupie.'}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:16px;">${tokens.length ? 'Brak ćwiczeń pasujących do „' + escapeHtml(libSearchQuery.trim()) + '”.' : 'Brak ćwiczeń w tej grupie.'}</td></tr>`;
     return;
   }
   tbody.innerHTML = '';
@@ -7222,6 +7479,7 @@ function renderLibFullTable(){
     tr.innerHTML = `
       <td><span class="ex-edit-name" style="cursor:text;">${escapeHtml(ex.name)}</span>${ex.notMoveU ? '<span class="record-badge"><span class="record-dot"></span>DO NAGRANIA</span>' : ''}</td>
       <td><span class="yt-hover-wrap"><span class="ex-edit-video" style="cursor:text;color:var(--muted);font-size:12px;">${ex.videoUrl?escapeHtml(ex.videoUrl):'— brak linku —'}</span>${ex.videoUrl ? '' : '<button class="yt-pick-btn" type="button" title="Wybierz film z Twojego kanału YouTube">🔗 Wybierz film</button>'}${getYoutubeId(ex.videoUrl) ? `<span class="yt-hover-thumb"><img src="https://img.youtube.com/vi/${getYoutubeId(ex.videoUrl)}/hqdefault.jpg" loading="lazy"></span>` : ''}</span></td>
+      <td class="eq-cell"></td>
       <td></td>
       <td><textarea class="lib-note-input" rows="1" placeholder="dodaj stałe uwagi…">${escapeHtml(ex.note || '')}</textarea></td>
       <td style="text-align:center;"><input type="checkbox" class="notmoveu-check" ${ex.notMoveU?'checked':''}></td>
@@ -7263,7 +7521,23 @@ function renderLibFullTable(){
       await persistWithFeedback('exercise_library', library);
       renderLibFullTable();
     };
-    tr.children[2].appendChild(groupSel);
+    tr.children[3].appendChild(groupSel);
+    {
+      const eqi = equipmentInfo(ex.name);
+      const sel = document.createElement('select');
+      sel.className = 'eq-sel';
+      sel.innerHTML = Object.keys(EQ_LABELS).map(k => `<option value="${k}" ${k===eqi.eq?'selected':''}>${EQ_LABELS[k]}</option>`).join('');
+      sel.onchange = async () => {
+        const val = sel.value;
+        const fresh = await safeGet('exercise_library');
+        if(fresh === null){ alert('Nie udało się pobrać aktualnej biblioteki. Nic nie zapisano.'); return; }
+        const list = fresh.map(l => l.id === ex.id ? Object.assign({}, l, { equipment: val }) : l);
+        if(await persistWithFeedback('exercise_library', list)){ library = list; toast('Zapisano sprzęt: ' + EQ_LABELS[val]); renderLibFullTable(); }
+      };
+      const cell = tr.querySelector('.eq-cell');
+      cell.appendChild(sel);
+      if(eqi.auto){ const n = document.createElement('span'); n.className = 'eq-auto' + (eqi.known ? '' : ' eq-warn'); n.textContent = eqi.known ? 'auto z nazwy' : '⚠ nie rozpoznano — sprawdź'; cell.appendChild(n); }
+    }
     const noteInp = tr.querySelector('.lib-note-input');
     if(noteInp) noteInp.onchange = async () => {
       const val = noteInp.value.trim();
@@ -8329,7 +8603,7 @@ function renderAthleteDay(){
           </div>
           <div>
             <div class="nm2">${escapeHtml(resolveExName(ex))}</div>
-            <div class="sub2">${escapeHtml(ex.sets)} X ${escapeHtml(ex.reps)}</div>
+            <div class="sub2">${escapeHtml(ex.sets)} X ${escapeHtml(ex.reps)}${(() => { if(ex.category !== 'main') return ''; const wi = athleteWeightInfo(aClientId, ex, aSelectedDateStr); return wi.display ? ` · <span class="a-sub-kg">${escapeHtml(fmtKg(wi.display))} kg</span>${wi.progKg ? '<span class="a-sub-up">↑</span>' : ''}` : ''; })()}</div>
           </div>
           <div class="chev2">›</div>
         </div>`;
@@ -8372,7 +8646,7 @@ function renderAthleteDay(){
 }
 
 $('aExerciseModal').addEventListener('click', (e) => {
-  if(e.target.id === 'aExerciseModal') closeExerciseModal();
+  if(e.target.id === 'aExerciseModal') requestCloseExerciseModal();
   if($('aTodayBtn')) $('aTodayBtn').onclick = athleteBackToToday;
 });
 
@@ -8386,7 +8660,13 @@ function stopIvTimer(){
   if(ivTimer && ivTimer.handle){ clearInterval(ivTimer.handle); }
   ivTimer = null;
 }
+let aCloseGuard = null;
+function requestCloseExerciseModal(){
+  if(aCloseGuard && !aCloseGuard()) return;
+  closeExerciseModal();
+}
 function closeExerciseModal(){
+  aCloseGuard = null;
   stopIvTimer();
   aDetailExId = null;
   $('aExerciseModal').style.display = 'none';
@@ -8590,10 +8870,31 @@ function renderIntervalExerciseModal(ex, exName, day){
   renderPreview();
 }
 
+/* ciezar dla klienta + "Twoj progres" (+kg wzgledem ostatniego treningu z tymi samymi powt.) */
+function athleteWeightInfo(clientId, ex, dateStr){
+  const exName = resolveExName(ex);
+  const isT = ex.category === 'main' && ex.isTest;
+  if(isT || ex.noWeight || ex.isInterval) return { display: '', progKg: null, info: null };
+  const info = computeSuggestedWeightInfo(clientId, exName, ex.reps, dateStr, ex.targetRpe, { progOff: !!ex.progOff || ex.category !== 'main' });
+  let display = '';
+  if(ex.suggestedManual && ex.suggestedWeight) display = String(ex.suggestedWeight);
+  else if(info) display = String(info.value);
+  else { const ls = getExerciseStats(clientId, exName); if(ls) display = String(ls.last.weight); }
+  let progKg = null;
+  const cur = pf(display), reps = parseInt(ex.reps);
+  if(!isNaN(cur) && ex.category === 'main'){
+    const same = progSessionsBefore(clientId, exName, dateStr).filter(x => x.reps === reps);
+    if(same.length){ const d = Math.round((cur - same[same.length - 1].st.top) * 100) / 100; if(d > 0) progKg = d; }
+  }
+  return { display, progKg, info };
+}
+const A_PROG_ICON = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>';
+
 function renderAthleteDetail(day){
   const holder = $('aExerciseModalContent');
   const ex = day.exercises.find(e => e.id === aDetailExId);
   if(!ex){ closeExerciseModal(); return; }
+  aCloseGuard = null;
   ensureLog(ex);
   const exName = resolveExName(ex);
 
@@ -8610,19 +8911,9 @@ function renderAthleteDetail(day){
     : `<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);font-size:12px;">Brak filmu</div>`;
 
   const isThisATest = ex.category === 'main' && ex.isTest;
-  const autoInfoA = (isThisATest || ex.noWeight) ? null : computeSuggestedWeightInfo(aClientId, exName, ex.reps, aSelectedDateStr, ex.targetRpe);
-  const autoVal = autoInfoA ? autoInfoA.value : null;
-  let suggestedDisplay = '';
-  if(!isThisATest && !ex.noWeight){
-    if(ex.suggestedManual && ex.suggestedWeight){
-      suggestedDisplay = ex.suggestedWeight;
-    } else if(autoVal !== null){
-      suggestedDisplay = String(autoVal);
-    } else {
-      const lastStats = getExerciseStats(aClientId, exName);
-      if(lastStats) suggestedDisplay = String(lastStats.last.weight);
-    }
-  }
+  const wiA = athleteWeightInfo(aClientId, ex, aSelectedDateStr);
+  const suggestedDisplay = wiA.display;
+  const needRpe = progActive(ex);
 
   const setRows = ex.log.map((l, i) => ex.noWeight ? `
     <tr>
@@ -8631,13 +8922,13 @@ function renderAthleteDetail(day){
     </tr>` : `
     <tr>
       <td style="font-weight:700;font-family:'Space Grotesk';">${i+1}</td>
-      <td><input class="set-input" data-i="${i}" data-f="weight" value="${escapeHtml(l.weight)}" placeholder="${suggestedDisplay ? suggestedDisplay+' kg' : '—'}"></td>
+      <td><input class="set-input" data-i="${i}" data-f="weight" value="${escapeHtml(l.weight)}" placeholder="${suggestedDisplay ? escapeHtml(fmtKg(suggestedDisplay))+' kg' : '—'}"></td>
       <td><input class="set-input" data-i="${i}" data-f="reps" value="${escapeHtml(l.reps)}" placeholder="${escapeHtml(ex.reps)}"></td>
     </tr>`).join('');
 
   const lrRows = (log, side) => log.map((l, i) => `
     <tr>
-      <td><input class="lr-set-input" data-side="${side}" data-i="${i}" data-f="weight" value="${escapeHtml(l.weight)}" placeholder="kg"></td>
+      <td><input class="lr-set-input" data-side="${side}" data-i="${i}" data-f="weight" value="${escapeHtml(l.weight)}" placeholder="${suggestedDisplay ? escapeHtml(fmtKg(suggestedDisplay)) : 'kg'}"></td>
       <td><input class="lr-set-input" data-side="${side}" data-i="${i}" data-f="reps" value="${escapeHtml(l.reps)}" placeholder="${escapeHtml(ex.reps)}"></td>
     </tr>`).join('');
 
@@ -8667,7 +8958,7 @@ function renderAthleteDetail(day){
         <div><div class="t">PRZERWA</div><div class="v">${escapeHtml(ex.rest)}</div></div>
       `}
     </div>
-    ${(ex.category==='main' && ex.isTest) ? renderTestHistoryBlock(aClientId, exName) : (suggestedDisplay ? `<div class="suggested-label">Sugerowany ciężar: <b>${escapeHtml(fmtKg(suggestedDisplay))} kg</b>${(ex.suggestedManual && ex.suggestedWeight) ? ' · od trenera' : (autoInfoA ? ` · ${escapeHtml(suggestedClientLabel(autoInfoA))}` : '')}</div>` : '')}
+    ${(ex.category==='main' && ex.isTest) ? renderTestHistoryBlock(aClientId, exName) : (wiA.progKg ? `<div class="a-prog-card"><div class="l"><div class="ic">${A_PROG_ICON}</div>Twój progres</div><div class="v">+${escapeHtml(fmtKg(wiA.progKg))} kg</div></div>` : '')}
     ${videoBarHtml(ex)}
     ${ex.splitLR ? `
       <div class="lr-cols-wrap">
@@ -8696,6 +8987,7 @@ function renderAthleteDetail(day){
       <div class="feedback-label">Jak ciężkie było to ćwiczenie? (RPE)</div>
       <div class="rpe-row" id="rpeRow"></div>
       <div class="rpe-scale-labels"><span>Bardzo lekko</span><span>Maksymalny wysiłek</span></div>
+      <div class="rpe-need-msg" id="aRpeNeedMsg" style="display:none;">⛔ Zaznacz RPE, żeby zakończyć ćwiczenie</div>
       <div class="note-label">Twoja notatka (opcjonalnie)</div>
       <textarea class="note-textarea" id="clientNoteInput" placeholder="Napisz, jak poszło — np. co bolało, co było za ciężkie/za lekkie...">${escapeHtml(ex.clientNote||'')}</textarea>
     </div>
@@ -8713,6 +9005,7 @@ function renderAthleteDetail(day){
       ex.rpe = i;
       rpeRowEl.querySelectorAll('.rpe-pill').forEach(p=>p.classList.remove('selected'));
       pill.classList.add('selected');
+      applyRpeLock();
       await saveResultWithOfflineBackup(aClientId, aSelectedDateStr, day);
     };
     rpeRowEl.appendChild(pill);
@@ -8722,8 +9015,31 @@ function renderAthleteDetail(day){
     await saveResultWithOfflineBackup(aClientId, aSelectedDateStr, day);
   };
 
-  $('aModalCloseBtn').onclick = closeExerciseModal;
-  $('aDoneBtn').onclick = closeExerciseModal;
+  /* obowiazkowe RPE: po wpisaniu ostatniej serii nie da sie zamknac bez RPE */
+  const lastFilled = () => {
+    const last = arr => { const l = (arr || [])[(arr || []).length - 1]; return !!(l && (String(l.weight || '').trim() || String(l.reps || '').trim())); };
+    return ex.splitLR ? (last(ex.logRight) || last(ex.logLeft)) : last(ex.log);
+  };
+  const rpeLocked = () => needRpe && lastFilled() && !(ex.rpe === 0 || (ex.rpe !== null && ex.rpe !== undefined && ex.rpe !== ''));
+  function applyRpeLock(){
+    const l = rpeLocked();
+    const fs = holder.querySelector('.feedback-section'); if(fs) fs.classList.toggle('rpe-need', l);
+    const m = $('aRpeNeedMsg'); if(m) m.style.display = l ? '' : 'none';
+    const b = $('aDoneBtn'); if(b){ b.classList.toggle('rpe-dis', l); b.textContent = l ? 'Zaznacz RPE, żeby zakończyć' : '✓ Gotowe'; }
+    const x = $('aModalCloseBtn'); if(x) x.classList.toggle('rpe-dim', l);
+  }
+  aCloseGuard = () => {
+    if(rpeLocked()){
+      applyRpeLock();
+      toast('⛔ Najpierw zaznacz RPE (1 kliknięcie)');
+      const fs = holder.querySelector('.feedback-section'); if(fs && fs.scrollIntoView) fs.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      return false;
+    }
+    return true;
+  };
+  $('aModalCloseBtn').onclick = requestCloseExerciseModal;
+  $('aDoneBtn').onclick = requestCloseExerciseModal;
+  applyRpeLock();
   bindVideoBar(ex, day);
   if(vid){
     $('aPlayBtn').onclick = () => {
@@ -8745,6 +9061,11 @@ function renderAthleteDetail(day){
     inp.onchange = async () => {
       const i = parseInt(inp.dataset.i);
       ex.log[i][inp.dataset.f] = inp.value;
+      if(inp.dataset.f === 'reps' && inp.value.trim() && !ex.noWeight && !String(ex.log[i].weight || '').trim() && suggestedDisplay){
+        ex.log[i].weight = String(suggestedDisplay);   // klient zostawil podpowiedz -> zapisujemy ja jako zrobiony ciezar
+        const w = holder.querySelector(`.set-input[data-i="${i}"][data-f="weight"]`); if(w) w.value = fmtKg(suggestedDisplay);
+      }
+      applyRpeLock();
       await saveResultWithOfflineBackup(aClientId, aSelectedDateStr, day);
       await checkAndMarkCompletion(aClientId, aSelectedDateStr, day);
     };
@@ -8754,6 +9075,11 @@ function renderAthleteDetail(day){
       const i = parseInt(inp.dataset.i);
       const arr = inp.dataset.side === 'right' ? ex.logRight : ex.logLeft;
       arr[i][inp.dataset.f] = inp.value;
+      if(inp.dataset.f === 'reps' && inp.value.trim() && !String(arr[i].weight || '').trim() && suggestedDisplay){
+        arr[i].weight = String(suggestedDisplay);
+        const w = holder.querySelector(`.lr-set-input[data-side="${inp.dataset.side}"][data-i="${i}"][data-f="weight"]`); if(w) w.value = fmtKg(suggestedDisplay);
+      }
+      applyRpeLock();
       await saveResultWithOfflineBackup(aClientId, aSelectedDateStr, day);
       await checkAndMarkCompletion(aClientId, aSelectedDateStr, day);
     };
