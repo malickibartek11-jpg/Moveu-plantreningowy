@@ -161,7 +161,7 @@
   .feedback-section{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;margin-top:14px;}
   .feedback-label{font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;font-weight:700;color:var(--muted);margin-bottom:10px;}
   .rpe-row{display:flex;gap:4px;margin-bottom:6px;}
-  .rpe-pill{flex:1;aspect-ratio:1;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:12px;color:#fff;cursor:pointer;border:2px solid transparent;}
+  .rpe-pill{touch-action:manipulation;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;flex:1;aspect-ratio:1;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:12px;color:#fff;cursor:pointer;border:2px solid transparent;}
   .rpe-pill.selected{border-color:#1C1C1C;transform:scale(1.08);}
   .rpe-scale-labels{display:flex;justify-content:space-between;font-size:8.5px;color:var(--muted);margin-bottom:16px;padding:0 2px;}
   .note-label{font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;font-weight:700;color:var(--muted);margin-bottom:6px;}
@@ -1046,7 +1046,7 @@
   .a-prog-card .v{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:24px;color:#1F7A45;}
   .a-sub-kg{font-weight:600;color:var(--text);}
   .a-sub-up{display:inline-block;margin-left:4px;padding:0 6px;border-radius:999px;background:#E3F4E9;color:#1F7A45;font-weight:700;font-size:11px;}
-  .feedback-section.rpe-need{border:2px solid #D6472E;background:#FDF1EE;}
+  .feedback-section.rpe-need{border-color:#D6472E;box-shadow:0 0 0 1px #D6472E;background:#FDF1EE;}
   .rpe-need-msg{color:#B4472E;font-weight:600;font-size:12.5px;margin:8px 0 10px;}
   #aDoneBtn.rpe-dis{background:#D9D6D0!important;color:#8A867E!important;border-color:#D9D6D0!important;}
   .modal-close.rpe-dim{opacity:.35;}
@@ -1070,6 +1070,26 @@
   .rpe-info-leg div{display:flex;gap:10px;align-items:center;font-size:13px;padding:7px 10px;border-radius:10px;background:#FAF9F7;}
   .rpe-info-leg .n{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:14px;min-width:62px;white-space:nowrap;}
   .rpe-info-leg .n small{font-size:10px;font-weight:600;color:var(--muted);display:block;}
+
+  .tg-cb{width:20px;height:20px;border-radius:6px;border:1.5px solid #CFCBC3;background:#fff;color:#9C978E;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;line-height:1;flex:none;opacity:0;transition:opacity .12s;margin-left:4px;}
+  .rn-tile:hover .tg-cb, #aRosterList.tg-any .tg-cb{opacity:1;}
+  @media (hover:none){ .tg-cb{opacity:1;} }
+  .tg-cb:hover{border-color:#1C1C1C;color:#1C1C1C;}
+  .rn-tile.tg-in .tg-cb{opacity:1;background:var(--tc);border-color:var(--tc);color:#fff;font-size:11px;}
+  .rn-tile.tg-in .rn-avatar{background:var(--tc)!important;color:#fff!important;}
+  .tg-tabs{display:flex;align-items:flex-end;gap:6px;border-bottom:1px solid var(--line);margin-bottom:14px;flex-wrap:wrap;}
+  .tg-lbl{font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 6px 10px 0;}
+  .tg-tab{display:flex;align-items:center;gap:8px;padding:8px 12px 9px;border-radius:12px 12px 0 0;cursor:pointer;background:var(--surface-2);border:1px solid transparent;border-bottom:none;position:relative;top:1px;}
+  .tg-tab.on{background:var(--surface);border-color:var(--line);box-shadow:inset 0 3px 0 var(--c);}
+  .tg-tab .d{width:9px;height:9px;border-radius:50%;background:var(--c);}
+  .tg-tab b{font-size:13.5px;}
+  .tg-tab .p{font-size:11.5px;font-weight:600;color:var(--muted);background:var(--bg);border-radius:999px;padding:0 7px;}
+  .tg-tab .x{color:#B5B1A8;font-size:11px;padding:0 2px;}.tg-tab .x:hover{color:#B4472E;}
+  .tg-end{margin-left:auto;margin-bottom:8px;font-size:12px;font-weight:600;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:6px 11px;cursor:pointer;color:var(--text);}
+  .tg-av{display:inline-flex;width:28px;height:28px;border-radius:50%;color:#fff;font-size:11px;font-weight:700;align-items:center;justify-content:center;margin-right:8px;vertical-align:middle;}
+  .tg-mtag{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:3px 12px 3px 4px;font-weight:700;font-size:13px;color:#fff;margin-bottom:10px;}
+  .tg-mtag span{width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,.25);font-size:10px;display:inline-flex;align-items:center;justify-content:center;}
+  .tg-next{width:100%;margin-top:8px;padding:12px;border-radius:10px;border:2px solid var(--c);background:#fff;font-size:13.5px;font-weight:600;cursor:pointer;color:#1C1C1C;}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -4971,6 +4991,7 @@ function renderProgFlagsRow(tbody, day, items){
   items.forEach(ex => {
     if(ex.progFlagAck || ex.isTest || ex.isInterval || ex.progOff) return;
     const name = resolveExName(ex);
+    if(isBallExercise(name)) return;
     if(ex.noWeight){
       const fl = noWeightProgFlag(selectedClientId, ex, selectedDateStr);
       if(fl) rows.push({ ex, name, text: fl, cut: null });
@@ -5029,7 +5050,7 @@ function renderExRows(day, category){
       <td><label class="test-toggle"><input type="checkbox" class="noweight-check" ${ex.noWeight?'checked':''}></label></td>
       <td><label class="test-toggle"><input type="checkbox" class="interval-check" ${ex.isInterval?'checked':''}></label></td>
       <td><label class="test-toggle"><input type="checkbox" class="splitlr-check" ${ex.splitLR?'checked':''}></label></td>
-      <td><label class="test-toggle"><input type="checkbox" class="rpeprog-check" ${ex.progOff?'':'checked'} title="Automatyczna progresja ciężaru + obowiązkowe RPE u klienta. Odznacz, jeśli nie chcesz automatu przy tym ćwiczeniu."></label></td>
+      <td><label class="test-toggle"><input type="checkbox" class="rpeprog-check" ${(ex.progOff || isBallExercise(exName))?'':'checked'} ${isBallExercise(exName)?'disabled title="Ćwiczenie z piłką — bez progresji ciężaru po RPE"':'title="Automatyczna progresja ciężaru + obowiązkowe RPE u klienta. Odznacz, jeśli nie chcesz automatu przy tym ćwiczeniu."'}></label></td>
       ${testCell}
       <td><button class="rm-btn" title="Usuń">✕</button></td>
     `;
@@ -5205,7 +5226,7 @@ function renderExRows(day, category){
     };
     tbody.appendChild(trN);
 
-    if(category === 'main' && !ex.progOff && !ex.noWeight && !ex.isInterval && !ex.isTest){
+    if(category === 'main' && !ex.progOff && !ex.noWeight && !ex.isInterval && !ex.isTest && !isBallExercise(exName)){
       const exNameForRpe = resolveExName(ex);
       const report = getLatestRpeReport(selectedClientId, exNameForRpe);
       const trR = document.createElement('tr');
@@ -5555,7 +5576,8 @@ function progDecide(st, plannedReps, rpe, target, eq, prevPct){
 /* opts: { progOff } */
 function computeSuggestedWeightInfo(clientId, exerciseName, plannedReps, beforeDate, targetRpe, opts){
   if(!clientId) return null;
-  opts = opts || {};
+  opts = Object.assign({}, opts || {});
+  if(isBallExercise(exerciseName)) opts.progOff = true;
   const reps = parseInt(plannedReps);
   const eqi = equipmentInfo(exerciseName), eq = eqi.eq;
   const all = progSessionsBefore(clientId, exerciseName, beforeDate);
@@ -5566,7 +5588,7 @@ function computeSuggestedWeightInfo(clientId, exerciseName, plannedReps, beforeD
     const st = prev.st;
     const base = { source:'last', date: prev.date, fromWeight: st.top, fromReps: prev.reps, done: st.reps, P: Math.round(st.pct * 100), eq, eqAuto: eqi.auto, eqKnown: eqi.known, side: st.side || null };
     if(opts.progOff){
-      return Object.assign(base, { value: eqSnap(st.top, eq), rule: 'progresja wyłączona — ciężar z poprzedniego treningu', flag: null, rpe: null, conv: false });
+      return Object.assign(base, { value: eqSnap(st.top, eq), rule: isBallExercise(exerciseName) ? 'ćwiczenie z piłką — bez progresji, ciężar z poprzedniego treningu' : 'progresja wyłączona — ciężar z poprzedniego treningu', flag: null, rpe: null, conv: false });
     }
     const actual = (prev.ex.rpe === 0 || prev.ex.rpe) ? pf(prev.ex.rpe) : NaN;
     let target = pf(prev.ex.targetRpe); if(isNaN(target)) target = pf(targetRpe); if(isNaN(target)) target = PROG_DEFAULT_RPE;
@@ -5635,7 +5657,9 @@ function openRpeInfoSheet(){
   bg.onclick = e => { if(e.target === bg) close(); };
   bg.querySelector('#rpeInfoOk').onclick = close;
 }
-function progActive(ex){ return ex && ex.category === 'main' && !ex.noWeight && !ex.isInterval && !ex.isTest && !ex.progOff; }
+/* cwiczenia z pilka (np. rzut pilka lekarska) - bez progresji ciezaru po RPE */
+function isBallExercise(name){ return /\bpil(k|ce\b|ek\b)/.test(plSearchKey(name)); }
+function progActive(ex){ return ex && ex.category === 'main' && !ex.noWeight && !ex.isInterval && !ex.isTest && !ex.progOff && !isBallExercise(resolveExName(ex)); }
 const fmtKg = v => String(v).replace('.', ',');
 function rpeNoteText(r){ if(!r) return ''; return `RPE ${fmtKg(r.actual)} / cel ${fmtKg(r.target)}`; }
 function suggestedSourceText(info){
@@ -8408,6 +8432,7 @@ async function enterAthleteRoster(orgId, subId){
   aRosterMode = {orgId, subId}; aHomeOrgId = orgId; aClientId = null; aSelectedDateStr = null; aDetailExId = null;
   aRosterSearch = ''; aFlyoutOpen = false;
   $('athleteWrap').classList.add('roster-mode');
+  loadTogether();
   renderAthleteRoster();
   // plany calej grupy wczytujemy w tle - po to, zeby pokazac znaczniki postepu przy imionach
   const mode = aRosterMode;
@@ -8447,6 +8472,64 @@ function rosterPillHtml(c){
   return `<span class="rn-pill ${done === total ? 'full' : ''}">${done === total ? '✓' : done + '/' + total}</span>`;
 }
 
+/* ===== TRENING RAZEM (2-3 osoby na jednym komputerze) =====
+   Maly kwadracik przy imieniu (tylko komputer) dodaje osobe; nad planem zakladki z imionami.
+   Zapamietane do konca dnia (localStorage) dla tej samej grupy. */
+const TOGETHER_COLORS = ['#E8604A', '#3E7CB1', '#2F9E6E'];
+const TOGETHER_MAX = 3, TOGETHER_KEY = 'moveu_together_v1';
+let aTogether = [];
+const isDesktopAthlete = () => { try { return window.matchMedia('(min-width: 900px)').matches; } catch(e){ return true; } };
+const togetherOn = () => !!aRosterMode && aTogether.length > 0 && isDesktopAthlete();
+const togetherColor = id => { const i = aTogether.indexOf(id); return i < 0 ? null : TOGETHER_COLORS[i]; };
+function togetherRosterKey(){ return aRosterMode ? aRosterMode.orgId + '|' + aRosterMode.subId : ''; }
+function saveTogether(){ try { localStorage.setItem(TOGETHER_KEY, JSON.stringify({ d: todayKey(), r: togetherRosterKey(), ids: aTogether })); } catch(e){} }
+function loadTogether(){
+  aTogether = [];
+  try {
+    const v = JSON.parse(localStorage.getItem(TOGETHER_KEY) || 'null');
+    if(v && v.d === todayKey() && v.r === togetherRosterKey() && Array.isArray(v.ids)) aTogether = v.ids.filter(id => clients.some(c => c.id === id)).slice(0, TOGETHER_MAX);
+  } catch(e){}
+}
+async function toggleTogether(id){
+  const i = aTogether.indexOf(id);
+  if(i >= 0){
+    aTogether.splice(i, 1);
+    if(aTogether.length === 1) aTogether = [];
+    saveTogether();
+    if(aClientId === id && aTogether.length){ await selectRosterPerson(aTogether[0]); return; }
+    refreshRosterNames(); renderAthleteRosterCenter(); return;
+  }
+  if(aTogether.length >= TOGETHER_MAX){ toast(`Maksymalnie ${TOGETHER_MAX} osoby naraz`); return; }
+  if(!aTogether.length && aClientId && aClientId !== id) aTogether.push(aClientId);
+  aTogether.push(id);
+  saveTogether();
+  if(aClientId !== id) await selectRosterPerson(id);
+  else { refreshRosterNames(); renderAthleteRosterCenter(); }
+}
+function endTogether(){ aTogether = []; saveTogether(); refreshRosterNames(); renderAthleteRosterCenter(); }
+function togetherProgress(id){
+  const day = (plansCache[id] || {})[todayKey()];
+  if(!day || !day.exercises || !day.exercises.length) return '—';
+  return day.exercises.filter(exerciseHasResult).length + '/' + day.exercises.length;
+}
+function togetherTabsHtml(){
+  return `<div class="tg-tabs"><span class="tg-lbl">Trening razem</span>${aTogether.map(id => {
+    const c = clients.find(x => x.id === id); const first = c ? c.name.split(' ')[0] : '?';
+    return `<div class="tg-tab ${id === aClientId ? 'on' : ''}" style="--c:${togetherColor(id)}" data-tgtab="${id}"><span class="d"></span><b>${escapeHtml(first)}</b><span class="p">${togetherProgress(id)}</span><span class="x" data-tgrm="${id}" title="Usuń z treningu razem">✕</span></div>`;
+  }).join('')}<button class="tg-end" id="tgEnd">Zakończ trening razem</button></div>`;
+}
+function nextTogetherId(){ if(aTogether.length < 2) return null; const i = aTogether.indexOf(aClientId); return aTogether[(i + 1) % aTogether.length]; }
+async function jumpTogetherNext(exName){
+  if(aCloseGuard && !aCloseGuard()) return;
+  const next = nextTogetherId(); if(!next) return;
+  closeExerciseModal();
+  await selectRosterPerson(next);
+  const day = (plansCache[next] || {})[aSelectedDateStr];
+  const ex = day && (day.exercises || []).find(e => resolveExName(e) === exName);
+  if(ex) openExerciseModal(ex.id, day);
+  else { const c = clients.find(x => x.id === next); toast(`${c ? c.name.split(' ')[0] : 'Ta osoba'} nie ma dziś tego ćwiczenia`); }
+}
+
 function refreshRosterNames(){
   if(!aRosterMode || !$('aRosterList')) return;
   const pool = rosterPool(aRosterMode);
@@ -8454,9 +8537,12 @@ function refreshRosterNames(){
   $('aRosterHead').textContent = `${rosterSubName(aRosterMode) || 'Wszyscy'} · ${pool.length} ${rosterNoun(aRosterMode.orgId, pool.length)}`;
   const shown = q ? pool.filter(c => c.name.toLowerCase().includes(q)) : pool;
   const list = $('aRosterList');
-  list.innerHTML = shown.map(c => `<div class="rn-tile ${c.id === aClientId ? 'active' : ''}" data-id="${c.id}"><div class="rn-avatar">${escapeHtml(rosterInitials(c.name))}</div><div class="rn-nm">${escapeHtml(c.name)}</div>${rosterPillHtml(c)}</div>`).join('')
+  const desk = isDesktopAthlete();
+  list.classList.toggle('tg-any', desk && aTogether.length > 0);
+  list.innerHTML = shown.map(c => { const tc = desk ? togetherColor(c.id) : null; return `<div class="rn-tile ${c.id === aClientId ? 'active' : ''} ${tc ? 'tg-in' : ''}" data-id="${c.id}" ${tc ? `style="--tc:${tc}"` : ''}><div class="rn-avatar">${escapeHtml(rosterInitials(c.name))}</div><div class="rn-nm">${escapeHtml(c.name)}</div>${rosterPillHtml(c)}${desk ? `<span class="tg-cb" data-tg="${c.id}" title="${tc ? 'Usuń z treningu razem' : 'Dodaj do treningu razem'}">${tc ? '✓' : '+'}</span>` : ''}</div>`; }).join('')
     || `<div class="a-roster-empty" style="padding:16px;font-size:12px;">${pool.length ? 'Nikogo nie znaleziono.' : 'Brak osób w tej grupie.'}</div>`;
   list.querySelectorAll('.rn-tile').forEach(t => t.onclick = () => selectRosterPerson(t.dataset.id));
+  list.querySelectorAll('[data-tg]').forEach(b => b.onclick = (e) => { e.stopPropagation(); toggleTogether(b.dataset.tg); });
 }
 
 function renderAthleteRosterCenter(){
@@ -8467,7 +8553,13 @@ function renderAthleteRosterCenter(){
     return;
   }
   const c = clients.find(cl => cl.id === aClientId);
-  main.innerHTML = `<div class="a-roster-person"><h2>${escapeHtml(c ? c.name : '')}</h2></div><div id="aRosterBody"></div>`;
+  const tg = togetherOn(), tc = tg ? togetherColor(aClientId) : null;
+  main.innerHTML = (tg ? togetherTabsHtml() : '') + `<div class="a-roster-person"><h2>${tc ? `<span class="tg-av" style="background:${tc}">${escapeHtml(rosterInitials(c ? c.name : ''))}</span>` : ''}${escapeHtml(c ? c.name : '')}</h2></div><div id="aRosterBody"></div>`;
+  if(tg){
+    main.querySelectorAll('[data-tgtab]').forEach(t => t.onclick = () => { if(t.dataset.tgtab !== aClientId) selectRosterPerson(t.dataset.tgtab); });
+    main.querySelectorAll('[data-tgrm]').forEach(x => x.onclick = (e) => { e.stopPropagation(); toggleTogether(x.dataset.tgrm); });
+    $('tgEnd').onclick = endTogether;
+  }
   renderAthleteBody($('aRosterBody'));
 }
 
@@ -8974,8 +9066,13 @@ function renderAthleteDetail(day){
       <td><input class="lr-set-input" data-side="${side}" data-i="${i}" data-f="reps" value="${escapeHtml(l.reps)}" placeholder="${escapeHtml(ex.reps)}"></td>
     </tr>`).join('');
 
+  const tgC = togetherOn() ? togetherColor(aClientId) : null;
+  const tgNext = tgC ? nextTogetherId() : null;
+  const tgPerson = tgC ? clients.find(x => x.id === aClientId) : null;
+  const tgNextP = tgNext ? clients.find(x => x.id === tgNext) : null;
   holder.innerHTML = `
     <span class="modal-close" id="aModalCloseBtn">✕</span>
+    ${tgC ? `<div class="tg-mtag" style="background:${tgC}"><span>${escapeHtml(rosterInitials(tgPerson ? tgPerson.name : ''))}</span>${escapeHtml(tgPerson ? tgPerson.name : '')}</div>` : ''}
     <div class="a-video-head">
       ${videoInner}
       <div class="a-video-overlay">
@@ -9035,7 +9132,9 @@ function renderAthleteDetail(day){
       <textarea class="note-textarea" id="clientNoteInput" placeholder="Napisz, jak poszło — np. co bolało, co było za ciężkie/za lekkie...">${escapeHtml(ex.clientNote||'')}</textarea>
     </div>
     <button class="btn" id="aDoneBtn" style="width:100%;margin-top:18px;padding:14px;font-size:14px;">✓ Gotowe</button>
+    ${tgNextP ? `<button class="tg-next" id="tgNextBtn" style="--c:${togetherColor(tgNext)}">→ ${escapeHtml(tgNextP.name.split(' ')[0])}: to samo ćwiczenie</button>` : ''}
   `;
+  if($('tgNextBtn')) $('tgNextBtn').onclick = () => jumpTogetherNext(exName);
 
   const RPE_COLORS = ['#2E9E5B','#3EA55C','#5CAE55','#8AB94E','#C9BE47','#E8B93F','#E89A3A','#E87E35','#E8632E','#D6472E','#B4472E'];
   const rpeRowEl = $('rpeRow');
@@ -9044,13 +9143,21 @@ function renderAthleteDetail(day){
     pill.className = 'rpe-pill' + (ex.rpe === i ? ' selected' : '');
     pill.style.background = RPE_COLORS[i];
     pill.textContent = i;
-    pill.onclick = async () => {
+    /* wybor RPE juz w chwili dotkniecia (pointerdown) - na telefonie pierwsze dotkniecie chowa klawiature
+       i przesuwa ekran, przez co zwykly "click" nie trafial i trzeba bylo klikac drugi raz */
+    const pickRpe = async (e) => {
+      if(e && e.type === 'click' && pill._pickedAt && Date.now() - pill._pickedAt < 800) return;   // juz obsluzone przy dotknieciu
+      if(e && e.type === 'pointerdown'){ if(e.button > 0) return; pill._pickedAt = Date.now(); if(e.cancelable) e.preventDefault(); }
+      const ae = document.activeElement;
+      if(ae && ae !== document.body && ae.blur && holder.contains(ae)) ae.blur();   // zapis wpisanych powtorzen (change) przed RPE
       ex.rpe = i;
       rpeRowEl.querySelectorAll('.rpe-pill').forEach(p=>p.classList.remove('selected'));
       pill.classList.add('selected');
       applyRpeLock();
       await saveResultWithOfflineBackup(aClientId, aSelectedDateStr, day);
     };
+    pill.addEventListener('pointerdown', pickRpe);
+    pill.addEventListener('click', pickRpe);
     rpeRowEl.appendChild(pill);
   }
   $('clientNoteInput').onchange = async () => {
