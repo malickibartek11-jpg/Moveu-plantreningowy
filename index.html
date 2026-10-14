@@ -492,6 +492,9 @@
   .a-roster-head{font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;font-weight:700;color:var(--muted);margin-bottom:8px;padding:0 4px;}
   .a-roster-search{width:100%;padding:7px 10px;border:1px solid var(--line);border-radius:8px;font-size:12.5px;margin-bottom:8px;background:var(--surface);color:var(--text);}
   .a-roster-search:focus{outline:none;border-color:var(--accent);}
+  .rn-tile.rn-hide{display:none;}
+  .rn-more{width:100%;margin-top:6px;padding:7px;background:transparent;border:1px dashed var(--line);border-radius:8px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;font-family:inherit;}
+  .rn-more:hover{color:var(--text);border-color:var(--accent-dim);}
   .rn-tile{display:flex;align-items:center;gap:8px;padding:4px 8px;border-radius:8px;cursor:pointer;margin-bottom:2px;border:2px solid transparent;}
   .rn-tile:hover{background:var(--surface-2);}
   .rn-tile.active{background:var(--surface);border-color:var(--accent);}
@@ -1013,6 +1016,19 @@
   .ms-q:hover{border-color:var(--accent);}
   .ms-rep b{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;}
   .ms-rep b span{text-transform:none;font-weight:600;}
+  .ms-hist{max-width:760px;margin-top:22px;border-top:1px solid var(--line);padding-top:12px;}
+  .ms-hist-btn{background:none;border:none;padding:4px 0;font-size:13.5px;font-weight:600;color:var(--text);cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px;}
+  .ms-hist-btn b{background:var(--surface-2);border-radius:9px;padding:0 7px;font-size:11.5px;}
+  .ms-hist-list{margin-top:10px;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;}
+  .mh-row{padding:10px 14px;border-bottom:1px solid var(--line);font-size:13px;}
+  .mh-row:last-child{border-bottom:none;}
+  .mh-top{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+  .mh-top .ms-code{font-size:10px;padding:0 5px;}
+  .mh-st{margin-left:auto;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:9px;background:var(--surface-2);color:var(--muted);}
+  .mh-st.ok{background:#E3F4E9;color:#2E9E5B;} .mh-st.wait{background:#FFF4E5;color:#B9781F;}
+  .mh-q{color:var(--muted);margin-top:4px;font-size:12.5px;}
+  .mh-r{margin-top:3px;} .mh-r b{color:#2E9E5B;}
+  .mh-open{display:inline-block;margin-top:4px;font-size:12px;color:#3E7CB1;cursor:pointer;font-weight:600;}
   @media (max-width:700px){ .ms-snap.two{grid-template-columns:1fr;} }
   /* klient: odpowiedz trenera */
   .a-coach-inbox{display:flex;align-items:center;gap:11px;background:#1C1C1C;color:#fff;border-radius:14px;padding:12px 14px;margin:0 0 12px;cursor:pointer;box-shadow:0 0 0 4px rgba(46,158,91,.22);}
@@ -4589,20 +4605,21 @@ const COACH_MSG_DAYS = 14;
 const RPE_PALETTE = ['#2E9E5B','#3EA55C','#5CAE55','#8AB94E','#C9BE47','#E8B93F','#E89A3A','#E87E35','#E8632E','#D6472E','#B4472E'];
 const MSG_CHAT_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>';
 const MSG_QUICK = ['👍 Dobra robota', 'Następnym razem −5 kg', 'Nagraj film z boku', 'Pogadamy na treningu'];
-let msgFilter = 'all';
+let msgFilter = 'all', msgHistOpen = false;
+const MSG_HIST_DAYS = 30;
 const PL_DOW = ['nd','pn','wt','śr','czw','pt','sob'];
 function plDayShort(ds){ const d = new Date(String(ds).slice(0, 10) + 'T12:00:00'); return isNaN(d) ? String(ds || '') : `${PL_DOW[d.getDay()]} ${d.getDate()}.${String(d.getMonth() + 1).padStart(2, '0')}`; }
 function plWhen(iso){ if(!iso) return ''; const d = new Date(iso); if(isNaN(d)) return ''; return `${PL_DOW[d.getDay()]} ${d.getDate()}.${String(d.getMonth() + 1).padStart(2, '0')} · ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`; }
 function noteMsgStatus(ex){ return ex.coachReply ? (ex.coachReplyRead ? 'read' : 'answered') : (ex.noteSeen ? 'seen' : 'new'); }
-function clientNoteMessages(){
+function clientNoteMessages(keepAll){
   const from = addDaysToDateStr(todayKey(), -COACH_MSG_DAYS), out = [];
   (clients || []).forEach(c => {
     const plan = plansCache[c.id]; if(!plan) return;
     Object.keys(plan).forEach(ds => {
-      if(ds < from) return;
       const day = plan[ds];
       ((day && day.exercises) || []).forEach(ex => {
         if(!ex || !String(ex.clientNote || '').trim()) return;
+        if(!keepAll && ds < from && !(ex.clientNoteAt && noteMsgStatus(ex) === 'new')) return;   // stare notatki (sprzed tej funkcji) tylko z 14 dni; nowe nieobsluzone zostaja
         out.push({ kind: 'note', clientId: c.id, date: ds, day, ex, status: noteMsgStatus(ex), at: ex.clientNoteAt || (ds + 'T23:59:00') });
       });
     });
@@ -4661,12 +4678,39 @@ async function loadAllPlansFresh(){
     try{ await ensurePlanLoaded(c.id); }catch(e){}
   }));
 }
+function msgHistoryRows(){
+  const from = addDaysToDateStr(todayKey(), -MSG_HIST_DAYS);
+  const notes = clientNoteMessages(true).filter(m => m.status !== 'new' && m.date >= from)
+    .map(m => ({ kind: 'note', clientId: m.clientId, date: m.date, label: m.ex.label || '', exName: resolveExName(m.ex), quote: m.ex.clientNote, reply: m.ex.coachReply || '', read: m.ex.coachReplyRead || null, at: m.ex.coachReplyAt || m.at }));
+  const vids = (allVideos || []).filter(v => v.status === 'viewed' && String(v.date || '') >= from)
+    .map(v => { const day = (plansCache[v.client_id] || {})[v.date]; const ex = day && (day.exercises || []).find(e => e.id === v.exercise_id);
+      return { kind: 'video', clientId: v.client_id, date: v.date, label: ex ? (ex.label || '') : '', exName: ex ? resolveExName(ex) : (v.exercise_name || ''), quote: v.note || '', reply: v.reply || '', read: null, at: v.viewed_at || v.created_at || v.date }; });
+  return notes.concat(vids).filter(r => msgFilter === 'all' || r.kind === msgFilter).sort((a, b) => String(b.at || '').localeCompare(String(a.at || '')));
+}
+function msgHistoryHtml(){
+  const rows = msgHistoryRows();
+  if(!rows.length) return '';
+  const short = (t, n) => { t = String(t || '').replace(/\s+/g, ' ').trim(); return t.length > n ? t.slice(0, n - 1) + '…' : t; };
+  const st = r => r.kind === 'video' ? '<span class="mh-st">🎥 obejrzany</span>'
+    : (!r.reply ? '<span class="mh-st muted">bez odpowiedzi</span>' : (r.read ? `<span class="mh-st ok">✓ przeczytane · ${escapeHtml(plWhen(r.read))}</span>` : '<span class="mh-st wait">czeka na odczytanie</span>'));
+  return `<div class="ms-hist">
+    <button class="ms-hist-btn" id="msHistToggle">${msgHistOpen ? '▾' : '▸'} Historia odpowiedzi <b>${rows.length}</b><span class="cv-small">· ostatnie ${MSG_HIST_DAYS} dni</span></button>
+    ${msgHistOpen ? `<div class="ms-hist-list">${rows.map(r => { const c = clients.find(x => x.id === r.clientId);
+      return `<div class="mh-row">
+        <div class="mh-top"><b>${escapeHtml(c ? c.name : 'Klient')}</b><span class="cv-small">· ${escapeHtml(plDayShort(r.date))} · ${r.label ? `<span class="ms-code">${escapeHtml(r.label)}</span> ` : ''}${escapeHtml(r.exName)}</span>${st(r)}</div>
+        ${r.quote ? `<div class="mh-q">„${escapeHtml(short(r.quote, 140))}”</div>` : ''}
+        ${r.reply ? `<div class="mh-r"><b>Ty:</b> ${escapeHtml(r.reply)}</div>` : ''}
+        <a class="mh-open" data-openday="${escapeHtml(r.clientId + '|' + (r.date || ''))}">Otwórz plan ›</a>
+      </div>`; }).join('')}</div>` : ''}
+  </div>`;
+}
 async function renderVideosView(){
   const vids = (allVideos || []).map(v => ({ kind: 'video', clientId: v.client_id, date: v.date, v, status: v.status === 'viewed' ? 'answered' : 'new', at: v.created_at || ((v.date || '') + 'T23:59:00') }));
   const notes = clientNoteMessages();
-  const all = notes.concat(vids).sort((a, b) => (a.status === 'new' ? 0 : 1) - (b.status === 'new' ? 0 : 1) || String(b.at || '').localeCompare(String(a.at || '')));
-  const cnt = { all: all.length, new: all.filter(m => m.status === 'new').length, note: notes.length, video: vids.length };
-  const shown = all.filter(m => msgFilter === 'all' || (msgFilter === 'new' ? m.status === 'new' : m.kind === msgFilter));
+  const all = notes.concat(vids).filter(m => m.status === 'new').sort((a, b) => (a.status === 'new' ? 0 : 1) - (b.status === 'new' ? 0 : 1) || String(b.at || '').localeCompare(String(a.at || '')));
+  if(msgFilter === 'new') msgFilter = 'all';
+  const cnt = { all: all.length, note: all.filter(m => m.kind === 'note').length, video: all.filter(m => m.kind === 'video').length };
+  const shown = all.filter(m => msgFilter === 'all' || m.kind === msgFilter);
   const stLabel = { new: 'nowa', seen: 'przeczytana', answered: 'odpowiedziano', read: '✓ klient przeczytał' };
   const card = m => {
     const c = clients.find(x => x.id === m.clientId);
@@ -4702,9 +4746,11 @@ async function renderVideosView(){
     </div>`;
   };
   $('main').innerHTML = `<div class="section-title"><div class="bar"></div><h2>Wiadomości od klienta</h2></div>
-    <div class="section-desc">Notatki z ćwiczeń (z ostatnich ${COACH_MSG_DAYS} dni) i filmy w jednym miejscu. Twoja odpowiedź trafia do klienta przy tym ćwiczeniu w aplikacji. Film usuwa się ${VIDEO_KEEP_H} h po obejrzeniu — odpowiedź zostaje.</div>
-    <div class="ms-chips">${[['all', 'Wszystkie'], ['new', 'Nowe'], ['note', '💬 Notatki'], ['video', '🎥 Filmy']].map(([k, t]) => `<span class="ms-chip ${msgFilter === k ? 'on' : ''}" data-mf="${k}">${t}<b>${cnt[k]}</b></span>`).join('')}</div>
-    <div id="vidList">${shown.map(card).join('') || `<div class="empty-state">${msgFilter === 'new' ? 'Brak nowych wiadomości.' : 'Brak wiadomości od klientów.'}</div>`}</div>`;
+    <div class="section-desc">Notatki z ćwiczeń i filmy, na które jeszcze nie zareagowałeś. Po wysłaniu odpowiedzi albo „Przeczytane” wiadomość znika z tej listy — klient dalej widzi Twoją odpowiedź przy ćwiczeniu.</div>
+    <div class="ms-chips">${[['all', 'Wszystkie'], ['note', '💬 Notatki'], ['video', '🎥 Filmy']].map(([k, t]) => `<span class="ms-chip ${msgFilter === k ? 'on' : ''}" data-mf="${k}">${t}<b>${cnt[k]}</b></span>`).join('')}</div>
+    <div id="vidList">${shown.map(card).join('') || '<div class="empty-state">Brak nowych wiadomości — wszystko obsłużone 👍</div>'}</div>
+    ${msgHistoryHtml()}`;
+  const hb = $('msHistToggle'); if(hb) hb.onclick = () => { msgHistOpen = !msgHistOpen; renderVideosView(); };
   document.querySelectorAll('[data-mf]').forEach(ch => ch.onclick = () => { msgFilter = ch.dataset.mf; renderVideosView(); });
   document.querySelectorAll('.ms-q').forEach(q => q.onclick = () => { const t = q.closest('.ms-item').querySelector('.ms-reply'); if(!t) return; t.value = (t.value.trim() ? t.value.trim() + ' ' : '') + q.textContent; t.focus(); });
   document.querySelectorAll('.vid-player').forEach(async box => {
@@ -4722,13 +4768,13 @@ async function renderVideosView(){
     const [cid, ds, exId] = splitKey(b.dataset.nsend);
     const okS = await saveNoteReplyFields(cid, ds, exId, { coachReply: txt, coachReplyAt: new Date().toISOString(), coachReplyRead: null, clientReact: null, noteSeen: true });
     if(!okS){ b.disabled = false; return; }
-    updateVideoBadge(); renderVideosView(); toast('Odpowiedź wysłana');
+    updateVideoBadge(); renderVideosView(); toast('Odpowiedź wysłana — klient zobaczy ją w aplikacji');
   });
   document.querySelectorAll('[data-nseen]').forEach(b => b.onclick = async () => {
     b.disabled = true;
     const [cid, ds, exId] = splitKey(b.dataset.nseen);
     if(!(await saveNoteReplyFields(cid, ds, exId, { noteSeen: true }))){ b.disabled = false; return; }
-    updateVideoBadge(); renderVideosView();
+    updateVideoBadge(); renderVideosView(); toast('Oznaczono jako przeczytane');
   });
   document.querySelectorAll('[data-ans]').forEach(b => b.onclick = async () => {
     const item = b.closest('.ms-item'), txt = item.querySelector('.ms-reply').value.trim();
@@ -8539,6 +8585,7 @@ let athleteLocked = false;   // zawodniczka zalogowana na wlasne konto - bez wyb
 let aRosterMode = null;      // {orgId, subId} - lista zespolu po lewej + plan po prawej
 let aHomeOrgId = null;       // organizacja wybrana w kafelkach (jeszcze przed wyborem rocznika)
 let aRosterSearch = '';
+let aRosterExpanded = false;   // lista osob w grupie: domyslnie zwinieta (widac tylko wybrana osobe / trening razem), szukanie po wpisaniu
 let aManualDate = null;       // dzien wybrany recznie w widoku zespolu - zostaje przy zmianie osoby
 
 function plPlural(n, one, few, many){
@@ -8658,7 +8705,7 @@ function renderAthleteSubgroups(orgId){
 
 async function enterAthleteRoster(orgId, subId){
   aRosterMode = {orgId, subId}; aHomeOrgId = orgId; aClientId = null; aSelectedDateStr = null; aDetailExId = null;
-  aRosterSearch = ''; aFlyoutOpen = false;
+  aRosterSearch = ''; aRosterExpanded = false; aFlyoutOpen = false;
   $('athleteWrap').classList.add('roster-mode');
   loadTogether();
   renderAthleteRoster();
@@ -8676,7 +8723,7 @@ function renderAthleteRoster(){
     <div class="a-roster">
       <div class="a-roster-names">
         <div class="a-roster-head" id="aRosterHead"></div>
-        <input class="a-roster-search" id="aRosterSearch" placeholder="🔍 Szukaj…" autocomplete="off">
+        <input class="a-roster-search" id="aRosterSearch" placeholder="${rosterCollapsible() ? '🔍 Wpisz imię lub nazwisko…' : '🔍 Szukaj…'}" autocomplete="off">
         <div id="aRosterList"></div>
       </div>
       <div id="aRosterMain"></div>
@@ -8758,26 +8805,43 @@ async function jumpTogetherNext(exName){
   else { const c = clients.find(x => x.id === next); toast(`${c ? c.name.split(' ')[0] : 'Ta osoba'} nie ma dziś tego ćwiczenia`); }
 }
 
+/* Akademia Unii Opole: lista jak wczesniej (zawsze rozwinieta). Inne grupy: zwijana + szukanie. */
+function rosterCollapsible(){ return !!aRosterMode && themeKeyForOrg(aRosterMode.orgId) !== 'akademia'; }
+function collapseRosterList(){
+  if(!rosterCollapsible()) return;
+  aRosterExpanded = false; aRosterSearch = '';
+  const inp = $('aRosterSearch'); if(inp) inp.value = '';
+}
 function refreshRosterNames(){
   if(!aRosterMode || !$('aRosterList')) return;
   const pool = rosterPool(aRosterMode);
-  const q = aRosterSearch.trim().toLowerCase();
+  const q = plSearchKey(aRosterSearch.trim());
   $('aRosterHead').textContent = `${rosterSubName(aRosterMode) || 'Wszyscy'} · ${pool.length} ${rosterNoun(aRosterMode.orgId, pool.length)}`;
-  const shown = q ? pool.filter(c => c.name.toLowerCase().includes(q)) : pool;
   const list = $('aRosterList');
   const desk = isDesktopAthlete();
+  const pinned = new Set(desk && aTogether.length ? aTogether : (aClientId ? [aClientId] : []));
+  const coll = rosterCollapsible();
+  const isShown = c => q ? plSearchKey(c.name).includes(q) : (!coll || aRosterExpanded || pinned.has(c.id));
+  const shownN = pool.filter(isShown).length;
   list.classList.toggle('tg-any', desk && aTogether.length > 0);
-  list.innerHTML = shown.map(c => { const tc = desk ? togetherColor(c.id) : null; return `<div class="rn-tile ${c.id === aClientId ? 'active' : ''} ${tc ? 'tg-in' : ''}" data-id="${c.id}" ${tc ? `style="--tc:${tc}"` : ''}><div class="rn-avatar">${escapeHtml(rosterInitials(c.name))}</div><div class="rn-nm">${escapeHtml(c.name)}</div>${rosterPillHtml(c)}${desk ? `<span class="tg-cb" data-tg="${c.id}" title="${tc ? 'Usuń z treningu razem' : 'Dodaj do treningu razem'}">${tc ? '✓' : '+'}</span>` : ''}</div>`; }).join('')
-    || `<div class="a-roster-empty" style="padding:16px;font-size:12px;">${pool.length ? 'Nikogo nie znaleziono.' : 'Brak osób w tej grupie.'}</div>`;
-  list.querySelectorAll('.rn-tile').forEach(t => t.onclick = () => selectRosterPerson(t.dataset.id));
-  list.querySelectorAll('[data-tg]').forEach(b => b.onclick = (e) => { e.stopPropagation(); toggleTogether(b.dataset.tg); });
+  /* wszystkie kafelki sa w DOM - niewidoczne maja klase rn-hide (zwinieta lista / filtr szukania) */
+  const tiles = pool.map(c => { const tc = desk ? togetherColor(c.id) : null; return `<div class="rn-tile ${c.id === aClientId ? 'active' : ''} ${tc ? 'tg-in' : ''} ${isShown(c) ? '' : 'rn-hide'}" data-id="${c.id}" ${tc ? `style="--tc:${tc}"` : ''}><div class="rn-avatar">${escapeHtml(rosterInitials(c.name))}</div><div class="rn-nm">${escapeHtml(c.name)}</div>${rosterPillHtml(c)}${desk ? `<span class="tg-cb" data-tg="${c.id}" title="${tc ? 'Usuń z treningu razem' : 'Dodaj do treningu razem'}">${tc ? '✓' : '+'}</span>` : ''}</div>`; }).join('');
+  let msg = '';
+  if(!pool.length) msg = 'Brak osób w tej grupie.';
+  else if(q && !shownN) msg = 'Nikogo nie znaleziono.';
+  else if(!q && !shownN) msg = 'Wpisz imię lub nazwisko, żeby znaleźć osobę.';
+  const more = (coll && !q && pool.length && (aRosterExpanded || shownN < pool.length)) ? `<button class="rn-more" id="aRosterMore">${aRosterExpanded ? 'Zwiń listę ▴' : `Pokaż wszystkich (${pool.length}) ▾`}</button>` : '';
+  list.innerHTML = tiles + (msg ? `<div class="a-roster-empty rn-msg" style="padding:14px 10px;font-size:12px;">${msg}</div>` : '') + more;
+  list.querySelectorAll('.rn-tile').forEach(t => t.onclick = () => { collapseRosterList(); selectRosterPerson(t.dataset.id); });
+  list.querySelectorAll('[data-tg]').forEach(b => b.onclick = (e) => { e.stopPropagation(); collapseRosterList(); toggleTogether(b.dataset.tg); });
+  if($('aRosterMore')) $('aRosterMore').onclick = () => { aRosterExpanded = !aRosterExpanded; refreshRosterNames(); };
 }
 
 function renderAthleteRosterCenter(){
   const main = $('aRosterMain');
   if(!main) return;
   if(!aClientId){
-    main.innerHTML = `<div class="a-roster-empty"><b>Kliknij swoje imię i nazwisko</b> na liście po lewej, żeby zobaczyć swój plan.</div>`;
+    main.innerHTML = `${rosterCollapsible() ? '<div class="a-roster-empty"><b>Wpisz swoje imię lub nazwisko</b> w polu po lewej i kliknij siebie, żeby zobaczyć swój plan.</div>' : '<div class="a-roster-empty"><b>Kliknij swoje imię i nazwisko</b> na liście po lewej, żeby zobaczyć swój plan.</div>'}`;
     return;
   }
   const c = clients.find(cl => cl.id === aClientId);
@@ -9531,10 +9595,12 @@ function renderAthleteDetail(day){
     </table>
     `}
     <div class="feedback-section">
+      <div class="a-rpe-block"${isBallExercise(exName) ? ' style="display:none;"' : ''}>
       <div class="feedback-label" style="display:flex;justify-content:space-between;align-items:center;gap:8px;"><span>Jak ciężkie było to ćwiczenie? (RPE)</span><a class="rpe-info-link" id="aRpeInfo"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 11v6M12 7.5v.5"/></svg>Objaśnienie skali</a></div>
       <div class="rpe-row" id="rpeRow"></div>
       <div class="rpe-scale-labels"><span>Bardzo lekko</span><span>Maksymalny wysiłek</span></div>
       <div class="rpe-need-msg" id="aRpeNeedMsg" style="display:none;">⛔ Zaznacz RPE, żeby zakończyć ćwiczenie</div>
+      </div>
       <div class="note-label">Twoja notatka (opcjonalnie)</div>
       <textarea class="note-textarea" id="clientNoteInput" placeholder="Napisz, jak poszło — np. co bolało, co było za ciężkie/za lekkie...">${escapeHtml(ex.clientNote||'')}</textarea>
     </div>
