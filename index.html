@@ -5579,7 +5579,7 @@ function progSessionsBefore(clientId, exerciseName, beforeDate){
 }
 function progDecide(st, plannedReps, rpe, target, eq, prevPct){
   const p = st.pct, P = Math.round(p * 100), hi = plannedReps >= 15, w = st.top;
-  let f = 0, one = false, rule, flag = null;
+  let f = 0, one = false, rule, flag = null, kgd = 0;
   const hasRpe = !isNaN(rpe);
   if(p > 1){
     const over = (st.done - st.planned) / st.sets.length, fo = over * 2.5;
@@ -5589,6 +5589,17 @@ function progDecide(st, plannedReps, rpe, target, eq, prevPct){
   } else if(p === 1){
     if(!hasRpe) rule = '100%, brak RPE → bez zmian';
     else if(target - rpe > 0){ f = (target - rpe) * 2.5; rule = `100% + RPE ${fmtKg(rpe)} (cel ${fmtKg(target)}) → +2,5% × ${fmtKg(target - rpe)} = +${fmtKg(f)}%`; }
+    else if(rpe > target){
+      /* RPE powyzej celu: powyzej 140 kg -5 kg za punkt, 10-140 kg -2,5 kg za punkt, do 10 kg -1 kg za punkt */
+      /* sztanga: -5 kg/pkt powyzej 140 kg, inaczej -2,5 kg/pkt; hantle i maszyny: 1 krok w dol na kazdy punkt
+         (hantle: 12,5 -> 10 -> 9 ...; maszyna: -5 kg = jedna sztabka) */
+      const pts = Math.round(rpe - target);
+      let v = w;
+      for(let k = 0; k < pts; k++) v = (eq === 'db' || eq === 'mach') ? eqDn1(v, eq) : Math.max(2.5, eqSnap(v, eq) - (v > 140 ? 5 : 2.5));
+      kgd = v - w;
+      rule = `100% + RPE ${fmtKg(rpe)} (cel ${fmtKg(target)}) → ${pts} pkt za wysoko → ${fmtKg(w)} → ${fmtKg(v)} kg`;
+      flag = `RPE ${fmtKg(rpe)} przy celu ${fmtKg(target)} (${fmtKg(w)} kg × ${st.reps.join('/')}) — ciężar zmniejszony o ${fmtKg(w - v)} kg.`;
+    }
     else rule = `100% + RPE ${fmtKg(rpe)} (cel ${fmtKg(target)}) → bez zmian`;
   } else if(p >= 0.9 || (hi && p >= 0.8)){
     rule = `${P}% powtórzeń → bez zmian`;
@@ -5597,8 +5608,10 @@ function progDecide(st, plannedReps, rpe, target, eq, prevPct){
   else if(p >= 0.7){ f = -7.5; rule = `${P}% powtórzeń → −7,5%`; }
   else { f = -10; rule = `${P}% powtórzeń → −10%`; flag = `Duża porażka: ${P}% powtórzeń (${st.reps.join('/')}). Ciężar −10% — sprawdź, co się stało.`; }
   if(f > 10) flag = `Skok +${fmtKg(+f.toFixed(1))}% naraz (RPE ${fmtKg(rpe)} przy celu ${fmtKg(target)}) — sprawdź, czy RPE jest wiarygodne.`;
-  const nk = one ? eqDn1(w, eq) : eqMove(w, f, eq);
-  return { nk, f, one, rule, flag, raw: one ? null : w * (1 + f / 100), P };
+  let nk;
+  if(kgd){ nk = w + kgd; if(nk >= w) nk = eqDn1(w, eq); }
+  else nk = one ? eqDn1(w, eq) : eqMove(w, f, eq);
+  return { nk, f, one, rule, flag, raw: (one || kgd) ? null : w * (1 + f / 100), P };
 }
 /* opts: { progOff } */
 function computeSuggestedWeightInfo(clientId, exerciseName, plannedReps, beforeDate, targetRpe, opts){
