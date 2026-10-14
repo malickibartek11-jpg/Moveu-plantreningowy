@@ -974,6 +974,68 @@
   .vb-btns{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;} .vb-btns .btn{flex:1;}
   .oc-pack{display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--muted);font-weight:600;white-space:nowrap;cursor:default;}
   .oc-pack input{width:58px;border:1px solid var(--line);border-radius:8px;padding:5px 6px;font-size:13px;font-family:inherit;text-align:center;background:var(--surface);color:var(--text);}
+
+  /* ===== Wiadomosci od klienta ===== */
+  .ms-chips{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 14px;}
+  .ms-chip{border:1px solid var(--line);background:var(--surface);border-radius:20px;padding:5px 12px;font-size:12.5px;cursor:pointer;color:var(--text);user-select:none;}
+  .ms-chip b{margin-left:5px;font-weight:700;}
+  .ms-chip.on{background:var(--accent);color:var(--on-accent);border-color:var(--accent);}
+  .ms-item{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:12px;max-width:760px;}
+  .ms-item.done{opacity:.75;}
+  .ms-h{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;margin-bottom:10px;}
+  .ms-av{width:28px;height:28px;border-radius:50%;background:#1C1C1C;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk';flex-shrink:0;}
+  .ms-typ{font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:9px;}
+  .ms-typ.note{background:#EEF3F9;color:#3E7CB1;} .ms-typ.vid{background:#F3EEF9;color:#7A4FB5;}
+  .ms-st{margin-left:auto;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:9px;}
+  .ms-st.new{background:#FFF4E5;color:#B9781F;} .ms-st.ok{background:#E3F4E9;color:#2E9E5B;}
+  .ms-snap{background:var(--surface-2);border-radius:10px;padding:10px;margin-bottom:10px;display:grid;grid-template-columns:1fr;gap:10px;}
+  .ms-snap.two{grid-template-columns:1fr 1fr;}
+  .ms-snap video{width:100%;max-height:300px;border-radius:9px;background:#000;display:block;}
+  .ms-card{background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:9px 10px;min-width:0;}
+  .ms-exn{display:flex;align-items:center;gap:7px;font-family:'Space Grotesk';font-weight:600;font-size:14px;margin-bottom:7px;}
+  .ms-code{background:#1C1C1C;color:#fff;font-size:11px;border-radius:5px;padding:1px 6px;}
+  .ms-code:empty{display:none;}
+  .ms-tb{display:flex;justify-content:space-around;text-align:center;border:1px solid var(--line);border-radius:8px;padding:6px 4px;margin-bottom:7px;}
+  .ms-tb:empty{display:none;}
+  .ms-tb .t{font-size:9px;color:var(--muted);} .ms-tb .v{font-size:13px;font-weight:700;font-family:'Space Grotesk';}
+  .ms-scroll{overflow-x:auto;}
+  .ms-sets{width:100%;border-collapse:collapse;font-size:12px;}
+  .ms-sets th{font-size:9.5px;color:var(--muted);font-weight:600;text-align:center;padding:2px 4px;}
+  .ms-sets td{text-align:center;padding:3px 4px;border-top:1px solid var(--line);font-family:'Space Grotesk';font-weight:600;white-space:nowrap;}
+  .ms-sets td.ms-lab{font-family:'IBM Plex Sans';font-weight:500;color:var(--muted);font-size:11px;}
+  .ms-sets td.miss{color:#B4472E;} .ms-sets td.ms-empty{color:#B8B3AA;}
+  .ms-rpe{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--muted);margin-top:7px;flex-wrap:wrap;}
+  .ms-pill{display:inline-flex;width:24px;height:24px;border-radius:6px;color:#fff;font-weight:700;align-items:center;justify-content:center;font-size:12px;}
+  .ms-quote{background:var(--surface);border:1px solid var(--line);border-left:3px solid #E8604A;border-radius:8px;padding:8px 11px;font-size:13.5px;margin-bottom:10px;}
+  .ms-quote small{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.4px;font-weight:700;color:#E8604A;margin-bottom:2px;}
+  .ms-quick{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:7px;}
+  .ms-q{font-size:11.5px;border:1px solid var(--line);background:var(--surface-2);border-radius:14px;padding:3px 10px;cursor:pointer;user-select:none;}
+  .ms-q:hover{border-color:var(--accent);}
+  .ms-rep b{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;}
+  .ms-rep b span{text-transform:none;font-weight:600;}
+  @media (max-width:700px){ .ms-snap.two{grid-template-columns:1fr;} }
+  /* klient: odpowiedz trenera */
+  .a-coach-inbox{display:flex;align-items:center;gap:11px;background:#1C1C1C;color:#fff;border-radius:14px;padding:12px 14px;margin:0 0 12px;cursor:pointer;box-shadow:0 0 0 4px rgba(46,158,91,.22);}
+  .a-coach-inbox .ic{width:34px;height:34px;border-radius:50%;background:#2E9E5B;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .a-coach-inbox .ic svg{width:17px;height:17px;color:#fff;}
+  .a-coach-inbox b{display:block;font-size:14px;} .a-coach-inbox span{font-size:12px;opacity:.75;}
+  .a-coach-inbox .ar{margin-left:auto;font-size:20px;opacity:.6;}
+  .cal-cell.has-msg{position:relative;}
+  .cal-msg-dot{position:absolute;top:2px;right:2px;width:7px;height:7px;border-radius:50%;background:#E8604A;border:1.5px solid #fff;}
+  .a-item.has-msg{background:#F3FAF5;}
+  .a-msg-ic{margin-left:auto;position:relative;display:flex;color:var(--text);}
+  .a-msg-ic svg{width:21px;height:21px;}
+  .a-msg-ic i{position:absolute;top:-3px;right:-4px;width:10px;height:10px;border-radius:50%;background:#E8604A;border:2px solid #fff;}
+  .a-coach-thread{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;margin:0 0 14px;box-shadow:0 0 0 3px rgba(46,158,91,.15);}
+  .a-coach-thread .tl{font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;font-weight:700;color:var(--muted);margin-bottom:8px;}
+  .a-cb{max-width:86%;padding:8px 11px;border-radius:14px;font-size:13px;line-height:1.4;margin-bottom:6px;word-wrap:break-word;}
+  .a-cb.me{margin-left:auto;background:var(--surface-2);border-bottom-right-radius:4px;}
+  .a-cb.co{background:#1C1C1C;color:#fff;border-bottom-left-radius:4px;}
+  .a-cb small{display:block;font-size:10px;opacity:.6;margin-top:3px;}
+  .a-cthx{display:flex;gap:6px;margin-top:4px;flex-wrap:wrap;}
+  .a-cthx span{font-size:12.5px;border:1px solid var(--line);border-radius:14px;padding:5px 12px;background:var(--surface);cursor:pointer;user-select:none;}
+  .a-coach-last{background:var(--surface);border:1px solid var(--line);border-left:3px solid #2E9E5B;border-radius:10px;padding:11px 13px;margin-bottom:14px;font-size:12.5px;line-height:1.4;}
+  .a-coach-last b{display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.3px;color:#2E9E5B;margin-bottom:2px;}
   .vid-badge{display:inline-block;background:#3E7CB1;color:#fff;border-radius:9px;padding:0 7px;font-size:11px;margin-left:4px;font-weight:700;}
   .vid-item{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:12px;max-width:720px;}
   .vid-item.done{opacity:.75;}
@@ -1187,7 +1249,7 @@
       <button class="add-client-btn" id="showOnlineBtn">💻 Treningi online</button>
       <button class="add-client-btn" id="showLibraryBtn" style="margin-top:14px;">📚 Biblioteka ćwiczeń</button>
       <button class="add-client-btn" id="showMealsBtn">Biblioteka posiłków</button>
-      <button class="add-client-btn" id="showVideosBtn">Filmy do obejrzenia <span class="vid-badge" id="vidBadge" style="display:none;"></span></button>
+      <button class="add-client-btn" id="showVideosBtn">💬 Wiadomości od klienta <span class="vid-badge" id="vidBadge" style="display:none;"></span></button>
       <button class="add-client-btn" id="showRosterBtn">👥 Klienci</button>
       <button class="add-client-btn" id="showTrainersBtn">Trenerzy</button>
       <button class="add-client-btn" id="copyAppLinkBtn">🔗 Skopiuj link aplikacji</button>
@@ -2099,6 +2161,7 @@ async function computeCompletionBuckets(periodDays, refetch){
   ['done','part','miss'].forEach(k => out[k].sort((x, y) => (y.date + (y.time||'')).localeCompare(x.date + (x.time||''))));
   if((periodDays || 30) >= 14 || !lastCompletionBuckets) lastCompletionBuckets = out;
   renderCompletedTrainingsButton();
+  updateVideoBadge();
   return out;
 }
 /* Po odswiezeniu klientow: jesli przyszlo nowe powiadomienie, dociagamy plan tej osoby i liczymy na nowo */
@@ -2559,7 +2622,9 @@ $('showVideosBtn').onclick = () => navigateTo(async () => {
   trainerViewMode = 'videos';
   selectedClientId = null;
   renderClientList();
-  await loadAllVideos(true);
+  $('main').innerHTML = '<div class="empty-state">Ładowanie wiadomości…</div>';
+  await Promise.all([loadAllVideos(true), loadAllPlansFresh()]);
+  updateVideoBadge();
   renderVideosView();
 });
 $('showMealsBtn').onclick = () => navigateTo(async () => {
@@ -4388,7 +4453,7 @@ async function loadAllVideos(force){
 }
 function updateVideoBadge(){
   const b = $('vidBadge'); if(!b) return;
-  const n = (allVideos || []).filter(v => v.status === 'new').length;
+  const n = (allVideos || []).filter(v => v.status === 'new').length + (isTrainerUser ? newNoteMsgCount() : 0);
   b.textContent = n; b.style.display = n ? '' : 'none';
 }
 async function cleanupViewedVideos(){
@@ -4516,20 +4581,132 @@ function showVideoSend(dur, mb, errMsg){
   };
 }
 
-/* ---------- Trener: Filmy do obejrzenia ---------- */
+/* ---------- Trener: Wiadomosci od klienta (notatki z cwiczen + filmy) ----------
+   Notatka klienta = ex.clientNote w planie. Odpowiedz trenera zapisywana w tym samym cwiczeniu:
+   ex.coachReply, ex.coachReplyAt; klient po otwarciu -> ex.coachReplyRead; reakcja klienta ex.clientReact (trener jej nie widzi).
+   ex.noteSeen = "przeczytane, bez odpowiedzi". Notatki z ostatnich COACH_MSG_DAYS dni. Bez zmian w Supabase. */
+const COACH_MSG_DAYS = 14;
+const RPE_PALETTE = ['#2E9E5B','#3EA55C','#5CAE55','#8AB94E','#C9BE47','#E8B93F','#E89A3A','#E87E35','#E8632E','#D6472E','#B4472E'];
+const MSG_CHAT_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>';
+const MSG_QUICK = ['👍 Dobra robota', 'Następnym razem −5 kg', 'Nagraj film z boku', 'Pogadamy na treningu'];
+let msgFilter = 'all';
+const PL_DOW = ['nd','pn','wt','śr','czw','pt','sob'];
+function plDayShort(ds){ const d = new Date(String(ds).slice(0, 10) + 'T12:00:00'); return isNaN(d) ? String(ds || '') : `${PL_DOW[d.getDay()]} ${d.getDate()}.${String(d.getMonth() + 1).padStart(2, '0')}`; }
+function plWhen(iso){ if(!iso) return ''; const d = new Date(iso); if(isNaN(d)) return ''; return `${PL_DOW[d.getDay()]} ${d.getDate()}.${String(d.getMonth() + 1).padStart(2, '0')} · ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`; }
+function noteMsgStatus(ex){ return ex.coachReply ? (ex.coachReplyRead ? 'read' : 'answered') : (ex.noteSeen ? 'seen' : 'new'); }
+function clientNoteMessages(){
+  const from = addDaysToDateStr(todayKey(), -COACH_MSG_DAYS), out = [];
+  (clients || []).forEach(c => {
+    const plan = plansCache[c.id]; if(!plan) return;
+    Object.keys(plan).forEach(ds => {
+      if(ds < from) return;
+      const day = plan[ds];
+      ((day && day.exercises) || []).forEach(ex => {
+        if(!ex || !String(ex.clientNote || '').trim()) return;
+        out.push({ kind: 'note', clientId: c.id, date: ds, day, ex, status: noteMsgStatus(ex), at: ex.clientNoteAt || (ds + 'T23:59:00') });
+      });
+    });
+  });
+  return out;
+}
+function newNoteMsgCount(){ try{ return clientNoteMessages().filter(m => m.status === 'new').length; }catch(e){ return 0; } }
+function msgSnapHtml(ex){
+  if(!ex) return '';
+  const planReps = parseInt(ex.reps, 10);
+  const filled = l => l && (String(l.weight || '').trim() || String(l.reps || '').trim());
+  const cell = l => {
+    if(!filled(l)) return '<td class="ms-empty">—</td>';
+    const w = String(l.weight || '').trim(), r = String(l.reps || '').trim();
+    const miss = !isNaN(planReps) && r !== '' && parseInt(r, 10) < planReps;
+    return `<td class="${miss ? 'miss' : ''}">${(!ex.noWeight && w) ? escapeHtml(w) + ' × ' : ''}${escapeHtml(r || '—')}</td>`;
+  };
+  const lab = ex.noWeight ? 'powt.' : 'kg × pw';
+  let rows, n, missN = 0;
+  const countMiss = arr => (arr || []).forEach(l => { const r = parseInt(l && l.reps, 10); if(filled(l) && !isNaN(planReps) && !isNaN(r) && r < planReps) missN++; });
+  if(ex.splitLR){
+    n = Math.max((ex.logRight || []).length, (ex.logLeft || []).length, 1);
+    const row = (arr, t) => `<tr><td class="ms-lab">${t}</td>${Array.from({length: n}, (_, i) => cell((arr || [])[i])).join('')}</tr>`;
+    rows = row(ex.logRight, 'P · ' + lab) + row(ex.logLeft, 'L · ' + lab);
+    countMiss(ex.logRight); countMiss(ex.logLeft);
+  } else {
+    n = Math.max((ex.log || []).length, 1);
+    rows = `<tr><td class="ms-lab">${lab}</td>${Array.from({length: n}, (_, i) => cell((ex.log || [])[i])).join('')}</tr>`;
+    countMiss(ex.log);
+  }
+  const tile = (t, v) => (v !== undefined && v !== null && String(v).trim() !== '') ? `<div><div class="t">${t}</div><div class="v">${escapeHtml(String(v))}</div></div>` : '';
+  const r = (ex.rpe === 0 || (ex.rpe !== null && ex.rpe !== undefined && ex.rpe !== '')) ? parseInt(ex.rpe, 10) : null;
+  return `<div class="ms-card">
+    <div class="ms-exn"><span class="ms-code">${escapeHtml(ex.label || '')}</span>${escapeHtml(resolveExName(ex))}</div>
+    <div class="ms-tb">${ex.splitLR ? tile('SERIE P', ex.setsRight) + tile('SERIE L', ex.setsLeft) : tile('SERIE', ex.sets)}${tile('POWT.', ex.reps)}${ex.isInterval ? '' : tile('TEMPO', ex.tempo) + tile('PRZERWA', ex.rest)}</div>
+    <div class="ms-scroll"><table class="ms-sets"><tr><th>Seria</th>${Array.from({length: n}, (_, i) => `<th>${i + 1}</th>`).join('')}</tr>${rows}</table></div>
+    ${(r !== null && !isNaN(r)) || missN ? `<div class="ms-rpe">${r !== null && !isNaN(r) ? `RPE klienta <span class="ms-pill" style="background:${RPE_PALETTE[Math.max(0, Math.min(10, r))]}">${r}</span>` : ''}${missN ? `<span>· ${missN} ${plPlural(missN, 'seria', 'serie', 'serii')} poniżej planu</span>` : ''}</div>` : ''}
+  </div>`;
+}
+function msgReplyFormHtml(placeholderName){
+  return `<div class="ms-quick">${MSG_QUICK.map(q => `<span class="ms-q">${escapeHtml(q)}</span>`).join('')}</div>
+    <textarea class="ev-inp ms-reply" rows="2" placeholder="Twoja odpowiedź do: ${escapeHtml(placeholderName)}…"></textarea>`;
+}
+async function saveNoteReplyFields(clientId, ds, exId, fields){
+  if(!getOfflineQueue().some(q => q.clientId === clientId)) delete plansCache[clientId];
+  await ensurePlanLoaded(clientId);
+  const day = (plansCache[clientId] || {})[ds];
+  const ex = day && (day.exercises || []).find(e => e.id === exId);
+  if(!ex){ alert('Nie znaleziono tego ćwiczenia w planie — mogło zostać usunięte.'); return false; }
+  Object.assign(ex, fields);
+  return await savePlanRow(clientId, plansCache[clientId]);
+}
+async function loadAllPlansFresh(){
+  await Promise.all((clients || []).map(async c => {
+    if(!getOfflineQueue().some(q => q.clientId === c.id)) delete plansCache[c.id];
+    try{ await ensurePlanLoaded(c.id); }catch(e){}
+  }));
+}
 async function renderVideosView(){
-  const list = (allVideos || []).slice().sort((a, b) => (a.status === 'new' ? 0 : 1) - (b.status === 'new' ? 0 : 1) || String(b.created_at || '').localeCompare(String(a.created_at || '')));
-  $('main').innerHTML = `<div class="section-title"><div class="bar"></div><h2>Filmy do obejrzenia</h2></div>
-    <div class="section-desc">Filmy od klientów przy ćwiczeniach. Plik usuwa się automatycznie ${VIDEO_KEEP_H} h po obejrzeniu — Twoja odpowiedź zostaje.</div>
-    <div id="vidList">${list.map(v => { const c = clients.find(x => x.id === v.client_id);
-      return `<div class="vid-item ${v.status === 'viewed' ? 'done' : ''}" data-vid="${escapeHtml(v.id)}">
-        <div class="vid-h"><b>${escapeHtml(c ? c.name : 'Klient')}</b><span class="cv-small">· ${escapeHtml(v.exercise_name || '')} · ${escapeHtml(v.date || '')}</span><span class="vid-st ${v.status === 'viewed' ? 'ok' : 'new'}">${v.status === 'viewed' ? 'obejrzany' : 'nowy'}</span></div>
+  const vids = (allVideos || []).map(v => ({ kind: 'video', clientId: v.client_id, date: v.date, v, status: v.status === 'viewed' ? 'answered' : 'new', at: v.created_at || ((v.date || '') + 'T23:59:00') }));
+  const notes = clientNoteMessages();
+  const all = notes.concat(vids).sort((a, b) => (a.status === 'new' ? 0 : 1) - (b.status === 'new' ? 0 : 1) || String(b.at || '').localeCompare(String(a.at || '')));
+  const cnt = { all: all.length, new: all.filter(m => m.status === 'new').length, note: notes.length, video: vids.length };
+  const shown = all.filter(m => msgFilter === 'all' || (msgFilter === 'new' ? m.status === 'new' : m.kind === msgFilter));
+  const stLabel = { new: 'nowa', seen: 'przeczytana', answered: 'odpowiedziano', read: '✓ klient przeczytał' };
+  const card = m => {
+    const c = clients.find(x => x.id === m.clientId);
+    const cname = c ? c.name : 'Klient', first = cname.split(/\s+/)[0];
+    const plan = plansCache[m.clientId] || {}, day = m.day || plan[m.date] || null;
+    const ex = m.kind === 'note' ? m.ex : (day && (day.exercises || []).find(e => e.id === m.v.exercise_id));
+    const meta = `· ${escapeHtml((day && day.title) || 'Trening')} · ${escapeHtml(plDayShort(m.date))}${m.kind === 'note' && m.ex.clientNoteAt ? ' · ' + escapeHtml(plWhen(m.ex.clientNoteAt).split(' · ')[1] || '') : ''}`;
+    const done = m.status !== 'new';
+    if(m.kind === 'note'){
+      const key = `${m.clientId}|${m.date}|${m.ex.id}`;
+      const st = m.status === 'new' ? `<span class="ms-st new">nowa</span>` : `<span class="ms-st ok">${stLabel[m.status]}</span>`;
+      return `<div class="ms-item ${done ? 'done' : ''}" data-mk="${escapeHtml(key)}">
+        <div class="ms-h"><div class="ms-av">${escapeHtml(rosterInitials(cname).toUpperCase())}</div><b>${escapeHtml(cname)}</b><span class="cv-small">${meta}</span><span class="ms-typ note">💬 notatka</span>${st}</div>
+        <div class="ms-snap">${msgSnapHtml(m.ex)}</div>
+        <div class="ms-quote"><small>${escapeHtml(first)} ${/a$/i.test(first) ? 'napisała' : 'napisał'}</small>${escapeHtml(m.ex.clientNote).replace(/\n/g, '<br>')}</div>
+        ${m.ex.coachReply
+          ? `<div class="vb-reply ms-rep"><b>Twoja odpowiedź <span>${m.ex.coachReplyRead ? '✓ przeczytane · ' + escapeHtml(plWhen(m.ex.coachReplyRead)) : 'wysłano · czeka na odczytanie'}</span></b>${escapeHtml(m.ex.coachReply).replace(/\n/g, '<br>')}</div>`
+          : `${msgReplyFormHtml(first)}
+             <div class="vb-btns"><button class="btn" data-nsend="${escapeHtml(key)}" style="background:#2E9E5B;">Wyślij odpowiedź</button>${m.status === 'new' ? `<button class="btn ghost" data-nseen="${escapeHtml(key)}">Przeczytane, bez odpowiedzi</button>` : ''}<button class="btn ghost" data-openday="${escapeHtml(m.clientId + '|' + m.date)}">Otwórz plan</button></div>`}
+      </div>`;
+    }
+    const v = m.v;
+    return `<div class="ms-item ${done ? 'done' : ''}" data-vid="${escapeHtml(v.id)}">
+      <div class="ms-h"><div class="ms-av" style="background:#7A4FB5">${escapeHtml(rosterInitials(cname).toUpperCase())}</div><b>${escapeHtml(cname)}</b><span class="cv-small">· ${escapeHtml((day && day.title) || 'Trening')} · ${escapeHtml(plDayShort(v.date))}</span><span class="ms-typ vid">🎥 film</span><span class="ms-st ${done ? 'ok' : 'new'}">${done ? 'obejrzany' : 'nowy'}</span></div>
+      <div class="ms-snap ${ex ? 'two' : ''}">
         ${v.deleted ? `<div class="vid-gone">Film usunięty (${VIDEO_KEEP_H} h po obejrzeniu)</div>` : `<div class="vid-player" data-path="${escapeHtml(v.path)}"><span class="cv-small">Ładowanie filmu…</span></div>`}
-        ${v.note ? `<div class="vid-quote">„${escapeHtml(v.note)}”</div>` : ''}
-        ${v.status === 'viewed' ? `<div class="vb-reply"><b>Twoja odpowiedź</b>${escapeHtml(v.reply || '').replace(/\n/g, '<br>')}</div>`
-          : `<textarea class="ev-inp vid-reply" rows="2" placeholder="Twoja odpowiedź, np. „kolano ucieka do środka — zmniejsz ciężar o 5 kg”"></textarea>
-             <div class="vb-btns"><button class="btn" data-ans="${escapeHtml(v.id)}" style="background:#2E9E5B;">Wyślij odpowiedź i oznacz obejrzany</button><button class="btn ghost" data-openc="${escapeHtml(v.client_id)}">Otwórz plan</button></div>`}
-      </div>`; }).join('') || '<div class="empty-state">Brak filmów od klientów.</div>'}</div>`;
+        ${ex ? msgSnapHtml(ex) : (v.exercise_name ? `<div class="ms-card"><div class="ms-exn">${escapeHtml(v.exercise_name)}</div></div>` : '')}
+      </div>
+      ${v.note ? `<div class="ms-quote"><small>${escapeHtml(first)} ${/a$/i.test(first) ? 'napisała' : 'napisał'}</small>${escapeHtml(v.note)}</div>` : ''}
+      ${done ? `<div class="vb-reply ms-rep"><b>Twoja odpowiedź</b>${escapeHtml(v.reply || '').replace(/\n/g, '<br>')}</div>`
+        : `${msgReplyFormHtml(first)}
+           <div class="vb-btns"><button class="btn" data-ans="${escapeHtml(v.id)}" style="background:#2E9E5B;">Wyślij odpowiedź i oznacz obejrzany</button><button class="btn ghost" data-openday="${escapeHtml(v.client_id + '|' + (v.date || ''))}">Otwórz plan</button></div>`}
+    </div>`;
+  };
+  $('main').innerHTML = `<div class="section-title"><div class="bar"></div><h2>Wiadomości od klienta</h2></div>
+    <div class="section-desc">Notatki z ćwiczeń (z ostatnich ${COACH_MSG_DAYS} dni) i filmy w jednym miejscu. Twoja odpowiedź trafia do klienta przy tym ćwiczeniu w aplikacji. Film usuwa się ${VIDEO_KEEP_H} h po obejrzeniu — odpowiedź zostaje.</div>
+    <div class="ms-chips">${[['all', 'Wszystkie'], ['new', 'Nowe'], ['note', '💬 Notatki'], ['video', '🎥 Filmy']].map(([k, t]) => `<span class="ms-chip ${msgFilter === k ? 'on' : ''}" data-mf="${k}">${t}<b>${cnt[k]}</b></span>`).join('')}</div>
+    <div id="vidList">${shown.map(card).join('') || `<div class="empty-state">${msgFilter === 'new' ? 'Brak nowych wiadomości.' : 'Brak wiadomości od klientów.'}</div>`}</div>`;
+  document.querySelectorAll('[data-mf]').forEach(ch => ch.onclick = () => { msgFilter = ch.dataset.mf; renderVideosView(); });
+  document.querySelectorAll('.ms-q').forEach(q => q.onclick = () => { const t = q.closest('.ms-item').querySelector('.ms-reply'); if(!t) return; t.value = (t.value.trim() ? t.value.trim() + ' ' : '') + q.textContent; t.focus(); });
   document.querySelectorAll('.vid-player').forEach(async box => {
     try{
       const { data, error } = await sbClient.storage.from('client-videos').createSignedUrl(box.dataset.path, 3600);
@@ -4537,8 +4714,24 @@ async function renderVideosView(){
       box.innerHTML = `<video src="${escapeHtml(data.signedUrl)}" controls playsinline preload="metadata"></video>`;
     }catch(e){ box.innerHTML = '<span class="cv-small">Nie udało się wczytać filmu.</span>'; }
   });
+  const splitKey = k => { const i1 = k.indexOf('|'), i2 = k.indexOf('|', i1 + 1); return [k.slice(0, i1), k.slice(i1 + 1, i2), k.slice(i2 + 1)]; };
+  document.querySelectorAll('[data-nsend]').forEach(b => b.onclick = async () => {
+    const item = b.closest('.ms-item'), txt = item.querySelector('.ms-reply').value.trim();
+    if(!txt){ alert('Wpisz odpowiedź dla klienta.'); return; }
+    b.disabled = true;
+    const [cid, ds, exId] = splitKey(b.dataset.nsend);
+    const okS = await saveNoteReplyFields(cid, ds, exId, { coachReply: txt, coachReplyAt: new Date().toISOString(), coachReplyRead: null, clientReact: null, noteSeen: true });
+    if(!okS){ b.disabled = false; return; }
+    updateVideoBadge(); renderVideosView(); toast('Odpowiedź wysłana');
+  });
+  document.querySelectorAll('[data-nseen]').forEach(b => b.onclick = async () => {
+    b.disabled = true;
+    const [cid, ds, exId] = splitKey(b.dataset.nseen);
+    if(!(await saveNoteReplyFields(cid, ds, exId, { noteSeen: true }))){ b.disabled = false; return; }
+    updateVideoBadge(); renderVideosView();
+  });
   document.querySelectorAll('[data-ans]').forEach(b => b.onclick = async () => {
-    const item = b.closest('.vid-item'), txt = item.querySelector('.vid-reply').value.trim();
+    const item = b.closest('.ms-item'), txt = item.querySelector('.ms-reply').value.trim();
     if(!txt){ alert('Wpisz odpowiedź dla klienta.'); return; }
     b.disabled = true;
     const stamp = new Date().toISOString();
@@ -4547,7 +4740,7 @@ async function renderVideosView(){
     const v = (allVideos || []).find(x => x.id === b.dataset.ans); if(v){ v.status = 'viewed'; v.reply = txt; v.viewed_at = stamp; }
     updateVideoBadge(); renderVideosView(); toast('Odpowiedź wysłana');
   });
-  document.querySelectorAll('[data-openc]').forEach(b => b.onclick = () => navigateTo(() => selectClient(b.dataset.openc)));
+  document.querySelectorAll('[data-openday]').forEach(b => b.onclick = () => { const i = b.dataset.openday.indexOf('|'); const cid = b.dataset.openday.slice(0, i), ds = b.dataset.openday.slice(i + 1); if(ds) openClientPlanDay(cid, ds); else navigateTo(() => selectClient(cid)); });
 }
 
 /* ============ TRENERZY: lista osob z pelnym dostepem trenera ============
@@ -4920,7 +5113,7 @@ function renderDayPanel(){
         ...ex, id: 'e_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),
         log: [], suggestedWeight:'', suggestedManual:false, isTest:false,
         logRight: ex.splitLR ? [] : undefined, logLeft: ex.splitLR ? [] : undefined,
-        rpe: null, clientNote: ''
+        rpe: null, clientNote: '', clientNoteAt: null, coachReply: '', coachReplyAt: null, coachReplyRead: null, clientReact: null, noteSeen: false
       }));
       plan[dateStr] = { title: day.title||'', subtitle: day.subtitle||'', exercises: clonedExercises };
     });
@@ -5264,7 +5457,7 @@ function renderExRows(day, category){
           <div class="rpe-panel">
             <div class="rpe-field">
               <label>Cel RPE</label>
-              <input class="rpe-target-input" value="${escapeHtml(ex.targetRpe||'')}" placeholder="${PROG_DEFAULT_RPE}">
+              <div style="font-weight:700;font-size:15px;padding:6px 2px;" title="Stały cel dla wszystkich ćwiczeń — klient go nie widzi">${PROG_DEFAULT_RPE} <span style="font-weight:500;font-size:11px;color:var(--muted);">dla wszystkich · klient nie widzi</span></div>
             </div>
             ${report ? `
             <div class="rpe-history">
@@ -5274,11 +5467,6 @@ function renderExRows(day, category){
           </div>
         </td>
       `;
-      trR.querySelector('.rpe-target-input').onchange = async (e) => {
-        ex.targetRpe = e.target.value;
-        await persistCurrentDayFn();
-        renderDayPanel();
-      };
       tbody.appendChild(trR);
     }
   });
@@ -5500,17 +5688,18 @@ function lastSessionContinuumBefore(clientId, exerciseName, beforeDate){
    ponad plan -> +2,5% za kazde powt. ponad plan (srednio na serie) | 100% + RPE < cel -> +2,5% za pkt (bez limitu)
    100% + RPE >= cel lub brak RPE -> bez zmian | 90-99% -> bez zmian (15+ powt.: 80-100%) | 85-89% -> -1 krok
    70-84% -> -7,5% | <70% -> -10% + flaga | 2x z rzedu 90-99% -> bez zmian + flaga | skok >10% -> flaga
-   Krok: sztanga 2,5 kg | hantle 1 kg do 10 kg, potem 2,5 kg | maszyna/wyciag 5 kg. Zmiana zawsze min. 1 krok.
+   Krok: sztanga 2,5 kg | hantle 1 kg do 10 kg, potem 2,5 kg | wyciag (linka) 2,5 kg | maszyna 5 kg. Zmiana zawsze min. 1 krok.
    Podzial P/L -> wg slabszej strony. Recznie wpisany ciezar trenera zawsze wygrywa (tu nie liczony). */
-const PROG_DEFAULT_RPE = 8;
+const PROG_DEFAULT_RPE = 9;   // cel RPE: 9 dla wszystkich cwiczen (ukryty przed klientem); pole targetRpe jest ignorowane
 const RPE_STEP = 0.025, RPE_MAX_PTS = 4;
 function roundLoad(w){ return w >= 20 ? Math.round(w / 2.5) * 2.5 : Math.round(w * 2) / 2; }
-const EQ_LABELS = { bar:'Sztanga', db:'Hantle', mach:'Maszyna / wyciąg', bw:'Masa ciała' };
-const EQ_SHORT = { bar:'sztanga', db:'hantle', mach:'maszyna', bw:'masa ciała' };
+const EQ_LABELS = { bar:'Sztanga', db:'Hantle', cable:'Wyciąg (linka)', mach:'Maszyna', bw:'Masa ciała' };
+const EQ_SHORT = { bar:'sztanga', db:'hantle', cable:'wyciąg', mach:'maszyna', bw:'masa ciała' };
 function guessEquipment(name){
   const n = plSearchKey(name);
   if(/hantl|\bdb\b|dumbbell/.test(n)) return 'db';
-  if(/wyciag|maszyn|brama|linka|linki|\bcable\b/.test(n)) return 'mach';
+  if(/wyciag|\blink(a|i|e|ami|ach|om)?\b|\bbram(a|ie|y)\b|\bcable\b/.test(n)) return 'cable';
+  if(/maszyn/.test(n)) return 'mach';
   if(/podciag|pompk|\bdipy?\b|deska|plank|brzuszk|masa ciala|bodyweight|\btrx\b/.test(n)) return 'bw';
   if(/sztang|przysiad|martwy|wyciskanie|hip thrust|rwanie|zarzut|good morning|wypychanie/.test(n)) return 'bar';
   return null;
@@ -5522,7 +5711,7 @@ function equipmentInfo(name){
   const g = guessEquipment(name);
   return { eq: g || 'bar', auto: true, known: !!g };
 }
-function eqStep(w, eq){ return eq === 'db' ? (w < 10 ? 1 : 2.5) : eq === 'mach' ? 5 : 2.5; }
+function eqStep(w, eq){ return eq === 'db' ? (w < 10 ? 1 : 2.5) : eq === 'mach' ? 5 : 2.5; }   // wyciąg (cable) i sztanga: 2,5 kg
 function eqSnap(x, eq){
   if(eq === 'db'){ if(x <= 10) return Math.max(1, Math.round(x)); return 10 + Math.round((x - 10) / 2.5) * 2.5; }
   const s = eqStep(x, eq); return Math.max(s, Math.round(x / s) * s);
@@ -5589,17 +5778,6 @@ function progDecide(st, plannedReps, rpe, target, eq, prevPct){
   } else if(p === 1){
     if(!hasRpe) rule = '100%, brak RPE → bez zmian';
     else if(target - rpe > 0){ f = (target - rpe) * 2.5; rule = `100% + RPE ${fmtKg(rpe)} (cel ${fmtKg(target)}) → +2,5% × ${fmtKg(target - rpe)} = +${fmtKg(f)}%`; }
-    else if(rpe > target){
-      /* RPE powyzej celu: powyzej 140 kg -5 kg za punkt, 10-140 kg -2,5 kg za punkt, do 10 kg -1 kg za punkt */
-      /* sztanga: -5 kg/pkt powyzej 140 kg, inaczej -2,5 kg/pkt; hantle i maszyny: 1 krok w dol na kazdy punkt
-         (hantle: 12,5 -> 10 -> 9 ...; maszyna: -5 kg = jedna sztabka) */
-      const pts = Math.round(rpe - target);
-      let v = w;
-      for(let k = 0; k < pts; k++) v = (eq === 'db' || eq === 'mach') ? eqDn1(v, eq) : Math.max(2.5, eqSnap(v, eq) - (v > 140 ? 5 : 2.5));
-      kgd = v - w;
-      rule = `100% + RPE ${fmtKg(rpe)} (cel ${fmtKg(target)}) → ${pts} pkt za wysoko → ${fmtKg(w)} → ${fmtKg(v)} kg`;
-      flag = `RPE ${fmtKg(rpe)} przy celu ${fmtKg(target)} (${fmtKg(w)} kg × ${st.reps.join('/')}) — ciężar zmniejszony o ${fmtKg(w - v)} kg.`;
-    }
     else rule = `100% + RPE ${fmtKg(rpe)} (cel ${fmtKg(target)}) → bez zmian`;
   } else if(p >= 0.9 || (hi && p >= 0.8)){
     rule = `${P}% powtórzeń → bez zmian`;
@@ -5631,8 +5809,18 @@ function computeSuggestedWeightInfo(clientId, exerciseName, plannedReps, beforeD
       return Object.assign(base, { value: eqSnap(st.top, eq), rule: isBallExercise(exerciseName) ? 'ćwiczenie z piłką — bez progresji, ciężar z poprzedniego treningu' : 'progresja wyłączona — ciężar z poprzedniego treningu', flag: null, rpe: null, conv: false });
     }
     const actual = (prev.ex.rpe === 0 || prev.ex.rpe) ? pf(prev.ex.rpe) : NaN;
-    let target = pf(prev.ex.targetRpe); if(isNaN(target)) target = pf(targetRpe); if(isNaN(target)) target = PROG_DEFAULT_RPE;
+    const target = PROG_DEFAULT_RPE;
     const d = progDecide(st, prev.reps, actual, target, eq, prev2 ? prev2.st.pct : null);
+    if(!d.flag){
+      /* flaga: RPE 10 dwa razy z rzedu na tym samym ciezarze */
+      const r2 = prev2 && (prev2.ex.rpe === 0 || prev2.ex.rpe) ? pf(prev2.ex.rpe) : NaN;
+      if(actual >= 10 && r2 >= 10 && prev2.st.top === st.top) d.flag = `RPE 10 dwa razy z rzędu na ${fmtKg(st.top)} kg — sprawdź technikę / regenerację.`;
+    }
+    if(!d.flag && sameAll.length >= 3){
+      /* flaga: brak progresji od 3 treningow (ten sam lub mniejszy ciezar) */
+      const a = sameAll[sameAll.length - 3].st.top, b = sameAll[sameAll.length - 2].st.top, c = st.top;
+      if(b <= a && c <= a && d.nk <= a) d.flag = `Brak progresji od 3 treningów (${fmtKg(a)} → ${fmtKg(b)} → ${fmtKg(c)} kg).`;
+    }
     let value = d.nk, conv = false;
     if(!isNaN(reps) && reps >= 1 && prev.reps !== reps && prev.reps >= 1){
       value = eqSnap(d.nk * pctForReps(reps) / pctForReps(prev.reps), eq); conv = true;
@@ -5668,12 +5856,12 @@ function noWeightProgFlag(clientId, ex, beforeDate){
   const pr = parseInt(last.e.reps) || reps; if(!(pr > 0)) return null;
   const pct = last.rr.reduce((a, b) => a + b, 0) / (last.rr.length * pr);
   const rpe = (last.e.rpe === 0 || last.e.rpe) ? pf(last.e.rpe) : NaN;
-  let target = pf(last.e.targetRpe); if(isNaN(target)) target = PROG_DEFAULT_RPE;
+  const target = PROG_DEFAULT_RPE;
   if(pct >= 1 && !isNaN(rpe) && rpe < target) return `${last.rr.join('/')} zrobione, RPE ${fmtKg(rpe)} (cel ${fmtKg(target)}). Ćwiczenie bez ciężaru — dodać obciążenie albo powtórzenia?`;
   return null;
 }
 /* czy u klienta dziala automat + obowiazkowe RPE */
-function exTargetRpe(ex){ const t = pf(ex && ex.targetRpe); return isNaN(t) ? PROG_DEFAULT_RPE : t; }
+function exTargetRpe(ex){ return PROG_DEFAULT_RPE; }
 /* okienko "Objasnienie skali" RPE / RIR (bez celu - zeby nie podpowiadac klientowi) */
 function openRpeInfoSheet(){
   const C = ['#2E9E5B','#3EA55C','#5CAE55','#8AB94E','#C9BE47','#E8B93F','#E89A3A','#E87E35','#E8632E','#D6472E','#B4472E'];
@@ -7177,7 +7365,7 @@ function copyTemplateDayToPlan(plan, date, templateDay, weekIdx){
       logRight: ex.splitLR ? [] : undefined,
       logLeft: ex.splitLR ? [] : undefined,
       suggestedWeight: kg, suggestedManual: kg !== '', isTest:false, completedNotified:false,
-      rpe: null, clientNote: ''
+      rpe: null, clientNote: '', clientNoteAt: null, coachReply: '', coachReplyAt: null, coachReplyRead: null, clientReact: null, noteSeen: false
     };
     if(ex.splitLR){ c.setsRight = tplWeekValue(ex, k, 'setsRight'); c.setsLeft = tplWeekValue(ex, k, 'setsLeft'); }
     delete c.weekOverrides;
@@ -7495,7 +7683,7 @@ function renderLibraryView(){
     </div>
 
     <table class="exlist" id="libFullTable">
-      <thead><tr><th>Nazwa</th><th>Link YouTube</th><th title="Krok ciężaru w progresji: sztanga 2,5 kg · hantle 1 kg do 10 kg, potem 2,5 kg · maszyna/wyciąg 5 kg · masa ciała bez zmiany ciężaru">Sprzęt</th><th>Grupa</th><th>Stałe uwagi</th><th style="text-align:center;">Nie MoveU</th><th></th></tr></thead>
+      <thead><tr><th>Nazwa</th><th>Link YouTube</th><th title="Krok ciężaru w progresji: sztanga 2,5 kg · hantle 1 kg do 10 kg, potem 2,5 kg · wyciąg (linka) 2,5 kg · maszyna 5 kg · masa ciała bez zmiany ciężaru">Sprzęt</th><th>Grupa</th><th>Stałe uwagi</th><th style="text-align:center;">Nie MoveU</th><th></th></tr></thead>
       <tbody id="libFullRows"></tbody>
     </table>
   `;
@@ -8658,6 +8846,69 @@ async function selectAthleteClient(clientId){
 
 let aFlyoutOpen = true;
 
+/* ===== Klient: odpowiedz trenera na notatke (pasek, kropki, rozmowa, "Ostatnio od trenera") ===== */
+function dayHasUnreadReply(day){ return !!(day && (day.exercises || []).some(ex => ex && ex.coachReply && !ex.coachReplyRead)); }
+function coachUnread(clientId){
+  const plan = plansCache[clientId] || {}, out = [];
+  Object.keys(plan).forEach(ds => { ((plan[ds] && plan[ds].exercises) || []).forEach(ex => { if(ex && ex.coachReply && !ex.coachReplyRead) out.push({ ds, ex }); }); });
+  return out.sort((a, b) => String(b.ex.coachReplyAt || b.ds).localeCompare(String(a.ex.coachReplyAt || a.ds)));
+}
+function coachInboxHtml(){
+  if(isTrainerUser || !aClientId || aRosterMode) return '';
+  const u = coachUnread(aClientId); if(!u.length) return '';
+  const f = u[0];
+  return `<div class="a-coach-inbox" id="aCoachInbox"><div class="ic">${MSG_CHAT_SVG}</div><div><b>Trener odpisał${u.length > 1 ? ` (${u.length})` : ''}</b><span>${escapeHtml(plDayShort(f.ds))} · ${escapeHtml(((f.ex.label || '') + ' ' + resolveExName(f.ex)).trim())}</span></div><div class="ar">›</div></div>`;
+}
+function bindCoachInbox(){
+  const el = $('aCoachInbox'); if(!el) return;
+  el.onclick = () => {
+    const f = coachUnread(aClientId)[0]; if(!f) return;
+    aSelectedDateStr = f.ds; aFlyoutOpen = false; aDetailExId = null;
+    const [y, m] = f.ds.split('-').map(Number); aViewDate = new Date(y, m - 1, 1);
+    refreshAthleteView();
+    const day = (plansCache[aClientId] || {})[f.ds];
+    if(day && (day.exercises || []).some(e => e.id === f.ex.id)) openExerciseModal(f.ex.id, day);
+  };
+}
+function refreshCoachInbox(){ const s = $('aCoachInboxSlot'); if(s){ s.innerHTML = coachInboxHtml(); bindCoachInbox(); } if($('aCalGrid')) renderAthleteCalendar(); }
+function lastCoachReplyFor(clientId, ex, ds){
+  const name = resolveExName(ex).trim().toLowerCase(); if(!name) return null;
+  const plan = plansCache[clientId] || {};
+  const prev = Object.keys(plan).filter(d => d < ds).sort().reverse();
+  let seen = 0;
+  for(const d of prev){
+    const e = ((plan[d] && plan[d].exercises) || []).find(x => x && resolveExName(x).trim().toLowerCase() === name);
+    if(!e) continue;
+    if(e.coachReply) return { d, e };
+    if(++seen >= 2) break;
+  }
+  return null;
+}
+function coachThreadHtml(ex, clientId, ds){
+  if(ex.coachReply){
+    return `<div class="a-coach-thread" id="aCoachThread"><div class="tl">💬 Wiadomość od trenera</div>
+      ${String(ex.clientNote || '').trim() ? `<div class="a-cb me">${escapeHtml(ex.clientNote).replace(/\n/g, '<br>')}<small>Ty${ex.clientNoteAt ? ' · ' + escapeHtml(plWhen(ex.clientNoteAt)) : ''}</small></div>` : ''}
+      <div class="a-cb co">${escapeHtml(ex.coachReply).replace(/\n/g, '<br>')}<small>Trener${ex.coachReplyAt ? ' · ' + escapeHtml(plWhen(ex.coachReplyAt)) : ''}</small></div>
+      ${ex.clientReact ? `<div class="a-cb me">${escapeHtml(ex.clientReact)}<small>Ty</small></div>` : (isTrainerUser ? '' : `<div class="a-cthx">${['👍 Dzięki', 'OK, zrobię'].map(t => `<span data-react="${escapeHtml(t)}">${escapeHtml(t)}</span>`).join('')}</div>`)}
+    </div>`;
+  }
+  const last = lastCoachReplyFor(clientId, ex, ds);
+  return last ? `<div class="a-coach-last"><b>Ostatnio od trenera · ${escapeHtml(plDayShort(last.d))}</b>${escapeHtml(last.e.coachReply).replace(/\n/g, '<br>')}</div>` : '';
+}
+function bindCoachThread(holder, ex, day){
+  const th = holder.querySelector('#aCoachThread'); if(!th) return;
+  th.querySelectorAll('[data-react]').forEach(b => b.onclick = async () => {
+    ex.clientReact = b.dataset.react;
+    const box = th.querySelector('.a-cthx'); if(box) box.outerHTML = `<div class="a-cb me">${escapeHtml(ex.clientReact)}<small>Ty</small></div>`;
+    await saveResultWithOfflineBackup(aClientId, aSelectedDateStr, day);
+  });
+  if(!isTrainerUser && ex.coachReply && !ex.coachReplyRead){
+    ex.coachReplyRead = new Date().toISOString();
+    refreshCoachInbox();
+    saveResultWithOfflineBackup(aClientId, aSelectedDateStr, day).catch(e => console.warn(e));
+  }
+}
+
 function renderAthleteBody(container){
   const body = container || $('athleteBody');
   if(aMainTab !== 'plan' && aClientId){
@@ -8666,6 +8917,7 @@ function renderAthleteBody(container){
     aMainTab = 'plan';
   }
   body.innerHTML = `
+    <div id="aCoachInboxSlot">${coachInboxHtml()}</div>
     <div class="icon-rail">
       <div class="icon-tab ${aFlyoutOpen?'active':''}" id="aTabCalendar" title="Kalendarz">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -8701,6 +8953,7 @@ function renderAthleteBody(container){
   $('aTabPlan').onclick = () => { aFlyoutOpen = false; refreshAthleteView(); };
   $('aPrevMonth').onclick = () => { aViewDate.setMonth(aViewDate.getMonth()-1); renderAthleteCalendar(); };
   $('aNextMonth').onclick = () => { aViewDate.setMonth(aViewDate.getMonth()+1); renderAthleteCalendar(); };
+  bindCoachInbox();
   renderAthleteCalendar();
   if(aSelectedDateStr){ renderAthleteDay(); }
 }
@@ -8733,7 +8986,9 @@ function renderAthleteCalendar(){
     const hasExercises = !!dotClass;
     const hasEv = eventsOn(aClientId, dateStr).length > 0;
     if(hasEv) cell.classList.remove('nodata');
-    cell.innerHTML = `${d}` + (dotClass ? `<div class="dot ${dotClass}"></div>` : '') + (hasEv ? evIconHtml(eventsOn(aClientId, dateStr)[0].title, 'cal-evi') : '');
+    const hasMsg = dayHasUnreadReply(dayData);
+    if(hasMsg) cell.classList.add('has-msg');
+    cell.innerHTML = `${d}` + (dotClass ? `<div class="dot ${dotClass}"></div>` : '') + (hasEv ? evIconHtml(eventsOn(aClientId, dateStr)[0].title, 'cal-evi') : '') + (hasMsg ? '<span class="cal-msg-dot"></span>' : '');
     if(hasExercises || hasEv){
       cell.onclick = () => { aSelectedDateStr = dateStr; if(aRosterMode) aManualDate = dateStr; aDetailExId = null; renderAthleteCalendar(); renderAthleteDay(); };
     }
@@ -8770,16 +9025,16 @@ function renderAthleteDay(){
         : (ex.log||[]).some(l => l.weight || l.reps);
       const seriesStyle = getSeriesStyle(ex.label);
       return `
-        <div class="a-item" data-exid="${ex.id}">
+        <div class="a-item${(ex.coachReply && !ex.coachReplyRead) ? ' has-msg' : ''}" data-exid="${ex.id}">
           <div class="a-badge" style="background:${seriesStyle.bg};color:${seriesStyle.text};">
             ${escapeHtml(ex.label||'')}
             ${done ? '<span class="badge-check">✓</span>' : ''}
           </div>
           <div>
             <div class="nm2">${escapeHtml(resolveExName(ex))}</div>
-            <div class="sub2">${escapeHtml(ex.sets)} X ${escapeHtml(ex.reps)}${(() => { if(ex.category !== 'main') return ''; const wi = athleteWeightInfo(aClientId, ex, aSelectedDateStr); return (wi.display ? ` · <span class="a-sub-kg">${escapeHtml(fmtKg(wi.display))} kg</span>${wi.progKg ? '<span class="a-sub-up">↑</span>' : ''}` : '') + (progActive(ex) ? ` · <span class="a-sub-kg">RPE ${escapeHtml(fmtKg(exTargetRpe(ex)))}</span>` : ''); })()}</div>
+            <div class="sub2">${escapeHtml(ex.sets)} X ${escapeHtml(ex.reps)}${(() => { if(ex.category !== 'main') return ''; const wi = athleteWeightInfo(aClientId, ex, aSelectedDateStr); return (wi.display ? ` · <span class="a-sub-kg">${escapeHtml(fmtKg(wi.display))} kg</span>${wi.progKg ? '<span class="a-sub-up">↑</span>' : ''}` : '') ; })()}</div>
           </div>
-          <div class="chev2">›</div>
+          ${(ex.coachReply && !ex.coachReplyRead) ? `<div class="a-msg-ic" title="Wiadomość od trenera">${MSG_CHAT_SVG}<i></i></div>` : '<div class="chev2">›</div>'}
         </div>`;
     }).join('') || `<div class="a-empty">Brak ćwiczeń w tej sekcji.</div>`;
     return `
@@ -9232,6 +9487,7 @@ function renderAthleteDetail(day){
         <div class="tempo">${ex.isInterval ? `Praca: ${escapeHtml(ex.workTime||'—')}` : `Tempo: ${escapeHtml(ex.tempo)}`}</div>
       </div>
     </div>
+    ${coachThreadHtml(ex, aClientId, aSelectedDateStr)}
     ${libNoteCardHtml(ex)}${ex.note ? `<div class="a-note-card"><div class="icon">${DAY_NOTE_ICON}</div><div class="txt">${escapeHtml(ex.note)}</div></div>` : ''}
     <div class="target-box">
       ${ex.splitLR ? `
@@ -9247,7 +9503,6 @@ function renderAthleteDetail(day){
       ` : `
         ${parseTempo(ex.tempo) ? `<div class="tp-tile" id="tpTile" role="button" tabindex="0" aria-label="Odliczaj tempo ${escapeHtml(ex.tempo)}"><div class="t">TEMPO</div><div class="v">${escapeHtml(ex.tempo)}</div><div class="tp-mini"><i></i></div><span class="tp-tap"></span></div>` : `<div><div class="t">TEMPO</div><div class="v">${escapeHtml(ex.tempo)}</div></div>`}
         <div><div class="t">PRZERWA</div><div class="v">${escapeHtml(ex.rest)}</div></div>
-        ${needRpe ? `<div><div class="t">RPE</div><div class="v">${escapeHtml(fmtKg(exTargetRpe(ex)))}</div></div>` : ''}
       `}
     </div>
     ${(ex.category==='main' && ex.isTest) ? renderTestHistoryBlock(aClientId, exName) : (wiA.progKg ? `<div class="a-prog-card"><div class="l"><div class="ic">${A_PROG_ICON}</div>Twój progres</div><div class="v">+${escapeHtml(fmtKg(wiA.progKg))} kg</div></div>` : '')}
@@ -9312,8 +9567,10 @@ function renderAthleteDetail(day){
     pill.addEventListener('click', pickRpe);
     rpeRowEl.appendChild(pill);
   }
+  bindCoachThread(holder, ex, day);
   $('clientNoteInput').onchange = async () => {
     ex.clientNote = $('clientNoteInput').value;
+    ex.clientNoteAt = new Date().toISOString();
     await saveResultWithOfflineBackup(aClientId, aSelectedDateStr, day);
   };
 
