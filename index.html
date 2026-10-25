@@ -5956,7 +5956,7 @@ function renderProgFlagsRow(tbody, day, items){
   items.forEach(ex => {
     if(ex.progFlagAck || ex.isTest || ex.isInterval || ex.progOff) return;
     const name = resolveExName(ex);
-    if(isBallExercise(name)) return;
+    if(isSpeedNoProg(name)) return;
     if(ex.noWeight){
       const fl = noWeightProgFlag(selectedClientId, ex, selectedDateStr);
       if(fl) rows.push({ ex, name, text: fl, cut: null });
@@ -6015,7 +6015,7 @@ function renderExRows(day, category){
       <td><label class="test-toggle"><input type="checkbox" class="noweight-check" ${ex.noWeight?'checked':''}></label></td>
       <td><label class="test-toggle"><input type="checkbox" class="interval-check" ${ex.isInterval?'checked':''}></label></td>
       <td><label class="test-toggle"><input type="checkbox" class="splitlr-check" ${ex.splitLR?'checked':''}></label></td>
-      <td><label class="test-toggle"><input type="checkbox" class="rpeprog-check" ${(ex.progOff || isBallExercise(exName))?'':'checked'} ${isBallExercise(exName)?'disabled title="Ćwiczenie z piłką — bez progresji ciężaru po RPE"':'title="Automatyczna progresja ciężaru + obowiązkowe RPE u klienta. Odznacz, jeśli nie chcesz automatu przy tym ćwiczeniu."'}></label></td>
+      <td><label class="test-toggle"><input type="checkbox" class="rpeprog-check" ${(ex.progOff || isSpeedNoProg(exName))?'':'checked'} ${isSpeedNoProg(exName)?`disabled title="${isBallExercise(exName) ? 'Ćwiczenie z piłką' : isKbSwing(exName) ? 'Swing kettlebell' : 'Gumy oporowe'} — ćwiczenie szybkościowe, bez progresji ciężaru po RPE"`:'title="Automatyczna progresja ciężaru + obowiązkowe RPE u klienta. Odznacz, jeśli nie chcesz automatu przy tym ćwiczeniu."'}></label></td>
       ${testCell}
       <td><button class="rm-btn" title="Usuń">✕</button></td>
     `;
@@ -6191,7 +6191,7 @@ function renderExRows(day, category){
     };
     tbody.appendChild(trN);
 
-    if(category === 'main' && !ex.progOff && !ex.noWeight && !ex.isInterval && !ex.isTest && !isBallExercise(exName)){
+    if(category === 'main' && !ex.progOff && !ex.noWeight && !ex.isInterval && !ex.isTest && !isSpeedNoProg(exName)){
       const exNameForRpe = resolveExName(ex);
       const report = getLatestRpeReport(selectedClientId, exNameForRpe);
       const trR = document.createElement('tr');
@@ -6433,7 +6433,7 @@ function lastSessionContinuumBefore(clientId, exerciseName, beforeDate){
    ponad plan -> +2,5% za kazde powt. ponad plan (srednio na serie) | 100% + RPE < cel -> +2,5% za pkt (bez limitu)
    100% + RPE >= cel lub brak RPE -> bez zmian | 90-99% -> bez zmian (15+ powt.: 80-100%) | 85-89% -> -1 krok
    70-84% -> -7,5% | <70% -> -10% + flaga | 2x z rzedu 90-99% -> bez zmian + flaga | skok >10% -> flaga
-   Krok: sztanga 2,5 kg | hantle 1 kg do 10 kg, potem 2,5 kg | wyciag (linka) 2,5 kg | maszyna 5 kg. Zmiana zawsze min. 1 krok.
+   Krok: sztanga 2,5 kg | hantle 1 kg do 10 kg, potem 2,5 kg | wyciag (linka) 2,5 kg | maszyna 2,5 kg. Zmiana zawsze min. 1 krok.
    Podzial P/L -> wg slabszej strony. Recznie wpisany ciezar trenera zawsze wygrywa (tu nie liczony). */
 const PROG_DEFAULT_RPE = 9;   // cel RPE: 9 dla wszystkich cwiczen (ukryty przed klientem); pole targetRpe jest ignorowane
 const RPE_STEP = 0.025, RPE_MAX_PTS = 4;
@@ -6456,7 +6456,7 @@ function equipmentInfo(name){
   const g = guessEquipment(name);
   return { eq: g || 'bar', auto: true, known: !!g };
 }
-function eqStep(w, eq){ return eq === 'db' ? (w < 10 ? 1 : 2.5) : eq === 'mach' ? 5 : 2.5; }   // wyciąg (cable) i sztanga: 2,5 kg
+function eqStep(w, eq){ return eq === 'db' ? (w < 10 ? 1 : 2.5) : 2.5; }   // sztanga, wyciąg (cable) i maszyna: 2,5 kg (maszyna od 25.10: było 5 kg)
 function eqSnap(x, eq){
   if(eq === 'db'){ if(x <= 10) return Math.max(1, Math.round(x)); return 10 + Math.round((x - 10) / 2.5) * 2.5; }
   const s = eqStep(x, eq); return Math.max(s, Math.round(x / s) * s);
@@ -6542,8 +6542,16 @@ function isBallThrow(name){ return isBallExercise(name) && /\brzut/.test(plSearc
 function computeSuggestedWeightInfo(clientId, exerciseName, plannedReps, beforeDate, targetRpe, opts){
   if(!clientId) return null;
   if(isBallThrow(exerciseName)) return { value: BALL_THROW_KG, source: 'fixed', rule: `rzut piłką — automatycznie ${BALL_THROW_KG} kg`, eq: 'bar', flag: null, rpe: null, conv: false };
+  if(isBandSpeed(exerciseName)){
+    const baseName = bandBaseName(exerciseName, clientId);
+    const b = baseName ? base1RM(clientId, baseName, beforeDate) : null;
+    if(!b) return null;
+    const value = eqSnap(b.oneRM * BAND_PCT_1RM / 100, 'bar');
+    return { value, source: 'band', baseName, oneRM: b.oneRM, baseFrom: b, date: b.date, eq: 'bar', flag: null, rpe: null, conv: false,
+      rule: `gumy oporowe — ${BAND_PCT_1RM}% 1RM z „${baseName}” (1RM ≈ ${fmtKg(Math.round(b.oneRM * 2) / 2)} kg${b.w ? ` z ${fmtKg(b.w)} kg × ${b.r}` : ''}, ${b.src}, ${b.date})` };
+  }
   opts = Object.assign({}, opts || {});
-  if(isBallExercise(exerciseName)) opts.progOff = true;
+  if(isSpeedNoProg(exerciseName)) opts.progOff = true;
   const reps = parseInt(plannedReps);
   const eqi = equipmentInfo(exerciseName), eq = eqi.eq;
   const all = progSessionsBefore(clientId, exerciseName, beforeDate);
@@ -6554,7 +6562,7 @@ function computeSuggestedWeightInfo(clientId, exerciseName, plannedReps, beforeD
     const st = prev.st;
     const base = { source:'last', date: prev.date, fromWeight: st.top, fromReps: prev.reps, done: st.reps, P: Math.round(st.pct * 100), eq, eqAuto: eqi.auto, eqKnown: eqi.known, side: st.side || null };
     if(opts.progOff){
-      return Object.assign(base, { value: eqSnap(st.top, eq), rule: isBallExercise(exerciseName) ? 'ćwiczenie z piłką — bez progresji, ciężar z poprzedniego treningu' : 'progresja wyłączona — ciężar z poprzedniego treningu', flag: null, rpe: null, conv: false });
+      return Object.assign(base, { value: isKbSwing(exerciseName) ? st.top : eqSnap(st.top, eq), rule: isBallExercise(exerciseName) ? 'ćwiczenie z piłką — bez progresji, ciężar z poprzedniego treningu' : isKbSwing(exerciseName) ? 'swing — ćwiczenie szybkościowe, bez progresji RPE, ciężar z poprzedniego treningu' : 'progresja wyłączona — ciężar z poprzedniego treningu', flag: null, rpe: null, conv: false });
     }
     const actual = (prev.ex.rpe === 0 || prev.ex.rpe) ? pf(prev.ex.rpe) : NaN;
     const target = PROG_DEFAULT_RPE;
@@ -6635,19 +6643,50 @@ function openRpeInfoSheet(){
 }
 /* cwiczenia z pilka (np. rzut pilka lekarska) - bez progresji ciezaru po RPE */
 function isBallExercise(name){ return /\bpil(k|ce\b|ek\b)/.test(plSearchKey(name)); }
-function progActive(ex){ return ex && ex.category === 'main' && !ex.noWeight && !ex.isInterval && !ex.isTest && !ex.progOff && !isBallExercise(resolveExName(ex)); }
+/* ===== Ćwiczenia szybkościowe: bez progresji po RPE (i bez obowiązkowego RPE) ===== */
+const BAND_PCT_1RM = 70;   // gumy oporowe: 70% 1RM ćwiczenia bazowego (bez gum)
+const BAND_RE = /\s*[-–—,]?\s*(z\s+)?gum(a|y|ami|q|ą|e)?(\s+oporow\w*)?\b/i;
+function isKbSwing(name){ const k = plSearchKey(name); return /swing/.test(k) || (/wymach/.test(k) && /kettl/.test(k)); }
+function isBandSpeed(name){ const k = plSearchKey(name); return /\bgum\w*\s+oporow/.test(k) && /trap\s*bar|przysiad|martwy/.test(k); }
+function isSpeedNoProg(name){ return isBallExercise(name) || isKbSwing(name) || isBandSpeed(name); }
+const exKeyNorm = n => plSearchKey(n).replace(/[^a-z0-9]+/g, '');
+/* „Trap bar - martwy ciąg - gumy oporowe” → „Trap bar - martwy ciąg”; „Przysiad ze sztangą na plecach - do skrzyni - gumy oporowe” → „Przysiad - ze sztangą na plecach - do skrzyni” */
+function bandBaseName(name, clientId){
+  const stripped = exKeyNorm(String(name).replace(BAND_RE, ' '));
+  const names = new Set((library || []).map(l => l.name));
+  const plan = (clientId && plansCache[clientId]) || {};
+  Object.values(plan).forEach(d => ((d && d.exercises) || []).forEach(ex => names.add(resolveExName(ex))));
+  const cands = [...names].filter(n => n && !isBandSpeed(n));
+  const exact = cands.find(n => exKeyNorm(n) === stripped);
+  if(exact) return exact;
+  const pre = cands.filter(n => exKeyNorm(n).startsWith(stripped) && stripped.length >= 5);
+  return pre.length === 1 ? pre[0] : null;
+}
+/* 1RM ćwiczenia bazowego: najnowszy test 1RM, a jak go nie ma — najlepsza seria z ostatniego treningu, przeliczona tabelą %1RM */
+function base1RM(clientId, baseName, beforeDate){
+  const test = getLatestTest1RM(clientId, baseName);
+  const sessions = progSessionsBefore(clientId, baseName, beforeDate);
+  const last = sessions[sessions.length - 1];
+  let fromTr = null;
+  if(last){ last.st.sets.forEach(s => { if(s.r >= 1 && s.r <= 10){ const e = s.w / (pctForReps(s.r) / 100); if(!fromTr || e > fromTr.oneRM) fromTr = { oneRM: e, w: s.w, r: s.r, date: last.date, src: 'trening' }; } }); }
+  if(test && (!fromTr || test.date >= fromTr.date)) return { oneRM: test.oneRM, date: test.date, src: 'test 1RM' };
+  return fromTr;
+}
+function progActive(ex){ return ex && ex.category === 'main' && !ex.noWeight && !ex.isInterval && !ex.isTest && !ex.progOff && !isSpeedNoProg(resolveExName(ex)); }
 const fmtKg = v => String(v).replace('.', ',');
 function rpeNoteText(r){ if(!r) return ''; return `RPE ${fmtKg(r.actual)} / cel ${fmtKg(r.target)}`; }
 function suggestedSourceText(info){
   if(!info) return '';
   if(info.source === 'test') return `Wyliczone z testu 1RM (${info.date}) — tego ćwiczenia jeszcze nie było`;
   if(info.source === 'fixed') return `Rzut piłką — automatycznie ${fmtKg(info.value)} kg (wpisz inny ciężar, jeśli chcesz zmienić)`;
+  if(info.source === 'band') return info.rule.charAt(0).toUpperCase() + info.rule.slice(1);
   return `Z poprzedniego treningu (${info.date}: ${fmtKg(info.fromWeight)} kg, ${info.done.join('/')}) · ${info.rule}`;
 }
 function suggestedClientLabel(info){
   if(!info) return '';
   if(info.source === 'test') return 'z testu 1RM';
   if(info.source === 'fixed') return 'piłka';
+  if(info.source === 'band') return `${BAND_PCT_1RM}% maksymalnego ciężaru`;
   return 'z poprzedniego treningu';
 }
 /* plakietka + panel "Skad ten ciezar?" dla trenera */
@@ -6656,6 +6695,7 @@ function progBadgeHtml(info, manual, exId){
   if(!info) return '';
   if(info.source === 'test') return `<div class="pg-badge pg-new" data-pgwhy="${exId}">z testu 1RM</div>${progWhyHtml(info, exId)}`;
   if(info.source === 'fixed') return `<div class="pg-badge pg-eq" title="Rzut piłką — stały ciężar ${fmtKg(info.value)} kg">⚽ ${fmtKg(info.value)} kg</div>`;
+  if(info.source === 'band') return `<div class="pg-badge pg-new" title="${escapeHtml(info.rule)}">⚡ ${BAND_PCT_1RM}% 1RM</div>`;
   const diff = Math.round((info.value - info.fromWeight) * 100) / 100;
   const cls = info.flag ? 'pg-fl' : diff > 0 ? 'pg-up' : diff < 0 ? 'pg-dn' : 'pg-eq';
   const txt = (info.flag ? '⚑ ' : '') + (diff > 0 ? `↑ +${fmtKg(diff)} kg` : diff < 0 ? `↓ −${fmtKg(-diff)} kg` : '= bez zmian');
@@ -8522,7 +8562,7 @@ function renderLibraryView(){
     </div>
 
     <table class="exlist" id="libFullTable">
-      <thead><tr><th>Nazwa</th><th>Link YouTube</th><th title="Krok ciężaru w progresji: sztanga 2,5 kg · hantle 1 kg do 10 kg, potem 2,5 kg · wyciąg (linka) 2,5 kg · maszyna 5 kg · masa ciała bez zmiany ciężaru">Sprzęt</th><th>Grupa</th><th>Stałe uwagi</th><th style="text-align:center;">Nie MoveU</th><th></th></tr></thead>
+      <thead><tr><th>Nazwa</th><th>Link YouTube</th><th title="Krok ciężaru w progresji: sztanga 2,5 kg · hantle 1 kg do 10 kg, potem 2,5 kg · wyciąg (linka) 2,5 kg · maszyna 2,5 kg · masa ciała bez zmiany ciężaru">Sprzęt</th><th>Grupa</th><th>Stałe uwagi</th><th style="text-align:center;">Nie MoveU</th><th></th></tr></thead>
       <tbody id="libFullRows"></tbody>
     </table>
   `;
