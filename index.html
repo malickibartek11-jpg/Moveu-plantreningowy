@@ -332,6 +332,48 @@
   .online-manage-link{text-decoration:underline;cursor:pointer;}
   .oc-card{display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:10px;cursor:pointer;transition:box-shadow .15s;}
   .oc-card:hover{box-shadow:0 4px 14px rgba(0,0,0,.06);}
+  /* ===== Testy ===== */
+  .tst-drop{display:flex;gap:14px;align-items:center;border:2px dashed #B9CFE6;background:#F4F8FC;border-radius:12px;padding:16px;cursor:pointer;margin-bottom:14px;}
+  .tst-drop.over{background:#E6F0FA;border-color:#3E7CB1;} .tst-drop .ic{font-size:26px;} .tst-drop b{font-size:14px;display:block;} .tst-drop small{display:block;color:var(--muted);font-size:12px;margin-top:2px;}
+  .tst-grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .tst-card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:14px;}
+  .tst-card h4{font-family:'Space Grotesk';font-size:15px;margin:0 0 10px;display:flex;gap:8px;align-items:center;}
+  .tst-n{font-size:11px;font-weight:700;border-radius:10px;padding:1px 8px;background:#EFEDE9;color:#767268;}
+  .tst-it{display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line);font-size:13px;cursor:pointer;}
+  .tst-it:first-of-type{border-top:none;} .tst-it > div{flex:1;} .tst-it b{display:block;} .tst-it span{font-size:11.5px;color:var(--muted);}
+  .tst-it .tst-type,.tst-it .tst-pill{flex:0 0 auto;color:#fff;}
+  .tst-click{cursor:pointer;} .tst-click:hover td{background:#FAF9F7;}
+  .tst-type{display:inline-block;font-size:10.5px;font-weight:700;border-radius:8px;padding:2px 7px;color:#fff !important;background:#E8604A;margin-right:6px;}
+  .tst-type.sj{background:#3E7CB1;} .tst-type.leg{background:#767268;}
+  .tst-pill{display:inline-block;font-size:11px;font-weight:700;border-radius:9px;padding:2px 8px;white-space:nowrap;}
+  .tst-it .tst-pill.warn,.tst-pill.warn{background:#FFF4E5;color:#B9781F !important;} .tst-pill.bad{background:#FDF1EE;color:#B4472E;} .tst-pill.ok{background:#E3F4E9;color:#2E9E5B;} .tst-pill.na{background:#EFEDE9;color:#767268;}
+  .tst-warn{background:#FFF4E5;border:1px solid #F0D3A4;border-radius:10px;padding:10px 12px;font-size:13px;margin-bottom:12px;line-height:1.45;}
+  .tst-amber{color:#B9781F !important;font-weight:600;}
+  .tst-imp-h{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px;} .tst-imp-h b{font-family:'Space Grotesk';font-size:15px;}
+  .tst-imp-row{display:flex;gap:10px;align-items:center;margin:6px 0;flex-wrap:wrap;font-size:13px;} .tst-imp-row label{width:100px;color:var(--muted);font-size:12px;font-weight:600;}
+  .tst-imp-row select{border:1px solid var(--line);border-radius:8px;padding:6px 8px;font:inherit;font-size:13px;max-width:100%;}
+  .tst-trials{margin-top:6px;font-size:12.5px;color:#3A3833;} .tst-trials div{padding:2px 0;} .tst-trials .sk{color:var(--muted);text-decoration:line-through;} .tst-trials .why{text-decoration:none;color:#B9781F;font-weight:600;display:inline-block;}
+  .tst-actions{display:flex;gap:8px;justify-content:flex-end;margin:6px 0;}
+  .tst-top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:#1C1C1C;color:#fff;border-radius:12px;padding:12px 16px;margin:6px 0 14px;}
+  .tst-top b{font-family:'Space Grotesk';font-size:18px;display:block;} .tst-top span{opacity:.7;font-size:12.5px;}
+  .tst-top-r{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap;} .tst-top-r .cv-small{color:#ddd;} .tst-top-r select{border-radius:8px;padding:5px 6px;font:inherit;font-size:12.5px;}
+  .tst-top .btn.ghost{background:#fff;color:#1C1C1C;}
+  .tst-verdict{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 18px;display:flex;gap:14px;align-items:center;margin-bottom:12px;}
+  .tst-verdict .big{font-size:36px;} .tst-verdict h3{font-family:'Space Grotesk';font-size:19px;line-height:1.3;margin:0;} .tst-verdict p{margin:4px 0 0;color:var(--muted);font-size:12.5px;}
+  .tst-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px;}
+  .tst-kpi{background:var(--surface);border:1px solid var(--line);border-top:5px solid #2E9E5B;border-radius:14px;padding:14px;}
+  .tst-kpi.red{border-top-color:#C2462E;} .tst-kpi.amb{border-top-color:#C98A17;}
+  .tst-kpi .q{font-size:12px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.3px;} .tst-kpi .v{font-family:'Space Grotesk';font-size:30px;font-weight:700;margin:4px 0 2px;}
+  .tst-kpi .s{font-size:13.5px;font-weight:600;} .tst-kpi .e{font-size:12px;color:var(--muted);margin-top:5px;line-height:1.4;}
+  .tst-legs{display:grid;grid-template-columns:170px 1fr 1fr;gap:10px 14px;align-items:center;font-size:14px;} .tst-legs .h{font-size:11.5px;color:var(--muted);font-weight:700;text-transform:uppercase;}
+  .tst-bar{height:22px;border-radius:6px;background:#EFEDE9;position:relative;overflow:hidden;} .tst-bar i{position:absolute;left:0;top:0;bottom:0;border-radius:6px;} .tst-bar span{position:absolute;right:8px;top:2px;font-size:12px;font-weight:700;}
+  .tst-chg{list-style:none;padding:0;margin:0;} .tst-chg li{display:flex;gap:12px;align-items:center;padding:9px 0;border-top:1px solid var(--line);font-size:14px;} .tst-chg li:first-child{border-top:none;}
+  .tst-chg .ic{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;flex-shrink:0;} .tst-chg small{display:block;color:var(--muted);font-size:12px;}
+  .tst-chg .n{margin-left:auto;font-family:'Space Grotesk';font-weight:700;white-space:nowrap;}
+  .tst-todo{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;} .tst-todo div{background:#F5F4F1;border-radius:12px;padding:12px;font-size:13.5px;line-height:1.4;} .tst-todo b{display:block;font-size:14px;margin-bottom:4px;}
+  .tst-more{text-align:center;margin:4px 0 14px;} .tst-more button{background:none;border:1px dashed #B9B5AC;border-radius:10px;padding:10px 16px;font:inherit;font-size:13.5px;cursor:pointer;}
+  @media(max-width:860px){.tst-grid2,.tst-kpis,.tst-todo{grid-template-columns:1fr;} .tst-legs{grid-template-columns:110px 1fr 1fr;font-size:13px;}}
+
   .ol-sec{display:flex;align-items:center;gap:8px;margin:20px 0 10px;}
   .ol-sec h3{font-family:'Space Grotesk';font-size:15px;margin:0;}
   .ol-n{font-size:11.5px;font-weight:700;border-radius:10px;padding:1px 8px;background:var(--surface-2,#EFEDE9);color:#767268;}
@@ -1200,6 +1242,12 @@
   /* ===== Trenerzy ===== */
   .tr-add{display:flex;gap:8px;margin:4px 0 14px;max-width:560px;} .tr-add input{flex:1;}
   .tr-grid{grid-template-columns:2fr 1.1fr 1.6fr 90px !important;}
+  body.tr-ro #showTemplatesBtn, body.tr-ro #showTestsBtn, body.tr-ro #showOnlineBtn, body.tr-ro #showLibraryBtn, body.tr-ro #showMealsBtn, body.tr-ro #showVideosBtn,
+  body.tr-ro #showSignupsBtn, body.tr-ro #showRosterBtn, body.tr-ro #showTrainersBtn, body.tr-ro #copyAppLinkBtn, body.tr-ro .lib-panel, body.tr-ro .cv-switch,
+  body.tr-ro #markAllCompletionsBtn, body.tr-ro .comp-acts [data-ok], body.tr-ro .comp-acts [data-res], body.tr-ro #trenerView #main button.ro-dis{display:none !important;}
+  body.tr-ro #trenerView #main .ro-dis{pointer-events:none;}
+  body.tr-ro #exSelect-warmup, body.tr-ro #exSelect-main{display:none !important;}
+  body.tr-ro #trenerView .sidebar h3::after{content:' · 👁 podgląd';font-weight:500;font-size:11px;color:#B9781F;}
   .tr-groups{position:relative;}
   .rl-list.tr-list{overflow:visible;}
   .rl-list.tr-list .rl-head{border-radius:12px 12px 0 0;}
@@ -1373,6 +1421,7 @@
       <div id="clientList"></div>
       <button class="add-client-btn" id="completedTrainingsBtn">📋 Ukończone treningi</button>
       <button class="add-client-btn" id="showTemplatesBtn">🗂️ Szablony planów</button>
+      <button class="add-client-btn" id="showTestsBtn">🧪 Testy <span class="ol-badge" id="testsBadge" style="display:none;background:#C98A17;"></span></button>
       <button class="add-client-btn" id="showOnlineBtn">💻 Treningi online <span class="ol-badge" id="onlineBadge" style="display:none;"></span></button>
       <button class="add-client-btn" id="showLibraryBtn" style="margin-top:14px;">📚 Biblioteka ćwiczeń</button>
       <button class="add-client-btn" id="showMealsBtn">Biblioteka posiłków</button>
@@ -1527,6 +1576,7 @@ async function handleAuthResult(session){
     setTimeout(() => { loadAllVideos(true).then(cleanupViewedVideos).catch(e => console.warn(e)); }, 900);
     setTimeout(() => { loadSignups().catch(e => console.warn(e)); }, 1000);
     loadOnlineSnooze().then(updateOnlineBadge).catch(e => console.warn(e));
+    setTimeout(() => { Promise.all([loadAllTests(true), loadTestSettings()]).then(updateTestsBadge).catch(e => console.warn(e)); }, 1400);
     return;
   }
 
@@ -2124,6 +2174,7 @@ async function safeGet(key){
   }catch(e){ console.error('Supabase get exception:', e); return null; }
 }
 async function safeSet(key, value){
+  if(roBlocked()) return false;
   try{
     const { error } = await sbClient.from('kv_store').upsert({ key, value, updated_at: new Date().toISOString() });
     if(error){ console.error('Supabase set error:', error); return false; }
@@ -2207,8 +2258,11 @@ async function refreshClientsFromDB(){
 let trainerGroupScope = null;
 function clientInScope(c){ if(!trainerGroupScope) return true; return trainerGroupScope.has(c.groupId) || (!!c.subgroupId && trainerGroupScope.has(c.subgroupId)); }
 function applyTrainerScope(list){ return trainerGroupScope ? list.filter(clientInScope) : list; }
+let trainerReadOnly = false;   // trener „tylko podgląd”: widzi plany i Ukończone, nie edytuje (wyniki w Panelu sportowca może wpisywać)
 async function loadMyTrainerScope(email){
   trainerGroupScope = null;
+  trainerReadOnly = false;
+  document.body.classList.remove('tr-ro');
   if(!email || email === TRAINER_EMAIL.toLowerCase()) return;
   try{
     const { data, error } = await sbClient.from('app_trainers').select('*').eq('email', email);
@@ -2216,7 +2270,28 @@ async function loadMyTrainerScope(email){
     const row = Array.isArray(data) ? data.find(r => normEmail(r.email) === email) : data;
     const g = row && row.groups;
     if(Array.isArray(g) && g.length) trainerGroupScope = new Set(g);
+    if(row && row.can_edit === false){ trainerReadOnly = true; document.body.classList.add('tr-ro'); startReadOnlyLock(); }
   }catch(e){}
+}
+/* tryb podglądu: w panelu trenera wszystkie pola i przyciski edycji są zablokowane (wyjątki: nawigacja, PDF, „Otwórz”) */
+const RO_ALLOWED = '#prevMonth,#nextMonth,#generatePlanPdfBtn,#exportFrom,#exportTo,[data-open],.ro-ok';
+function roLock(root){
+  if(!trainerReadOnly || !root) return;
+  root.querySelectorAll('input,select,textarea,button').forEach(el => { if(el.matches(RO_ALLOWED)) return; el.disabled = true; el.classList.add('ro-dis'); });
+  root.querySelectorAll('[draggable="true"]').forEach(el => el.setAttribute('draggable', 'false'));
+  root.querySelectorAll('[contenteditable="true"]').forEach(el => el.setAttribute('contenteditable', 'false'));
+}
+let roObserver = null;
+function startReadOnlyLock(){
+  if(roObserver || !$('main')) return;
+  roObserver = new MutationObserver(() => roLock($('main')));
+  roObserver.observe($('main'), { childList: true, subtree: true });
+  roLock($('main'));
+}
+function roBlocked(){
+  if(!trainerReadOnly || currentTab !== 'trener') return false;
+  if(!roBlocked.t || Date.now() - roBlocked.t > 3000){ roBlocked.t = Date.now(); toast('👁 Tryb podglądu — bez zmian w planach'); }
+  return true;
 }
 async function loadClientsFromDB(){
   try{
@@ -2247,6 +2322,7 @@ async function mergePendingWithRemote(c){
   }catch(e){}
 }
 async function saveClientRow(c){
+  if(roBlocked()) return false;
   setStatus('Zapisywanie…');
   let lastError = null;
   await mergePendingWithRemote(c);
@@ -2445,6 +2521,7 @@ function mergePlanInPlace(base, local, remote){
 const explicitDayDeletes = {};   // clientId -> Set(dat) usunietych/przeniesionych swiadomie przez trenera w tej sesji
 function markDayDeleted(clientId, ds){ (explicitDayDeletes[clientId] = explicitDayDeletes[clientId] || new Set()).add(ds); }
 async function savePlanRow(clientId, plan, opts){
+  if(roBlocked()) return false;
   const force = !!(opts && opts.force);
   setStatus('Zapisywanie…');
   let lastError = null;
@@ -3175,6 +3252,12 @@ $('showVideosBtn').onclick = () => navigateTo(async () => {
   updateVideoBadge();
   renderVideosView();
 });
+$('showTestsBtn').onclick = () => navigateTo(async () => {
+  trainerViewMode = 'tests';
+  selectedClientId = null;
+  renderClientList();
+  await renderTestsHome();
+});
 $('showSignupsBtn').onclick = () => navigateTo(async () => {
   trainerViewMode = 'signups';
   selectedClientId = null;
@@ -3263,6 +3346,7 @@ async function loadClientNotes(id){
   }catch(e){ console.warn(e); notesCache[id] = normalizeNotes(null); notesCache[id].__unsaved = true; return notesCache[id]; }
 }
 async function saveClientNotes(id){
+  if(roBlocked()) return false;
   const d = notesCache[id];
   if(!d) return false;
   const payload = { ...d }; delete payload.__unsaved;
@@ -3313,6 +3397,7 @@ async function refreshClientAlert(){
 async function showClientView(){
   const c = clients.find(cl => cl.id === selectedClientId);
   if(!c) return;
+  if(trainerReadOnly) clientView = 'plan';
   if(clientView === 'plan'){ await loadEvents(c.id); if(selectedClientId === c.id && clientView === 'plan') renderMain(); return; }
   if(clientView === 'info'){ await Promise.all([loadClientNotes(c.id), ensurePlanLoaded(c.id), loadClientSurvey(c.id)]); if(selectedClientId === c.id && clientView === 'info') renderClientInfo(); return; }
   if(clientView === 'diet'){ await Promise.all([loadDiet(c.id, true), loadMealLibrary()]); if(selectedClientId === c.id && clientView === 'diet') renderClientDiet(); return; }
@@ -3444,7 +3529,7 @@ function renderClientInfo(){
   if(infoTab === 'post') body = clientProgressHtml(id);
   if(infoTab === 'tes'){
     const e1 = clientE1rmList(id);
-    body = `<div class="cv-grid2">
+    body = tstClientCardHtml(id) + `<div class="cv-grid2">
       <div class="cv-card"><h4>🏋️ Szacowane 1RM z treningów <span class="cv-small" style="font-weight:400;">liczone automatycznie</span></h4>
         ${e1.length ? `<table class="report-table"><tr><th>Ćwiczenie</th><th>1RM</th><th>Z serii</th><th>Data</th></tr>${e1.map(x => `<tr><td>${escapeHtml(x.name)}</td><td><b>${Math.round(x.e1 * 2) / 2} kg</b></td><td>${x.w} kg × ${x.r}</td><td>${escapeHtml(x.date)}</td></tr>`).join('')}</table>` : '<div class="cv-small">Brak wpisanych ciężarów (serie 1–10 powt.).</div>'}
         <h4 style="margin-top:14px;">📝 Inne testy <span class="cv-small" style="font-weight:400;">np. CMJ, sprint, zasięg</span></h4>
@@ -3493,6 +3578,7 @@ function renderClientInfo(){
   document.querySelectorAll('.cv-tab').forEach(t => t.onclick = () => { infoTab = t.dataset.t; renderClientInfo(); });
   if(infoTab === 'post') bindClientProgress();
   if(infoTab === 'ank') bindClientSurveyTab(id);
+  if(infoTab === 'tes') tstBindClientCard(id);
   const uid = () => 'n_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
   const rerender = () => { if(selectedClientId === id && clientView === 'info') renderClientInfo(); };
   if($('cvGoal')) $('cvGoal').onchange = async e => { d.goal = e.target.value.trim(); await save(); };
@@ -5428,14 +5514,15 @@ async function renderTrainersView(){
     ${missing ? '<div class="cv-alert" style="background:#FFF4E5;border-color:#F3C88B;"><div><b>W bazie brakuje jeszcze listy trenerów.</b> Wklej polecenie z supabase-trenerzy.html w Supabase (SQL Editor). Do tego czasu dostęp ma tylko właściciel.</div></div>' : ''}
     <div class="tr-add"><input class="cv-input" id="trEmail" type="email" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="adres e-mail, np. natalia@gmail.com" ${missing ? 'disabled' : ''}><button class="btn" id="trAddBtn" ${missing ? 'disabled' : ''}>+ Dodaj adres e-mail</button></div>
     ${groupsColMissing ? '<div class="cv-alert" style="background:#FFF4E5;border-color:#F3C88B;"><div><b>Żeby zapisać grupy trenera, w bazie brakuje jednej kolumny.</b> Wklej w Supabase (SQL Editor): <code>alter table public.app_trainers add column if not exists groups jsonb;</code></div></div>' : ''}
-    <div class="rl-list tr-list"><div class="rl-head tr-grid"><div>E-mail</div><div>Pełny dostęp</div><div>Grupy, które widzi</div><div></div></div>
+    <div class="rl-list tr-list"><div class="rl-head tr-grid"><div>E-mail</div><div>Dostęp</div><div>Grupy, które widzi</div><div></div></div>
       <div class="rl-row tr-grid tr-owner"><div><b>${escapeHtml(TRAINER_EMAIL)}</b>${me === TRAINER_EMAIL.toLowerCase() ? ' <span class="cv-small">(Ty)</span>' : ''}<br><small class="cv-small">właściciel — dostęp zawsze</small></div><div><label class="diet-cb dis"><input type="checkbox" checked disabled> pełny dostęp</label></div><div class="cv-small">wszystkie grupy</div><div></div></div>
-      ${rows.map(r => `<div class="rl-row tr-grid" data-tr="${escapeHtml(r.email)}"><div><b>${escapeHtml(r.email)}</b>${normEmail(r.email) === me ? ' <span class="cv-small">(Ty)</span>' : ''}<br><small class="cv-small">${r.full_access ? 'ma dostęp' : 'dostęp wyłączony'}</small></div>
-        <div><label class="diet-cb"><input type="checkbox" data-trfull="${escapeHtml(r.email)}" ${r.full_access ? 'checked' : ''}> pełny dostęp</label></div>
+      ${rows.map(r => `<div class="rl-row tr-grid" data-tr="${escapeHtml(r.email)}"><div><b>${escapeHtml(r.email)}</b>${normEmail(r.email) === me ? ' <span class="cv-small">(Ty)</span>' : ''}<br><small class="cv-small">${!r.full_access ? 'nie może się logować' : r.can_edit === false ? 'tylko podgląd treningów' : 'pełna edycja'}</small></div>
+        <div><label class="diet-cb"><input type="checkbox" data-trfull="${escapeHtml(r.email)}" ${r.full_access ? 'checked' : ''}> może się logować</label>
+          ${'can_edit' in r ? `<label class="diet-cb"><input type="checkbox" data-tredit="${escapeHtml(r.email)}" ${r.can_edit !== false ? 'checked' : ''}> może edytować</label>` : ''}</div>
         <div>${trGroupsDropdownHtml(r)}</div>
         <div><button class="btn ghost small" data-trdel="${escapeHtml(r.email)}" style="color:#B4472E;">Usuń</button></div></div>`).join('')}
     </div>
-    <div class="cv-small" style="margin-top:10px;">Zmiana działa po ponownym otwarciu aplikacji przez tę osobę (albo odświeżeniu strony). Pełny dostęp = cała biblioteka ćwiczeń, plany treningowe i cały panel diety. Grupy decydują, których klientów ta osoba widzi.</div>`;
+    <div class="cv-small" style="margin-top:10px;">Zmiana działa po ponownym otwarciu aplikacji przez tę osobę (albo odświeżeniu strony). „Może się logować” = wpuszcza do panelu trenera. „Może edytować” odznaczone = tylko podgląd treningów (kalendarz, plany, Ukończone treningi) — bez zmian w planach, bez karty osoby, diet i bibliotek; wyniki w Panelu sportowca może wpisywać. Grupy decydują, których klientów ta osoba widzi.</div>`;
   if(missing) return;
   document.querySelectorAll('.tr-groups').forEach(dd => {
     dd.addEventListener('toggle', () => { if(dd.open) document.querySelectorAll('.tr-groups[open]').forEach(o => { if(o !== dd) o.open = false; }); });
@@ -5476,6 +5563,14 @@ async function renderTrainersView(){
     renderTrainersView();
   };
   $('trEmail').onkeydown = ev => { if(ev.key === 'Enter') $('trAddBtn').click(); };
+  document.querySelectorAll('[data-tredit]').forEach(cb => cb.onchange = async () => {
+    const e = cb.dataset.tredit, val = cb.checked;
+    cb.disabled = true;
+    const { error } = await sbClient.from('app_trainers').update({ can_edit: val }).eq('email', e);
+    if(error){ alert('Nie udało się zapisać.\n\nSzczegóły: ' + [error.code, error.message].filter(Boolean).join(' · ')); }
+    else toast(val ? 'Pełna edycja: ' + e : 'Tylko podgląd treningów: ' + e);
+    renderTrainersView();
+  });
   document.querySelectorAll('[data-trfull]').forEach(cb => cb.onchange = async () => {
     const e = cb.dataset.trfull, val = cb.checked;
     if(!val && normEmail(e) === me && !confirm('Wyłączasz dostęp SOBIE. Po odświeżeniu stracisz panel trenera. Kontynuować?')){ cb.checked = true; return; }
@@ -10696,6 +10791,1775 @@ async function importExcelFile(file){
 }
 
 // init() jest teraz wywoływane z handleAuthResult() dopiero po potwierdzeniu zalogowania
+</script>
+<script>
+/* ===== SILNIK CMJ ANALYZER (przeniesiony 1:1 z CMJ_Analyzer.html, bloki 0-2; bez zmian w obliczeniach) ===== */
+const CMJ = (function(){
+
+async function inflateRawRaw(bytes) {
+  const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream("deflate-raw"));
+  const buf = await new Response(stream).arrayBuffer();
+  return new Uint8Array(buf);
+}
+function readUInt32LE(dv, o) { return dv.getUint32(o, true); }
+function readUInt16LE(dv, o) { return dv.getUint16(o, true); }
+
+async function unzip(arrayBuffer) {
+  const bytes = new Uint8Array(arrayBuffer);
+  const dv = new DataView(arrayBuffer);
+  const len = bytes.length;
+  let eocdOffset = -1;
+  for (let i = len - 22; i >= Math.max(0, len - 22 - 65536); i--) {
+    if (readUInt32LE(dv, i) === 0x06054b50) { eocdOffset = i; break; }
+  }
+  if (eocdOffset === -1) throw new Error("Nie znaleziono EOCD - to nie jest poprawny plik .xlsx");
+  const entryCount = readUInt16LE(dv, eocdOffset + 10);
+  let cdOffset = readUInt32LE(dv, eocdOffset + 16);
+  const result = new Map();
+  for (let i = 0; i < entryCount; i++) {
+    const sig = readUInt32LE(dv, cdOffset);
+    if (sig !== 0x02014b50) throw new Error("Zły nagłówek ZIP");
+    const compMethod = readUInt16LE(dv, cdOffset + 10);
+    const compSize = readUInt32LE(dv, cdOffset + 20);
+    const nameLen = readUInt16LE(dv, cdOffset + 28);
+    const extraLen = readUInt16LE(dv, cdOffset + 30);
+    const commentLen = readUInt16LE(dv, cdOffset + 32);
+    const localHeaderOffset = readUInt32LE(dv, cdOffset + 42);
+    const nameBytes = bytes.subarray(cdOffset + 46, cdOffset + 46 + nameLen);
+    const fileName = new TextDecoder("utf-8").decode(nameBytes);
+    const lNameLen = readUInt16LE(dv, localHeaderOffset + 26);
+    const lExtraLen = readUInt16LE(dv, localHeaderOffset + 28);
+    const dataStart = localHeaderOffset + 30 + lNameLen + lExtraLen;
+    const rawData = bytes.subarray(dataStart, dataStart + compSize);
+    let finalData;
+    if (compMethod === 0) finalData = rawData;
+    else if (compMethod === 8) finalData = await inflateRawRaw(rawData);
+    else throw new Error("Nieobsługiwana kompresja ZIP: " + compMethod);
+    result.set(fileName, finalData);
+    cdOffset += 46 + nameLen + extraLen + commentLen;
+  }
+  return result;
+}
+function parseSharedStrings(xmlText) {
+  const strings = [];
+  const siRegex = /<si>([\s\S]*?)<\/si>/g;
+  let m;
+  while ((m = siRegex.exec(xmlText)) !== null) {
+    const inner = m[1];
+    const tRegex = /<t[^>]*>([\s\S]*?)<\/t>/g;
+    let parts = [], tm;
+    while ((tm = tRegex.exec(inner)) !== null) parts.push(decodeXmlEntities(tm[1]));
+    strings.push(parts.join(""));
+  }
+  return strings;
+}
+function decodeXmlEntities(s) {
+  return s.replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&quot;/g,'"').replace(/&apos;/g,"'").replace(/&amp;/g,"&");
+}
+function colLetterToIndex(letters) {
+  let n = 0;
+  for (let i = 0; i < letters.length; i++) n = n * 26 + (letters.charCodeAt(i) - 64);
+  return n;
+}
+function parseSheetXml(xmlText, sharedStrings) {
+  const rows = {};
+  const rowRegex = /<row r="(\d+)"[^>]*>([\s\S]*?)<\/row>/g;
+  let rm;
+  while ((rm = rowRegex.exec(xmlText)) !== null) {
+    const rowNum = parseInt(rm[1], 10);
+    const rowContent = rm[2];
+    const cellRegex = /<c r="([A-Z]+)(\d+)"([^>]*)(?:\/>|>([\s\S]*?)<\/c>)/g;
+    let cm; const rowObj = {};
+    while ((cm = cellRegex.exec(rowContent)) !== null) {
+      const colLetters = cm[1], attrs = cm[3] || "", body = cm[4];
+      if (!body) continue;
+      const typeMatch = attrs.match(/t="([^"]+)"/);
+      const cellType = typeMatch ? typeMatch[1] : null;
+      const vMatch = body.match(/<v>([\s\S]*?)<\/v>/);
+      let value = null;
+      if (cellType === "s") {
+        const idx = parseInt(vMatch ? vMatch[1] : "-1", 10);
+        value = sharedStrings[idx] !== undefined ? sharedStrings[idx] : null;
+      } else if (cellType === "str" || cellType === "inlineStr") {
+        const isMatch = body.match(/<is>([\s\S]*?)<\/is>/);
+        if (isMatch) { const tMatch = isMatch[1].match(/<t[^>]*>([\s\S]*?)<\/t>/); value = tMatch ? decodeXmlEntities(tMatch[1]) : null; }
+        else if (vMatch) value = decodeXmlEntities(vMatch[1]);
+      } else {
+        if (vMatch) { const raw = vMatch[1]; value = raw === "" ? null : parseFloat(raw); }
+      }
+      rowObj[colLetterToIndex(colLetters)] = value;
+    }
+    rows[rowNum] = rowObj;
+  }
+  return rows;
+}
+async function readFirstSheet(arrayBuffer) {
+  const files = await unzip(arrayBuffer);
+  const decoder = new TextDecoder("utf-8");
+  let sharedStrings = [];
+  if (files.has("xl/sharedStrings.xml")) sharedStrings = parseSharedStrings(decoder.decode(files.get("xl/sharedStrings.xml")));
+  let sheetFile = null;
+  for (const name of files.keys()) if (/^xl\/worksheets\/sheet1\.xml$/.test(name)) { sheetFile = name; break; }
+  if (!sheetFile) for (const name of files.keys()) if (/^xl\/worksheets\/sheet\d+\.xml$/.test(name)) { sheetFile = name; break; }
+  if (!sheetFile) throw new Error("Nie znaleziono arkusza w pliku");
+  return parseSheetXml(decoder.decode(files.get(sheetFile)), sharedStrings);
+}
+
+// BLOK 1
+
+function normalizeKey(s) { return String(s).trim().toLowerCase().replace(/\s+/g, " "); }
+function g(metrics, key) { const v = metrics[normalizeKey(key)]; return v === undefined ? null : v; }
+function safeDiv(a, b) { if (a===null||a===undefined||b===null||b===undefined||b===0) return null; return a / b; }
+
+async function parseForceMateExport(rows, sourceLabel) {
+  const meta = {}, metrics = {};
+  const rowNums = Object.keys(rows).map(Number).sort((a,b)=>a-b);
+  for (const r of rowNums) {
+    const row = rows[r];
+    const a = row[1], b = row[2];
+    if (a !== undefined && b !== undefined && row[3] === undefined) meta[normalizeKey(a)] = b;
+    const nameCell = row[8], valCell = row[9];
+    if (nameCell !== undefined) metrics[normalizeKey(nameCell)] = valCell === undefined ? null : valCell;
+  }
+  const dateRaw = meta["date"];
+  let date = null;
+  if (typeof dateRaw === "string") {
+    const m = dateRaw.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})(?:\s+(\d{1,2}):(\d{2}):(\d{2}))?/);
+    if (m) { const [,dd,mm,yyyy,hh,mi,ss] = m; date = new Date(+yyyy, +mm-1, +dd, hh?+hh:0, mi?+mi:0, ss?+ss:0); }
+  }
+  // "leg stance" w eksporcie: "dual_leg" (standardowy CMJ obunóż) albo "right_leg"/"left_leg"
+  // (CMJ jednonóż). Normalizujemy do prostego rec.legStance ("dual" / "left" / "right"),
+  // zeby reszta apki mogla latwo rozroznic typ testu i skierowac go do wlasciwego panelu.
+  const legStanceRaw = g(metrics, "leg stance");
+  const legStance = legStanceRaw === "right_leg" ? "right" : legStanceRaw === "left_leg" ? "left" : "dual";
+  return { name: meta["name"]||null, team: meta["team"]||null, comment: meta["comment"]||null, date, dateRaw, bodyMass: g(metrics,"body mass"), legStance, metrics, sourceLabel: sourceLabel||"" };
+}
+
+// --- Import wielu plikow naraz: grupowanie po dniu + usrednianie prob ----------------------
+// Gdy trener wgrywa NARAZ kilka plikow z tego samego dnia (kolejne proby/serie tej samej sesji -
+// platforma eksportuje KAZDA probe jako OSOBNY plik, potwierdzone na realnych plikach: ten sam
+// zawodnik, ta sama data, rozne godziny/komentarze "seria 1"/"Seria 2"), usredniamy SUROWE dane
+// wejsciowe (ten sam obiekt `metrics`, ktory normalnie idzie do buildMetricRow) PRZED policzeniem
+// czegokolwiek. To tzw. "ratio of means": usrednij lewa i prawa noge osobno, DOPIERO POTEM policz
+// % asymetrii z usrednionych wartosci - badania pokazuja, ze to podejscie ma mniejsza niepewnosc
+// statystyczna niz usrednianie juz policzonych % asymetrii z kazdej proby osobno ("mean of
+// ratios"). Dzieki usrednianiu na poziomie surowego `metrics`, reszta apki (buildMetricRow i
+// wszystko dalej - asymetrie, wskazniki, combined) liczy sie IDENTYCZNIE jak dla zwyklego
+// pojedynczego testu, tylko raz, na juz usrednionych danych wejsciowych - zero duplikacji logiki.
+function dayKeyOf(rec) {
+  let d = null;
+  if (rec) {
+    if (rec.date instanceof Date) d = rec.date;
+    else if (typeof rec.date === "string" && rec.date) d = new Date(rec.date);
+  }
+  if (d && !Number.isNaN(d.getTime())) {
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+  }
+  return (rec && rec.dateRaw) ? rec.dateRaw.split(" ")[0] : "?";
+}
+
+// Platforma eksportuje, obok surowych wartosci per noga, TEZ swoje WLASNE gotowe wskazniki typu
+// "... sym. index" i "p1 p2 ... ratio" (potwierdzone empirycznie w realnym pliku - 45 takich pol).
+// Ta appka ich NIGDZIE nie odczytuje (liczy wlasne % asymetrii z osobnych pol "left X"/"right X"),
+// ale gdyby usrednic je jak zwykle liczby, byloby to dokladnie "mean of ratios" - usrednienie juz
+// gotowego wskaznika z kilku prob, metoda ktora (patrz komentarz przy averageRawMetrics) ma WIEKSZA
+// niepewnosc statystyczna niz liczenie wskaznika z usrednionych surowych wartosci. Zeby nie
+// zostawiac w danych cichej niespojnosci metodologicznej (nawet nieuzywanej dzisiaj), takie pola
+// traktujemy jak kategorie/tekst - bierzemy pierwsza wartosc zamiast usredniac.
+function isPrecomputedRatioKey(key) {
+  return /sym\.?\s*index|symmetry|\bratio\b/.test(key);
+}
+
+function averageRawMetrics(metricsList) {
+  const keys = new Set();
+  metricsList.forEach(m => Object.keys(m || {}).forEach(k => keys.add(k)));
+  const out = {};
+  for (const k of keys) {
+    const vals = metricsList.map(m => (m || {})[k]).filter(v => v !== null && v !== undefined);
+    if (vals.length === 0) { out[k] = null; continue; }
+    // Pola tekstowe/kategorie (np. "jump type", "leg stance", "device") sa stale w ramach jednej
+    // sesji/dnia - bierzemy pierwsza niepusta wartosc. Tylko surowe wartosci liczbowe faktycznie
+    // usredniamy - gotowe wskazniki platformy (patrz isPrecomputedRatioKey) tez dostaja pierwsza
+    // wartosc, nie usrednienie.
+    const allNumeric = vals.every(v => typeof v === "number" && !Number.isNaN(v));
+    out[k] = (allNumeric && !isPrecomputedRatioKey(k))
+      ? vals.reduce((a,b) => a + b, 0) / vals.length
+      : vals[0];
+  }
+  return out;
+}
+
+// Grupuje sparsowane rekordy wg (zawodnik, dzien kalendarzowy, noga) - kazda grupa to jeden
+// PRZYSZLY wpis historii. Kolejnosc grup = kolejnosc pierwszego wystapienia (records wchodzi juz
+// posortowane chronologicznie, wiec grupy tez wyjda w kolejnosci dni).
+function groupRecordsForImport(records) {
+  const order = [];
+  const map = new Map();
+  for (const rec of records) {
+    const key = `${rec.name || "Nieznany zawodnik"}__${dayKeyOf(rec)}__${rec.legStance}`;
+    if (!map.has(key)) { map.set(key, []); order.push(key); }
+    map.get(key).push(rec);
+  }
+  return order.map(key => {
+    const trials = map.get(key);
+    const first = trials[0];
+    return { key, name: first.name || "Nieznany zawodnik", legStance: first.legStance, dayLabel: (first.dateRaw||"").split(" ")[0] || dayKeyOf(first), trials };
+  });
+}
+
+// Buduje finalny "rekord dnia" z prob AKTUALNIE ZAZNACZONYCH do uwzglednienia (min. 1, wywolujacy
+// filtruje wczesniej). Gdy jest dokladnie 1 proba, zwraca ja BEZ ZADNYCH zmian - pojedynczy test
+// w danym dniu zachowuje sie identycznie jak przy zwyklym, pojedynczym wgraniu pliku (pelny
+// dateRaw z godzina, brak komentarza "srednia z...").
+function buildDayRecord(trials) {
+  if (trials.length === 1) return trials[0];
+  const sorted = trials.slice().sort((a,b) => (a.date?.getTime()||0) - (b.date?.getTime()||0));
+  const first = sorted[0];
+  const times = sorted.map(t => (t.dateRaw||"").split(" ")[1] || "?").join(", ");
+  const bmVals = sorted.map(t => t.bodyMass).filter(v => v != null);
+  return {
+    name: first.name, team: first.team,
+    comment: `Średnia z ${sorted.length} prób (${times})`,
+    date: first.date,
+    dateRaw: (first.dateRaw||"").split(" ")[0] || dayKeyOf(first), // sam dzien, bez godziny - naturalny klucz "jeden wpis na dzien"
+    bodyMass: bmVals.length ? bmVals.reduce((a,b)=>a+b,0)/bmVals.length : null,
+    legStance: first.legStance,
+    metrics: averageRawMetrics(sorted.map(t => t.metrics)),
+    sourceLabel: sorted.map(t => t.sourceLabel).join(", "),
+    trialCount: sorted.length,
+  };
+}
+
+// Klastruje proby JEDNEGO dnia w "momenty/serie" (np. Seria 1, Seria 2, Seria 3) wg bliskosci
+// czasowej. Potwierdzone empirycznie na realnych plikach: platforma NIE ma rozdzielczosci per-
+// powtorzenie w polu Date - proby tej samej serii/momentu maja DOKLADNIE ten sam znacznik czasu
+// (sekunda), a kolejne serie dzieli kilka minut przerwy. Prog 10 sekund bezpiecznie odroznia
+// "ten sam moment" od "nastepna seria", z duzym zapasem w obie strony.
+function clusterMomentsOfDay(trials) {
+  const sorted = trials.slice().sort((a,b) => (a.date?.getTime()||0) - (b.date?.getTime()||0));
+  const moments = [];
+  for (const t of sorted) {
+    const cur = moments[moments.length-1];
+    const prevT = cur ? cur[cur.length-1] : null;
+    if (cur && t.date && prevT && prevT.date && (t.date.getTime() - prevT.date.getTime()) <= 10000) {
+      cur.push(t);
+    } else {
+      moments.push([t]);
+    }
+  }
+  return moments;
+}
+
+// Trzy "kąty patrzenia" na dzien z wieloma probami - patrz dyskusja przy imporcie wsadowym.
+// KAZDY tryb rozni sie WYLACZNIE tym, KTORE proby wchodza do obliczen (selectTrials) - sam raport
+// (kafelki, sekcja asymetrii, PDF) wyglada identycznie niezaleznie od trybu, bo dalej idzie przez
+// dokladnie ten sam buildMetricRow. Domyslny tryb to "rehab" (wszystkie proby, bez filtrowania) -
+// to jest dotychczasowe zachowanie appki, zeby nic sie nie zmienilo bez swiadomego wyboru trenera.
+const IMPORT_MODES = {
+  rehab: {
+    label: "Rehabilitacja (pełny obraz)",
+    shortLabel: "Rehabilitacja",
+    describe: "Uśrednia WSZYSTKIE próby dnia, łącznie ze zmęczeniowymi — bo mogą ujawnić asymetrię niewidoczną na świeżych nogach.",
+    selectTrials(trials) { return trials.slice(); },
+  },
+  performance: {
+    label: "Wydajność (szczytowa forma)",
+    shortLabel: "Wydajność",
+    describe: "Bierze tylko najlepszą próbę dnia (wg wysokości wyskoku) — do śledzenia szczytowych możliwości, bez rozmycia przez zmęczenie.",
+    selectTrials(trials) {
+      const best = trials.slice().sort((a,b) => (g(b.metrics,"jump height ni") ?? -Infinity) - (g(a.metrics,"jump height ni") ?? -Infinity))[0];
+      return best ? [best] : [];
+    },
+  },
+  fatigue: {
+    label: "Stan zmęczeniowy (worst-case)",
+    shortLabel: "Stan zmęczeniowy",
+    describe: "Bierze WYŁĄCZNIE ostatnią serię dnia (najbardziej zmęczony stan) — najczulszy test na asymetrię ujawniającą się pod zmęczeniem.",
+    selectTrials(trials) {
+      const moments = clusterMomentsOfDay(trials);
+      return moments.length ? moments[moments.length-1] : [];
+    },
+  },
+};
+
+// Buduje opis (do pola comment) mowiacy jawnie, jaki tryb i jaki dobor prob stoi za danym wpisem -
+// zeby pozniej w historii/PDF bylo widac NIE TYLKO "srednia z N prob", ale i z jakiej perspektywy.
+function describeDayRecord(allTrials, includedTrials, modeKey) {
+  const mode = IMPORT_MODES[modeKey] || IMPORT_MODES.rehab;
+  const totalMoments = clusterMomentsOfDay(allTrials).length;
+  const totalTrials = allTrials.length;
+  if (includedTrials.length === totalTrials) {
+    return `Tryb: ${mode.shortLabel} — średnia z ${totalTrials} ${totalTrials===1?"próby":"prób"}${totalMoments>1?` (${totalMoments} serie)`:""}`;
+  }
+  if (includedTrials.length === 1) {
+    const t = includedTrials[0];
+    return `Tryb: ${mode.shortLabel} — wybrana próba: ${(t.dateRaw||"").split(" ")[1]||t.dateRaw||"?"} (z ${totalTrials} tego dnia)`;
+  }
+  return `Tryb: ${mode.shortLabel} — średnia z ${includedTrials.length} z ${totalTrials} prób tego dnia`;
+}
+
+const LR_METRICS = [
+  ["avg braking force","Avg Braking Force","N"],["avg braking power","Avg Braking Power","W"],
+  ["avg eccentric power","Avg Eccentric Power (total)","W"],["avg propulsive force","Avg Propulsive Force","N"],
+  ["avg propulsive power","Avg Propulsive Power","W"],["avg rfd","Avg RFD","N/s"],
+  ["braking rfd","Braking RFD","N/s"],["braking work","Braking Work","J"],
+  ["eccentric impulse","Eccentric Impulse (total)","N s"],["eccentric rfd","Eccentric RFD","N/s"],
+  ["eccentric work","Eccentric Work","J"],["landing rfd 0-20ms","Landing RFD 0-20ms","N/s"],
+  ["landing rfd 0-40ms","Landing RFD 0-40ms","N/s"],["landing rfd 0-60ms","Landing RFD 0-60ms","N/s"],
+  ["landing rfd 0-80ms","Landing RFD 0-80ms","N/s"],["net impulse","Net Impulse (total contact)","N s"],
+  ["peak braking force","Peak Braking Force","N"],["peak braking power","Peak Braking Power","W"],
+  ["peak eccentric power","Peak Eccentric Power (total)","W"],["peak propulsive power","Peak Propulsive Power","W"],
+  ["propulsive rfd","Propulsive RFD","N/s"],["propulsive work","Propulsive Work","J"],
+  ["time to peak braking force","Time to Peak Braking Force","s"],["time to peak braking power","Time to Peak Braking Power","s"],
+  ["time to peak eccentric force","Time to Peak Eccentric Force","s"],["time to peak eccentric power","Time to Peak Eccentric Power","s"],
+  ["time to peak force","Time to Peak Force (total)","s"],["time to peak landing force","Time to Peak Landing Force","s"],
+  ["time to peak power","Time to Peak Power (total)","s"],["time to peak propulsive force","Time to Peak Propulsive Force","s"],
+  ["time to peak propulsive power","Time to Peak Propulsive Power","s"],["avg landing rfd","Avg Landing RFD","N/s"],
+];
+const P1P2_METRICS = [
+  ["avg force","Avg Force","N"],["avg power","Avg Power","W"],["avg velocity","Avg Velocity","m/s"],
+  ["duration","Duration","s"],["peak force","Peak Force","N"],["peak power","Peak Power","W"],["peak velocity","Peak Velocity","m/s"],
+];
+// 4. element kazdej krotki = surowy klucz BAZOWY (bez "left "/"right " prefiksu) uzywany do
+// policzenia wartosci LACZNEJ (obie nogi), gdy platforma nie eksportuje rozbicia lewa/prawa dla
+// danej metryki w danym pliku - patrz uzycie w buildMetricRow (pole `combined` kazdej pary) oraz
+// komentarz przy PAIR_COMBINED fallbacku w _block3_ui.js/renderReportCore.
+const ORIGINAL_LR_PAIRS = [
+  ["Concentric Impulse","Concentric Impulse (Left) [N s]","Concentric Impulse (Right) [N s]","propulsive impulse"],
+  ["P1 Concentric Impulse","P1 Concentric Impulse (Left) [N s]","P1 Concentric Impulse (Right) [N s]","p1 impulse"],
+  ["P2 Concentric Impulse","P2 Concentric Impulse (Left) [N s]","P2 Concentric Impulse (Right) [N s]","p2 impulse"],
+  ["Concentric Peak Force","Concentric Peak Force (Left) [N]","Concentric Peak Force (Right) [N]","peak propulsive force"],
+  ["Eccentric Deceleration Impulse","Eccentric Deceleration Impulse (Left) [N s]","Eccentric Deceleration Impulse (Right) [N s]","braking impulse"],
+  ["Eccentric Deceleration RFD","Eccentric Deceleration RFD (Left) [N/s]","Eccentric Deceleration RFD (Right) [N/s]","decel rfd"],
+  ["Eccentric Mean Force","Eccentric Mean Force (Left) [N]","Eccentric Mean Force (Right) [N]","avg eccentric force"],
+  ["Eccentric Peak Force","Eccentric Peak Force (Left) [N]","Eccentric Peak Force (Right) [N]","peak eccentric force"],
+  ["Peak Landing Force","Peak Landing Force (Left) [N]","Peak Landing Force (Right) [N]","peak landing force"],
+];
+
+const REPORT_SECTIONS = [
+  {
+    title: "WYNIK GŁÓWNY (OUTPUT)",
+    fields: [
+      "Body Mass [kg]", "Jump Height (Imp-Mom) [cm]", "Peak Power [W]", "Peak Power / BM [W/kg]",
+      "RSI-modified (Imp-Mom) [m/s]", "Concentric Peak Velocity [m/s]", "Eccentric Peak Velocity [m/s]",
+    ],
+  },
+  {
+    title: "STRATEGIA RUCHU",
+    fields: [
+      "Countermovement Depth [cm]", "Contraction Time [ms]", "Eccentric Duration [ms]",
+      "Concentric Duration [ms]", "Eccentric:Concentric Duration [%]",
+      "Movement Start to Peak Force [s]", "Movement Start to Peak Power [s]",
+      "Braking Phase Duration [ms]", "Eccentric Deceleration Phase Duration [s]",
+    ],
+  },
+  {
+    title: "FAZA EKSCENTRYCZNA (hamowanie, absorpcja, przygotowanie)",
+    fields: [
+      "Eccentric Mean Force [N]", "Eccentric Peak Force [N]", "Eccentric Peak Force / BM [N/kg]",
+      "Eccentric Mean Power [W]", "Eccentric Mean Power / BM [W/kg]", "Eccentric Peak Power [W]",
+      "Eccentric Peak Power / BM [W/kg]", "Eccentric Peak Velocity [m/s]", "Minimum Eccentric Force [N]",
+      "Force at Peak Power [N]", "Eccentric Deceleration Impulse [N s]", "Eccentric Deceleration Impulse / BM [N s/kg]",
+      "Eccentric Deceleration Mean Force [N]", "Eccentric Mean Braking Force [N]",
+      "Eccentric Deceleration RFD [N/s]", "Eccentric Deceleration RFD / BM [N/s/kg]",
+    ],
+  },
+  {
+    title: "FAZA KONCENTRYCZNA (napęd, generowanie wyniku)",
+    fields: [
+      "Concentric Impulse [N s]", "Concentric Impulse (Abs) / BM [N s/kg]",
+      "P1 Concentric Impulse [N s]", "P2 Concentric Impulse [N s]",
+      "Concentric Mean Force [N]", "Concentric Mean Force / BM [N/kg]",
+      "Concentric Peak Force [N]", "Concentric Peak Force / BM [N/kg]",
+      "Concentric Mean Power [W]", "Concentric Mean Power / BM [W/kg]",
+      "Peak Power [W]", "Peak Power / BM [W/kg]", "Concentric Peak Velocity [m/s]",
+    ],
+  },
+  {
+    title: "LĄDOWANIE",
+    fields: ["Landing RFD [N/s]", "Peak Landing Force / BM [N/kg]", "Peak Landing Force [N]"],
+  },
+];
+
+// Grupowanie WYLACZNIE 9 par ORIGINAL_LR_PAIRS wg fazy ruchu, do dedykowanego "Raportu RTS /
+// kontuzja" (patrz renderReportCore, opts.rtsMode). Celowo pomija cala reszte (LR_METRICS,
+// P1P2_METRICS poza tymi dwoma polami, Strategia ruchu, itd.) - to swiadomie WASKI zestaw,
+// zeby raport dla klienta po kontuzji nie byl rozmyty dziesiatkami dodatkowych metryk.
+const RTS_PHASE_GROUPS = [
+  { title: "📉 Faza ekscentryczna (hamowanie) — lewa vs prawa", labels: ["Eccentric Mean Force", "Eccentric Peak Force", "Eccentric Deceleration Impulse", "Eccentric Deceleration RFD"] },
+  { title: "📈 Faza koncentryczna (odbicie) — lewa vs prawa", labels: ["Concentric Impulse", "Concentric Peak Force"] },
+  { title: "🔀 Wczesna vs późna faza odbicia, P1/P2 — lewa vs prawa", labels: ["P1 Concentric Impulse", "P2 Concentric Impulse"] },
+  { title: "🛬 Lądowanie — lewa vs prawa", labels: ["Peak Landing Force", "Avg Landing RFD"] },
+];
+
+// Grupowanie ANALOGICZNE do RTS_PHASE_GROUPS, ale pod kątem WYDAJNOŚCI zamiast kontuzji - pary
+// L/P związane z fazą KONCENTRYCZNĄ/napędową (to one bezpośrednio "kosztują" wysokość/moc skoku,
+// gdy są asymetryczne), zamiast fazy ekscentrycznej/lądowania (kontrola, ryzyko kontuzji - to
+// domena RTS_PHASE_GROUPS). Używane WYŁĄCZNIE w Porównaniu okresów, tryb "Wydajność" - patrz
+// renderPeriodCompareReport w bloku 3 (UI).
+const PERFORMANCE_PHASE_GROUPS = [
+  { title: "📈 Faza koncentryczna (odbicie) — lewa vs prawa", labels: ["Concentric Impulse", "Concentric Peak Force"] },
+  { title: "🔀 Wczesna vs późna faza odbicia, P1/P2 — lewa vs prawa", labels: ["P1 Concentric Impulse", "P2 Concentric Impulse"] },
+  { title: "⚡ Siła i moc napędowa — lewa vs prawa", labels: ["Avg Propulsive Force", "Avg Propulsive Power", "Peak Propulsive Power", "Propulsive RFD", "Propulsive Work"] },
+];
+
+// Sekcje z REPORT_SECTIONS pokazywane w Porownaniu okresow w zaleznosci od wybranego "kata":
+// Rehabilitacja dostaje WYLACZNIE 3 metryki kontekstu (jak w istniejacym Raporcie RTS/kontuzja
+// dla pojedynczego testu) - reszta to RTS_PHASE_GROUPS. Wydajnosc dostaje WYNIK GLOWNY (kontekst)
+// + STRATEGIA RUCHU + FAZA KONCENTRYCZNA (metryki bezposrednio zwiazane z generowaniem wyniku).
+// Calosciowy (domyslny) pokazuje WSZYSTKIE sekcje - bez filtrowania.
+const PERIOD_ANGLE_SECTION_TITLES = {
+  performance: ["WYNIK GŁÓWNY (OUTPUT)", "STRATEGIA RUCHU", "FAZA KONCENTRYCZNA (napęd, generowanie wyniku)"],
+};
+
+function buildMetricRow(rec) {
+  const m = rec.metrics, bm = rec.bodyMass;
+  const unweighted = g(m,"unweighted duration"), braking = g(m,"braking duration"), propulsiveDur = g(m,"propulsive duration");
+  const eccDurationS = (unweighted!==null && braking!==null) ? unweighted+braking : null;
+  const out = {};
+  out["Body Mass [kg]"] = bm ?? null;
+  out["Braking Phase Duration [ms]"] = braking!==null? braking*1000 : null;
+  out["Eccentric Deceleration Phase Duration [s]"] = braking;
+  out["Eccentric Duration [ms]"] = eccDurationS!==null? eccDurationS*1000 : null;
+  out["Concentric Duration [ms]"] = propulsiveDur!==null? propulsiveDur*1000 : null;
+  out["Eccentric:Concentric Duration [%]"] = (eccDurationS && propulsiveDur) ? (eccDurationS/propulsiveDur*100) : null;
+  out["Concentric Impulse [N s]"] = g(m,"propulsive impulse");
+  out["Concentric Impulse (Abs) / BM [N s/kg]"] = safeDiv(g(m,"propulsive impulse"), bm);
+  out["Concentric Mean Force [N]"] = g(m,"avg. propulsive force");
+  out["Concentric Mean Force / BM [N/kg]"] = safeDiv(g(m,"avg. propulsive force"), bm);
+  out["Concentric Mean Power [W]"] = g(m,"avg. propulsive power");
+  out["Concentric Mean Power / BM [W/kg]"] = safeDiv(g(m,"avg. propulsive power"), bm);
+  out["Concentric Peak Force [N]"] = g(m,"peak propulsive force");
+  out["Concentric Peak Force / BM [N/kg]"] = safeDiv(g(m,"peak propulsive force"), bm);
+  out["Concentric Peak Velocity [m/s]"] = g(m,"peak propulsive velocity") ?? g(m,"takeoff velocity");
+  out["Contraction Time [ms]"] = g(m,"contact time")!==null? g(m,"contact time")*1000 : null;
+  out["Countermovement Depth [cm]"] = g(m,"displacement depth");
+  out["Eccentric Deceleration Impulse [N s]"] = g(m,"braking impulse");
+  out["Eccentric Deceleration Impulse / BM [N s/kg]"] = safeDiv(g(m,"braking impulse"), bm);
+  out["Eccentric Deceleration Mean Force [N]"] = g(m,"avg. braking force");
+  out["Eccentric Mean Force [N]"] = g(m,"avg eccentric force");
+  out["Eccentric Mean Power [W]"] = g(m,"avg eccentric power");
+  out["Eccentric Deceleration RFD [N/s]"] = g(m,"decel rfd");
+  out["Eccentric Deceleration RFD / BM [N/s/kg]"] = safeDiv(g(m,"decel rfd"), bm);
+  out["Eccentric Mean Power / BM [W/kg]"] = safeDiv(g(m,"avg eccentric power"), bm);
+  out["Eccentric Peak Force [N]"] = g(m,"peak eccentric force");
+  out["Eccentric Peak Force / BM [N/kg]"] = safeDiv(g(m,"peak eccentric force"), bm);
+  out["Eccentric Peak Power [W]"] = g(m,"peak eccentric power");
+  out["Eccentric Peak Power / BM [W/kg]"] = safeDiv(g(m,"peak eccentric power"), bm);
+  out["Eccentric Peak Velocity [m/s]"] = g(m,"min eccentric velocity");
+  out["Force at Peak Power [N]"] = g(m,"force peak power");
+  out["Jump Height (Imp-Mom) [cm]"] = g(m,"jump height ni");
+  out["Movement Start to Peak Force [s]"] = g(m,"time to peak force");
+  out["Movement Start to Peak Power [s]"] = g(m,"time to peak power");
+  out["P1 Concentric Impulse [N s]"] = g(m,"p1 impulse");
+  out["P2 Concentric Impulse [N s]"] = g(m,"p2 impulse");
+  out["Peak Power [W]"] = g(m,"peak power");
+  out["Peak Power / BM [W/kg]"] = g(m,"relative peak power");
+  out["RSI-modified (Imp-Mom) [m/s]"] = g(m,"rsi modified");
+  out["Landing RFD [N/s]"] = g(m,"avg landing rfd");
+  out["Peak Landing Force / BM [N/kg]"] = safeDiv(g(m,"peak landing force"), bm);
+  out["Peak Landing Force [N]"] = g(m,"peak landing force");
+  out["Concentric Impulse (Left) [N s]"] = g(m,"left propulsive impulse");
+  out["Concentric Impulse (Right) [N s]"] = g(m,"right propulsive impulse");
+  out["Concentric Peak Force (Left) [N]"] = g(m,"left peak propulsive force");
+  out["Concentric Peak Force (Right) [N]"] = g(m,"right peak propulsive force");
+  out["Eccentric Deceleration Impulse (Left) [N s]"] = g(m,"left braking impulse");
+  out["Eccentric Deceleration Impulse (Right) [N s]"] = g(m,"right braking impulse");
+  out["Eccentric Deceleration RFD (Left) [N/s]"] = g(m,"left decel rfd");
+  out["Eccentric Deceleration RFD (Right) [N/s]"] = g(m,"right decel rfd");
+  out["Eccentric Mean Force (Left) [N]"] = g(m,"left avg eccentric force");
+  out["Eccentric Mean Force (Right) [N]"] = g(m,"right avg eccentric force");
+  const leftPef = g(m,"left peak eccentric force"), rightPef = g(m,"right peak eccentric force");
+  out["Eccentric Peak Force (Left) [N]"] = leftPef!==null? leftPef : g(m,"left peak force");
+  out["Eccentric Peak Force (Right) [N]"] = rightPef!==null? rightPef : g(m,"right peak force");
+  out["P1 Concentric Impulse (Left) [N s]"] = g(m,"left p1 impulse");
+  out["P1 Concentric Impulse (Right) [N s]"] = g(m,"right p1 impulse");
+  out["P2 Concentric Impulse (Left) [N s]"] = g(m,"left p2 impulse");
+  out["P2 Concentric Impulse (Right) [N s]"] = g(m,"right p2 impulse");
+  out["P2 Concentric Impulse:P1 Concentric Impulse (Left)"] = safeDiv(g(m,"left p2 impulse"), g(m,"left p1 impulse"));
+  out["P2 Concentric Impulse:P1 Concentric Impulse (Right)"] = safeDiv(g(m,"right p2 impulse"), g(m,"right p1 impulse"));
+  out["Peak Landing Force (Left) [N]"] = g(m,"left peak landing force");
+  out["Peak Landing Force (Right) [N]"] = g(m,"right peak landing force");
+  out["Minimum Eccentric Force [N]"] = g(m,"min unweight force");
+  out["Eccentric Mean Braking Force [N]"] = g(m,"avg. braking force");
+
+  // `combined` = wartosc LACZNA (obie nogi), liczona z tego samego surowego klucza bazowego
+  // bez prefiksu "left "/"right ". Niektore metryki platforma eksportuje TYLKO lacznie, bez
+  // podzialu na nogi (potwierdzone empirycznie: left i right sa wtedy zawsze puste) - bez tego
+  // pola UI na zawsze pokazywalby dla nich martwe "brak danych", mimo ze jakas informacja
+  // realnie istnieje. UI decyduje kiedy uzyc `combined` (tylko gdy left i right oba puste).
+  const newLR = [];
+  for (const [base,disp,unit] of LR_METRICS) {
+    const lv = g(m,"left "+base), rv = g(m,"right "+base);
+    out[`${disp} (Left) [${unit}]`] = lv; out[`${disp} (Right) [${unit}]`] = rv;
+    newLR.push({label:disp, unit, left:lv, right:rv, combined: g(m, base)});
+  }
+  const newP1P2 = [];
+  for (const [base,disp,unit] of P1P2_METRICS) {
+    const p1 = g(m,"p1 "+base), p2 = g(m,"p2 "+base);
+    out[`P1 ${disp} [${unit}]`] = p1; out[`P2 ${disp} [${unit}]`] = p2; out[`P2:P1 ${disp} Ratio`] = safeDiv(p2,p1);
+    newP1P2.push({label:disp, unit, p1, p2, ratio: safeDiv(p2,p1)});
+  }
+  const notes = [];
+  if (leftPef===null && g(m,"left peak force")!==null) notes.push("Eccentric Peak Force (Left): brak 'left peak eccentric force', użyto 'left peak force'.");
+  if (rightPef===null && g(m,"right peak force")!==null) notes.push("Eccentric Peak Force (Right): brak 'right peak eccentric force', użyto 'right peak force'.");
+
+  const originalPairs = ORIGINAL_LR_PAIRS.map(([label,lKey,rKey,base]) => ({ label, unit: (lKey.match(/\[(.*?)\]/)||[])[1]||"", left: out[lKey], right: out[rKey], combined: base ? g(m, base) : null }));
+
+  return { values: out, newLR, newP1P2, originalPairs, notes };
+}
+
+// BLOK 1B — słownik wyjaśnień metryk (do tooltipów po najechaniu kursorem)
+
+// Definicje dla pól w siatce metryk (REPORT_SECTIONS) — klucz = dokładna etykieta z jednostką
+const FIELD_DEFS = {
+  "Body Mass [kg]": "Masa ciała zawodnika zarejestrowana przez platformę w momencie tego testu. To nie jest metryka wydajności 'więcej/mniej = lepiej' — służy głównie do normalizacji innych wskaźników (np. Peak Power / BM) oraz do kontekstu: zmianę innych metryk warto interpretować razem ze zmianą masy ciała (np. spadek mocy bezwzględnej przy spadku masy ciała może nie oznaczać spadku formy).",
+  "Jump Height (Imp-Mom) [cm]": "Wysokość wyskoku liczona metodą impulsowo-pędową (Impulse-Momentum): siłę reakcji podłoża całkuje się w czasie fazy koncentrycznej, co daje prędkość odbicia, z niej wynika wysokość. Uznawana za dokładniejszą niż metoda z czasu lotu, bo nie zawyża wyniku przy ugiętych nogach przy starcie/lądowaniu.",
+  "Peak Power [W]": "Szczytowa moc mechaniczna (siła × prędkość) wygenerowana w trakcie skoku — zwykle tuż przed oderwaniem od platformy.",
+  "Peak Power / BM [W/kg]": "Szczytowa moc podzielona przez masę ciała (BM = Body Mass) — pozwala porównywać moc między zawodnikami o różnej masie.",
+  "RSI-modified (Imp-Mom) [m/s]": "Zmodyfikowany wskaźnik reaktywności siły = wysokość skoku (Imp-Mom) / czas ruchu do oderwania od platformy. Pokazuje, jak efektywnie zawodnik zamienia czas kontaktu z podłożem na wysokość skoku.",
+  "Concentric Peak Velocity [m/s]": "Największa prędkość środka masy ciała w fazie koncentrycznej (napędowej) — praktycznie równa prędkości odbicia od platformy.",
+  "Eccentric Peak Velocity [m/s]": "Największa prędkość opadania środka masy ciała w fazie ekscentrycznej, czyli podczas zejścia w dół przed odbiciem.",
+  "Countermovement Depth [cm]": "Głębokość zejścia w dół przed odbiciem — dystans, o jaki obniża się środek masy ciała w fazie ekscentrycznej (kontrmuch).",
+  "Contraction Time [ms]": "Łączny czas całego ruchu — od rozpoczęcia zejścia w dół do oderwania stóp od platformy (faza ekscentryczna + koncentryczna razem).",
+  "Eccentric Duration [ms]": "Czas trwania fazy ekscentrycznej (zejście w dół) — suma podfazy odciążenia (unweighting) i podfazy hamowania (braking).",
+  "Concentric Duration [ms]": "Czas trwania fazy koncentrycznej (napędowej) — od najniższego punktu przysiadu do oderwania od platformy.",
+  "Eccentric:Concentric Duration [%]": "Stosunek czasu fazy ekscentrycznej do koncentrycznej. Wyższa wartość oznacza relatywnie dłuższe przygotowanie (zejście) względem samego odbicia.",
+  "Movement Start to Peak Force [s]": "Czas od rozpoczęcia ruchu do momentu osiągnięcia szczytowej siły reakcji podłoża w całym skoku.",
+  "Movement Start to Peak Power [s]": "Czas od rozpoczęcia ruchu do momentu osiągnięcia szczytowej mocy w całym skoku.",
+  "Braking Phase Duration [ms]": "Czas trwania podfazy hamowania — części fazy ekscentrycznej, w której ciało wytraca prędkość opadania do zera.",
+  "Eccentric Deceleration Phase Duration [s]": "To samo co czas podfazy hamowania (deceleracji), wyrażony w sekundach.",
+  "Eccentric Mean Force [N]": "Średnia siła reakcji podłoża w całej fazie ekscentrycznej (zejście w dół).",
+  "Eccentric Peak Force [N]": "Szczytowa (maksymalna) siła reakcji podłoża w fazie ekscentrycznej — zwykle w momencie największego wyhamowania ruchu w dół.",
+  "Eccentric Peak Force / BM [N/kg]": "Szczytowa siła ekscentryczna podzielona przez masę ciała.",
+  "Eccentric Mean Power [W]": "Średnia moc w fazie ekscentrycznej — odzwierciedla intensywność pracy mięśni podczas zejścia w dół.",
+  "Eccentric Mean Power / BM [W/kg]": "Średnia moc ekscentryczna podzielona przez masę ciała.",
+  "Eccentric Peak Power [W]": "Szczytowa moc zarejestrowana w fazie ekscentrycznej — moment najintensywniejszej pracy mięśni podczas hamowania ruchu w dół.",
+  "Eccentric Peak Power / BM [W/kg]": "Szczytowa moc ekscentryczna podzielona przez masę ciała.",
+  "Minimum Eccentric Force [N]": "Najniższa siła reakcji podłoża w podfazie odciążenia (unweighting) — moment, gdy zawodnik aktywnie 'odciąża' nogi na starcie ruchu w dół, zanim zacznie hamować.",
+  "Force at Peak Power [N]": "Siła reakcji podłoża dokładnie w momencie, w którym moc osiąga wartość szczytową.",
+  "Eccentric Deceleration Impulse [N s]": "Impuls siły (siła × czas) w podfazie hamowania — łączna 'dawka' siły potrzebna do zatrzymania ruchu w dół i przygotowania do odbicia.",
+  "Eccentric Deceleration Impulse / BM [N s/kg]": "Impuls hamowania podzielony przez masę ciała.",
+  "Eccentric Deceleration Mean Force [N]": "Średnia siła w podfazie hamowania (deceleracji).",
+  "Eccentric Mean Braking Force [N]": "Miara intensywności wyhamowywania ruchu w dół tuż przed odbiciem, analogiczna do średniej siły hamowania.",
+  "Eccentric Deceleration RFD [N/s]": "Tempo narastania siły (Rate of Force Development) w podfazie hamowania — jak szybko rośnie siła podczas wyhamowywania ruchu w dół. Wyższe wartości = bardziej gwałtowna, 'sztywna' reakcja mięśniowo-ścięgnista.",
+  "Eccentric Deceleration RFD / BM [N/s/kg]": "Tempo narastania siły w podfazie hamowania podzielone przez masę ciała.",
+  "Concentric Impulse [N s]": "Impuls siły (siła × czas) w całej fazie koncentrycznej (napędowej) — kluczowy wyznacznik wysokości skoku liczonej metodą impulsowo-pędową: im większy impuls względem masy ciała, tym wyższy skok.",
+  "Concentric Impulse (Abs) / BM [N s/kg]": "Impuls koncentryczny podzielony przez masę ciała — wartość względna, porównywalna między zawodnikami.",
+  "P1 Concentric Impulse [N s]": "Impuls siły w pierwszej podfazie koncentrycznej (P1) — od najniższego punktu przysiadu do pierwszego lokalnego szczytu siły. Dotyczy skoków z dwuszczytową (bimodalną) krzywą siła-czas w fazie napędowej.",
+  "P2 Concentric Impulse [N s]": "Impuls siły w drugiej podfazie koncentrycznej (P2) — od pierwszego do drugiego szczytu siły, tuż przed oderwaniem od platformy.",
+  "Concentric Mean Force [N]": "Średnia siła reakcji podłoża w całej fazie koncentrycznej (napędowej).",
+  "Concentric Mean Force / BM [N/kg]": "Średnia siła koncentryczna podzielona przez masę ciała.",
+  "Concentric Peak Force [N]": "Szczytowa (maksymalna) siła reakcji podłoża w fazie koncentrycznej.",
+  "Concentric Peak Force / BM [N/kg]": "Szczytowa siła koncentryczna podzielona przez masę ciała.",
+  "Concentric Mean Power [W]": "Średnia moc generowana w fazie koncentrycznej (napędowej).",
+  "Concentric Mean Power / BM [W/kg]": "Średnia moc koncentryczna podzielona przez masę ciała.",
+  "Landing RFD [N/s]": "Tempo narastania siły podczas lądowania po skoku — jak szybko rośnie obciążenie zaraz po kontakcie stóp z platformą.",
+  "Peak Landing Force / BM [N/kg]": "Szczytowa siła lądowania podzielona przez masę ciała — wskaźnik obciążenia stawów i tkanek przy lądowaniu.",
+  "Peak Landing Force [N]": "Szczytowa (maksymalna) siła reakcji podłoża zarejestrowana w momencie lądowania po skoku.",
+};
+
+// Definicje dla par L/R w sekcji "Asymetria lewa/prawa" — klucz = p.label (bez jednostki, bez Left/Right)
+const PAIR_DEFS = {
+  "Concentric Impulse": "Impuls siły w fazie koncentrycznej (napędowej), liczony osobno dla lewej i prawej nogi — porównanie pokazuje, czy obie nogi wnoszą podobny wkład w impuls napędzający wyskok. Jedna z metryk najczulszych na wykrywanie deficytów po urazach kończyny dolnej w testach CMJ.",
+  "P1 Concentric Impulse": "Impuls siły w pierwszej podfazie koncentrycznej (P1), osobno dla lewej i prawej nogi.",
+  "P2 Concentric Impulse": "Impuls siły w drugiej podfazie koncentrycznej (P2), osobno dla lewej i prawej nogi.",
+  "Concentric Peak Force": "Szczytowa siła w fazie koncentrycznej, osobno dla lewej i prawej nogi. Jedna z metryk najczęściej monitorowanych przy powrocie do sportu po urazie kończyny dolnej — asymetria w fazie odbicia bywa obecna nawet u zawodników formalnie dopuszczonych do gry.",
+  "Eccentric Deceleration Impulse": "Impuls siły w podfazie hamowania (deceleracji), osobno dla lewej i prawej nogi — pokazuje, czy obie nogi hamują ruch w dół z podobną intensywnością. Jedna z metryk czulszych na deficyty po urazach kończyny dolnej niż same czasy trwania faz.",
+  "Eccentric Deceleration RFD": "Tempo narastania siły w podfazie hamowania, osobno dla lewej i prawej nogi. Razem z impulsem hamowania — jedna z bardziej czułych metryk przy wykrywaniu deficytów po urazie.",
+  "Eccentric Mean Force": "Średnia siła w fazie ekscentrycznej, osobno dla lewej i prawej nogi.",
+  "Eccentric Peak Force": "Szczytowa siła w fazie ekscentrycznej, osobno dla lewej i prawej nogi. Istotna przy ocenie gotowości po urazie — pokazuje, czy noga operowana/kontuzjowana przyjmuje obciążenie hamowania na równi z drugą.",
+  "Peak Landing Force": "Szczytowa siła lądowania, osobno dla lewej i prawej nogi — duża asymetria może wskazywać na preferowanie jednej nogi przy amortyzacji lądowania. Przy powrocie po urazie to jedna z kluczowych metryk do obserwacji — asymetria lądowania często utrzymuje się nawet po formalnym dopuszczeniu do gry.",
+  "Avg Braking Force": "Średnia siła w podfazie hamowania (braking), liczona przez platformę osobno dla każdej nogi.",
+  "Avg Braking Power": "Średnia moc w podfazie hamowania, osobno dla każdej nogi.",
+  "Avg Eccentric Power (total)": "Średnia moc w całej fazie ekscentrycznej (od startu ruchu do najniższego punktu przysiadu), osobno dla każdej nogi.",
+  "Avg Propulsive Force": "Średnia siła w fazie napędowej (koncentrycznej), osobno dla każdej nogi.",
+  "Avg Propulsive Power": "Średnia moc w fazie napędowej, osobno dla każdej nogi.",
+  "Avg RFD": "Średnie tempo narastania siły w całym ruchu, osobno dla każdej nogi.",
+  "Braking RFD": "Tempo narastania siły w całej podfazie hamowania, osobno dla każdej nogi.",
+  "Braking Work": "Praca mechaniczna (w dżulach) wykonana w podfazie hamowania — ile energii zaabsorbowano przy wyhamowywaniu ruchu w dół, osobno dla każdej nogi.",
+  "Eccentric Impulse (total)": "Impuls siły w całej fazie ekscentrycznej (szerszy zakres niż tylko podfaza hamowania), osobno dla każdej nogi.",
+  "Eccentric RFD": "Tempo narastania siły w całej fazie ekscentrycznej, osobno dla każdej nogi.",
+  "Eccentric Work": "Praca mechaniczna wykonana/zaabsorbowana w całej fazie ekscentrycznej, osobno dla każdej nogi.",
+  "Landing RFD 0-20ms": "Tempo narastania siły w pierwszych 20 ms od kontaktu z podłożem przy lądowaniu — pokazuje 'natychmiastową sztywność' lądowania danej nogi.",
+  "Landing RFD 0-40ms": "Tempo narastania siły w pierwszych 40 ms od kontaktu z podłożem przy lądowaniu, osobno dla każdej nogi.",
+  "Landing RFD 0-60ms": "Tempo narastania siły w pierwszych 60 ms od kontaktu z podłożem przy lądowaniu, osobno dla każdej nogi.",
+  "Landing RFD 0-80ms": "Tempo narastania siły w pierwszych 80 ms od kontaktu z podłożem przy lądowaniu, osobno dla każdej nogi.",
+  "Net Impulse (total contact)": "Łączny impuls siły netto (ponad ciężar ciała) przez cały czas kontaktu z platformą — obejmuje fazę ekscentryczną i koncentryczną razem, osobno dla każdej nogi.",
+  "Peak Braking Force": "Szczytowa siła w podfazie hamowania, osobno dla każdej nogi.",
+  "Peak Braking Power": "Szczytowa moc w podfazie hamowania, osobno dla każdej nogi.",
+  "Peak Eccentric Power (total)": "Szczytowa moc w całej fazie ekscentrycznej, osobno dla każdej nogi.",
+  "Peak Propulsive Power": "Szczytowa moc w fazie napędowej (koncentrycznej), osobno dla każdej nogi — odpowiednik ogólnego Peak Power liczony per noga.",
+  "Propulsive RFD": "Tempo narastania siły w fazie napędowej, osobno dla każdej nogi.",
+  "Propulsive Work": "Praca mechaniczna wykonana w fazie napędowej — ile energii wygenerowano do wybicia, osobno dla każdej nogi.",
+  "Time to Peak Braking Force": "Czas od kontaktu/startu ruchu do osiągnięcia szczytowej siły w podfazie hamowania, osobno dla każdej nogi.",
+  "Time to Peak Braking Power": "Czas do osiągnięcia szczytowej mocy w podfazie hamowania, osobno dla każdej nogi.",
+  "Time to Peak Eccentric Force": "Czas do osiągnięcia szczytowej siły w fazie ekscentrycznej, osobno dla każdej nogi.",
+  "Time to Peak Eccentric Power": "Czas do osiągnięcia szczytowej mocy w fazie ekscentrycznej, osobno dla każdej nogi.",
+  "Time to Peak Force (total)": "Czas od startu ruchu do osiągnięcia szczytowej siły w całym skoku, osobno dla każdej nogi.",
+  "Time to Peak Landing Force": "Czas od kontaktu z podłożem przy lądowaniu do osiągnięcia szczytowej siły lądowania — krótszy czas oznacza gwałtowniejsze, 'twardsze' lądowanie danej nogi.",
+  "Time to Peak Power (total)": "Czas od startu ruchu do osiągnięcia szczytowej mocy w całym skoku, osobno dla każdej nogi.",
+  "Time to Peak Propulsive Force": "Czas do osiągnięcia szczytowej siły w fazie napędowej, osobno dla każdej nogi.",
+  "Time to Peak Propulsive Power": "Czas do osiągnięcia szczytowej mocy w fazie napędowej, osobno dla każdej nogi.",
+  "Avg Landing RFD": "Średnie tempo narastania siły podczas całego okresu lądowania, osobno dla każdej nogi.",
+};
+
+// Definicje dla wierszy porównania P1/P2 — klucz = p.label (Avg Force, Peak Power, ...)
+const P1P2_DEFS = {
+  "Avg Force": "Średnia siła w danej podfazie koncentrycznej (P1 lub P2) krzywej siła-czas — dotyczy skoków z dwuszczytowym (bimodalnym) wzorcem generowania siły w fazie napędowej.",
+  "Avg Power": "Średnia moc w danej podfazie koncentrycznej (P1 lub P2).",
+  "Avg Velocity": "Średnia prędkość środka masy ciała w danej podfazie koncentrycznej (P1 lub P2).",
+  "Duration": "Czas trwania danej podfazy koncentrycznej (P1 lub P2).",
+  "Peak Force": "Szczytowa siła w danej podfazie koncentrycznej (P1 lub P2) — to właśnie ten punkt wyznacza granicę między P1 a P2.",
+  "Peak Power": "Szczytowa moc w danej podfazie koncentrycznej (P1 lub P2).",
+  "Peak Velocity": "Szczytowa prędkość w danej podfazie koncentrycznej (P1 lub P2).",
+};
+
+const SECTION_DEFS = {
+  "🔀 Porównanie faz P1 / P2": "Niektóre skoki CMJ mają dwuszczytową (bimodalną) krzywą siła-czas w fazie odbicia: pierwszy szczyt siły (P1) i drugi szczyt (P2), rozdzielone lokalnym spadkiem. Kolumna z mnożnikiem pokazuje stosunek P2:P1 — wartość bliska 1 oznacza podobny wkład obu podfaz.",
+  "⚖️ Asymetria lewa / prawa": "Porównanie tej samej metryki liczonej osobno dla lewej i prawej nogi. Odznaka procentowa to wskaźnik asymetrii (Limb Symmetry Index): 0% = pełna symetria, im wyżej, tym większa różnica między nogami. Zielony <10%, żółty 10–15%, czerwony ≥15% (progi wg literatury, m.in. Bishop i wsp. 2018) — zbliżone do ok. 90% symetrii, powszechnie używanej jako orientacyjny punkt odniesienia przy powrocie do sportu po urazie (np. rekonstrukcja ACL). Ważne zastrzeżenie: ten punkt odniesienia pochodzi głównie z testów skoku jednonóż, a nie z CMJ obunóż jak tutaj — w CMJ asymetria bywa większa i bardziej zmienna, i nawet zawodnicy formalnie dopuszczeni do gry często wciąż ją pokazują, zwłaszcza w fazie odbicia (koncentrycznej) i przy lądowaniu. Dla zawodnika po urazie najbardziej wartościowe do śledzenia są pary siłowe i impulsowe (np. Concentric/Eccentric Peak Force, Eccentric Deceleration Impulse, Peak Landing Force) — same różnice w czasach trwania faz mają mniejsze znaczenie kliniczne. Traktuj to jako jeden sygnał do rozmowy z fizjoterapeutą/lekarzem, nie jako samodzielne kryterium dopuszczenia do gry.",
+};
+
+function getTip(dict, key) {
+  const v = dict[key];
+  return v ? v : "Brak opisu tej metryki w słowniku aplikacji.";
+}
+// BLOK 2 — silnik analizy + historia per zawodnik (pelny snapshot kazdego testu)
+
+const HISTORY_KEY = "cmj_analyzer_history_v2";
+// Historia CMJ Single Leg jest CELOWO trzymana w OSOBNEJ bazie/kluczu - skoku jednonóż
+// (np. wysokosc, sily) nie da sie sensownie usredniac razem z dwunoznym, wiec nie moze
+// trafic do tej samej tablicy co historia Dual Leg. Kazdy wpis ma dodatkowo legStance
+// ("left"/"right"), a jeden zawodnik ma JEDNA tablice z testami OBU nog razem (do wyboru
+// w selektorze porownania), nie osobna baze per noga.
+const HISTORY_KEY_SINGLE = "cmj_analyzer_singleleg_history_v1";
+
+function loadHistoryFrom(key) {
+  try { return JSON.parse(localStorage.getItem(key) || "{}"); } catch(e) { return {}; }
+}
+function saveHistoryTo(key, h) { localStorage.setItem(key, JSON.stringify(h)); }
+
+function loadHistory() { return loadHistoryFrom(HISTORY_KEY); }
+function saveHistory(h) { saveHistoryTo(HISTORY_KEY, h); }
+function loadSingleLegHistory() { return loadHistoryFrom(HISTORY_KEY_SINGLE); }
+function saveSingleLegHistory(h) { saveHistoryTo(HISTORY_KEY_SINGLE, h); }
+
+function buildHistoryEntry(rec, result) {
+  const values = result.values;
+  return {
+    date: rec.date ? rec.date.toISOString() : null,
+    dateRaw: rec.dateRaw,
+    comment: rec.comment || null,
+    bodyMass: rec.bodyMass ?? null,
+    legStance: rec.legStance || "dual",
+    jumpHeight: values["Jump Height (Imp-Mom) [cm]"],
+    peakPower: values["Peak Power [W]"],
+    peakPowerBM: values["Peak Power / BM [W/kg]"],
+    rsiMod: values["RSI-modified (Imp-Mom) [m/s]"],
+    savedAt: new Date().toISOString(),
+    result: { values: result.values, originalPairs: result.originalPairs, newLR: result.newLR, newP1P2: result.newP1P2 },
+  };
+}
+
+// Zapisuje PELNY wynik testu (values + pary L/R + P1/P2) — nie tylko 4 liczby.
+// Dzieki temu kazdy zapisany test mozna pozniej odtworzyc jako pelny raport
+// oraz liczyc "srednia wlasna" zawodnika dla KAZDEJ metryki, nie tylko headline'owych.
+function addToHistory(rec, result) {
+  const h = loadHistory();
+  const name = rec.name || "Nieznany zawodnik";
+  if (!h[name]) h[name] = [];
+  const entry = buildHistoryEntry(rec, result);
+  h[name] = h[name].filter(e => e.dateRaw !== entry.dateRaw);
+  h[name].push(entry);
+  h[name].sort((a,b) => (a.date||"").localeCompare(b.date||""));
+  saveHistory(h);
+  return h[name];
+}
+
+// To samo, ale dla testow CMJ Single Leg — osobna baza (patrz komentarz przy HISTORY_KEY_SINGLE).
+// Dedup po (dateRaw + legStance), zeby test prawej i lewej nogi zrobiony w tej samej sekundzie
+// (skrajnie rzadkie, ale mozliwe) nie nadpisaly sie nawzajem.
+function addToSingleLegHistory(rec, result) {
+  const h = loadSingleLegHistory();
+  const name = rec.name || "Nieznany zawodnik";
+  if (!h[name]) h[name] = [];
+  const entry = buildHistoryEntry(rec, result);
+  h[name] = h[name].filter(e => !(e.dateRaw === entry.dateRaw && e.legStance === entry.legStance));
+  h[name].push(entry);
+  h[name].sort((a,b) => (a.date||"").localeCompare(b.date||""));
+  saveSingleLegHistory(h);
+  return h[name];
+}
+
+// Wariant dla IMPORTU WSADOWEGO (wiele plikow naraz, patrz renderImportReview): zamiast dedupu po
+// DOKLADNYM dateRaw (jak addToHistory/addToSingleLegHistory przy zwyklym pojedynczym wgraniu),
+// usuwa KAZDY istniejacy wpis z tego samego DNIA kalendarzowego - zeby ponowny import tego
+// samego dnia (np. dolozenie kolejnej proby pozniej) zawsze zastepowal caly dzien jednym, spojnym
+// wpisem zamiast tworzyc duplikaty. NIE dotyka addToHistory/addToSingleLegHistory uzywanych przy
+// zwyklym, pojedynczym wgraniu pliku - te dzialaja dokladnie jak dotychczas.
+function addOrReplaceDayEntry(rec, result) {
+  const isSingleLeg = rec.legStance === "left" || rec.legStance === "right";
+  const h = isSingleLeg ? loadSingleLegHistory() : loadHistory();
+  const name = rec.name || "Nieznany zawodnik";
+  if (!h[name]) h[name] = [];
+  const entry = buildHistoryEntry(rec, result);
+  const newDay = dayKeyOf(rec);
+  h[name] = h[name].filter(e => !(dayKeyOf(e) === newDay && (!isSingleLeg || e.legStance === entry.legStance)));
+  h[name].push(entry);
+  h[name].sort((a,b) => (a.date||"").localeCompare(b.date||""));
+  if (isSingleLeg) saveSingleLegHistory(h); else saveHistory(h);
+  return h[name];
+}
+
+// --- Porownanie dwoch OKRESOW (grup juz zapisanych testow) ------------------------------------
+// Inaczej niz averageRawMetrics (blok 1) - tam wejsciem sa SUROWE dane platformy z jeszcze
+// niezapisanych plikow (przed policzeniem czegokolwiek). Tutaj wejsciem sa juz POLICZONE wpisy
+// z historii (surowe dane pojedynczych powtorzen juz nie istnieja - historia trzyma tylko wynik
+// koncowy kazdego testu/dnia). Kazdy zapisany test traktujemy jak niezalezna probke i usredniamy
+// go WPROST (to sa rozne dni/sesje, nie powtorzenia tej samej proby) - Z JEDNYM WYJATKIEM: pary
+// lewa/prawa i P1/P2. Tam usredniamy SKLADOWE (left/right, p1/p2) i DOPIERO z nich liczymy
+// %asymetrii/ratio przy renderowaniu - usrednienie juz-gotowych % z kazdego testu osobno byloby
+// "mean of ratios" (ta sama pulapka statystyczna, ktora naprawilismy wczesniej w averageRawMetrics
+// - patrz komentarz przy isPrecomputedRatioKey w bloku 1).
+function averageEntryGroup(entries) {
+  const avgOf = arr => {
+    const v = arr.filter(x => x !== null && x !== undefined && !Number.isNaN(x));
+    return v.length ? v.reduce((a,b)=>a+b,0) / v.length : null;
+  };
+  const byLabel = getArr => {
+    const map = new Map();
+    entries.forEach(e => (getArr(e.result)||[]).forEach(p => { if (!map.has(p.label)) map.set(p.label, []); map.get(p.label).push(p); }));
+    return map;
+  };
+  const avgPairs = getArr => [...byLabel(getArr).entries()].map(([label, ps]) => ({
+    label, unit: ps[0].unit,
+    left: avgOf(ps.map(p=>p.left)), right: avgOf(ps.map(p=>p.right)), combined: avgOf(ps.map(p=>p.combined)),
+  }));
+  const avgOriginalPairs = avgPairs(r => r.originalPairs);
+  const avgNewLR = avgPairs(r => r.newLR);
+  const avgNewP1P2 = [...byLabel(r => r.newP1P2).entries()].map(([label, ps]) => {
+    const p1 = avgOf(ps.map(p=>p.p1)), p2 = avgOf(ps.map(p=>p.p2));
+    return { label, unit: ps[0].unit, p1, p2, ratio: safeDiv(p2, p1) };
+  });
+
+  // Klucze "values" ktore sa gotowym ratio P2:P1 (patrz buildMetricRow) - te NIE usredniamy wprost
+  // (mean of ratios), tylko podmieniamy wynikiem policzonym z avgNewP1P2 (ratio-of-means).
+  const ratioValueKeys = new Set(avgNewP1P2.map(p => `P2:P1 ${p.label} Ratio`));
+  const allKeys = new Set();
+  entries.forEach(e => Object.keys((e.result||{}).values || {}).forEach(k => allKeys.add(k)));
+  const avgValues = {};
+  for (const k of allKeys) {
+    if (ratioValueKeys.has(k)) continue;
+    avgValues[k] = avgOf(entries.map(e => (e.result||{}).values ? e.result.values[k] : undefined));
+  }
+  avgNewP1P2.forEach(p => { avgValues[`P2:P1 ${p.label} Ratio`] = p.ratio; });
+
+  const sorted = entries.slice().sort((a,b) => (a.date||"").localeCompare(b.date||""));
+  return {
+    n: entries.length,
+    dateRaws: sorted.map(e => e.dateRaw),
+    jumpHeight: avgOf(entries.map(e=>e.jumpHeight)),
+    peakPower: avgOf(entries.map(e=>e.peakPower)),
+    peakPowerBM: avgOf(entries.map(e=>e.peakPowerBM)),
+    rsiMod: avgOf(entries.map(e=>e.rsiMod)),
+    bodyMass: avgOf(entries.map(e=>e.bodyMass)),
+    result: { values: avgValues, originalPairs: avgOriginalPairs, newLR: avgNewLR, newP1P2: avgNewP1P2 },
+  };
+}
+
+function asymmetryPct(left, right) {
+  if (left === null || right === null || left === undefined || right === undefined) return null;
+  if (left === 0 && right === 0) return 0;
+  const denom = Math.max(left, right);
+  if (denom === 0) return null;
+  return (1 - Math.min(left,right)/denom) * 100;
+}
+
+function classifyAsymmetry(pct) {
+  if (pct === null) return "na";
+  if (pct >= 15) return "bad";
+  if (pct >= 10) return "warn";
+  return "ok";
+}
+
+// Buduje jedna "pare" do RAPORTU POROWNAWCZEGO Single Leg (dwa ZAPISANE testy zestawione
+// obok siebie metryka-po-metryce) - wspolna logika uzywana zarowno przez raport na ekranie,
+// jak i przez PDF dla klienta, zeby liczby i klasyfikacja (ok/warn/bad) byly zawsze identyczne.
+function buildLegComparePair(field, valueA, valueB) {
+  const digits = (field.includes("[m/s]") || field.includes("Ratio")) ? 2 : 1;
+  const pct = asymmetryPct(valueA, valueB);
+  const cls = classifyAsymmetry(pct);
+  return { field, valueA, valueB, pct, cls, digits };
+}
+
+function fmt(v, digits=1) {
+  if (v === null || v === undefined || Number.isNaN(v)) return "—";
+  return Number(v).toLocaleString("pl-PL", { minimumFractionDigits: digits, maximumFractionDigits: digits });
+}
+
+// --- Kolorowanie "wg wlasnej historii" (bez zadnych zalozen populacyjnych) ---
+//
+// Dla tej wąskiej listy metryk kierunek "lepiej/gorzej" jest jednoznaczny w biomechanice
+// (to bezposrednie wyzniczniki wyniku skoku - wiecej = lepiej), wiec mozemy pokolorowac
+// kierunkowo (spadek wzgledem wlasnej sredniej = ostrzezenie).
+const HIGHER_IS_BETTER = new Set([
+  "Jump Height (Imp-Mom) [cm]",
+  "Peak Power [W]",
+  "Peak Power / BM [W/kg]",
+  "RSI-modified (Imp-Mom) [m/s]",
+  "Concentric Peak Velocity [m/s]",
+]);
+
+// Srednia z poprzednich testow (bez biezacego) dla danej metryki + liczba probek, na ktorej sie ona opiera.
+function historyAvg(prevEntries, key) {
+  const vals = prevEntries
+    .map(e => e.result && e.result.values ? e.result.values[key] : undefined)
+    .filter(v => v !== null && v !== undefined && !Number.isNaN(v));
+  if (vals.length === 0) return null;
+  const avg = vals.reduce((a,b)=>a+b,0) / vals.length;
+  return { avg, n: vals.length };
+}
+
+// Zwraca {cls, pct, n} do pokolorowania komorki metryki wzgledem wlasnej historii zawodnika.
+// cls: "na" (brak punktu odniesienia), "ok" / "warn" / "bad" (metryki kierunkowe),
+//      "neutral" (odbiega od normy, ale bez oceny dobry/zly - metryki bez ustalonego kierunku).
+function classifyVsOwnHistory(currentVal, prevEntries, key) {
+  if (currentVal === null || currentVal === undefined) return { cls: "na", pct: null, n: 0 };
+  const stats = historyAvg(prevEntries, key);
+  if (!stats || stats.avg === 0) return { cls: "na", pct: null, n: stats ? stats.n : 0 };
+  const pct = (currentVal - stats.avg) / stats.avg * 100;
+  if (HIGHER_IS_BETTER.has(key)) {
+    let cls = "ok";
+    if (pct <= -15) cls = "bad";
+    else if (pct <= -8) cls = "warn";
+    return { cls, pct, n: stats.n };
+  }
+  // metryka bez ustalonego kierunku "lepiej/gorzej" -> tylko neutralna flaga odchylenia
+  const cls = Math.abs(pct) >= 15 ? "neutral" : "na";
+  return { cls, pct, n: stats.n };
+}
+
+// Klasyfikuje ZMIANE wartosci metryki MIEDZY OKRESAMI (pierwszy wybrany okres -> ostatni wybrany
+// okres) w Porownaniu okresow - w PRZECIWIENSTWIE do asymmetryPct/classifyAsymmetry (ktore mierza
+// wylacznie ODLEGLOSC miedzy dwiema liczbami, bez kierunku - trafne dla asymetrii lewa/prawa,
+// gdzie "ktora noga pierwsza" nie ma znaczenia, ale MYLACE tutaj: 20% POPRAWY i 20% POGORSZENIA
+// dostawaloby identyczna czerwona odznake). Uzywa DOKLADNIE tej samej logiki i tych samych progow
+// -8%/-15% co juz istniejace classifyVsOwnHistory (i tego samego zbioru HIGHER_IS_BETTER) - tylko
+// punktem odniesienia jest PIERWSZY wybrany okres zamiast sredniej z calej historii.
+function classifyPeriodChange(pct, key) {
+  if (pct === null) return "na";
+  if (HIGHER_IS_BETTER.has(key)) {
+    if (pct <= -15) return "bad";
+    if (pct <= -8) return "warn";
+    return "ok";
+  }
+  return Math.abs(pct) >= 15 ? "neutral" : "na";
+}
+
+// Buduje jeden wiersz siatki metryk w Porownaniu WIELU okresow (N>=2) - odpowiednik
+// buildLegComparePair, ale dla dowolnej liczby okresow zamiast dokladnie 2, i z PODPISANA
+// (kierunkowa) % zmiana zamiast symetrycznej "odleglosci" asymmetryPct - patrz komentarz przy
+// classifyPeriodChange. Punkt odniesienia to zawsze PIERWSZY okres z dostepnymi danymi dla tej
+// metryki, cel to OSTATNI okres z dostepnymi danymi (pomija okresy z brakiem danych po drodze,
+// zamiast psuc caly wiersz).
+function buildPeriodMetricRow(field, values) {
+  const digits = (field.includes("[m/s]") || field.includes("Ratio")) ? 2 : 1;
+  const isValid = v => v !== null && v !== undefined && !Number.isNaN(v);
+  const firstIdx = values.findIndex(isValid);
+  let lastIdx = -1;
+  for (let i = values.length - 1; i >= 0; i--) { if (isValid(values[i])) { lastIdx = i; break; } }
+  let pct = null;
+  if (firstIdx !== -1 && lastIdx !== -1) {
+    if (firstIdx === lastIdx) pct = 0; // tylko jeden okres ma dane dla tej metryki
+    else if (values[firstIdx] !== 0) pct = (values[lastIdx] - values[firstIdx]) / values[firstIdx] * 100;
+  }
+  const cls = classifyPeriodChange(pct, field);
+  return { field, values, pct, cls, digits };
+}
+
+// --- Zalecenia treningowe/fizjoterapeutyczne ---
+// Uzywane WYLACZNIE w sekcji "Krotka analiza i zalecenia".
+// Bez odnosnikow do badaczy/badan - konkretne cwiczenia (nazwy po angielsku, standardowa
+// terminologia S&C), dobrane tak, zeby kazde faktycznie oddzialywalo na dana faze/mechanizm
+// (np. AEL/reactive jumps -> faza ekscentryczna, depth/box jump -> moc koncentryczna,
+// tuck jump/DVJ z cue miekkiego ladowania -> sily ladowania, unilateral compound -> asymetria).
+
+const ASYM_TRAINING_REC = "Trening jednostronny, zaczynany od słabszej nogi (3 serie vs. 1 seria na dominującej): Bulgarian Split Squat, Box Step-Up, Single-Leg Calf Raise (siła) oraz Single-Leg Lateral Jump, Single-Leg Continuous Hop (moc/plyometria).";
+
+const DOMAIN_RECS = {
+  eccentric: "Skup się na fazie ekscentrycznej: Accentuated Eccentric Loading (AEL) Squat Jump (dociążenie zrzucane tuż przed fazą koncentryczną), Repeated/Continuous Countermovement Jumps (bez przerwy między odbiciami) oraz Tempo Back Squat (3-4s kontrolowane opuszczanie).",
+  concentric: "Skup się na fazie koncentrycznej: Depth Jump, Box Jump oraz Loaded Jump Squat (sztanga/trap bar, lekkie-średnie obciążenie, ruch maksymalnie eksplozywny).",
+  landing: "Skup się na technice lądowania: Tuck Jump z korektą techniki lądowania, Drop Vertical Jump z instrukcją miękkiego lądowania (przetoczenie pięta-śródstopie, większe zgięcie kolan i bioder) oraz Depth Drop to Stick Landing (utrzymanie pozycji 2-3s po lądowaniu).",
+  general: "Sprawdź, w której fazie ruchu różnica jest największa i dobierz ćwiczenia jednonóż celowane w tę fazę, np. Single-Leg Squat.",
+};
+
+const RSI_REC = "Progresywny Depth Jump / Drop Jump — zacznij od niskiej wysokości zeskoku (ok. 20-30 cm) i zwiększaj ją stopniowo, z naciskiem na jak najkrótszy czas kontaktu z podłożem, a nie samą wysokość wyskoku.";
+
+function metricDomain(label) {
+  const l = String(label).toLowerCase();
+  if (l.includes("landing")) return "landing";
+  if (l.includes("eccentric") || l.includes("braking")) return "eccentric";
+  if (l.includes("concentric") || l.includes("propulsive")) return "concentric";
+  return "general";
+}
+
+function dominantDomain(pairs) {
+  const counts = {};
+  for (const p of pairs) { const d = metricDomain(p.label); counts[d] = (counts[d]||0) + 1; }
+  let best = "general", bestN = 0;
+  for (const [d, n] of Object.entries(counts)) { if (n > bestN) { best = d; bestN = n; } }
+  return best;
+}
+
+// currentStats: {jumpHeight, peakPower, rsiMod} testu, ktory wyswietlamy
+// otherEntries: wszystkie POZOSTALE zapisane testy tego zawodnika (bez biezacego), niezaleznie od chronologii
+function buildAnalysisFull(result, currentStats, otherEntries) {
+  const items = [];
+  const { originalPairs, newLR } = result;
+  const allAsymPairs = [...originalPairs, ...newLR];
+
+  const withPct = allAsymPairs.map(p => ({...p, pct: asymmetryPct(p.left, p.right)}));
+  const flagged = withPct.filter(p => p.pct !== null && p.pct >= 10).sort((a,b) => b.pct - a.pct);
+  const rankedAll = withPct.filter(p => p.pct !== null).sort((a,b) => b.pct - a.pct);
+  const worst = rankedAll[0] || null;
+
+  const severe = flagged.filter(p => p.pct >= 15);
+  const moderate = flagged.filter(p => p.pct >= 10 && p.pct < 15);
+
+  // Zawsze na gorze: konkretne liczby z TEGO testu, zeby raport nigdy nie byl
+  // identyczny miedzy roznymi testami/zawodnikami nawet gdy nic nie jest "odznaczone".
+  const summaryParts = [];
+  if (currentStats.jumpHeight != null) summaryParts.push(`wysokość skoku ${fmt(currentStats.jumpHeight)} cm`);
+  if (currentStats.peakPower != null) summaryParts.push(`Peak Power ${fmt(currentStats.peakPower,0)} W`);
+  if (currentStats.rsiMod != null) summaryParts.push(`RSI-mod ${fmt(currentStats.rsiMod,2)}`);
+  if (worst) summaryParts.push(`największa asymetria L/P: ${worst.label} (${fmt(worst.pct,0)}%)`);
+  if (summaryParts.length > 0) {
+    items.push({ icon: "📋", level: "info", text: `<b>Ten test:</b> ${summaryParts.join(", ")}.` });
+  }
+
+  if (severe.length > 0) {
+    const dom = dominantDomain(severe);
+    items.push({
+      icon: "🔴", level: "bad",
+      text: `<b>${severe.length} ${severe.length===1?"metryka pokazuje":"metryk pokazuje"} istotną asymetrię (≥15%)</b>: ${severe.slice(0,4).map(p=>`${p.label} (${fmt(p.pct,0)}%)`).join(", ")}${severe.length>4?"...":""}. Taki poziom asymetrii wiąże się z wolniejszym sprintem/skokiem i wyższym ryzykiem urazu — warto to zweryfikować z fizjoterapeutą/trenerem przygotowania motorycznego. Dla porównania: przy powrocie do sportu po urazie orientacyjnym punktem odniesienia bywa ok. 90% symetrii (≤10% różnicy) w testach siłowych/skocznościowych — tutaj największa różnica (${severe[0].label}) sięga ${fmt(severe[0].pct,0)}%, czyli wyraźnie powyżej tego punktu.<br><b>Zalecenie:</b> ${ASYM_TRAINING_REC} ${DOMAIN_RECS[dom]}`,
+    });
+  }
+  if (moderate.length > 0) {
+    const dom = dominantDomain(moderate);
+    items.push({
+      icon: "🟡", level: "warn",
+      text: `<b>${moderate.length} ${moderate.length===1?"metryka":"metryk"} w strefie obserwacji (10–15%)</b>: ${moderate.slice(0,4).map(p=>`${p.label} (${fmt(p.pct,0)}%)`).join(", ")}${moderate.length>4?"...":""}. To okolice progu ok. 90% symetrii, który bywa orientacyjnym punktem odniesienia przy powrocie do sportu po urazie — nie jest to jeszcze poziom alarmowy, ale warto śledzić trend przy kolejnych testach.<br><b>Zalecenie:</b> ${DOMAIN_RECS[dom]}`,
+    });
+  }
+  if (flagged.length === 0) {
+    items.push({
+      icon: "🟢", level: "good",
+      text: worst
+        ? `<b>Brak istotnych asymetrii lewa/prawa</b> — wszystkie porównywalne metryki poniżej 10%, największa różnica to ${worst.label} na poziomie ${fmt(worst.pct,0)}%.`
+        : "<b>Brak istotnych asymetrii lewa/prawa</b> (wszystkie porównywalne metryki poniżej 10%).",
+    });
+  }
+
+  if (otherEntries && otherEntries.length > 0) {
+    const avg = key => {
+      const vals = otherEntries.map(e => e[key]).filter(v => v !== null && v !== undefined);
+      if (vals.length === 0) return null;
+      return vals.reduce((a,b)=>a+b,0) / vals.length;
+    };
+    const checks = [
+      { key: "jumpHeight", label: "Wysokość skoku (Imp-Mom)", unit: "cm", domain: "concentric" },
+      { key: "peakPower", label: "Peak Power", unit: "W", domain: "concentric" },
+      { key: "rsiMod", label: "RSI-modified", unit: "", domain: "rsi" },
+    ];
+    for (const c of checks) {
+      const avgVal = avg(c.key);
+      const curVal = currentStats[c.key];
+      if (avgVal !== null && curVal !== null && curVal !== undefined && avgVal !== 0) {
+        const diffPct = (curVal - avgVal) / avgVal * 100;
+        if (diffPct <= -10) {
+          const longTermRec = c.domain === "rsi" ? RSI_REC : DOMAIN_RECS.concentric;
+          items.push({ icon: "📉", level: "warn", text: `<b>${c.label} spadł o ${fmt(Math.abs(diffPct),0)}%</b> względem średniej ${otherEntries.length} ${otherEntries.length===1?"innego zapisanego testu":"innych zapisanych testów"} tego zawodnika na tym urządzeniu (${fmt(avgVal)} → ${fmt(curVal)} ${c.unit}). Może to sygnalizować zmęczenie nerwowo-mięśniowe — warto rozważyć lżejszą jednostkę lub dodatkową regenerację.<br><b>Jeśli spadek utrzyma się</b> w kolejnych testach (nie tylko chwilowe zmęczenie): ${longTermRec}` });
+        } else if (diffPct >= 10) {
+          items.push({ icon: "📈", level: "good", text: `<b>${c.label} wzrósł o ${fmt(diffPct,0)}%</b> względem średniej historycznej (${fmt(avgVal)} → ${fmt(curVal)} ${c.unit}) — pozytywny sygnał gotowości/formy.` });
+        } else {
+          items.push({ icon: "➖", level: "info", text: `<b>${c.label} stabilne</b> — ${fmt(curVal)} ${c.unit} (${diffPct>=0?"+":""}${fmt(diffPct,0)}% względem średniej ${fmt(avgVal)} ${c.unit} z ${otherEntries.length} ${otherEntries.length===1?"poprzedniego testu":"poprzednich testów"}).` });
+        }
+      }
+    }
+  } else {
+    const parts = [];
+    if (currentStats.jumpHeight != null) parts.push(`wysokość skoku ${fmt(currentStats.jumpHeight)} cm`);
+    if (currentStats.peakPower != null) parts.push(`Peak Power ${fmt(currentStats.peakPower,0)} W`);
+    if (currentStats.rsiMod != null) parts.push(`RSI-mod ${fmt(currentStats.rsiMod,2)}`);
+    items.push({ icon: "ℹ️", level: "info", text: `To pierwszy zapisany wynik tego zawodnika na tym urządzeniu${parts.length?` (${parts.join(", ")})`:""}. Ta wartość staje się punktem odniesienia — kolejne testy pokażą trend i kolorowanie względem tego wyniku.` });
+  }
+
+  // Liczymy tylko PRAWDZIWIE puste pary (bez L/P i bez wartosci lacznej) - te z p.combined
+  // pokazuja realna liczbe w sekcji Asymetria (fallback "brak podzialu L/P"), wiec nie sa
+  // faktycznie "brakujace", tylko pozbawione podzialu na nogi.
+  const missingCount = [...originalPairs, ...newLR].filter(p => p.left===null && p.right===null && p.combined==null).length;
+  if (missingCount > 5) {
+    items.push({ icon: "⚪", level: "info", text: `${missingCount} metryk L/R nie zostało w tym teście podanych przez platformę (puste pola eksportu) — to nie jest błąd, tylko normalna zmienność w zależności od trybu/typu skoku.` });
+  }
+
+  return items;
+}
+
+// Wersja DLA TESTOW CMJ SINGLE LEG. W pliku Single Leg WSZYSTKIE pary lewa/prawa sa puste
+// (na plycie jest tylko jedna noga), wiec sekcja asymetrii L/P jest nieadekwatna i nie jest
+// tu w ogole liczona - inaczej "Krotka analiza" myloby pokazywala falszywe "brak asymetrii"
+// zamiast poprawnego "nie dotyczy". Zostaje tylko porownanie do wlasnej historii (compareEntries
+// to zaznaczone przez trenera testy - moga to byc testy TEJ SAMEJ nogi albo swiadomie
+// wybrany test DRUGIEJ nogi do porownania, dlatego tekst nie zaklada z gory ktorej nogi dotyczy
+// porownanie - to jasno pokazuje juz sam panel wyboru testow nad raportem).
+function buildAnalysisSingleLeg(result, currentStats, otherEntries, legStance) {
+  const items = [];
+  const legLabel = legStance === "right" ? "prawej nogi" : "lewej nogi";
+
+  const summaryParts = [];
+  if (currentStats.jumpHeight != null) summaryParts.push(`wysokość skoku ${fmt(currentStats.jumpHeight)} cm`);
+  if (currentStats.peakPower != null) summaryParts.push(`Peak Power ${fmt(currentStats.peakPower,0)} W`);
+  if (currentStats.rsiMod != null) summaryParts.push(`RSI-mod ${fmt(currentStats.rsiMod,2)}`);
+  if (summaryParts.length > 0) {
+    items.push({ icon: "📋", level: "info", text: `<b>Ten test (${legLabel}):</b> ${summaryParts.join(", ")}.` });
+  }
+
+  if (otherEntries && otherEntries.length > 0) {
+    const avg = key => {
+      const vals = otherEntries.map(e => e[key]).filter(v => v !== null && v !== undefined);
+      if (vals.length === 0) return null;
+      return vals.reduce((a,b)=>a+b,0) / vals.length;
+    };
+    const checks = [
+      { key: "jumpHeight", label: "Wysokość skoku (Imp-Mom)", unit: "cm", domain: "concentric" },
+      { key: "peakPower", label: "Peak Power", unit: "W", domain: "concentric" },
+      { key: "rsiMod", label: "RSI-modified", unit: "", domain: "rsi" },
+    ];
+    for (const c of checks) {
+      const avgVal = avg(c.key);
+      const curVal = currentStats[c.key];
+      if (avgVal !== null && curVal !== null && curVal !== undefined && avgVal !== 0) {
+        const diffPct = (curVal - avgVal) / avgVal * 100;
+        if (diffPct <= -10) {
+          const longTermRec = c.domain === "rsi" ? RSI_REC : DOMAIN_RECS.concentric;
+          items.push({ icon: "📉", level: "warn", text: `<b>${c.label} spadł o ${fmt(Math.abs(diffPct),0)}%</b> względem średniej z zaznaczonych powyżej testów (${fmt(avgVal)} → ${fmt(curVal)} ${c.unit}). Może to sygnalizować zmęczenie nerwowo-mięśniowe lub niepełną gotowość tej kończyny — warto rozważyć lżejszą jednostkę lub dodatkową regenerację.<br><b>Jeśli spadek utrzyma się</b> w kolejnych testach (nie tylko chwilowe zmęczenie): ${longTermRec}` });
+        } else if (diffPct >= 10) {
+          items.push({ icon: "📈", level: "good", text: `<b>${c.label} wzrósł o ${fmt(diffPct,0)}%</b> względem średniej z zaznaczonych powyżej testów (${fmt(avgVal)} → ${fmt(curVal)} ${c.unit}) — pozytywny sygnał gotowości/formy tej kończyny.` });
+        } else {
+          items.push({ icon: "➖", level: "info", text: `<b>${c.label} stabilne</b> — ${fmt(curVal)} ${c.unit} (${diffPct>=0?"+":""}${fmt(diffPct,0)}% względem średniej ${fmt(avgVal)} ${c.unit} z zaznaczonych powyżej testów).` });
+        }
+      }
+    }
+  } else {
+    items.push({ icon: "ℹ️", level: "info", text: `To pierwszy zapisany test ${legLabel} tego zawodnika na tym urządzeniu${summaryParts.length?` (${summaryParts.join(", ")})`:""}. Ta wartość staje się punktem odniesienia — kolejne testy Single Leg pokażą trend względem tego wyniku.` });
+  }
+
+  return items;
+}
+
+// Wersja "wniosku treningowego" DLA DEDYKOWANEGO RAPORTU RTS/KONTUZJA (ekran) - celowo
+// ograniczona do WASKIEGO, wyselekcjonowanego zestawu par L/P (pairs = rtsPairs w
+// renderReportCore, zbudowany wg RTS_PHASE_GROUPS z originalPairs+newLR), bez dlugiego
+// ogona dodatkowych par (LR_METRICS), zeby sygnal nie byl rozmyty. W odroznieniu od
+// buildAnalysisFull/buildClientFindings NAZYWA WPROST, ktora noga jest slabsza w kazdym
+// flagowanym parametrze (nie tylko wielkosc % roznicy) — to byl wprost wyrazony wymog:
+// "jasno pokazane co sie dzieje z prawa a co z lewa noga".
+function buildRtsTakeaway(pairs) {
+  const withPct = pairs.map(p => ({
+    ...p,
+    pct: asymmetryPct(p.left, p.right),
+    weaker: (p.left == null || p.right == null || p.left === p.right) ? null : (p.left < p.right ? "L" : "P"),
+  }));
+  // Niektore pary (patrz PAIR_COMBINED_KEY) nigdy nie maja rozbicia L/P w realnych eksportach -
+  // pct jest wtedy zawsze null. Licznik "z ilu parametrow" w tekscie ponizej ma pokazywac ile
+  // parametrow REALNIE dalo sie ocenic, a nie ilosc wierszy w raporcie - inaczej tekst
+  // sugerowalby ocene tam, gdzie w ogole nie bylo danych do porownania.
+  const evaluable = withPct.filter(p => p.pct !== null);
+  const skipped = pairs.length - evaluable.length;
+  const skippedNote = skipped > 0 ? ` (${skipped} ${skipped===1?"parametr":"parametry"} bez rozbicia L/P w tym pliku, pominięte z oceny — pokazane osobno jako wartość łączna.)` : "";
+  const flagged = evaluable.filter(p => p.pct >= 10).sort((a,b) => b.pct - a.pct);
+  const severe = flagged.filter(p => p.pct >= 15);
+  const moderate = flagged.filter(p => p.pct >= 10 && p.pct < 15);
+
+  if (flagged.length === 0) {
+    return { icon: "🟢", verdict: `Brak istotnej asymetrii lewa/prawa w żadnym z ${evaluable.length} ocenionych parametrów tego raportu (wszystkie poniżej 10%).${skippedNote}`, rec: null };
+  }
+
+  const leftN = flagged.filter(p => p.weaker === "L").length;
+  const rightN = flagged.filter(p => p.weaker === "P").length;
+  const weakerLegText = (leftN > 0 && rightN === 0) ? "lewa noga" : (rightN > 0 && leftN === 0) ? "prawa noga" : "obie nogi (w różnych parametrach)";
+
+  const listText = arr => arr.map(p => `${p.label} (${p.weaker||"–"} słabsza, ${fmt(p.pct,0)}%)`).join(", ");
+  const parts = [];
+  if (severe.length) parts.push(`${severe.length} na poziomie istotnym (≥15%): ${listText(severe)}.`);
+  if (moderate.length) parts.push(`${moderate.length} w strefie obserwacji (10-15%): ${listText(moderate)}.`);
+
+  const dom = dominantDomain(flagged);
+  return {
+    icon: severe.length ? "🔴" : "🟡",
+    verdict: `Wyraźniej słabsza: <b>${weakerLegText}</b>. ${parts.join(" ")}${skippedNote}`,
+    rec: `${ASYM_TRAINING_REC} ${DOMAIN_RECS[dom]}`,
+  };
+}
+
+// Wersja DLA RAPORTU KLIENCKIEGO (PDF): opisuje wylacznie STWIERDZONE PROBLEMY/OBSERWACJE,
+// bez zadnych cwiczen ani zalecen treningowych - formalny, neutralny jezyk.
+// Poprawnie obsluguje przypadek jednego testu (brak otherEntries) - bez zmyslania porownania.
+function buildClientFindings(result, currentStats, otherEntries) {
+  const items = [];
+  const { originalPairs, newLR } = result;
+  const allAsymPairs = [...originalPairs, ...newLR];
+  const withPct = allAsymPairs.map(p => ({...p, pct: asymmetryPct(p.left, p.right)}));
+  const flagged = withPct.filter(p => p.pct !== null && p.pct >= 10).sort((a,b) => b.pct - a.pct);
+  const rankedAll = withPct.filter(p => p.pct !== null).sort((a,b) => b.pct - a.pct);
+  const worst = rankedAll[0] || null;
+  const severe = flagged.filter(p => p.pct >= 15);
+  const moderate = flagged.filter(p => p.pct >= 10 && p.pct < 15);
+
+  const summaryParts = [];
+  if (currentStats.jumpHeight != null) summaryParts.push(`wysokość wyskoku: ${fmt(currentStats.jumpHeight)} cm`);
+  if (currentStats.peakPower != null) summaryParts.push(`moc szczytowa (Peak Power): ${fmt(currentStats.peakPower,0)} W`);
+  if (currentStats.rsiMod != null) summaryParts.push(`wskaźnik reaktywności (RSI-modified): ${fmt(currentStats.rsiMod,2)}`);
+  items.push({
+    label: "Wynik testu",
+    text: summaryParts.length ? `Zarejestrowane wartości główne: ${summaryParts.join(", ")}.` : "Niepełne dane wynikowe testu.",
+  });
+
+  if (severe.length > 0) {
+    items.push({
+      label: "Asymetria kończyn dolnych — poziom istotny",
+      text: `Stwierdzono różnicę pomiędzy kończyną lewą a prawą na poziomie 15% lub wyższym w ${severe.length} ${severe.length===1?"parametrze":"parametrach"}: ${severe.slice(0,6).map(p=>`${p.label} (${fmt(p.pct,0)}%)`).join(", ")}${severe.length>6?" i innych":""}. Różnica tej wielkości jest w literaturze naukowej wiązana z podwyższonym ryzykiem urazu oraz obniżoną efektywnością ruchu.`,
+    });
+  }
+  if (moderate.length > 0) {
+    items.push({
+      label: "Asymetria kończyn dolnych — poziom obserwacyjny",
+      text: `Stwierdzono różnicę pomiędzy kończyną lewą a prawą w przedziale 10–15% w ${moderate.length} ${moderate.length===1?"parametrze":"parametrach"}: ${moderate.slice(0,6).map(p=>`${p.label} (${fmt(p.pct,0)}%)`).join(", ")}${moderate.length>6?" i innych":""}. Różnica nie osiąga poziomu uznawanego za istotny, wskazana jest jednak dalsza obserwacja.`,
+    });
+  }
+  if (flagged.length === 0) {
+    items.push({
+      label: "Asymetria kończyn dolnych",
+      text: worst
+        ? `Nie stwierdzono istotnej różnicy pomiędzy kończyną lewą a prawą — wszystkie porównywalne parametry poniżej 10%. Największa zaobserwowana różnica: ${worst.label} (${fmt(worst.pct,0)}%).`
+        : "Brak wystarczających danych do oceny asymetrii kończyn dolnych w tym teście.",
+    });
+  }
+
+  if (otherEntries && otherEntries.length > 0) {
+    const avg = key => {
+      const vals = otherEntries.map(e => e[key]).filter(v => v !== null && v !== undefined);
+      if (vals.length === 0) return null;
+      return vals.reduce((a,b)=>a+b,0) / vals.length;
+    };
+    const checks = [
+      { key: "jumpHeight", label: "Wysokość wyskoku", unit: "cm" },
+      { key: "peakPower", label: "Moc szczytowa (Peak Power)", unit: "W" },
+      { key: "rsiMod", label: "Wskaźnik reaktywności (RSI-modified)", unit: "" },
+    ];
+    const notes = [];
+    for (const c of checks) {
+      const avgVal = avg(c.key);
+      const curVal = currentStats[c.key];
+      if (avgVal !== null && curVal !== null && curVal !== undefined && avgVal !== 0) {
+        const diffPct = (curVal - avgVal) / avgVal * 100;
+        if (diffPct <= -10) notes.push(`${c.label} niższa o ${fmt(Math.abs(diffPct),0)}% względem średniej z poprzednich testów (${fmt(avgVal)} → ${fmt(curVal)} ${c.unit}).`);
+        else if (diffPct >= 10) notes.push(`${c.label} wyższa o ${fmt(diffPct,0)}% względem średniej z poprzednich testów (${fmt(avgVal)} → ${fmt(curVal)} ${c.unit}).`);
+      }
+    }
+    items.push({
+      label: "Porównanie z wcześniejszymi testami",
+      text: notes.length > 0
+        ? notes.join(" ")
+        : `Wyniki pozostają na stabilnym poziomie względem średniej z ${otherEntries.length} ${otherEntries.length===1?"poprzedniego testu":"poprzednich testów"} tego zawodnika na tym urządzeniu.`,
+    });
+  } else {
+    items.push({
+      label: "Porównanie z wcześniejszymi testami",
+      text: "To pierwszy zarejestrowany test tego zawodnika w systemie — brak jeszcze punktu odniesienia do porównania w czasie. Ocena oparta jest wyłącznie na wyniku bieżącego testu.",
+    });
+  }
+
+  // Metryki, dla ktorych platforma nie eksportuje rozbicia lewa/prawa w tym pliku, ale wartosc
+  // LACZNA jest dostepna (p.combined - patrz buildMetricRow) - sekcja Asymetria pokazuje je z
+  // jasnym oznaczeniem "brak podzialu L/P" zamiast pomijac; PDF dostaje ten sam komunikat.
+  const combinedOnly = allAsymPairs.filter(p => p.left==null && p.right==null && p.combined!=null);
+  if (combinedOnly.length > 0) {
+    items.push({
+      label: "Brak podziału lewa/prawa dla części parametrów",
+      text: `Dla ${combinedOnly.length} ${combinedOnly.length===1?"parametru":"parametrów"} platforma nie eksportowała w tym pliku wartości oddzielnie dla każdej kończyny — dostępna jest tylko wartość łączna: ${combinedOnly.slice(0,8).map(p => `${p.label} ${fmt(p.combined)}`).join(", ")}${combinedOnly.length>8?" i innych":""}. Nie oceniano asymetrii dla tych parametrów w tym teście.`,
+    });
+  }
+
+  return items;
+}
+
+// Wersja DLA RAPORTU KLIENCKIEGO (PDF) testu CMJ SINGLE LEG w trybie SOLO (jeden zapisany
+// test, bez zaznaczonego testu porownawczego) - jak buildClientFindings, ale bez sekcji
+// asymetrii L/P (plik Single Leg zawiera tylko jedna konczyne, wiec nie da sie jej policzyc)
+// i z jasna etykieta, ktorej konczyny dotyczy caly test.
+function buildClientFindingsSingleLeg(result, currentStats, otherEntries, legStance) {
+  const items = [];
+  const legLabel = legStance === "right" ? "prawej" : "lewej";
+
+  const summaryParts = [];
+  if (currentStats.jumpHeight != null) summaryParts.push(`wysokość wyskoku: ${fmt(currentStats.jumpHeight)} cm`);
+  if (currentStats.peakPower != null) summaryParts.push(`moc szczytowa (Peak Power): ${fmt(currentStats.peakPower,0)} W`);
+  if (currentStats.rsiMod != null) summaryParts.push(`wskaźnik reaktywności (RSI-modified): ${fmt(currentStats.rsiMod,2)}`);
+  items.push({
+    label: "Wynik testu",
+    text: summaryParts.length
+      ? `Test jednonóż (kończyna ${legLabel}). Zarejestrowane wartości główne: ${summaryParts.join(", ")}.`
+      : `Test jednonóż (kończyna ${legLabel}). Niepełne dane wynikowe testu.`,
+  });
+
+  if (otherEntries && otherEntries.length > 0) {
+    const avg = key => {
+      const vals = otherEntries.map(e => e[key]).filter(v => v !== null && v !== undefined);
+      if (vals.length === 0) return null;
+      return vals.reduce((a,b)=>a+b,0) / vals.length;
+    };
+    const checks = [
+      { key: "jumpHeight", label: "Wysokość wyskoku", unit: "cm" },
+      { key: "peakPower", label: "Moc szczytowa (Peak Power)", unit: "W" },
+      { key: "rsiMod", label: "Wskaźnik reaktywności (RSI-modified)", unit: "" },
+    ];
+    const notes = [];
+    for (const c of checks) {
+      const avgVal = avg(c.key);
+      const curVal = currentStats[c.key];
+      if (avgVal !== null && curVal !== null && curVal !== undefined && avgVal !== 0) {
+        const diffPct = (curVal - avgVal) / avgVal * 100;
+        if (diffPct <= -10) notes.push(`${c.label} niższa o ${fmt(Math.abs(diffPct),0)}% względem średniej z zaznaczonych poprzednich testów (${fmt(avgVal)} → ${fmt(curVal)} ${c.unit}).`);
+        else if (diffPct >= 10) notes.push(`${c.label} wyższa o ${fmt(diffPct,0)}% względem średniej z zaznaczonych poprzednich testów (${fmt(avgVal)} → ${fmt(curVal)} ${c.unit}).`);
+      }
+    }
+    items.push({
+      label: "Porównanie z wcześniejszymi testami",
+      text: notes.length > 0
+        ? notes.join(" ")
+        : `Wyniki pozostają na stabilnym poziomie względem średniej z ${otherEntries.length} ${otherEntries.length===1?"zaznaczonego poprzedniego testu":"zaznaczonych poprzednich testów"} tego zawodnika na tym urządzeniu.`,
+    });
+  } else {
+    items.push({
+      label: "Porównanie z wcześniejszymi testami",
+      text: `To pierwszy zarejestrowany test kończyny ${legLabel} tego zawodnika w systemie — brak jeszcze punktu odniesienia do porównania w czasie. Ocena oparta jest wyłącznie na wyniku bieżącego testu.`,
+    });
+  }
+
+  items.push({
+    label: "Uwaga",
+    text: "Test jednonóż (Single Leg) nie zawiera oceny asymetrii lewa/prawa w ramach jednego pliku — do tego służy osobny raport porównawczy dwóch zapisanych testów (jeden na każdą kończynę).",
+  });
+
+  return items;
+}
+
+// Wersja DLA RAPORTU KLIENCKIEGO (PDF) RAPORTU POROWNAWCZEGO Single Leg (dwa ZAPISANE testy
+// zestawione obok siebie) - analogicznie do sekcji asymetrii w buildClientFindings, ale
+// oparta na "pairs" z buildLegComparePair (patrz wyzej) i poprawnie nazywajaca to, co faktycznie
+// jest porownywane: asymetria (rozne konczyny) albo zmiana w czasie (ta sama konczyna).
+function buildClientFindingsLegCompare(pairs, sameLeg, legA, legB) {
+  const items = [];
+  const legLabelA = legA === "right" ? "prawej" : "lewej";
+  const legLabelB = legB === "right" ? "prawej" : "lewej";
+
+  items.push({
+    label: "Porównywane testy",
+    text: sameLeg
+      ? `Zestawiono dwa testy tej samej kończyny (${legLabelA}) wykonane w różnych terminach — poniższe różnice pokazują zmianę w czasie (progres/regres), a nie asymetrię lewa/prawa.`
+      : `Zestawiono test kończyny ${legLabelA} z testem kończyny ${legLabelB} — poniższe różnice pokazują asymetrię pomiędzy kończynami, na tych samych zasadach co w standardowym raporcie CMJ dwunóż.`,
+  });
+
+  const withPct = (pairs || []).filter(p => p.pct !== null).sort((a,b) => b.pct - a.pct);
+  const severe = withPct.filter(p => p.pct >= 15);
+  const moderate = withPct.filter(p => p.pct >= 10 && p.pct < 15);
+  const worst = withPct[0] || null;
+  const noun = sameLeg ? "różnicę w czasie" : "różnicę pomiędzy kończynami";
+  const heading = sameLeg ? "Zmiana w czasie" : "Asymetria kończyn dolnych";
+
+  if (severe.length > 0) {
+    items.push({
+      label: `${heading} — poziom istotny`,
+      text: `Stwierdzono ${noun} na poziomie 15% lub wyższym w ${severe.length} ${severe.length===1?"parametrze":"parametrach"}: ${severe.slice(0,6).map(p=>`${p.field} (${fmt(p.pct,0)}%)`).join(", ")}${severe.length>6?" i innych":""}.${sameLeg ? "" : " Różnica tej wielkości jest w literaturze naukowej wiązana z podwyższonym ryzykiem urazu oraz obniżoną efektywnością ruchu."}`,
+    });
+  }
+  if (moderate.length > 0) {
+    items.push({
+      label: `${heading} — poziom obserwacyjny`,
+      text: `Stwierdzono ${noun} w przedziale 10–15% w ${moderate.length} ${moderate.length===1?"parametrze":"parametrach"}: ${moderate.slice(0,6).map(p=>`${p.field} (${fmt(p.pct,0)}%)`).join(", ")}${moderate.length>6?" i innych":""}. Różnica nie osiąga poziomu uznawanego za istotny, wskazana jest jednak dalsza obserwacja.`,
+    });
+  }
+  if (severe.length === 0 && moderate.length === 0) {
+    items.push({
+      label: heading,
+      text: worst
+        ? `Nie stwierdzono istotnej ${noun} — wszystkie porównywalne parametry poniżej 10%. Największa zaobserwowana różnica: ${worst.field} (${fmt(worst.pct,0)}%).`
+        : "Brak wystarczających wspólnych danych do porównania obu testów.",
+    });
+  }
+
+  return items;
+}
+
+// Wersja DLA RAPORTU KLIENCKIEGO (PDF) dedykowanego Raportu RTS/kontuzja - jak buildClientFindings,
+// ale oparta WYLACZNIE na waskim, wyselekcjonowanym zestawie par L/P (pairs = extra.rtsPairs,
+// patrz RTS_PHASE_GROUPS) i - w
+// odroznieniu od buildClientFindings - WPROST nazywajaca, ktora konczyna jest slabsza w
+// kazdym stwierdzonym parametrze (nie tylko wielkosc procentowej roznicy). Bez cwiczen -
+// formalny, neutralny jezyk, tak jak w pozostalych wersjach "dla klienta".
+function buildClientFindingsRts(pairs, currentStats) {
+  const items = [];
+  const summaryParts = [];
+  if (currentStats.jumpHeight != null) summaryParts.push(`wysokość wyskoku: ${fmt(currentStats.jumpHeight)} cm`);
+  if (currentStats.rsiMod != null) summaryParts.push(`wskaźnik reaktywności (RSI-modified): ${fmt(currentStats.rsiMod,2)}`);
+  items.push({
+    label: "Wynik testu",
+    text: summaryParts.length ? `Zarejestrowane wartości główne: ${summaryParts.join(", ")}.` : "Niepełne dane wynikowe testu.",
+  });
+
+  const withPct = pairs
+    .map(p => ({
+      ...p,
+      pct: asymmetryPct(p.left, p.right),
+      weaker: (p.left == null || p.right == null || p.left === p.right) ? null : (p.left < p.right ? "lewa" : "prawa"),
+    }))
+    .filter(p => p.pct !== null);
+  const severe = withPct.filter(p => p.pct >= 15).sort((a,b) => b.pct - a.pct);
+  const moderate = withPct.filter(p => p.pct >= 10 && p.pct < 15).sort((a,b) => b.pct - a.pct);
+  const worst = withPct.slice().sort((a,b) => b.pct - a.pct)[0] || null;
+  const describePair = p => `${p.label} — słabsza kończyna: ${p.weaker || "brak różnicy"} (${fmt(p.pct,0)}%)`;
+
+  if (severe.length > 0) {
+    items.push({
+      label: "Asymetria kończyn dolnych — poziom istotny",
+      text: `${severe.map(describePair).join("; ")}. Różnica tej wielkości jest w literaturze naukowej wiązana z podwyższonym ryzykiem urazu oraz obniżoną efektywnością ruchu.`,
+    });
+  }
+  if (moderate.length > 0) {
+    items.push({
+      label: "Asymetria kończyn dolnych — poziom obserwacyjny",
+      text: `${moderate.map(describePair).join("; ")}. Różnica nie osiąga poziomu uznawanego za istotny, wskazana jest jednak dalsza obserwacja.`,
+    });
+  }
+  if (severe.length === 0 && moderate.length === 0) {
+    items.push({
+      label: "Asymetria kończyn dolnych",
+      text: worst
+        ? `Nie stwierdzono istotnej różnicy pomiędzy kończyną lewą a prawą w żadnym z ${withPct.length} ocenionych parametrów — wszystkie poniżej 10%. Największa zaobserwowana różnica: ${worst.label} (${fmt(worst.pct,0)}%).`
+        : "Brak wystarczających danych do oceny asymetrii kończyn dolnych w tym teście.",
+    });
+  }
+
+  const combinedOnly = pairs.filter(p => p.left == null && p.right == null && p.combined != null);
+  if (combinedOnly.length > 0) {
+    items.push({
+      label: "Brak podziału lewa/prawa dla części parametrów",
+      text: `Dla ${combinedOnly.length} ${combinedOnly.length===1?"parametru":"parametrów"} platforma nie eksportowała w tym pliku wartości oddzielnie dla każdej kończyny — dostępna jest tylko wartość łączna: ${combinedOnly.map(p => `${p.label} ${fmt(p.combined)}`).join(", ")}. Nie oceniano asymetrii dla tych parametrów w tym teście.`,
+    });
+  }
+
+  return items;
+}
+return { readFirstSheet, parseForceMateExport, buildMetricRow, IMPORT_MODES, buildDayRecord, clusterMomentsOfDay, describeDayRecord, asymmetryPct, classifyAsymmetry, buildClientFindings, buildRtsTakeaway, FIELD_DEFS, PAIR_DEFS, REPORT_SECTIONS, RTS_PHASE_GROUPS, g, fmt, dayKeyOf };
+})();
+
+/* ===== 🧪 TESTY: CMJ / SJ z CC Athletics (pliki .xlsx), zapis w app_tests, czytelny widok ===== */
+const TST_RETEST_DAYS = 42;          // przypomnienie o reteście: 6 tygodni
+const TST_OUTLIER = 0.85;            // próba odstająca: wysokość < 85% mediany dnia
+const TST_LANDING_SUSPECT = 70;      // Peak Landing Force / BM > 70 N/kg = podejrzany pomiar
+const TST_EUR_GOOD = 1.10;           // orientacyjny próg wykorzystania zamachu (CMJ/SJ)
+const TST_TIME_PAIR = /^time to/i;   // pary czasowe: pokazujemy, ale bez alarmu
+const TST_PHASES = [
+  ['hamowanie', 'Hamowanie', 'Eccentric Deceleration Impulse'],
+  ['silaHam', 'Siła w hamowaniu', 'Eccentric Peak Force'],
+  ['naped', 'Odbicie (napęd)', 'Concentric Impulse'],
+  ['ladowanie', 'Lądowanie', 'Peak Landing Force']
+];
+const TST_MODE_LABEL = { rehab: 'Rehabilitacja — wszystkie próby', performance: 'Wydajność — najlepsza próba', fatigue: 'Stan zmęczeniowy — ostatnia seria' };
+let testsCache = null, testsTableMissing = false, tstSettings = { names: {}, modes: {} };
+let tstPendingImport = null, tstProfileId = null, tstShowAll = false;
+
+const tstF = (v, d = 1) => (v === null || v === undefined || Number.isNaN(v)) ? '—' : Number(v).toLocaleString('pl-PL', { minimumFractionDigits: d, maximumFractionDigits: d });
+function tstDayPl(ds){ if(!ds) return '—'; const [y, m, d] = String(ds).slice(0, 10).split('-'); return `${d}.${m}.${y}`; }
+function tstDaysSince(ds){ return Math.round((new Date(todayKey()) - new Date(String(ds).slice(0, 10))) / 86400000); }
+function tstHash(o){ const s = JSON.stringify(o); let h = 5381; for(let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0; return String(h >>> 0); }
+function tstClientName(id){ const c = clients.find(x => x.id === id); return c ? c.name : '(usunięty klient)'; }
+
+async function loadTestSettings(){
+  try{ const v = await safeGet('test_settings'); tstSettings = Object.assign({ names: {}, modes: {} }, v || {}); }catch(e){}
+  return tstSettings;
+}
+async function saveTestSettings(){ return await persistWithFeedback('test_settings', tstSettings); }
+async function loadAllTests(force){
+  if(testsCache && !force) return testsCache;
+  try{
+    const { data, error } = await sbClient.from('app_tests').select('*');
+    if(error){ testsTableMissing = isNotesTableError(error); console.warn('Testy - błąd wczytywania:', error); testsCache = []; return testsCache; }
+    testsTableMissing = false; testsCache = data || [];
+  }catch(e){ testsCache = []; }
+  return testsCache;
+}
+function tstRowsFor(clientId){ return (testsCache || []).filter(r => r.client_id === clientId).sort((a, b) => String(a.test_day).localeCompare(String(b.test_day))); }
+
+/* ---- próby: z pliku -> rekord silnika; z bazy -> z powrotem rekord silnika ---- */
+function tstTrialToStore(t){ return { f: t.sourceLabel, dateIso: t.date ? t.date.toISOString() : null, dateRaw: t.dateRaw, comment: t.comment || null, bodyMass: t.bodyMass, legStance: t.legStance, name: t.name, team: t.team || null, hash: t.hash, metrics: t.metrics }; }
+function tstTrialFromStore(s){ return { name: s.name, team: s.team, comment: s.comment, date: s.dateIso ? new Date(s.dateIso) : null, dateRaw: s.dateRaw, bodyMass: s.bodyMass, legStance: s.legStance, metrics: s.metrics, sourceLabel: s.f, hash: s.hash }; }
+
+/* kontrola jakości: duplikaty plików, SJ z zamachem, próby odstające */
+function tstQualityCheck(trials, type){
+  const seen = new Map(), skipped = [], keep = [];
+  trials.forEach(t => {
+    if(seen.has(t.hash)){ skipped.push({ f: t.sourceLabel, why: `duplikat pliku „${seen.get(t.hash)}”` }); return; }
+    seen.set(t.hash, t.sourceLabel);
+    if(type === 'sj' && (CMJ.g(t.metrics, 'braking duration') != null || CMJ.g(t.metrics, 'unweighted duration') != null)){
+      skipped.push({ f: t.sourceLabel, why: 'SJ z zamachem w dół — to nie jest czysty SJ' }); return;
+    }
+    keep.push(t);
+  });
+  if(keep.length >= 3){
+    const jh = keep.map(t => CMJ.g(t.metrics, 'jump height ni')).filter(v => v != null).sort((a, b) => a - b);
+    const med = jh[Math.floor(jh.length / 2)];
+    for(let i = keep.length - 1; i >= 0; i--){
+      const v = CMJ.g(keep[i].metrics, 'jump height ni');
+      if(v != null && med && v < med * TST_OUTLIER){ skipped.push({ f: keep[i].sourceLabel, why: `próba odstająca: ${tstF(v)} cm przy medianie ${tstF(med)} cm` }); keep.splice(i, 1); }
+    }
+  }
+  return { ok: keep, skipped };
+}
+
+/* liczy sesję w wybranym trybie (z prób już po kontroli jakości) */
+function tstCompute(okTrials, mode){
+  const m = CMJ.IMPORT_MODES[mode] ? mode : 'rehab';
+  const sel = CMJ.IMPORT_MODES[m].selectTrials(okTrials);
+  if(!sel.length) return null;
+  const rec = CMJ.buildDayRecord(sel);
+  if(okTrials.length > 1) rec.comment = CMJ.describeDayRecord(okTrials, sel, m);
+  const result = CMJ.buildMetricRow(rec);
+  const v = result.values;
+  const moments = CMJ.clusterMomentsOfDay(okTrials).map(mm => ({ time: ((mm[0].dateRaw || '').split(' ')[1] || '').slice(0, 5), n: mm.length,
+    jh: mm.reduce((a, t) => a + (CMJ.g(t.metrics, 'jump height ni') || 0), 0) / mm.length }));
+  const summary = { jh: v['Jump Height (Imp-Mom) [cm]'], rsi: v['RSI-modified (Imp-Mom) [m/s]'], pp: v['Peak Power [W]'], ppbm: v['Peak Power / BM [W/kg]'],
+    ct: v['Contraction Time [ms]'], n: sel.length, nOk: okTrials.length, moments };
+  return { rec, result: { values: result.values, originalPairs: result.originalPairs, newLR: result.newLR, newP1P2: result.newP1P2 }, summary, mode: m };
+}
+function tstSession(row, modeOverride){
+  const trials = (row.trials || []).map(tstTrialFromStore);
+  const okSet = new Set((row.skipped || []).map(s => s.f));
+  const ok = trials.filter(t => !okSet.has(t.sourceLabel));
+  const mode = modeOverride || row.mode || 'rehab';
+  const c = ok.length ? tstCompute(ok, mode) : null;
+  return c ? Object.assign({ row, type: row.test_type, leg: row.leg, day: String(row.test_day).slice(0, 10) }, c) : { row, type: row.test_type, leg: row.leg, day: String(row.test_day).slice(0, 10), result: row.result || {}, summary: row.summary || {}, mode };
+}
+function tstPairs(res){ return [...((res && res.originalPairs) || []), ...((res && res.newLR) || [])].map(p => ({ ...p, pct: CMJ.asymmetryPct(p.left, p.right),
+  weak: (p.left == null || p.right == null || p.left === p.right) ? null : (p.left < p.right ? 'L' : 'P'), time: TST_TIME_PAIR.test(p.label) })); }
+function tstPair(res, label){ return tstPairs(res).find(p => p.label === label) || null; }
+const tstCls = p => p == null ? 'na' : p >= 15 ? 'bad' : p >= 10 ? 'warn' : 'ok';
+const tstCol = p => p == null ? '#9A958C' : p >= 15 ? '#C2462E' : p >= 10 ? '#C98A17' : '#2E9E5B';
+const tstSide = w => w === 'L' ? 'Lewa' : w === 'P' ? 'Prawa' : '';
+
+/* ---------- WGRYWANIE ---------- */
+function tstMatchClient(name){
+  if(!name) return { id: null, how: '' };
+  if(tstSettings.names[name] && clients.some(c => c.id === tstSettings.names[name])) return { id: tstSettings.names[name], how: 'zapamiętane' };
+  const key = plSearchKey(name).trim();
+  const exact = clients.filter(c => plSearchKey(c.name).trim() === key);
+  if(exact.length === 1) return { id: exact[0].id, how: 'to samo imię i nazwisko' };
+  const parts = key.split(/\s+/), sur = parts[parts.length - 1], first = parts[0] || '';
+  const bySur = clients.filter(c => { const p = plSearchKey(c.name).trim().split(/\s+/); return p.length > 1 && p[p.length - 1] === sur && (p[0] || '').slice(0, 3) === first.slice(0, 3); });
+  if(bySur.length === 1) return { id: bySur[0].id, how: 'podobne — sprawdź' };
+  return { id: null, how: '' };
+}
+async function tstHandleFiles(fileList){
+  const files = Array.from(fileList || []).filter(f => /\.xlsx$/i.test(f.name));
+  if(!files.length){ toast('Wybierz pliki .xlsx z eksportu platformy'); return; }
+  $('main').innerHTML = '<div class="empty-state">Odczytuję pliki…</div>';
+  const recs = [], errs = [];
+  for(const f of files){
+    try{
+      const rows = await CMJ.readFirstSheet(await f.arrayBuffer());
+      const r = await CMJ.parseForceMateExport(rows, f.name);
+      r.hash = tstHash(r.metrics);
+      r.jumpType = String(CMJ.g(r.metrics, 'jump type') || '').toLowerCase();
+      recs.push(r);
+    }catch(e){ errs.push(`${f.name}: ${e.message}`); }
+  }
+  recs.sort((a, b) => (a.date ? a.date.getTime() : 0) - (b.date ? b.date.getTime() : 0));
+  const groups = new Map(), unsupported = [];
+  recs.forEach(r => {
+    if(r.jumpType !== 'cmj' && r.jumpType !== 'sj'){ unsupported.push(`${r.sourceLabel} (typ skoku: ${r.jumpType || 'brak'})`); return; }
+    const day = CMJ.dayKeyOf(r);
+    const k = `${r.name || '?'}|${r.jumpType}|${r.legStance}|${day}`;
+    if(!groups.has(k)) groups.set(k, { name: r.name || 'Nieznany zawodnik', type: r.jumpType, leg: r.legStance, day, trials: [] });
+    groups.get(k).trials.push(r);
+  });
+  tstPendingImport = [...groups.values()].map(g => {
+    const qc = tstQualityCheck(g.trials, g.type);
+    const m = tstMatchClient(g.name);
+    return Object.assign(g, { ok: qc.ok, skipped: qc.skipped, clientId: m.id, how: m.how, mode: (m.id && tstSettings.modes[m.id]) || 'rehab' });
+  });
+  tstRenderImport(errs.concat(unsupported.map(u => 'Nieobsługiwany test: ' + u)));
+}
+function tstRenderImport(errors){
+  const G = tstPendingImport || [];
+  const opts = sel => `<option value="">— wybierz klienta —</option>` + clients.slice().sort((a, b) => a.name.localeCompare(b.name, 'pl')).map(c => `<option value="${c.id}" ${c.id === sel ? 'selected' : ''}>${escapeHtml(c.name)}</option>`).join('');
+  const ready = G.filter(g => g.clientId && g.ok.length).length;
+  $('main').innerHTML = `<span class="back-link" id="tstImpBack">← Testy</span>
+    <div class="section-title"><div class="bar"></div><h2>Wgrywanie wyników</h2></div>
+    <div class="section-desc">${G.reduce((a, g) => a + g.trials.length, 0)} ${plPlural(G.reduce((a, g) => a + g.trials.length, 0), 'plik', 'pliki', 'plików')} → ${G.length} ${plPlural(G.length, 'sesja', 'sesje', 'sesji')}. CMJ i SJ z tego samego dnia są liczone osobno. Duplikaty, próby odstające i SJ z zamachem są pomijane automatycznie.</div>
+    ${(errors || []).length ? `<div class="tst-warn">⚠️ ${errors.map(escapeHtml).join('<br>')}</div>` : ''}
+    ${G.map((g, i) => {
+      const comp = g.ok.length ? tstCompute(g.ok, g.mode) : null;
+      return `<div class="tst-card">
+        <div class="tst-imp-h"><span class="tst-type ${g.type}">${g.type.toUpperCase()}</span>${g.leg !== 'dual' ? `<span class="tst-type leg">${g.leg === 'left' ? 'Lewa noga' : 'Prawa noga'}</span>` : ''}<b>${tstDayPl(g.day)}</b><span class="cv-small">w pliku: „${escapeHtml(g.name)}” · ${g.trials.length} ${plPlural(g.trials.length, 'próba', 'próby', 'prób')}</span></div>
+        <div class="tst-imp-row"><label>Klient</label><select class="tst-imp-client" data-i="${i}">${opts(g.clientId)}</select>${g.how ? `<span class="cv-small ${g.how.includes('sprawdź') ? 'tst-amber' : ''}">${escapeHtml(g.how)}</span>` : ''}</div>
+        <div class="tst-imp-row"><label>Uśrednianie</label><select class="tst-imp-mode" data-i="${i}">${Object.keys(TST_MODE_LABEL).map(k => `<option value="${k}" ${k === g.mode ? 'selected' : ''}>${TST_MODE_LABEL[k]}</option>`).join('')}</select></div>
+        <div class="tst-trials">${g.trials.map(t => { const sk = g.skipped.find(s => s.f === t.sourceLabel);
+          return `<div class="${sk ? 'sk' : ''}">${escapeHtml((t.dateRaw || '').split(' ')[1] || '')} · ${tstF(CMJ.g(t.metrics, 'jump height ni'))} cm${t.comment ? ` · „${escapeHtml(t.comment)}”` : ''}${sk ? ` <span class="why">⤬ ${escapeHtml(sk.why)}</span>` : ''}</div>`; }).join('')}</div>
+        ${comp ? `<div class="cv-small" style="margin-top:6px;">Wynik sesji: <b>${tstF(comp.summary.jh)} cm</b> · RSI-mod ${tstF(comp.summary.rsi, 2)} · ${comp.summary.n} ${plPlural(comp.summary.n, 'próba', 'próby', 'prób')} w obliczeniach</div>` : '<div class="tst-warn" style="margin-top:6px;">Wszystkie próby pominięte — ta sesja się nie zapisze.</div>'}
+      </div>`; }).join('') || '<div class="empty-state">Nie znaleziono testów CMJ/SJ w plikach.</div>'}
+    <div class="tst-actions"><button class="btn ghost" id="tstImpCancel">Anuluj</button><button class="btn" id="tstImpSave" style="background:#2E9E5B;" ${ready ? '' : 'disabled'}>✓ Zapisz ${ready} ${plPlural(ready, 'sesję', 'sesje', 'sesji')}</button></div>
+    <div class="cv-small">Sesja tej samej osoby, rodzaju skoku i dnia, wgrana drugi raz, zastępuje poprzednią.</div>`;
+  $('tstImpBack').onclick = $('tstImpCancel').onclick = () => { tstPendingImport = null; renderTestsHome(); };
+  document.querySelectorAll('.tst-imp-client').forEach(s => s.onchange = () => { const g = tstPendingImport[+s.dataset.i]; g.clientId = s.value || null; g.how = s.value ? 'wybrane ręcznie' : ''; if(s.value && tstSettings.modes[s.value]) g.mode = tstSettings.modes[s.value]; tstRenderImport(errors); });
+  document.querySelectorAll('.tst-imp-mode').forEach(s => s.onchange = () => { tstPendingImport[+s.dataset.i].mode = s.value; tstRenderImport(errors); });
+  $('tstImpSave').onclick = tstSaveImport;
+}
+async function tstSaveImport(){
+  const G = (tstPendingImport || []).filter(g => g.clientId && g.ok.length);
+  if(!G.length) return;
+  setStatus('Zapisuję testy…');
+  let saved = 0, lastClient = null, fail = null;
+  for(const g of G){
+    const comp = tstCompute(g.ok, g.mode);
+    const row = { id: `t_${g.clientId}_${g.type}_${g.leg}_${g.day}`, client_id: g.clientId, test_type: g.type, leg: g.leg, test_day: g.day, mode: comp.mode,
+      comment: comp.rec.comment || null, body_mass: comp.rec.bodyMass != null ? Math.round(comp.rec.bodyMass * 100) / 100 : null, source_name: g.name,
+      summary: comp.summary, result: comp.result, trials: g.trials.map(tstTrialToStore), skipped: g.skipped, updated_at: new Date().toISOString() };
+    const { error } = await sbClient.from('app_tests').upsert(row);
+    if(error){ fail = error; break; }
+    saved++; lastClient = g.clientId;
+    tstSettings.names[g.name] = g.clientId;
+  }
+  setStatus('');
+  if(fail){
+    testsTableMissing = isNotesTableError(fail);
+    alert(testsTableMissing ? 'Brakuje tabeli na testy w bazie.\n\nWklej polecenie z pliku „supabase-testy.html” w Supabase (SQL Editor) i spróbuj jeszcze raz.' : 'Nie udało się zapisać testów: ' + (fail.message || fail));
+    return;
+  }
+  await saveTestSettings();
+  tstPendingImport = null;
+  await loadAllTests(true);
+  updateTestsBadge();
+  toast(`Zapisano ${saved} ${plPlural(saved, 'sesję', 'sesje', 'sesji')} testów`);
+  const people = new Set(G.map(g => g.clientId));
+  if(people.size === 1) renderTestProfile(lastClient); else renderTestsHome();
+}
+
+/* ---------- LISTA / PRZYPOMNIENIA ---------- */
+function tstRetestDue(){
+  const by = {};
+  (testsCache || []).filter(r => r.test_type === 'cmj').forEach(r => { const d = String(r.test_day).slice(0, 10); if(!by[r.client_id] || by[r.client_id] < d) by[r.client_id] = d; });
+  return Object.entries(by).filter(([id, d]) => clients.some(c => c.id === id) && tstDaysSince(d) >= TST_RETEST_DAYS).map(([id, d]) => ({ id, d, days: tstDaysSince(d) })).sort((a, b) => b.days - a.days);
+}
+function updateTestsBadge(){ const b = $('testsBadge'); if(!b) return; const n = testsCache ? tstRetestDue().length : 0; b.textContent = n; b.style.display = n ? '' : 'none'; }
+async function renderTestsHome(){
+  trainerViewMode = 'tests';
+  const main = $('main');
+  main.innerHTML = '<div class="empty-state">Ładowanie testów…</div>';
+  await Promise.all([loadAllTests(true), loadTestSettings()]);
+  if(trainerViewMode !== 'tests') return;
+  updateTestsBadge();
+  const rows = testsCache || [];
+  const due = tstRetestDue();
+  const recent = rows.slice().sort((a, b) => String(b.created_at || b.test_day).localeCompare(String(a.created_at || a.test_day))).slice(0, 12);
+  const people = [...new Set(rows.map(r => r.client_id))].filter(id => clients.some(c => c.id === id));
+  main.innerHTML = `<div class="section-title"><div class="bar"></div><h2>Testy</h2></div>
+    <div class="section-desc">CMJ i Squat Jump z platformy CC Athletics. Wgraj pliki .xlsx z eksportu (można wiele naraz). Wyniki widzisz tylko Ty.</div>
+    ${testsTableMissing ? `<div class="tst-warn">🛠️ <b>Brakuje tabeli na testy w bazie.</b> Wklej polecenie z pliku <b>supabase-testy.html</b> w Supabase (SQL Editor) — jednorazowo.</div>` : ''}
+    <label class="tst-drop" id="tstDrop"><input type="file" id="tstFile" accept=".xlsx" multiple style="display:none;"><span class="ic">⬆️</span><span><b>Wgraj wyniki (.xlsx)</b><small>Przeciągnij pliki tutaj albo kliknij. Aplikacja sama rozpozna osobę, CMJ/SJ i dzień.</small></span></label>
+    <div class="tst-grid2">
+      <div class="tst-card"><h4>⏰ Czas na retest <span class="tst-n">${due.length}</span></h4>${due.map(x => `<div class="tst-it" data-p="${x.id}"><div><b>${escapeHtml(tstClientName(x.id))}</b><span>ostatni CMJ ${tstDayPl(x.d)}</span></div><span class="tst-pill warn">${Math.floor(x.days / 7)} tyg. temu</span></div>`).join('') || '<div class="cv-small">Nikt — wszystkie CMJ młodsze niż 6 tygodni.</div>'}</div>
+      <div class="tst-card"><h4>🆕 Ostatnio wgrane</h4>${recent.map(r => `<div class="tst-it" data-p="${r.client_id}"><span class="tst-type ${r.test_type}">${String(r.test_type).toUpperCase()}</span><div><b>${escapeHtml(tstClientName(r.client_id))}</b><span>${tstDayPl(r.test_day)} · ${tstF(r.summary && r.summary.jh)} cm</span></div></div>`).join('') || '<div class="cv-small">Jeszcze nic nie wgrano.</div>'}</div>
+    </div>
+    <div class="tst-card"><h4>👥 Zawodnicy z testami <span class="tst-n">${people.length}</span></h4>
+      ${people.length ? `<table class="report-table"><tr><th>Kto</th><th>Ostatni CMJ</th><th>Skok</th><th>Największa różnica L/P</th></tr>${people.map(id => {
+        const cm = tstRowsFor(id).filter(r => r.test_type === 'cmj' && r.leg === 'dual'); const last = cm[cm.length - 1];
+        const w = last ? tstWorst(last.result) : null;
+        return `<tr class="tst-click" data-p="${id}"><td><b>${escapeHtml(tstClientName(id))}</b></td><td>${last ? tstDayPl(last.test_day) : '—'}</td><td>${last ? tstF(last.summary && last.summary.jh) + ' cm' : '—'}</td><td>${w ? `<span class="tst-pill ${tstCls(w.pct)}">${tstSide(w.weak)} ${tstF(w.pct, 0)}% · ${escapeHtml(w.phase)}</span>` : '—'}</td></tr>`; }).join('')}</table>` : '<div class="cv-small">Brak.</div>'}</div>`;
+  tstBindDrop();
+  main.querySelectorAll('[data-p]').forEach(e => e.onclick = () => navigateTo(() => renderTestProfile(e.dataset.p)));
+}
+function tstBindDrop(){
+  const dz = $('tstDrop'), inp = $('tstFile'); if(!dz) return;
+  inp.onchange = e => tstHandleFiles(e.target.files);
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('over'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('over'));
+  dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('over'); tstHandleFiles(e.dataTransfer.files); });
+}
+function tstWorst(res){
+  let best = null;
+  TST_PHASES.forEach(([k, lab, pl]) => { const p = tstPair(res, pl); if(p && p.pct != null && (!best || p.pct > best.pct)) best = { pct: p.pct, weak: p.weak, phase: lab.toLowerCase(), key: k }; });
+  return best;
+}
+
+/* ---------- PROFIL TESTÓW (czytelny widok) ---------- */
+function tstAnalyze(clientId){
+  const mode = tstSettings.modes[clientId] || null;
+  const rows = tstRowsFor(clientId);
+  const S = rows.map(r => tstSession(r, mode));
+  const cmj = S.filter(s => s.type === 'cmj' && s.leg === 'dual');
+  const sjAll = S.filter(s => s.type === 'sj' && s.leg === 'dual');
+  const L = cmj[cmj.length - 1] || null, P = cmj.length > 1 ? cmj[cmj.length - 2] : null;
+  const near = (a, b) => Math.abs((new Date(a) - new Date(b)) / 86400000) <= 7;
+  const SJ = L ? (sjAll.filter(s => near(s.day, L.day)).pop() || null) : (sjAll[sjAll.length - 1] || null);
+  return { S, cmj, sjAll, L, P, SJ, single: S.filter(s => s.leg !== 'dual') };
+}
+function tstBuildReadable(A){
+  const { L, P, SJ } = A; if(!L) return null;
+  const V = L.result.values || {}, PV = P ? (P.result.values || {}) : {};
+  const legs = TST_PHASES.map(([k, lab, pl]) => { const a = tstPair(L.result, pl), b = P ? tstPair(P.result, pl) : null; return { k, lab, pct: a ? a.pct : null, weak: a ? a.weak : null, prev: b ? b.pct : null }; });
+  if(SJ){ const s = tstPair(SJ.result, 'Concentric Impulse'); legs.splice(3, 0, { k: 'sj', lab: 'Odbicie bez zamachu (SJ)', pct: s ? s.pct : null, weak: s ? s.weak : null, prev: null, sj: true }); }
+  const worst = legs.filter(l => l.pct != null && !l.sj).sort((a, b) => b.pct - a.pct)[0] || null;
+  const jh = V['Jump Height (Imp-Mom) [cm]'], jhP = PV['Jump Height (Imp-Mom) [cm]'];
+  const jhCh = (jh != null && jhP) ? (jh - jhP) / jhP * 100 : null;
+  const eur = (SJ && SJ.summary.jh) ? jh / SJ.summary.jh : null;
+  const landSuspect = [L, P].filter(Boolean).filter(s => (s.result.values || {})['Peak Landing Force / BM [N/kg]'] > TST_LANDING_SUSPECT);
+  const mom = L.summary.moments || [];
+  const fatigue = mom.length >= 2 && mom[0].jh ? (mom[mom.length - 1].jh - mom[0].jh) / mom[0].jh * 100 : null;
+  /* werdykt */
+  let v1 = 'Nogi pracują podobnie — bez istotnej różnicy lewa/prawa.', tone = '🟢';
+  if(worst && worst.pct >= 15){ v1 = `${tstSide(worst.weak)} noga ${worst.prev != null && worst.prev > worst.pct ? 'dalej ' : ''}słabsza — ${worst.lab.toLowerCase()} (${tstF(worst.pct, 0)}%).`; tone = '🟠'; }
+  else if(worst && worst.pct >= 10){ v1 = `Lekka różnica lewa/prawa — ${worst.lab.toLowerCase()} (${tstF(worst.pct, 0)}%, ${tstSide(worst.weak).toLowerCase()} słabsza).`; tone = '🟡'; }
+  let v2 = P ? (jhCh == null ? '' : Math.abs(jhCh) < 3 ? `Skok bez zmian (${tstF(jhP)} → ${tstF(jh)} cm).` : jhCh > 0 ? `Skok wyższy o ${tstF(jhCh, 0)}% (${tstF(jhP)} → ${tstF(jh)} cm).` : `Skok niższy o ${tstF(-jhCh, 0)}% (${tstF(jhP)} → ${tstF(jh)} cm).`) : `Pierwszy CMJ: ${tstF(jh)} cm — punkt odniesienia na przyszłość.`;
+  /* zmiany */
+  const changes = [];
+  if(P){
+    const ch = (lab, sub, key, d = 1, lowerBetter = false, thr = 5) => { const a = PV[key], b = V[key]; if(a == null || b == null || !a) return; const pct = (b - a) / a * 100; if(Math.abs(pct) < thr) return;
+      const good = lowerBetter ? pct < 0 : pct > 0; changes.push({ ic: good ? '▲' : '▼', col: good ? '#2E9E5B' : '#C2462E', t: `${lab} ${good ? 'lepiej' : 'gorzej'}`, sub, n: `${pct > 0 ? '+' : ''}${tstF(pct, 0)}%` }); };
+    ch('Hamowanie (szybkość)', 'Ecc Decel RFD / BM', 'Eccentric Deceleration RFD / BM [N/s/kg]', 1);
+    ch('Moc', 'Peak Power / BM', 'Peak Power / BM [W/kg]', 1);
+    ch('Reaktywność', 'RSI-modified', 'RSI-modified (Imp-Mom) [m/s]', 2);
+    ch('Czas skoku', 'Contraction Time — krócej = szybciej', 'Contraction Time [ms]', 0, true);
+    legs.filter(l => !l.sj && l.pct != null && l.prev != null && Math.abs(l.pct - l.prev) >= 3).forEach(l => { const better = l.pct < l.prev;
+      changes.push({ ic: better ? '▼' : '▲', col: better ? '#2E9E5B' : '#C2462E', t: `Różnica L/P — ${l.lab.toLowerCase()} ${better ? 'mniejsza' : 'większa'}`, sub: TST_PHASES.find(p => p[0] === l.k)[2] + ' L/P', n: `${tstF(l.prev, 0)}% → ${tstF(l.pct, 0)}%` }); });
+  }
+  if(fatigue != null && fatigue <= -10) changes.push({ ic: '!', col: '#C98A17', t: `Męczy się w trakcie testu: ostatnia seria niższa o ${tstF(-fatigue, 0)}%`, sub: mom.map(m => tstF(m.jh) + ' cm').join(' → '), n: `${tstF(fatigue, 0)}%` });
+  landSuspect.forEach(s => changes.push({ ic: '⚠', col: '#C98A17', t: `Lądowanie ${tstDayPl(s.day)}: ${tstF(s.result.values['Peak Landing Force / BM [N/kg]'])} N/kg — możliwy błąd pomiaru`, sub: 'nie biorę tej sesji do wniosków o lądowaniu', n: '' }));
+  /* co robimy */
+  const todo = [];
+  const ham = legs.find(l => l.k === 'hamowanie'), sila = legs.find(l => l.k === 'silaHam'), nap = legs.find(l => l.k === 'naped'), sjl = legs.find(l => l.sj);
+  const eccBad = [ham, sila].filter(l => l && l.pct != null && l.pct >= 15).sort((a, b) => b.pct - a.pct)[0];
+  if(eccBad) todo.push({ t: `Hamowanie ${tstSide(eccBad.weak) === 'Lewa' ? 'lewej' : 'prawej'}`, d: `Ekscentryka jednonóż, ${tstSide(eccBad.weak) === 'Lewa' ? 'lewa' : 'prawa'} +1–2 serie (${eccBad.lab.toLowerCase()} ${tstF(eccBad.pct, 0)}%).` });
+  if(sjl && sjl.pct != null && sjl.pct >= 10) todo.push({ t: `Siła ${sjl.weak === 'L' ? 'lewej' : 'prawej'}`, d: `Różnica też w SJ (bez zamachu, ${tstF(sjl.pct, 0)}%) → to siła, nie technika.` });
+  else if(nap && nap.pct != null && nap.pct >= 10) todo.push({ t: `Odbicie ${nap.weak === 'L' ? 'lewej' : 'prawej'}`, d: SJ ? `Różnica w CMJ (${tstF(nap.pct, 0)}%), w SJ mniejsza → głównie wykorzystanie zamachu.` : `Różnica w napędzie ${tstF(nap.pct, 0)}% — siła jednonóż.` });
+  if(eur != null && eur < TST_EUR_GOOD) todo.push({ t: 'Sprężystość', d: `CMJ tylko ${tstF((eur - 1) * 100, 0)}% wyżej niż SJ → szybkie odbicia, plyometria${landSuspect.length ? ' (najpierw sprawdź lądowanie)' : ''}.` });
+  if(fatigue != null && fatigue <= -10) todo.push({ t: 'Zmęczenie', d: 'Spadek w trakcie testu ≥10% — uwaga na objętość i regenerację.' });
+  if(!todo.length) todo.push({ t: 'Utrzymanie', d: 'Brak wyraźnych deficytów — dalej progresja siły i mocy.' });
+  return { legs, worst, jh, jhP, jhCh, eur, v1, v2, tone, changes, todo, landSuspect };
+}
+async function renderTestProfile(clientId){
+  trainerViewMode = 'tests';
+  tstProfileId = clientId;
+  if(!testsCache) await loadAllTests(true);
+  await loadTestSettings();
+  const main = $('main');
+  const A = tstAnalyze(clientId), R = tstBuildReadable(A);
+  const c = clients.find(x => x.id === clientId);
+  const lastCmjDay = A.L ? A.L.day : null;
+  const modeSel = tstSettings.modes[clientId] || '';
+  const head = `<span class="back-link" id="tstBack">← Wszystkie testy</span>
+    <div class="tst-top"><div><b>${escapeHtml(c ? c.name : '?')}</b><span>Testy${lastCmjDay ? ` · ostatni CMJ ${tstDayPl(lastCmjDay)}` : ''}${A.SJ ? ` · SJ ${tstDayPl(A.SJ.day)}` : ''}</span></div>
+      <div class="tst-top-r"><label class="cv-small">Uśrednianie: <select id="tstMode"><option value="">jak przy wgraniu</option>${Object.keys(TST_MODE_LABEL).map(k => `<option value="${k}" ${k === modeSel ? 'selected' : ''}>${TST_MODE_LABEL[k]}</option>`).join('')}</select></label>
+      <label class="btn ghost small" style="cursor:pointer;">⬆ Wgraj<input type="file" id="tstFile" accept=".xlsx" multiple style="display:none;"></label>${R ? '<button class="btn ghost small" id="tstPdf">📄 PDF dla klienta</button>' : ''}</div></div>`;
+  if(!R){
+    main.innerHTML = head + `<div class="empty-state">Brak testów CMJ obunóż dla tej osoby.${A.sjAll.length ? ' Są tylko SJ.' : ''} Wgraj pliki .xlsx z platformy.</div>`;
+    tstBindProfile(clientId, null, A); return;
+  }
+  const due = lastCmjDay && tstDaysSince(lastCmjDay) >= TST_RETEST_DAYS;
+  const leg = l => `<div>${escapeHtml(l.lab)}</div><div class="tst-bar"><i style="width:${Math.min(100, (l.pct || 0) * 2)}%;background:${tstCol(l.pct)}"></i><span>${l.pct != null ? (l.weak ? (l.weak === 'L' ? 'L ' : 'P ') : '') + tstF(l.pct, 0) + '%' : '—'}</span></div><div>${l.sj ? '<span class="cv-small">SJ</span>' : l.prev != null ? `${l.pct < l.prev ? '▼' : l.pct > l.prev ? '▲' : '='} z ${tstF(l.prev, 0)}% <b style="color:${l.pct <= l.prev ? '#2E9E5B' : '#C2462E'}">${l.pct < l.prev ? 'lepiej' : l.pct > l.prev ? 'gorzej' : ''}</b>` : '<span class="cv-small">pierwszy test</span>'}</div>`;
+  const card3 = R.eur != null
+    ? `<div class="tst-kpi ${R.eur >= TST_EUR_GOOD ? '' : 'amb'}"><div class="q">Sprężystość</div><div class="v">${tstF(R.eur, 2)}</div><div class="s">${R.eur >= TST_EUR_GOOD ? 'dobrze używa zamachu' : 'słabo używa zamachu'}</div><div class="e">CMJ ÷ SJ. Dobrze: ok. ${tstF(TST_EUR_GOOD, 2)}+ (próg orientacyjny).</div></div>`
+    : `<div class="tst-kpi"><div class="q">Reaktywność</div><div class="v">${tstF(A.L.summary.rsi, 2)}</div><div class="s">RSI-modified</div><div class="e">Zrób też Squat Jump — pokażę wykorzystanie zamachu.</div></div>`;
+  main.innerHTML = head + `
+    ${due ? `<div class="tst-warn">⏰ Ostatni CMJ ${Math.floor(tstDaysSince(lastCmjDay) / 7)} tyg. temu — czas na retest (co 6 tygodni).</div>` : ''}
+    <div class="tst-verdict"><div class="big">${R.tone}</div><div><h3>${escapeHtml(R.v1)}<br>${escapeHtml(R.v2)}</h3><p>${A.cmj.length} ${plPlural(A.cmj.length, 'test', 'testy', 'testów')} CMJ${A.sjAll.length ? ` + ${A.sjAll.length} SJ` : ''} · uśrednianie: ${escapeHtml(TST_MODE_LABEL[A.L.mode] || A.L.mode)}</p></div></div>
+    <div class="tst-kpis">
+      <div class="tst-kpi ${R.jhCh != null && R.jhCh <= -8 ? 'red' : ''}"><div class="q">Skok</div><div class="v">${tstF(R.jh)} cm</div><div class="s">${R.jhCh == null ? 'pierwszy test' : Math.abs(R.jhCh) < 3 ? `bez zmian (${tstF(R.jhP)} → ${tstF(R.jh)})` : `${R.jhCh > 0 ? '▲' : '▼'} ${tstF(Math.abs(R.jhCh), 0)}% (${tstF(R.jhP)} → ${tstF(R.jh)})`}</div><div class="e">Wysokość CMJ.</div></div>
+      <div class="tst-kpi ${R.worst && R.worst.pct >= 15 ? 'red' : R.worst && R.worst.pct >= 10 ? 'amb' : ''}"><div class="q">Lewa vs prawa</div><div class="v">${R.worst ? tstF(R.worst.pct, 0) + '%' : '—'}</div><div class="s">${R.worst ? `${tstSide(R.worst.weak).toLowerCase()} słabsza — ${R.worst.lab.toLowerCase()}` : ''}</div><div class="e">${R.worst && R.worst.prev != null ? `Było ${tstF(R.worst.prev, 0)}%. ` : ''}Istotne od 15%.</div></div>
+      ${card3}
+    </div>
+    <div class="tst-card"><h4>🦵 Lewa i prawa noga — gdzie jest różnica</h4>
+      <div class="tst-legs"><div class="h">Faza</div><div class="h">Słabsza noga o…</div><div class="h">${A.P ? 'Zmiana od ' + tstDayPl(A.P.day) : ''}</div>${R.legs.map(leg).join('')}</div>
+      <div class="cv-small" style="margin-top:8px;">Zielony &lt;10% · żółty 10–15% · czerwony ≥15%</div></div>
+    ${R.changes.length ? `<div class="tst-card"><h4>📈 ${A.P ? 'Co się zmieniło od ' + tstDayPl(A.P.day) : 'Uwagi'}</h4><ul class="tst-chg">${R.changes.map(x => `<li><div class="ic" style="background:${x.col}">${x.ic}</div><div>${escapeHtml(x.t)}<small>${escapeHtml(x.sub)}</small></div><div class="n" style="color:${x.col}">${escapeHtml(x.n)}</div></li>`).join('')}</ul></div>` : ''}
+    <div class="tst-card"><h4>🎯 Co z tym robimy w treningu</h4><div class="tst-todo">${R.todo.map((t, i) => `<div><b>${i + 1}. ${escapeHtml(t.t)}</b>${escapeHtml(t.d)}</div>`).join('')}</div></div>
+    <div class="tst-more"><button id="tstMore">${tstShowAll ? '▴ Schowaj liczby' : '▾ Pokaż wszystkie liczby (dla trenera)'}</button></div>
+    <div id="tstDetails">${tstShowAll ? tstDetailsHtml(A) : ''}</div>`;
+  tstBindProfile(clientId, R, A);
+}
+function tstDetailsHtml(A){
+  const cm = A.cmj.slice(-4);
+  const rowsKeys = [['Wysokość skoku', 'Jump Height (Imp-Mom) [cm]', 1], ['Reaktywność (RSI-mod)', 'RSI-modified (Imp-Mom) [m/s]', 2], ['Moc / masa', 'Peak Power / BM [W/kg]', 1], ['Czas skoku [ms]', 'Contraction Time [ms]', 0],
+    ['Głębokość zejścia [cm]', 'Countermovement Depth [cm]', 1], ['Hamowanie (Ecc Decel RFD / BM)', 'Eccentric Deceleration RFD / BM [N/s/kg]', 1], ['Siła napędu / masa', 'Concentric Peak Force / BM [N/kg]', 1], ['Lądowanie / masa', 'Peak Landing Force / BM [N/kg]', 1], ['Masa ciała [kg]', 'Body Mass [kg]', 1]];
+  const pairs = tstPairs(A.L.result).filter(p => p.pct != null).sort((a, b) => (a.time - b.time) || (b.pct - a.pct));
+  return `<div class="tst-card"><h4>📋 CMJ — kluczowe liczby</h4><table class="report-table"><tr><th>Parametr</th>${cm.map(s => `<th>${tstDayPl(s.day)}</th>`).join('')}</tr>
+      ${rowsKeys.map(([lab, k, d]) => `<tr><td>${lab}<div class="cv-small">${escapeHtml(k)}</div></td>${cm.map(s => `<td>${tstF((s.result.values || {})[k], d)}</td>`).join('')}</tr>`).join('')}</table></div>
+    ${A.SJ ? `<div class="tst-card"><h4>🦘 Squat Jump ${tstDayPl(A.SJ.day)}</h4><table class="report-table"><tr><td>Wysokość</td><td>${tstF(A.SJ.summary.jh)} cm</td></tr><tr><td>Moc / masa</td><td>${tstF(A.SJ.summary.ppbm)} W/kg</td></tr><tr><td>CMJ ÷ SJ (EUR)</td><td>${tstF(A.L.summary.jh / A.SJ.summary.jh, 2)}</td></tr></table></div>` : ''}
+    <div class="tst-card"><h4>⚖️ Wszystkie pary L/P — CMJ ${tstDayPl(A.L.day)} (${pairs.length})</h4><table class="report-table"><tr><th>Parametr</th><th>L</th><th>P</th><th>Różnica</th></tr>
+      ${pairs.map(p => `<tr><td title="${escapeHtml(CMJ.PAIR_DEFS[p.label] || '')}">${escapeHtml(p.label)}${p.unit ? ` <span class="cv-small">[${escapeHtml(p.unit)}]</span>` : ''}</td><td>${tstF(p.left)}</td><td>${tstF(p.right)}</td><td>${p.time ? `<span class="tst-pill na">${tstF(p.pct, 0)}% · czasowa, bez alarmu</span>` : `<span class="tst-pill ${tstCls(p.pct)}">${tstF(p.pct, 0)}% ${p.weak || ''}</span>`}</td></tr>`).join('')}</table></div>
+    <div class="tst-card"><h4>🗂️ Sesje</h4><table class="report-table"><tr><th>Dzień</th><th>Test</th><th>Próby</th><th>Pominięte</th><th></th></tr>
+      ${A.S.slice().reverse().map(s => `<tr><td>${tstDayPl(s.day)}</td><td><span class="tst-type ${s.type}">${s.type.toUpperCase()}</span>${s.leg !== 'dual' ? ` ${s.leg === 'left' ? 'L' : 'P'}` : ''}</td><td>${(s.summary && s.summary.n) || '—'} z ${(s.row.trials || []).length}${s.row.comment ? `<div class="cv-small">${escapeHtml(s.row.comment)}</div>` : ''}</td><td class="cv-small">${(s.row.skipped || []).map(x => escapeHtml(x.why)).join('<br>') || '—'}</td><td><span class="cv-x" data-tdel="${escapeHtml(s.row.id)}" title="Usuń tę sesję">✕</span></td></tr>`).join('')}</table></div>`;
+}
+function tstBindProfile(clientId, R, A){
+  $('tstBack').onclick = () => navigateTo(renderTestsHome);
+  const inp = $('tstFile'); if(inp) inp.onchange = e => tstHandleFiles(e.target.files);
+  $('tstMode').onchange = async e => {
+    if(e.target.value) tstSettings.modes[clientId] = e.target.value; else delete tstSettings.modes[clientId];
+    await saveTestSettings();
+    /* zapisany wynik każdej sesji też przeliczamy (z tego korzysta potem generator planu) */
+    if(e.target.value){ for(const r of tstRowsFor(clientId)){ const s = tstSession(r, e.target.value); if(s.summary && s.rec){ r.mode = s.mode; r.result = s.result; r.summary = s.summary; r.comment = s.rec.comment || r.comment; await sbClient.from('app_tests').upsert(r); } } }
+    renderTestProfile(clientId);
+  };
+  const more = $('tstMore'); if(more) more.onclick = () => { tstShowAll = !tstShowAll; renderTestProfile(clientId); };
+  document.querySelectorAll('[data-tdel]').forEach(x => x.onclick = async () => {
+    if(!confirm('Usunąć tę sesję testów? Nie da się tego cofnąć.')) return;
+    const { error } = await sbClient.from('app_tests').delete().eq('id', x.dataset.tdel);
+    if(error){ alert('Nie udało się usunąć: ' + (error.message || error)); return; }
+    await loadAllTests(true); updateTestsBadge(); renderTestProfile(clientId);
+  });
+  const pdf = $('tstPdf'); if(pdf) pdf.onclick = () => tstPrintPdf(clientId, R, A);
+}
+function tstPrintPdf(clientId, R, A){
+  const c = clients.find(x => x.id === clientId);
+  const others = A.cmj.filter(s => s !== A.L).map(s => ({ jumpHeight: s.summary.jh, peakPower: s.summary.pp, rsiMod: s.summary.rsi }));
+  const findings = CMJ.buildClientFindings(A.L.result, { jumpHeight: A.L.summary.jh, peakPower: A.L.summary.pp, rsiMod: A.L.summary.rsi }, others);
+  const w = window.open('', '_blank');
+  if(!w){ toast('Przeglądarka zablokowała okno — zezwól na wyskakujące okna dla tej strony'); return; }
+  w.document.write(`<!doctype html><html lang="pl"><head><meta charset="utf-8"><title>Raport CMJ — ${escapeHtml(c ? c.name : '')}</title>
+    <style>body{font-family:Arial,sans-serif;color:#1C1C1C;margin:28px;font-size:13px}h1{font-size:20px;margin:0 0 4px}h2{font-size:15px;margin:22px 0 8px;border-bottom:2px solid #1C1C1C;padding-bottom:4px}.m{color:#555;margin-bottom:14px}
+    .it{margin:8px 0}.it b{display:block}table{border-collapse:collapse;width:100%}td,th{border-bottom:1px solid #ddd;padding:6px;text-align:left}.bar{height:10px;background:#eee;border-radius:5px;position:relative}.bar i{position:absolute;left:0;top:0;bottom:0;border-radius:5px}
+    .foot{margin-top:24px;color:#777;font-size:11px}</style></head><body>
+    <h1>Raport testu skoku (CMJ)</h1><div class="m">${escapeHtml(c ? c.name : '')} · test ${tstDayPl(A.L.day)}${A.SJ ? ` · Squat Jump ${tstDayPl(A.SJ.day)}` : ''} · wygenerowano ${new Date().toLocaleDateString('pl-PL')}</div>
+    <h2>W skrócie</h2><p><b>${escapeHtml(R.v1)}</b><br>${escapeHtml(R.v2)}</p>
+    <h2>Lewa i prawa noga</h2><table>${R.legs.map(l => `<tr><td>${escapeHtml(l.lab)}</td><td style="width:45%"><div class="bar"><i style="width:${Math.min(100, (l.pct || 0) * 2)}%;background:${tstCol(l.pct)}"></i></div></td><td>${l.pct != null ? tstF(l.pct, 0) + '%' + (l.weak ? ' (' + tstSide(l.weak).toLowerCase() + ' słabsza)' : '') : '—'}</td></tr>`).join('')}</table>
+    <h2>Najważniejsze informacje</h2>${findings.map(f => `<div class="it"><b>${escapeHtml(f.label)}</b>${escapeHtml(f.text)}</div>`).join('')}
+    <div class="foot">Progi asymetrii 10% / 15% wg literatury (m.in. Bishop i wsp. 2018). Raport pomocniczy, nie stanowi diagnozy. MoveU Studio.</div>
+    <script>window.onload=function(){setTimeout(function(){window.print();},300);};<\/script></body></html>`);
+  w.document.close();
+}
+/* karta klienta → zakładka „Testy”: skrót + przejście do profilu testów */
+function tstClientCardHtml(clientId){
+  if(!testsCache) return `<div class="cv-card" style="margin-bottom:12px;"><h4>🦘 Testy z platformy (CMJ / SJ)</h4><div class="cv-small">Ładowanie…</div></div>`;
+  const A = tstAnalyze(clientId), R = tstBuildReadable(A);
+  return `<div class="cv-card" style="margin-bottom:12px;"><h4>🦘 Testy z platformy (CMJ / SJ)</h4>
+    ${R ? `<div style="font-size:14px;font-weight:600;margin:4px 0;">${R.tone} ${escapeHtml(R.v1)}</div><div class="cv-small">${escapeHtml(R.v2)} · ostatni CMJ ${tstDayPl(A.L.day)}</div>` : '<div class="cv-small">Brak testów z platformy. Wgraj pliki .xlsx w zakładce 🧪 Testy.</div>'}
+    <button class="btn ghost" id="cvOpenTests" style="margin-top:8px;">🧪 Otwórz profil testów →</button></div>`;
+}
+function tstBindClientCard(clientId){
+  const b = $('cvOpenTests'); if(b) b.onclick = () => navigateTo(async () => { selectedClientId = null; renderClientList(); await renderTestProfile(clientId); });
+  if(!testsCache) loadAllTests().then(() => { if(infoTab === 'tes' && selectedClientId === clientId && $('cvOpenTests')) renderClientInfo(); });
+}
+
 </script>
 </body>
 </html>
