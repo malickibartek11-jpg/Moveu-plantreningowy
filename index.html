@@ -6434,8 +6434,11 @@ function progDecide(st, plannedReps, rpe, target, eq, prevPct){
   return { nk, f, one, rule, flag, raw: (one || kgd) ? null : w * (1 + f / 100), P };
 }
 /* opts: { progOff } */
+const BALL_THROW_KG = 3;
+function isBallThrow(name){ return isBallExercise(name) && /\brzut/.test(plSearchKey(name)); }
 function computeSuggestedWeightInfo(clientId, exerciseName, plannedReps, beforeDate, targetRpe, opts){
   if(!clientId) return null;
+  if(isBallThrow(exerciseName)) return { value: BALL_THROW_KG, source: 'fixed', rule: `rzut piłką — automatycznie ${BALL_THROW_KG} kg`, eq: 'bar', flag: null, rpe: null, conv: false };
   opts = Object.assign({}, opts || {});
   if(isBallExercise(exerciseName)) opts.progOff = true;
   const reps = parseInt(plannedReps);
@@ -6535,11 +6538,13 @@ function rpeNoteText(r){ if(!r) return ''; return `RPE ${fmtKg(r.actual)} / cel 
 function suggestedSourceText(info){
   if(!info) return '';
   if(info.source === 'test') return `Wyliczone z testu 1RM (${info.date}) — tego ćwiczenia jeszcze nie było`;
+  if(info.source === 'fixed') return `Rzut piłką — automatycznie ${fmtKg(info.value)} kg (wpisz inny ciężar, jeśli chcesz zmienić)`;
   return `Z poprzedniego treningu (${info.date}: ${fmtKg(info.fromWeight)} kg, ${info.done.join('/')}) · ${info.rule}`;
 }
 function suggestedClientLabel(info){
   if(!info) return '';
   if(info.source === 'test') return 'z testu 1RM';
+  if(info.source === 'fixed') return 'piłka';
   return 'z poprzedniego treningu';
 }
 /* plakietka + panel "Skad ten ciezar?" dla trenera */
@@ -6547,6 +6552,7 @@ function progBadgeHtml(info, manual, exId){
   if(manual) return `<div class="pg-badge pg-man" title="Twój ciężar wygrywa z algorytmem">✎ ręcznie</div>`;
   if(!info) return '';
   if(info.source === 'test') return `<div class="pg-badge pg-new" data-pgwhy="${exId}">z testu 1RM</div>${progWhyHtml(info, exId)}`;
+  if(info.source === 'fixed') return `<div class="pg-badge pg-eq" title="Rzut piłką — stały ciężar ${fmtKg(info.value)} kg">⚽ ${fmtKg(info.value)} kg</div>`;
   const diff = Math.round((info.value - info.fromWeight) * 100) / 100;
   const cls = info.flag ? 'pg-fl' : diff > 0 ? 'pg-up' : diff < 0 ? 'pg-dn' : 'pg-eq';
   const txt = (info.flag ? '⚑ ' : '') + (diff > 0 ? `↑ +${fmtKg(diff)} kg` : diff < 0 ? `↓ −${fmtKg(-diff)} kg` : '= bez zmian');
@@ -7555,7 +7561,9 @@ function renderOnlineManageView(){
     <span class="back-link" id="onlineManageBackBtn">← Wróć do panelu treningów online</span>
     <div class="section-title"><div class="bar"></div><h2>Zarządzaj listą aktywnych</h2></div>
     <div class="section-desc">Zaznacz, kto korzysta z treningów online, i ile treningów obejmuje jego wykupiony okres.</div>
+    <input id="onlineManageSearch" class="cv-input" placeholder="🔍 Szukaj po nazwisku lub imieniu…" autocomplete="off" style="width:100%;max-width:360px;margin:0 0 12px;padding:9px 12px;border:1px solid var(--line);border-radius:9px;font:inherit;font-size:14px;">
     <div id="onlineManageRows"></div>
+    <div id="onlineManageEmpty" class="empty-state" style="display:none;padding:18px;">Nikogo nie znaleziono.</div>
   `;
   $('onlineManageBackBtn').onclick = renderOnlineTrainingsView;
   const holder = $('onlineManageRows');
@@ -7566,6 +7574,18 @@ function renderOnlineManageView(){
       <label>Ile treningów w okresie: <input type="number" class="online-total-input" min="0" value="${c.onlineTotal||0}"></label>
     </div>
   `).join('');
+  const srch = $('onlineManageSearch');
+  srch.oninput = () => {
+    const q = plSearchKey(srch.value.trim());
+    let shown = 0;
+    holder.querySelectorAll('.manage-row-online').forEach(row => {
+      const c = clients.find(cl => cl.id === row.dataset.cid);
+      const ok = !q || plSearchKey((c && c.name) || '').split(/\s+/).some(w => w.startsWith(q)) || plSearchKey((c && c.name) || '').includes(q);
+      row.style.display = ok ? '' : 'none'; if(ok) shown++;
+    });
+    $('onlineManageEmpty').style.display = shown ? 'none' : '';
+  };
+  setTimeout(() => srch.focus(), 50);
   holder.querySelectorAll('.manage-row-online').forEach(row => {
     const c = clients.find(cl => cl.id === row.dataset.cid);
     row.querySelector('.online-active-check').onchange = async (e) => {
