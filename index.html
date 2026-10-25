@@ -1571,6 +1571,13 @@ async function handleAuthResult(session){
       if($('showTrainersBtn')) $('showTrainersBtn').style.display = 'none';   // trener z ograniczonym zakresem nie zarzadza trenerami
     }
     showAppShell();
+    if(trainerReadOnly){
+      /* trener „tylko podgląd”: bez panelu trenera — od razu Panel sportowca z jego grupami */
+      const sw = document.querySelector('.switcher'); if(sw) sw.style.display = 'none';
+      await switchTab('sportowiec');
+      if(typeof renderAthleteHome === 'function') renderAthleteHome();
+      return;
+    }
     renderCompletedTrainingsButton();
     setTimeout(() => { computeCompletionBuckets(14, false).catch(e => console.warn(e)); }, 1200);
     setTimeout(() => { loadAllVideos(true).then(cleanupViewedVideos).catch(e => console.warn(e)); }, 900);
@@ -3047,6 +3054,7 @@ $('tabTrener').onclick = () => switchTab('trener');
 $('tabSportowiec').onclick = () => switchTab('sportowiec');
 let currentTab = 'trener';
 async function switchTab(tab){
+  if(trainerReadOnly && tab === 'trener') tab = 'sportowiec';   // podgląd: panel trenera niedostępny
   currentTab = tab;
   $('tabTrener').classList.toggle('active', tab==='trener');
   $('tabSportowiec').classList.toggle('active', tab==='sportowiec');
@@ -5516,13 +5524,13 @@ async function renderTrainersView(){
     ${groupsColMissing ? '<div class="cv-alert" style="background:#FFF4E5;border-color:#F3C88B;"><div><b>Żeby zapisać grupy trenera, w bazie brakuje jednej kolumny.</b> Wklej w Supabase (SQL Editor): <code>alter table public.app_trainers add column if not exists groups jsonb;</code></div></div>' : ''}
     <div class="rl-list tr-list"><div class="rl-head tr-grid"><div>E-mail</div><div>Dostęp</div><div>Grupy, które widzi</div><div></div></div>
       <div class="rl-row tr-grid tr-owner"><div><b>${escapeHtml(TRAINER_EMAIL)}</b>${me === TRAINER_EMAIL.toLowerCase() ? ' <span class="cv-small">(Ty)</span>' : ''}<br><small class="cv-small">właściciel — dostęp zawsze</small></div><div><label class="diet-cb dis"><input type="checkbox" checked disabled> pełny dostęp</label></div><div class="cv-small">wszystkie grupy</div><div></div></div>
-      ${rows.map(r => `<div class="rl-row tr-grid" data-tr="${escapeHtml(r.email)}"><div><b>${escapeHtml(r.email)}</b>${normEmail(r.email) === me ? ' <span class="cv-small">(Ty)</span>' : ''}<br><small class="cv-small">${!r.full_access ? 'nie może się logować' : r.can_edit === false ? 'tylko podgląd treningów' : 'pełna edycja'}</small></div>
+      ${rows.map(r => `<div class="rl-row tr-grid" data-tr="${escapeHtml(r.email)}"><div><b>${escapeHtml(r.email)}</b>${normEmail(r.email) === me ? ' <span class="cv-small">(Ty)</span>' : ''}<br><small class="cv-small">${!r.full_access ? 'nie może się logować' : r.can_edit === false ? 'tylko Panel sportowca' : 'pełna edycja'}</small></div>
         <div><label class="diet-cb"><input type="checkbox" data-trfull="${escapeHtml(r.email)}" ${r.full_access ? 'checked' : ''}> może się logować</label>
           ${'can_edit' in r ? `<label class="diet-cb"><input type="checkbox" data-tredit="${escapeHtml(r.email)}" ${r.can_edit !== false ? 'checked' : ''}> może edytować</label>` : ''}</div>
         <div>${trGroupsDropdownHtml(r)}</div>
         <div><button class="btn ghost small" data-trdel="${escapeHtml(r.email)}" style="color:#B4472E;">Usuń</button></div></div>`).join('')}
     </div>
-    <div class="cv-small" style="margin-top:10px;">Zmiana działa po ponownym otwarciu aplikacji przez tę osobę (albo odświeżeniu strony). „Może się logować” = wpuszcza do panelu trenera. „Może edytować” odznaczone = tylko podgląd treningów (kalendarz, plany, Ukończone treningi) — bez zmian w planach, bez karty osoby, diet i bibliotek; wyniki w Panelu sportowca może wpisywać. Grupy decydują, których klientów ta osoba widzi.</div>`;
+    <div class="cv-small" style="margin-top:10px;">Zmiana działa po ponownym otwarciu aplikacji przez tę osobę (albo odświeżeniu strony). „Może się logować” = wpuszcza do panelu trenera. „Może edytować” odznaczone = tylko Panel sportowca (bez panelu trenera): widzi swoje grupy i treningi, może wpisywać wyniki zawodników, nie zmienia planów. Grupy decydują, których klientów ta osoba widzi.</div>`;
   if(missing) return;
   document.querySelectorAll('.tr-groups').forEach(dd => {
     dd.addEventListener('toggle', () => { if(dd.open) document.querySelectorAll('.tr-groups[open]').forEach(o => { if(o !== dd) o.open = false; }); });
@@ -9454,7 +9462,7 @@ function orgTileLogoHtml(g){
 function renderAthleteHome(){
   aRosterMode = null; aHomeOrgId = null; aClientId = null; aSelectedDateStr = null; aDetailExId = null;
   $('athleteWrap').classList.remove('roster-mode');
-  const tiles = clientGroups.map(g => {
+  const tiles = clientGroups.filter(g => !trainerGroupScope || trainerGroupScope.has(g.id) || clients.some(c => c.groupId === g.id)).map(g => {
     const n = clients.filter(c => c.groupId === g.id).length;
     return `<div class="a-pick-tile" data-org="${g.id}">${orgTileLogoHtml(g)}<div class="nm">${escapeHtml(g.name)}</div><div class="sub">${n} ${plPlural(n,'osoba','osoby','osób')}</div></div>`;
   }).join('');
@@ -9474,7 +9482,8 @@ function openAthleteOrg(orgId){
 
 function renderAthleteSubgroups(orgId){
   const org = clientGroups.find(g => g.id === orgId);
-  const items = clientSubgroups.filter(s => s.orgId === orgId).map(s => ({id: s.id, name: s.name, n: clients.filter(c => c.groupId === orgId && c.subgroupId === s.id).length}));
+  const items = clientSubgroups.filter(s => s.orgId === orgId).map(s => ({id: s.id, name: s.name, n: clients.filter(c => c.groupId === orgId && c.subgroupId === s.id).length}))
+    .filter(i => !trainerGroupScope || trainerGroupScope.has(orgId) || trainerGroupScope.has(i.id) || i.n > 0);
   const unassigned = clients.filter(c => c.groupId === orgId && !c.subgroupId).length;
   if(unassigned > 0) items.push({id:'__none__', name:'Bez rocznika', n: unassigned});
   const themed = themeKeyForOrg(orgId) === 'akademia';
