@@ -3334,7 +3334,8 @@ function normalizeNotes(d){
     goal: d.goal || '', position: d.position || '', alert: d.alert || '',
     notes: Array.isArray(d.notes) ? d.notes : [], injuries: Array.isArray(d.injuries) ? d.injuries : [],
     tests: Array.isArray(d.tests) ? d.tests : [], asym: Array.isArray(d.asym) ? d.asym : [],
-    contact: Object.assign({ phone:'', ig:'', guardian:'', rodo:'', image:'' }, d.contact || {})
+    contact: Object.assign({ phone:'', ig:'', guardian:'', rodo:'', image:'' }, d.contact || {}),
+    context: (d.context && typeof d.context === 'object') ? d.context : null
   };
 }
 async function loadClientNotes(id){
@@ -3490,7 +3491,7 @@ function renderClientInfo(){
   const d = notesCache[c.id] || normalizeNotes(null);
   const id = c.id;
   const save = () => saveClientNotes(id);
-  const tabs = [['prz','Przegląd'],['not','Notatki', d.notes.length],['zdr','Zdrowie'],['post','Postępy'],['tes','Testy'],['pom','Pomiary'],['kon','Kontakt'],['ank','Ankieta', (surveyCache[c.id] && surveyCache[c.id].answers) ? '✓' : '']];
+  const tabs = [['prz','Przegląd'],['not','Notatki', d.notes.length],['zdr','Zdrowie'],['post','Postępy'],['tes','Testy'],['ctx','🧠 Kontekst', (d.context && d.context.text) ? '✓' : ''],['pom','Pomiary'],['kon','Kontakt'],['ank','Ankieta', (surveyCache[c.id] && surveyCache[c.id].answers) ? '✓' : '']];
   let body = '';
   if(infoTab === 'prz'){
     const st = clientPlanStats(id);
@@ -3549,6 +3550,7 @@ function renderClientInfo(){
         <div class="cv-row" style="margin-top:8px;"><input id="cvAsName" class="cv-input" style="flex:1;min-width:110px;" placeholder="np. Prostowniki kolana"><input id="cvAsR" class="cv-input" style="width:64px;" placeholder="P"><input id="cvAsL" class="cv-input" style="width:64px;" placeholder="L"><input type="date" id="cvAsDate" value="${todayKey()}"><button class="btn ghost" id="cvAsAdd">+ Dodaj</button></div>
         <div class="cv-small" style="margin-top:6px;">Asymetria ≥ 10% jest podświetlona na czerwono.</div></div></div>`;
   }
+  if(infoTab === 'ctx') body = ctxTabHtml(c, d);
   if(infoTab === 'pom'){
     const wl = (c.weightLog || []).slice().sort((a, b) => (a.date||'').localeCompare(b.date||''));
     const lastW = wl.length ? wl[wl.length - 1] : null;
@@ -3587,6 +3589,7 @@ function renderClientInfo(){
   if(infoTab === 'post') bindClientProgress();
   if(infoTab === 'ank') bindClientSurveyTab(id);
   if(infoTab === 'tes') tstBindClientCard(id);
+  if(infoTab === 'ctx') ctxBind(c, d);
   const uid = () => 'n_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
   const rerender = () => { if(selectedClientId === id && clientView === 'info') renderClientInfo(); };
   if($('cvGoal')) $('cvGoal').onchange = async e => { d.goal = e.target.value.trim(); await save(); };
@@ -8562,7 +8565,7 @@ function renderLibraryView(){
     </div>
 
     <table class="exlist" id="libFullTable">
-      <thead><tr><th>Nazwa</th><th>Link YouTube</th><th title="Krok ciężaru w progresji: sztanga 2,5 kg · hantle 1 kg do 10 kg, potem 2,5 kg · wyciąg (linka) 2,5 kg · maszyna 2,5 kg · masa ciała bez zmiany ciężaru">Sprzęt</th><th>Grupa</th><th>Stałe uwagi</th><th style="text-align:center;">Nie MoveU</th><th></th></tr></thead>
+      <thead><tr><th>Nazwa</th><th>Link YouTube</th><th title="Krok ciężaru w progresji: sztanga 2,5 kg · hantle 1 kg do 10 kg, potem 2,5 kg · wyciąg (linka) 2,5 kg · maszyna 2,5 kg · masa ciała bez zmiany ciężaru">Sprzęt</th><th title="Tagi dla generatora planu: wzorzec ruchu i poziom trudności (P1 proste – P3 tylko zaawansowani). Nadane automatycznie z nazwy — kliknij, żeby poprawić.">Tagi (generator)</th><th>Grupa</th><th>Stałe uwagi</th><th style="text-align:center;">Nie MoveU</th><th></th></tr></thead>
       <tbody id="libFullRows"></tbody>
     </table>
   `;
@@ -8642,7 +8645,7 @@ function renderLibFullTable(){
     : `${library.length} ${plPlural(library.length, 'ćwiczenie', 'ćwiczenia', 'ćwiczeń')}`;
   if(clr) clr.style.display = libSearchQuery ? '' : 'none';
   if(rows.length === 0){
-    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:16px;">${tokens.length ? 'Brak ćwiczeń pasujących do „' + escapeHtml(libSearchQuery.trim()) + '”.' : 'Brak ćwiczeń w tej grupie.'}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:16px;">${tokens.length ? 'Brak ćwiczeń pasujących do „' + escapeHtml(libSearchQuery.trim()) + '”.' : 'Brak ćwiczeń w tej grupie.'}</td></tr>`;
     return;
   }
   tbody.innerHTML = '';
@@ -8653,6 +8656,7 @@ function renderLibFullTable(){
       <td><span class="ex-edit-name" style="cursor:text;">${escapeHtml(ex.name)}</span>${ex.notMoveU ? '<span class="record-badge"><span class="record-dot"></span>DO NAGRANIA</span>' : ''}</td>
       <td><span class="yt-hover-wrap"><span class="ex-edit-video" style="cursor:text;color:var(--muted);font-size:12px;">${ex.videoUrl?escapeHtml(ex.videoUrl):'— brak linku —'}</span>${ex.videoUrl ? '' : '<button class="yt-pick-btn" type="button" title="Wybierz film z Twojego kanału YouTube">🔗 Wybierz film</button>'}${getYoutubeId(ex.videoUrl) ? `<span class="yt-hover-thumb"><img src="https://img.youtube.com/vi/${getYoutubeId(ex.videoUrl)}/hqdefault.jpg" loading="lazy"></span>` : ''}</span></td>
       <td class="eq-cell"></td>
+      <td class="gt-cell"></td>
       <td></td>
       <td><textarea class="lib-note-input" rows="1" placeholder="dodaj stałe uwagi…">${escapeHtml(ex.note || '')}</textarea></td>
       <td style="text-align:center;"><input type="checkbox" class="notmoveu-check" ${ex.notMoveU?'checked':''}></td>
@@ -8694,7 +8698,8 @@ function renderLibFullTable(){
       await persistWithFeedback('exercise_library', library);
       renderLibFullTable();
     };
-    tr.children[3].appendChild(groupSel);
+    tr.children[4].appendChild(groupSel);
+    gtBindCell(tr.querySelector('.gt-cell'), ex);
     {
       const eqi = equipmentInfo(ex.name);
       const sel = document.createElement('select');
@@ -12607,6 +12612,558 @@ function tstClientCardHtml(clientId){
 function tstBindClientCard(clientId){
   const b = $('cvOpenTests'); if(b) b.onclick = () => navigateTo(async () => { selectedClientId = null; renderClientList(); await renderTestProfile(clientId); });
   if(!testsCache) loadAllTests().then(() => { if(infoTab === 'tes' && selectedClientId === clientId && $('cvOpenTests')) renderClientInfo(); });
+}
+
+</script>
+<script>
+/* ===== CZYTNIK OPISU ZAWODNIKA (lokalnie, bez AI, nic nie jest wysyłane) ===== */
+const CTX = (function(){
+  const norm = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/ł/g, 'l').replace(/\s+/g, ' ');
+  const MONTHS = ['stycz', 'lut', 'mar', 'kwie', 'maj', 'czerw', 'lip', 'sierp', 'wrze', 'pazdz', 'listop', 'grud'];
+  const SPORTS = [
+    ['siatkowka', /siatk|volley/],
+    ['pilka reczna', /recz|szczypiorn|handball/],
+    ['pilka nozna', /noz|pilkarz|pilkark|futbol|football|soccer/],
+    ['koszykowka', /kosz(?!ul)|basket/],
+    ['bieganie', /biega|biegacz|maraton|polmaraton|10 ?km|5 ?km|trail/],
+    ['tenis', /tenis|padel|squash|badminton/],
+    ['sporty walki', /\bmma\b|boks|judo|jiu|bjj|zapas|kick|muay|karate|taekwondo/],
+    ['crossfit', /crossfit|cross fit/],
+    ['trojboj / ciezary', /trojboj|trojbo|powerlift|podnoszenie ciezar|weightlift|dwuboj/],
+    ['lekkoatletyka', /lekkoatlet|sprinter|sprint|plotki|skok w dal|skok wzwyz|trojskok|rzut oszczep|pchniecie kula/],
+    ['plywanie', /plywa|plywak/],
+    ['kolarstwo', /kolarz|kolarst|rower|mtb|triathlon/],
+    ['hokej', /hokej/],
+    ['narciarstwo', /narciar|narty|snowboard/],
+    ['wspinaczka', /wspina|bouldering/],
+    ['taniec', /taniec|tancer|balet/],
+    ['sylwetka / kulturystyka', /kulturyst|bikini|fitness sylwet/]
+  ];
+  const POS = {
+    'siatkowka': [['atakujacy', /atakuj/], ['przyjmujacy', /przyjmuj/], ['rozgrywajacy', /rozgrywaj/], ['srodkowy', /srodkow/], ['libero', /libero/]],
+    'pilka reczna': [['bramkarz', /bramkar/], ['rozgrywajacy', /rozgrywaj/], ['skrzydlowy', /skrzydl/], ['obrotowy', /obrotow|kolow/]],
+    'pilka nozna': [['bramkarz', /bramkar/], ['obronca', /obronc|stoper|boczny obr/], ['pomocnik', /pomocnik|szostk|osemk|dziesiatk/], ['napastnik', /napastnik|snajper|dziewiatk/], ['skrzydlowy', /skrzydl/]],
+    'koszykowka': [['rozgrywajacy', /rozgrywaj|\bpg\b/], ['skrzydlowy', /skrzydl/], ['center', /center|srodkow/]]
+  };
+  const SITES = [
+    ['kolano', /kolan|\bacl\b|\bpcl\b|krzyzow|lakotk|rzepk|wiezadl.{0,12}(pobocz|krzyz)|\bmcl\b/],
+    ['staw skokowy', /kostk|skokow|\batfl\b/],
+    ['Achilles / łydka', /achilles|achilles|lydk/],
+    ['bark', /bark|stozek rotator|rotator|obojczyk|lopatk|\bslap\b/],
+    ['kręgosłup / plecy', /kregoslup|ledzw|lędźw|\bplecy\b|plecow|dysk|przepuklin|rwa kulsz|odcinek l/],
+    ['biodro / pachwina', /biodr|pachwin|przywodzic|\bfai\b|panewk/],
+    ['tylna taśma (dwugłowy)', /dwuglow|kulszowo|hamstring|tyl(u|ne)? uda|tylnej taśmy|tylna tasma/],
+    ['łokieć / nadgarstek', /lokc|lokiec|nadgarst|reka|dlon/],
+    ['podudzie / piszczel', /piszczel|podudzi|strzalk|shin/],
+    ['stopa', /stop[ayi]|podeszw|rozcieg|piet[ay]/]
+  ];
+  const TYPES = [
+    ['operacja', /operac|po zabiegu|rekonstrukc|zabieg|artroskop|szyt|zszyt|przeszczep|plastyk/],
+    ['zerwanie', /zerwan|zerwal|zerwala/],
+    ['naderwanie', /naderwa/],
+    ['skręcenie', /skrec/],
+    ['złamanie', /zlaman/],
+    ['zwichnięcie', /zwichn|wybit|podwichn/],
+    ['przeciążenie', /dyskopat|tendinopat|zapalen|entezopat|przeciaz|kolano skoczka|lokiec tenis/],
+    ['ból', /\bbol|boli|bolal|dolegliw|kluje|ciagnie/]
+  ];
+  const WORD_NUM = { 'jeden': 1, 'jedna': 1, 'dwa': 2, 'dwie': 2, 'trzy': 3, 'cztery': 4, 'piec': 5, 'szesc': 6, 'pol': 0.5 };
+  const toNum = x => { if(x == null) return null; if(/^\d+([.,]\d+)?$/.test(x)) return parseFloat(x.replace(',', '.')); return WORD_NUM[x] != null ? WORD_NUM[x] : null; };
+
+  function weeksAgoFrom(seg, now){
+    let m = seg.match(/(\d+|jeden|jedna|dwa|dwie|trzy|cztery|piec|szesc|pol)\s*(tyg|tydz|tygodni|mies|mc|m-c|miesiac|lat|lata|rok|roku)\w*\s*(temu|po|od)?/);
+    if(m && (m[3] || /temu|po |od /.test(seg))){
+      const n = toNum(m[1]); const u = m[2];
+      if(n != null) return Math.round(/^ty/.test(u) ? n : /^m/.test(u) ? n * 4.35 : n * 52);
+    }
+    if(/(rok|roku) temu|zeszlym roku|w zeszlym roku/.test(seg)) return 52;
+    if(/miesiac temu/.test(seg)) return 4;
+    if(/tydzien temu/.test(seg)) return 1;
+    m = seg.match(/w (\w+?)(iu|u|cu|a)?\b/g);
+    if(m){
+      for(const w of m){ const k = MONTHS.findIndex(p => w.replace(/^w /, '').startsWith(p)); if(k >= 0){ let diff = now.getMonth() - k; if(diff <= 0) diff += 12; return Math.round(diff * 4.35); } }
+    }
+    m = seg.match(/(20\d\d)/); if(m){ return Math.max(0, Math.round((now.getFullYear() - +m[1]) * 52)); }
+    return null;
+  }
+  function sideOf(seg){
+    if(/\b(obu|obie|obustronn|oba)\b/.test(seg)) return 'obie';
+    const L = /\blew\w*|\b(noga|kolano|kostka|bark|strona)\s+l\b|\bl\s+(noga|kolano|kostka|bark|nog\w*)/.test(seg);
+    const P = /\bpraw\w*|\b(noga|kolano|kostka|bark|strona)\s+p\b|\bp\s+(noga|kolano|kostka|bark|nog\w*)/.test(seg);
+    const tail = seg.match(/(?:^|\s)(l|p)(?=\s*(od\b|$|\(|-|\d))/);   // „…skokowego P”, „kolano L od…”
+    if(!L && !P && tail) return tail[1] === 'l' ? 'L' : 'P';
+    if(L && !P) return 'L';
+    if(P && !L) return 'P';
+    return null;
+  }
+
+  function parse(text, opts){
+    const now = (opts && opts.now) || new Date();
+    const raw = String(text || '');
+    const t = ' ' + norm(raw) + ' ';
+    const R = { age: null, sex: null, sport: null, position: null, level: null, levelHow: null, days: null, season: null, goals: [], injuries: [], flags: [], unknown: [], minor: false };
+    /* wiek */
+    let m = t.match(/(\d{1,2})\s*-?\s*(l\b|l\.|lat\b|lata\b|latek|latka|letni|letnia|r\.?z|yo\b)/) || t.match(/\blat\s*(\d{1,2})\b/) || t.match(/\bwiek\s*:?\s*(\d{1,2})/);
+    if(m) R.age = +m[1];
+    else { m = t.match(/rocznik\s*(\d{4}|\d{2})\b/) || t.match(/\bur\.?\s*(\d{4})/); if(m){ let y = +m[1]; if(y < 100) y += y > 30 ? 1900 : 2000; R.age = now.getFullYear() - y; R.ageHow = 'z rocznika'; } }
+    if(R.age != null && (R.age < 6 || R.age > 90)) R.age = null;
+    if(R.age == null && /junior|juniork|kadet|mlodzik|mlodziczk|trampkarz|\bu1[3-9]\b|\bu2[01]\b/.test(t)){ R.ageApprox = /mlodzik|mlodziczk|trampkarz|\bu1[34]\b/.test(t) ? '13–15' : '16–19'; R.minor = /mlodzik|mlodziczk|trampkarz|kadet|\bu1[3-7]\b/.test(t); }
+    if(R.age != null) R.minor = R.age < 18;
+    /* plec */
+    if(/\b(dziewczyn|kobiet|pani\b|zawodniczk|corka|siatkark|pilkark|biegaczk|koszykark|tenisistk|plywaczk|juniork|mloda|mama|ciaz|ona\b)/.test(t) || /\b\w+arka\b/.test(t)) R.sex = 'K';
+    else if(/\b(chlopak|chlopiec|mezczyzn|facet|pan\b|zawodnik|syn\b|siatkarz|pilkarz|biegacz|koszykarz|bramkarz|tata|on\b|junior\b)/.test(t) || /\b\w+(ista|ysta|owiec)\b/.test(t)) R.sex = 'M';
+    /* sport + pozycja */
+    for(const [name, re] of SPORTS){ if(re.test(t)){ R.sport = name; break; } }
+    if(/rekreac|dla siebie|zeby sie ruszac|zdrowotnie|amator/.test(t) && !R.sport) R.sport = 'rekreacja';
+    if(R.sport && POS[R.sport]) for(const [p, re] of POS[R.sport]){ if(re.test(t)){ R.position = p; break; } }
+    if(!R.position && /bramkar/.test(t)) R.position = 'bramkarz';
+    /* staz */
+    const NOV = /(bez|brak)\s+(zadnego\s+)?(doswiadcz|silowni|stazu|treningu silow|kontaktu z silow)|nie (mial|miala|cwiczyl|cwiczyla|trenowal|trenowala|robil|robila)[^.]{0,40}(silow|ciezar|sztang)|nigdy nie (cwiczyl|cwiczyla|trenowal|trenowala|byl na silow|byla na silow)|pierwszy raz na silow|poczatkuj|nowicjusz|zielon[ya]|zero doswiadcz|nie mial(a)? kontaktu|silowni\w* (nigdy|zero|brak)/;
+    const MID = /od (niedawna|kilku (tyg|mies)|paru (tyg|mies)|wakacji|pol roku|roku)|kiedys (cwiczyl|cwiczyla|trenowal|trenowala|chodzil|chodzila)|cwiczy w domu|cwiczyl(a)? w domu|troche (cwiczy|cwiczyl|trenowal)|srednio zaawans|podstawy (ma|zna)|ogarnia podstaw|(1|jeden|rok)\s*(rok|roku)?\s*(na )?silow/;
+    const ADV = /(\d+|dwa|trzy|cztery|piec)\s*(lat|lata)\s*(na |staz.{0,4}|treningu )?(silow|treningu|ciezar)|na silowni od \d+ lat|staz \d+|zaawansowan|ogarniet|doswiadczon|(przysiad|martwy|wyciskanie|ws)\s*(ok\.?\s*)?\d{2,3}\s*(kg)?|trojboj|powerlift|kadra|zawodow|ekstraklas|pierwsza lig|\bi liga|\bii liga|plusliga|tauron|superliga/;
+    if(NOV.test(t)){ R.level = 'nowicjusz'; R.levelHow = (t.match(NOV) || [])[0]; }
+    else if(ADV.test(t)){ R.level = 'zaawansowany'; R.levelHow = (t.match(ADV) || [])[0]; }
+    else if(MID.test(t)){ R.level = 'średni'; R.levelHow = (t.match(MID) || [])[0]; }
+    /* dni w tygodniu */
+    m = t.match(/(\d|jeden|dwa|dwie|trzy|cztery|piec)\s*(-|–|do|lub|albo)?\s*(\d)?\s*(x|razy|×|treningi|treningow|jednostk\w*|sesj\w*)\s*(w|na|\/)?\s*(tyg|tydz|tydzien)/);
+    if(m){ R.days = toNum(m[1]); if(m[3]) R.daysMax = +m[3]; }
+    else if(/raz w tyg|1x w tyg/.test(t)) R.days = 1;
+    else if(/codziennie/.test(t)) R.days = 6;
+    /* sezon */
+    if(/sezon (trwa|w trakcie|w pelni|ligowy)|w trakcie sezonu|w sezonie|mecze (w|co) (sob|niedz|weekend|tydz)|okres startow|liga trwa|gra mecze/.test(t)) R.season = 'w sezonie';
+    else if(/przed sezonem|okres przygotow|przygotowania do sezonu|roztrenow|po sezonie|przerwa (miedzy|od) sezon|off ?season|pre ?season/.test(t)) R.season = 'poza sezonem';
+    /* cele */
+    const G = [['redukcja', /redukc|schudn|zrzuc|odchudz|spalic|mniej kg|brzuch/], ['masa mięśniowa', /\bmas[ay]\b|masie|przytyc|budow\w* mies|hipertrof|nabrac mies/], ['powrót do sportu', /powrot (do|na) (sport|gry|boisk|biegani|treningow|parkiet|treningu)|wrocic do (gry|biegania|sportu|treningow)|po kontuzji chce/],
+      ['zdrowie / ruch', /sie ruszac|ruszac sie|dla zdrowia|zdrowotn|sprawnosc|kondycj|lepiej sie czuc|rekreac|dla siebie/], ['siła', /\bsil[aey]\b|silniejsz|mocniejsz/], ['skoczność', /skoczn|wyskok|wyzej skak|skakac wyzej/], ['szybkość', /szybkos|szybsz|zwinnos|start\w* do pilki/], ['postawa / plecy', /postaw|garbi|siedzac\w* prac/]];
+    G.forEach(([g, re]) => { if(re.test(t)) R.goals.push(g); });
+    /* urazy: dzielimy na zdania/klauzule */
+    const parts = t.split(/[.;\n]|,(?=\s*(?:po|bol|boli|operac|skrec|zerwan|naderw|zlam|kiedys|rok|w \w+ |\d+\s*(?:mies|tyg|lat)))/).filter(Boolean).map(s => ' ' + s + ' ');
+    parts.forEach(seg => {
+      const site = SITES.find(([, re]) => re.test(seg));
+      const type = TYPES.find(([, re]) => re.test(seg));
+      if(!site && !type) return;
+      if(!site && type && type[0] === 'ból' && !/\bbol\w*\s+\w+/.test(seg)) return;
+      const inj = { site: site ? site[0] : 'nieokreślone', type: type ? type[0] : 'uraz', side: sideOf(seg), weeks: weeksAgoFrom(seg, now), text: seg.trim() };
+      if(/\bacl\b|krzyzow\w* przedn/.test(seg)) inj.detail = 'ACL';
+      else if(/lakotk/.test(seg)) inj.detail = 'łąkotka';
+      else if(/achilles/.test(seg)) inj.detail = 'Achilles';
+      else if(/rzepk/.test(seg)) inj.detail = 'rzepka';
+      inj.current = inj.type === 'ból' && !/(kiedys|dawno|minel|przeszl|juz nie|nie boli|bolal)/.test(seg);
+      if(/(\d|dwa|trzy|kilka|parokrotn|wielokrotn|kolejn|nawrac)\w*\s*(razy|raz)?/.test(seg) && /razy|parokrotn|wielokrotn|kolejn|nawrac/.test(seg) && inj.type !== 'ból') inj.recurrent = true;
+      const prev = R.injuries[R.injuries.length - 1];
+      if(inj.site === 'nieokreślone' && prev){ // "…, po rekonstrukcji" dopowiada poprzedni uraz
+        if(inj.type === 'operacja') prev.surgery = true; else if(prev.type === 'uraz') prev.type = inj.type;
+        if(prev.weeks == null) prev.weeks = inj.weeks; return;
+      }
+      if(inj.type === 'operacja') inj.surgery = true;
+      if(!R.injuries.some(x => x.site === inj.site && x.type === inj.type && x.side === inj.side)) R.injuries.push(inj);
+    });
+    /* flagi medyczne */
+    if(/lekarz (zabronil|zalecil|kazal|nie pozwala)|zakaz (lekarz|skok|biegan)|ortopeda (zabronil|zalecil)/.test(t)) R.flags.push({ k: 'lekarz', t: 'Zalecenie lekarza — sprawdź szczegóły przed planem' });
+    if(/nadcisn|serc|kardiolog|arytm|zawal|omdlen|cukrzyc|astm|padaczk|epilep/.test(t)) R.flags.push({ k: 'zdrowie', t: 'Choroba przewlekła / serce w opisie — skonsultuj intensywność' });
+    if(/ciaz|w ciazy|po porodzie|polog/.test(t)) R.flags.push({ k: 'ciąża', t: 'Ciąża / okres po porodzie — osobne zasady' });
+    /* czego nie wiem */
+    if(R.age == null && !R.ageApprox) R.unknown.push('wiek');
+    if(!R.level) R.unknown.push('staż na siłowni');
+    if(R.days == null) R.unknown.push('ile razy w tygodniu');
+    if(!R.sport && !R.goals.length) R.unknown.push('sport albo cel');
+    return R;
+  }
+  return { parse, norm };
+})();
+
+/* ===== AUTO-TAGI ĆWICZEŃ Z NAZWY (lokalnie) ===== */
+const TAGS = (function(){
+  const norm = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/ł/g, 'l');
+  // [tag, etykieta, regex]
+  const PAT = [
+    ['squat', 'przysiad (kolano)', /przysiad(?!.*wykrocz)|squat|flywheel - przysiad|wejscia na podest|step ?up|wstepowan/],
+    ['lunge', 'wykrok / jednonóż kolano', /wykrok|zakrok|wykrocz|bulgarsk|step ?up|wejscia na podest|wstepowan|vmo/],
+    ['hinge', 'zawias biodrowy', /martwy|trap bar|rdl|rumunsk|hip thrust|wyprosty tulowia|lawka rzymsk|zarzut|swing/],
+    ['knee_ext', 'prostowanie kolana (czworogłowy)', /(prostowanie|wyprosty) podudzi|vmo|spanish/],
+    ['ham', 'tylna taśma (dwugłowy)', /uginanie podudzi|nordic|nordyck|gh roller|glute.?ham|\bgh\b|rdl|rumunsk/],
+    ['calf', 'łydka / Achilles', /wspiecia|lydk|calf/],
+    ['add', 'przywodziciele / pachwina', /kopenhask|przywodz|copenhagen/],
+    ['pull_h', 'ciąg poziomy', /wioslowan|row\b/],
+    ['pull_v', 'ciąg pionowy', /podciag|sciaganie drazka|lat pull/],
+    ['push_h', 'wyciskanie poziome', /wyciskanie (sztangi|hantli)? ?-? ?lawka|lawka pozioma|pompk|dipy|bench/],
+    ['push_v', 'wyciskanie nad głowę', /nad glowe|ohp|wyciskanie zolniersk/],
+    ['shoulder', 'bark (izolacja)', /wznosy|rotacja zewn|face pull|y-t-w/],
+    ['arms', 'ramię (izolacja)', /przedramion|biceps|triceps|uginanie przedr|prostowanie przedr/],
+    ['core', 'tułów / core', /sklony tulowia|siady z lezenia|t2b|toes to bar|plank|deska|rotacja tulowia|pallof|dead bug|kark/],
+    ['rot', 'rotacja', /rotac/],
+    ['neck', 'szyja', /kark/],
+    ['land', 'lądowanie / hamowanie', /ladowanie|drop jump|stop jump/],
+    ['plyo', 'plyometria / reaktywność', /skok|reaktywn|odbic|hop\b|bound|drop jump/],
+    ['power', 'moc / szybkość', /zarzut|rwanie|rzut pilk|flywheel|gumy oporowe|swing|skok/],
+    ['cond', 'kondycja', /air bike|rower|wiosla(rz|rki)|bieg|sprint|interwa/],
+    ['warm', 'rozgrzewka', /rozgrzewk/],
+    ['balance', 'równowaga / propriocepcja', /rownowag|propriocep|bosu|jednonoz.*(stani|balans)|y-balance/],
+    ['ecc', 'ekscentryka', /ekscentr|nordic|nordyck|2:1|drop|flywheel|ladowanie/]
+  ];
+  const UNI_SKIP = /\brzut/;
+  const UNI = /jednon|jednorac|bulgarsk|wykrok|zakrok|wykrocz|step ?up|wejscia na podest|wstepowan|naprzemienn|vmo|kopenhask|2:1/;
+  // poziom trudności 1–3 (3 = tylko dla zaawansowanych technicznie)
+  const LVL3 = /zarzut|rwanie|flywheel|gh roller - drop|drop jump|reaktywny|jednonoz - na stopie|t2b|toes to bar|bulgarski - ze sztang|box step up- ze sztang|pendlay/;
+  const LVL1 = /maszyn|wyciag|siedzac|w oparciu|hip thrust - obu|wspiecia|siady z lez|wznosy|przedramion|air bike|rozgrzewk|kark|kopenhask|wejscia na podest|vmo/;
+  function tag(name){
+    const n = norm(name);
+    let tags = PAT.filter(([, , re]) => re.test(n)).map(([k]) => k);
+    if(/\brzut|\bpilk/.test(n)) tags = tags.filter(t => !['plyo', 'lunge'].includes(t)).concat(tags.includes('throw') ? [] : ['throw']); // rzuty = górna część / tułów
+    const uni = UNI.test(n) && !UNI_SKIP.test(n);
+    if(uni) tags.push('uni');
+    if(uni && tags.some(t => ['squat','lunge','hinge','knee_ext','ham','calf','land','plyo'].includes(t))) tags.push('uni_leg');
+    const level = LVL3.test(n) ? 3 : LVL1.test(n) ? 1 : 2;
+    const load = /maszyn|wyciag/.test(n) ? 'maszyna' : /sztang|trap bar/.test(n) ? 'sztanga' : /hantl|kettlebell|krazk|pilk/.test(n) ? 'wolny ciężar lekki' : /flywheel/.test(n) ? 'flywheel' : 'ciało';
+    return { tags, uni, level, load, unknown: tags.length === 0 };
+  }
+  const LABEL = Object.fromEntries(PAT.map(([k, l]) => [k, l]).concat([['uni', 'jednostronne'], ['uni_leg', 'jednonóż (nogi)'], ['throw', 'rzut piłką']]));
+  // tagi z ręczną poprawką trenera (ex.genTags = { tags:[], level })
+  function tagEx(ex){
+    const a = tag(ex.name);
+    if(!ex.genTags || !Array.isArray(ex.genTags.tags)) return Object.assign(a, { manual: false });
+    const tags = ex.genTags.tags.filter(t => t !== 'uni_leg');
+    const uni = tags.includes('uni');
+    if(uni && tags.some(t => ['squat','lunge','hinge','knee_ext','ham','calf','land','plyo'].includes(t))) tags.push('uni_leg');
+    return { tags, uni, level: ex.genTags.level || a.level, load: a.load, unknown: tags.length === 0, manual: true };
+  }
+  const EDITABLE = PAT.map(([k]) => k).concat(['throw', 'uni']);
+  return { tag, tagEx, LABEL, EDITABLE, norm };
+})();
+
+/* ===== REGUŁY DOBORU Z BADAŃ (lokalnie) =====
+   wejście: ctx (z CTX.parse), testy (opcjonalnie), biblioteka [{name}] z TAGS
+   wyjście: parametry, co dodać / uważać / wykluczyć, decyzje dla trenera, braki w bibliotece — każda pozycja ze źródłem */
+const RULES = (function(){
+  const SRC = {
+    lloyd:   { t: 'Lloyd i wsp. 2014 – konsensus: trening oporowy młodzieży (BJSM)', u: 'https://bjsm.bmj.com/content/48/7/498' },
+    acsm26:  { t: 'ACSM 2026 – nowe stanowisko: trening oporowy dorosłych', u: 'https://acsm.org/resistance-training-guidelines-update-2026/' },
+    fragala: { t: 'Fragala i wsp. 2019 – NSCA: trening oporowy osób starszych', u: 'https://pubmed.ncbi.nlm.nih.gov/31343601/' },
+    haroy:   { t: 'Harøy i wsp. 2019 – Copenhagen a urazy pachwiny (RCT, 35 drużyn)', u: 'https://bjsm.bmj.com/content/53/3/150' },
+    vandyk:  { t: 'van Dyk i wsp. 2019 – Nordic a urazy dwugłowego (metaanaliza)', u: 'https://bjsm.bmj.com/content/53/21/1362' },
+    hupper:  { t: 'Hupperets i wsp. 2009 – trening proprioceptywny po skręceniu kostki (RCT)', u: 'https://search.pedro.org.au/search-results/record-detail/23915' },
+    aspetar: { t: 'Aspetar 2023 – wytyczne rehabilitacji po rekonstrukcji ACL', u: 'https://bjsm.bmj.com/content/57/9/500' },
+    eur:     { t: 'VALD – jak czytać EUR (CMJ/SJ)', u: 'https://valdperformance.com/news/understanding-the-eccentric-utilization-ratio-eur' },
+    bishop:  { t: 'Bishop i wsp. 2018 – jak liczyć i czytać asymetrie', u: 'https://eprints.chi.ac.uk/id/eprint/3265/' },
+    kongs:   { t: 'Kongsgaard i wsp. 2009 – HSR w tendinopatii rzepki (RCT)', u: 'https://pubmed.ncbi.nlm.nih.gov/19793213/' },
+    silber:  { t: 'Silbernagel i wsp. 2007 – model monitorowania bólu (Achilles, RCT)', u: 'https://search.pedro.org.au/search-results/record-detail/18389' },
+    askling: { t: 'Askling i wsp. 2013 – protokół L po urazie dwugłowego (RCT)', u: 'https://bjsm.bmj.com/content/47/15/953' },
+    holmich: { t: 'Hölmich i wsp. 1999 – aktywny trening w bólu przywodzicieli (RCT, Lancet)', u: 'https://pubmed.ncbi.nlm.nih.gov/9989713/' },
+    villar:  { t: 'de Villarreal i wsp. 2009 – plyometria a wyskok (metaanaliza)', u: 'https://pubmed.ncbi.nlm.nih.gov/19197203/' },
+    trener:  { t: 'Reguła trenerska MoveU (nie z badania – do Twojej decyzji)', u: null }
+  };
+  // które tagi ćwiczeń obciążają dane miejsce
+  const SITE_TAGS = {
+    'kolano': ['squat', 'lunge', 'knee_ext', 'plyo', 'land'],
+    'staw skokowy': ['plyo', 'calf', 'land'],
+    'Achilles / łydka': ['calf', 'plyo'],
+    'bark': ['push_v', 'push_h', 'pull_v', 'shoulder'],
+    'kręgosłup / plecy': ['hinge', 'squat'],
+    'biodro / pachwina': ['add', 'lunge'],
+    'tylna taśma (dwugłowy)': ['ham', 'hinge', 'cond'],
+    'łokieć / nadgarstek': ['arms', 'pull_h', 'pull_v', 'push_h'],
+    'podudzie / piszczel': ['plyo', 'cond'],
+    'stopa': ['plyo', 'calf']
+  };
+  const FIELD = /pilka nozna|pilka reczna|hokej/;          // sporty z kopnięciem / zmianą kierunku
+  const SPRINT = /pilka nozna|pilka reczna|koszyk|lekkoatlet|hokej|tenis/;
+  const JUMP = /siatk|koszyk|pilka reczna|lekkoatlet/;
+
+  function build(ctx, tests, library){
+    const O = { params: [], add: [], caution: [], exclude: [], decide: [], missing: [], stop: [], used: new Set(), maxLevel: 3 };
+    const push = (arr, txt, src, extra) => { arr.push(Object.assign({ t: txt, src }, extra || {})); O.used.add(src); };
+    const age = ctx.age, minor = ctx.minor, lvl = ctx.level;
+    const sport = ctx.sport || '';
+    const inSeason = ctx.season === 'w sezonie';
+
+    /* 0. STOP – rzeczy, przy których nie generujemy planu automatycznie */
+    ctx.flags.forEach(f => push(O.stop, f.t + '. Plan tylko ręcznie, po konsultacji.', 'trener'));
+
+    /* 1. PARAMETRY BAZOWE wg wieku i stażu */
+    if(minor && (lvl === 'nowicjusz' || !lvl)){
+      push(O.params, 'Start: 1–2 serie, lekko (≤60% 1RM), nauka techniki. W bojach wielostawowych 1–3 powtórzenia z poprawą techniki.', 'lloyd');
+      push(O.params, 'Po opanowaniu techniki: 2–4 serie × 6–12 powt., do ≤80% 1RM.', 'lloyd');
+      push(O.params, 'Częstotliwość 2–3×/tydz., nie dzień po dniu. Przerwy ok. 1 min, 2–3 min przy ćwiczeniach mocy.', 'lloyd');
+      O.maxLevel = 2;
+      push(O.exclude, 'Ćwiczenia poziomu 3 (zarzut, flywheel, reaktywne jednonóż, drop) – dopiero po opanowaniu techniki.', 'lloyd');
+      push(O.params, 'Ustalone: pierwsze 2–3 tyg. technika (≤60% 1RM, bez celu RPE 9), potem normalna progresja RPE 9.', 'lloyd');
+      if(!lvl) push(O.decide, 'Nie wiem, jaki staż – przyjąłem jak dla początkującego. Popraw w opisie, jeśli ma doświadczenie.', 'trener');
+    } else if(minor && lvl === 'zaawansowany'){
+      push(O.params, 'Zaawansowana młodzież: można ≤6 powt. przy >85% 1RM (po latach techniki).', 'lloyd');
+      push(O.params, '2–3×/tydz., nie dzień po dniu.', 'lloyd');
+    } else if(minor){
+      push(O.params, '2–4 serie × 6–12 powt., do ≤80% 1RM, 2–3×/tydz.', 'lloyd');
+      O.maxLevel = 2;
+    } else if(age != null && age >= 60){
+      push(O.params, '2–3×/tydz., 1–3 serie, 6–12 powt., docelowo 70–85% 1RM – rosnąco.', 'fragala');
+      push(O.params, 'Moc: 40–60% 1RM, faza koncentryczna jak najszybciej (ważne dla sprawności).', 'fragala');
+      O.maxLevel = 2;
+    } else {
+      push(O.params, 'Każda główna grupa mięśniowa min. 2×/tydz.', 'acsm26');
+      if(ctx.goals.includes('masa mięśniowa')) push(O.params, 'Masa: ok. 10 serii na grupę mięśniową tygodniowo (suma ze wszystkich dni).', 'acsm26');
+      if(ctx.goals.includes('siła') || /zaaw/.test(lvl || '')) push(O.params, 'Siła: 2–3 serie na ćwiczenie, ok. 80% 1RM.', 'acsm26');
+      if(ctx.goals.some(g => /skocz|szybk/.test(g)) || ctx.sport) push(O.params, 'Moc: 30–70% 1RM, koncentrycznie jak najszybciej.', 'acsm26');
+      push(O.params, 'Trening do upadku mięśniowego nie jest konieczny – RPE 9 (1 powt. w zapasie) jest OK.', 'acsm26');
+      if(lvl === 'nowicjusz'){ O.maxLevel = 2; push(O.exclude, 'Poziom 3 – nie na start u początkującego.', 'trener'); }
+    }
+
+    /* 2. SEZON */
+    if(inSeason && (minor || ctx.sport)) push(O.params, 'W sezonie 1–3 sesje/tydz. – siłownia ZASTĘPUJE część obciążeń, nie dokłada.', 'lloyd');
+
+    /* 3. PREWENCJA wg sportu */
+    if(FIELD.test(sport)){
+      const d = inSeason ? '1×/tydz. (podtrzymanie)' : '3×/tydz. przez 6–8 tyg., potem 1×/tydz';
+      push(O.add, `Kopenhaskie przywodzenie – ${d}. W piłce nożnej: −41% ryzyka problemów z pachwiną.`, 'haroy', { tag: 'add' });
+      if(/reczna|hokej/.test(sport)) push(O.decide, 'Badanie dotyczyło piłki nożnej – w ręcznej/hokeju stosuję przez analogię (moje przypuszczenie).', 'haroy');
+    }
+    if(SPRINT.test(sport)) push(O.add, 'Nordic hamstring w programie – do −51% urazów dwugłowego.', 'vandyk', { tag: 'nordic', need: /nordic|nordyck/ });
+    if(JUMP.test(sport) || ctx.goals.includes('skoczność')){
+      if(O.maxLevel >= 2) push(O.add, 'Skoczność: plyometria >10 tyg., >20 sesji, mieszanka SJ/CMJ/DJ – największy efekt.', 'villar', { tag: 'plyo' });
+    }
+
+    /* 4. URAZY */
+    ctx.injuries.forEach(inj => {
+      const side = inj.side ? ` (${inj.side})` : '';
+      const tags = SITE_TAGS[inj.site] || [];
+      if(inj.site === 'kolano' && inj.detail === 'ACL' && (inj.surgery || inj.type === 'zerwanie')){
+        const w = inj.weeks;
+        if(w == null) push(O.decide, `ACL${side}: nie wiem, ile czasu od operacji – podaj miesiąc.`, 'aspetar');
+        else if(w < 22){
+          push(O.exclude, `ACL${side} ${Math.round(w / 4.35)} mies.: bez plyometrii i skoków reaktywnych (wprowadzamy ok. 5. mies., stopniowo).`, 'aspetar', { tags: ['plyo'] });
+          O.maxLevel = Math.min(O.maxLevel, 2);
+        }
+        push(O.add, `ACL${side}: priorytet czworogłowy operowanej nogi (prostowanie kolana, przysiad jednonóż).`, 'aspetar', { tag: 'knee_ext' });
+        push(O.params, 'ACL – bieganie, gdy LSI czworogłowego >80% i LSI impulsu ekscentrycznego w CMJ >80%, bez wysięku, pełny wyprost.', 'aspetar');
+        push(O.params, 'ACL – powrót do sportu: zwykle ≥9 mies., siła ~100% symetrii, CMJ i drop jump >90%, RSI >1,3 obunóż / >0,5 jednonóż. Kryteria, nie kalendarz.', 'aspetar');
+        if(minor) push(O.decide, 'Junior po ACL – wyższe ryzyko ponownego urazu; nie skracaj etapów.', 'aspetar');
+        return;
+      }
+      if(inj.site === 'staw skokowy' && /skrec|zwichn/.test(inj.type + '') || (inj.site === 'staw skokowy' && inj.type === 'skręcenie')){
+        push(O.add, `Kostka${side}: trening równowagi/propriocepcji 3×/tydz. przez 8 tyg. → −35% nawrotów skręcenia.` + (inj.recurrent ? ' Skręcenia nawracają – priorytet.' : ''), 'hupper', { tag: 'balance', need: /rownowag|propriocep|balans|y-balance|bosu/ });
+        return;
+      }
+      if(inj.site === 'tylna taśma (dwugłowy)' && /naderw|zerw|uraz/.test(inj.type)){
+        push(O.add, `Dwugłowy${side}: ćwiczenia w wydłużeniu (protokół L: „extender”, „diver”, „glider”) – szybszy powrót niż klasyczne.`, 'askling', { need: /extender|diver|glider|wydluzen/ });
+        if(inj.weeks != null && inj.weeks < 6) push(O.caution, 'Świeży uraz (<6 tyg.) – sprint i ruchy balistyczne dopiero po pełnej, bezbolesnej sile.', 'askling', { tags: ['cond', 'power'] });
+        return;
+      }
+      if(inj.site === 'kolano' && inj.type === 'przeciążenie'){
+        push(O.add, `Kolano skoczka${side}: HSR – 3×/tydz. 12 tyg., 4 serie, z 15RM do 6RM, tempo 3 s w dół / 3 s w górę (przysiad, prostowanie).`, 'kongs', { tag: 'knee_ext' });
+        push(O.caution, 'Skoki – dawka wg bólu (do 5/10, rano następnego dnia nie gorzej).', 'silber', { tags: ['plyo', 'land'] });
+        return;
+      }
+      if(inj.site === 'Achilles / łydka'){
+        push(O.add, `Achilles${side}: wspięcia na palce z obciążeniem, progresywnie.`, 'silber', { tag: 'calf' });
+        push(O.caution, 'Można trenować i biegać, jeśli ból w trakcie ≤5/10 i rano następnego dnia nie gorzej.', 'silber', { tags: ['plyo', 'cond'] });
+        return;
+      }
+      if(inj.site === 'biodro / pachwina' && (inj.current || inj.type === 'ból')){
+        push(O.add, 'Ból pachwiny: aktywny trening przywodzicieli 8–12 tyg. (79% wróciło do sportu vs 14% przy terapii biernej).', 'holmich', { tag: 'add' });
+        return;
+      }
+      // ogólnie: obecny ból / inne urazy
+      if(inj.current){
+        push(O.caution, `Obecny ból: ${inj.site}${side}. Ćwiczenia obciążające to miejsce – tylko w tolerancji (do 5/10, następnego dnia nie gorzej).`, 'silber', { tags });
+      } else if(inj.surgery){
+        push(O.decide, `Po operacji: ${inj.site}${side}${inj.detail ? ' – ' + inj.detail : ''}. Brak gotowej reguły z badań – etap i ograniczenia ustal Ty / chirurg.`, 'trener', { tags });
+      } else if(inj.type !== 'uraz'){
+        push(O.decide, `Historia: ${inj.type} – ${inj.site}${side}. Bez automatycznej reguły – oceń sam.`, 'trener', { tags });
+      }
+    });
+
+    /* 5. TESTY Z PLATFORMY */
+    if(tests){
+      if(tests.asym != null){
+        const a = Math.abs(tests.asym), weak = tests.weak ? ` – słabsza ${tests.weak}` : '';
+        if(a >= 15) push(O.add, `Asymetria ${a}%${weak}: wyraźna (>15%). Priorytet ćwiczeń jednonóż.`, 'bishop', { tag: 'uni_leg' }),
+                    push(O.params, `Ustalone: słabsza noga${tests.weak ? ' (' + tests.weak + ')' : ''} +1 seria w ćwiczeniach jednonóż, aż różnica <10%.`, 'trener');
+        else if(a >= 10) push(O.caution, `Asymetria ${a}%${weak}: granica (10–15%). Obserwuj, retest za 6 tyg.`, 'bishop');
+      }
+      if(tests.eur != null){
+        if(tests.eur < 1.0) push(O.add, `EUR ${tests.eur}: słabo wykorzystuje odbicie (CMJ ≈ SJ). Więcej pracy reaktywnej / SSC – jeśli poziom pozwala.`, 'eur', { tag: 'plyo' });
+        else if(tests.eur >= 1.10) push(O.caution, `EUR ${tests.eur}: dobrze wykorzystuje odbicie. Jeśli sam wyskok jest niski – brakuje siły/mocy (SJ), nie techniki skoku.`, 'eur', { tag: 'squat' });
+        if(tests.jump == null) push(O.decide, 'EUR czytaj razem z wysokością skoku – wpisz CMJ w cm.', 'eur');
+      }
+    }
+
+    /* 6. BIBLIOTEKA – czego brakuje / co wykluczyć */
+    const lib = (library || []).map(x => Object.assign({ name: x.name }, TAGS.tagEx(x)));
+    O.add.forEach(r => {
+      if(r.need){ if(!lib.some(e => r.need.test(TAGS.norm(e.name)))) O.missing.push({ t: r.tag === 'nordic' ? 'Nordic hamstring' : r.tag === 'balance' ? 'Ćwiczenia równowagi / propriocepcji' : 'Ćwiczenia w wydłużeniu dwugłowego', src: r.src, hint: r.tag === 'nordic' ? 'np. „Nordic hamstring – z partnerem”. GH roller uginanie to nie to samo (mniej ekscentryki).' : r.tag === 'balance' ? 'np. „Stanie jednonóż na niestabilnym”, „Y-balance reach”.' : 'np. „Extender”, „Diver”, „Glider” (Askling).' }); }
+      else if(r.tag && !lib.some(e => e.tags.includes(r.tag))) O.missing.push({ t: r.t.split(':')[0], src: r.src, hint: `Żadne ćwiczenie w bibliotece nie ma tagu „${TAGS.LABEL[r.tag] || r.tag}”. Dodaj ćwiczenie albo popraw tagi.` });
+      r.examples = r.tag ? lib.filter(e => e.tags.includes(r.tag) && e.level <= O.maxLevel).slice(0, 4).map(e => e.name) : [];
+      if(r.tag && !r.need && !r.examples.length && lib.some(e => e.tags.includes(r.tag))) O.missing.push({ t: r.t.split(':')[0], src: r.src, hint: `W bibliotece są tylko trudniejsze wersje (poziom 3). Dodaj prostsze, np. „Skoki na skrzynię obunóż”, „Pogo jumps”.` });
+    });
+    const excl = new Set(); O.exclude.forEach(r => (r.tags || []).forEach(t => excl.add(t)));
+    const caut = new Set(); O.caution.forEach(r => (r.tags || []).forEach(t => caut.add(t)));
+    O.library = lib.map(e => Object.assign(e, {
+      status: e.level > O.maxLevel || e.tags.some(t => excl.has(t)) ? 'out' : e.tags.some(t => caut.has(t)) ? 'care' : 'ok'
+    }));
+    O.sources = [...O.used].map(k => Object.assign({ k }, SRC[k]));
+    return O;
+  }
+  return { build, SRC };
+})();
+
+/* ===== KONTEKST ZAWODNIKA (karta klienta) + TAGI W BIBLIOTECE — wersja #21 =====
+   Wszystko liczone lokalnie w przeglądarce. Nic nie jest wysyłane poza aplikację (tylko zapis do własnej bazy Supabase, jak inne notatki). */
+const CTX_TEST_MAX_DAYS = 56;   // testy z platformy starsze niż 8 tygodni nie są brane do wniosków
+const CTX_PL = { 'pilka reczna':'piłka ręczna','pilka nozna':'piłka nożna','siatkowka':'siatkówka','koszykowka':'koszykówka','plywanie':'pływanie','trojboj / ciezary':'trójbój / ciężary','atakujacy':'atakujący','przyjmujacy':'przyjmujący','rozgrywajacy':'rozgrywający','srodkowy':'środkowy','obronca':'obrońca','skrzydlowy':'skrzydłowy' };
+const ctxPl = x => CTX_PL[x] || x;
+const ctxDraft = {};   // niezapisany opis — nie znika przy przerysowaniu karty
+
+(function(){ const st = document.createElement('style'); st.textContent = `
+ .ctx-chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+ .ctx-chip{font-size:12px;padding:3px 10px;border-radius:999px;background:#E6F4EA;color:#1E7A3C}
+ .ctx-chip.q{background:#FFF4E5;color:#A15C07}.ctx-chip.inj{background:#E8EEFB;color:#2849A8}.ctx-chip.card{background:var(--surface-2);color:var(--muted)}
+ .ctx-sec{font-weight:700;font-size:13px;margin:12px 0 4px}
+ .ctx-li{padding:7px 10px;border-left:3px solid var(--line);margin:4px 0;background:var(--surface-2);border-radius:0 6px 6px 0;font-size:13px;line-height:1.4}
+ .ctx-li.add{border-color:#2E9E5B}.ctx-li.care{border-color:#C98A17}.ctx-li.ex{border-color:#C2462E}.ctx-li.dec{border-color:#3E7CB1}.ctx-li.miss{border-color:#C98A17;border-left-style:dashed}
+ .ctx-src{display:inline-block;font-size:10.5px;padding:0 6px;border-radius:4px;background:var(--line);color:var(--muted);margin-left:4px;white-space:nowrap;text-decoration:none}
+ .ctx-ex{font-size:11.5px;color:var(--muted);margin-top:3px}
+ .ctx-stop{background:#FDEAEA;color:#B4472E;border-radius:8px;padding:9px 10px;font-weight:600;font-size:13px;margin-bottom:8px}
+ .ctx-fix{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:6px}.ctx-fix label{font-size:11px;color:var(--muted);display:block}
+ .ctx-fix select{width:100%}
+ .gt-chip{display:inline-block;font-size:10.5px;padding:0 6px;margin:1px;border-radius:4px;background:var(--surface-2);border:1px solid var(--line);white-space:nowrap}
+ .gt-cell{min-width:150px;max-width:240px;cursor:pointer}.gt-cell:hover .gt-chip{border-color:var(--accent-dim)}
+ .gt-lvl{font-size:10.5px;font-weight:700;margin-right:3px}.gt-man{font-size:10px;color:#2849A8;margin-left:3px}.gt-unk{font-size:10.5px;color:#A15C07}
+ .gt-edit{background:var(--surface);border:1px solid var(--accent-dim);border-radius:8px;padding:8px;cursor:default;max-width:300px}
+ .gt-edit label{display:inline-flex;align-items:center;gap:3px;font-size:11.5px;margin:2px 6px 2px 0;white-space:nowrap}
+ .gt-edit .row{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;align-items:center}
+ @media(max-width:700px){.ctx-fix{grid-template-columns:1fr 1fr}}
+`; document.head.appendChild(st); })();
+
+/* ---------- dane wejściowe ---------- */
+function ctxActiveInjuriesText(d){
+  return (d.injuries || []).map(i => (i.status === 'aktywna' ? '' : 'kiedyś ') + i.name + (i.since ? ' od ' + i.since : '')).join('. ');
+}
+function ctxParsed(c, d, text, over){
+  const extra = ctxActiveInjuriesText(d);
+  const full = [text || '', extra, d.position ? 'pozycja ' + d.position : '', d.goal || ''].filter(Boolean).join('. ');
+  const R = CTX.parse(full);
+  R.fromCard = [];
+  const age = typeof clientAge === 'function' ? clientAge(c) : null;
+  if(age != null && R.age == null){ R.age = age; R.minor = age < 18; R.unknown = R.unknown.filter(u => u !== 'wiek'); R.fromCard.push('wiek z daty urodzenia'); }
+  if(extra) R.fromCard.push('kontuzje z zakładki Zdrowie');
+  if(d.goal) R.fromCard.push('cel z Przeglądu');
+  over = over || {};
+  if(over.level){ R.level = over.level; R.unknown = R.unknown.filter(u => u !== 'staż na siłowni'); R.levelFixed = true; }
+  if(over.days){ R.days = +over.days; R.daysMax = null; R.unknown = R.unknown.filter(u => u !== 'ile razy w tygodniu'); }
+  if(over.season){ R.season = over.season === 'brak' ? null : over.season; }
+  return R;
+}
+function ctxTestsFor(clientId){
+  if(!testsCache || typeof tstAnalyze !== 'function') return { info: testsCache ? 'Brak testów z platformy.' : 'Ładowanie testów…', tests: null };
+  const A = tstAnalyze(clientId), R = tstBuildReadable(A);
+  if(!R || !A.L) return { info: 'Brak testów z platformy.', tests: null };
+  const age = tstDaysSince(A.L.day);
+  if(age > CTX_TEST_MAX_DAYS) return { info: `Ostatni CMJ ${tstDayPl(A.L.day)} – starszy niż 8 tyg., nie biorę go pod uwagę. Zrób retest.`, tests: null };
+  const t = { asym: R.worst ? Math.round(R.worst.pct) : null, weak: R.worst ? R.worst.weak : null, eur: R.eur != null ? Math.round(R.eur * 100) / 100 : null, jump: R.jh != null ? Math.round(R.jh * 10) / 10 : null };
+  const parts = [`CMJ ${tstDayPl(A.L.day)}`];
+  if(t.jump != null) parts.push(`${tstF(t.jump)} cm`);
+  if(t.asym != null) parts.push(`najw. asymetria ${t.asym}%${t.weak ? ' (' + t.weak + ')' : ''} – ${R.worst.lab ? R.worst.lab.toLowerCase() : R.worst.phase}`);
+  if(t.eur != null) parts.push(`EUR ${tstF(t.eur, 2)}`);
+  return { info: parts.join(' · '), tests: t };
+}
+
+/* ---------- widok zakładki ---------- */
+function ctxChipsHtml(R, hasText){
+  const ch = [];
+  if(R.age != null) ch.push(`${R.age} lat${R.ageHow ? ' (' + R.ageHow + ')' : ''}`); else if(R.ageApprox) ch.push(`ok. ${R.ageApprox} lat`);
+  if(R.minor) ch.push('niepełnoletni');
+  if(R.sex) ch.push(R.sex === 'K' ? 'kobieta' : 'mężczyzna');
+  if(R.sport) ch.push(ctxPl(R.sport)); if(R.position) ch.push(ctxPl(R.position));
+  if(R.level) ch.push('staż: ' + R.level + (R.levelFixed ? ' ✎' : ''));
+  if(R.days != null) ch.push(R.days + (R.daysMax ? '–' + R.daysMax : '') + '×/tydz.');
+  if(R.season) ch.push(R.season); R.goals.forEach(g => ch.push('cel: ' + g));
+  const inj = R.injuries.map(i => `<span class="ctx-chip inj">🩹 ${escapeHtml(i.detail || i.site)} · ${escapeHtml(i.type)}${i.surgery && i.type !== 'operacja' ? ' · po operacji' : ''}${i.side ? ' · ' + i.side : ''}${i.weeks != null ? ' · ~' + (i.weeks < 9 ? i.weeks + ' tyg.' : Math.round(i.weeks / 4.35) + ' mies.') + ' temu' : ''}${i.current ? ' · boli teraz' : ''}${i.recurrent ? ' · nawraca' : ''}</span>`).join('');
+  return `<div class="ctx-chips">${ch.map(c => `<span class="ctx-chip">✓ ${escapeHtml(c)}</span>`).join('') || '<span class="cv-small">Na razie nic.</span>'}</div>
+    ${inj ? `<div class="ctx-chips">${inj}</div>` : ''}
+    ${hasText && R.unknown.length ? `<div class="ctx-chips">${R.unknown.map(u => `<span class="ctx-chip q">❓ nie wiem: ${escapeHtml(u)}</span>`).join('')}</div>` : ''}
+    ${R.fromCard.length ? `<div class="ctx-chips">${R.fromCard.map(u => `<span class="ctx-chip card">↳ ${escapeHtml(u)}</span>`).join('')}</div>` : ''}`;
+}
+function ctxOutHtml(o, testsInfo){
+  const idx = {}; o.sources.forEach((s, i) => idx[s.k] = i + 1);
+  const badge = r => `<a class="ctx-src" href="#ctxSources">[${idx[r.src]}] ${r.src === 'trener' ? 'trener' : escapeHtml(RULES.SRC[r.src].t.split(' –')[0])}</a>`;
+  const sec = (title, arr, cls) => arr.length ? `<div class="ctx-sec">${title}</div>${arr.map(r => `<div class="ctx-li ${cls}">${escapeHtml(r.t)} ${badge(r)}${r.examples && r.examples.length ? `<div class="ctx-ex">z biblioteki: ${r.examples.map(escapeHtml).join(' · ')}</div>` : ''}</div>`).join('')}` : '';
+  const cnt = { ok: 0, care: 0, out: 0 }; o.library.forEach(e => cnt[e.status]++);
+  return o.stop.map(s => `<div class="ctx-stop">⛔ ${escapeHtml(s.t)}</div>`).join('')
+    + `<div class="cv-small">🦘 ${escapeHtml(testsInfo)}</div>`
+    + sec('⚙️ Parametry', o.params, '') + sec('➕ Dodaj do planu', o.add, 'add') + sec('⚠️ Uważaj', o.caution, 'care')
+    + sec('🚫 Wyklucz na teraz', o.exclude, 'ex') + sec('🤔 Do Twojej decyzji', o.decide, 'dec')
+    + (o.missing.length ? `<div class="ctx-sec">📚 Brakuje w bibliotece</div>${o.missing.map(m => `<div class="ctx-li miss">${escapeHtml(m.t)}${m.hint ? `<div class="ctx-ex">${escapeHtml(m.hint)}</div>` : ''}</div>`).join('')}` : '')
+    + `<div class="cv-small" style="margin-top:10px;">Biblioteka dla tej osoby: <b>${cnt.ok}</b> OK · <b>${cnt.care}</b> uważaj · <b>${cnt.out}</b> wykluczone (max poziom ${o.maxLevel}). Tagi poprawisz w Bibliotece.</div>`
+    + (o.sources.length ? `<details id="ctxSources" style="margin-top:10px;"><summary class="cv-small" style="cursor:pointer;">📖 Źródła (${o.sources.length})</summary><ol style="font-size:12.5px;margin:6px 0 0 18px;padding:0;">${o.sources.map(s => `<li>${s.u ? `<a href="${s.u}" target="_blank" rel="noopener">${escapeHtml(s.t)}</a>` : escapeHtml(s.t)}</li>`).join('')}</ol></details>` : '');
+}
+function ctxTabHtml(c, d){
+  const cx = Object.assign({}, d.context || {}, ctxDraft[c.id] || {}), over = cx.over || {};
+  const opt = (v, cur, lab) => `<option value="${v}" ${String(cur || '') === String(v) ? 'selected' : ''}>${lab}</option>`;
+  return `<div class="cv-grid2">
+    <div class="cv-card"><h4>🧠 Kontekst zawodnika <span class="cv-small" style="font-weight:400;">opis swoimi słowami</span></h4>
+      <textarea id="ctxText" class="cv-input" rows="4" placeholder="np. Chłopak 16 lat, bramkarz ręczna, wcześniej bez siłowni, 2x w tyg. Skręcił prawą kostkę w sierpniu.">${escapeHtml(cx.text || '')}</textarea>
+      <div class="cv-small" style="margin-top:4px;">🔒 Czytane w aplikacji, nic nie jest wysyłane na zewnątrz. Dobieram też: datę urodzenia, kontuzje z „Zdrowie”, cel i pozycję.</div>
+      <h4 style="margin-top:12px;">Co zrozumiałem</h4><div id="ctxChips"></div>
+      <h4 style="margin-top:12px;">Popraw, jeśli źle</h4>
+      <div class="ctx-fix">
+        <div><label>Staż na siłowni</label><select id="ctxLevel" class="cv-input">${opt('', over.level, 'auto z opisu')}${opt('nowicjusz', over.level, 'nowicjusz')}${opt('średni', over.level, 'średni')}${opt('zaawansowany', over.level, 'zaawansowany')}</select></div>
+        <div><label>Treningi u nas / tydz.</label><select id="ctxDays" class="cv-input">${opt('', over.days, 'auto z opisu')}${[1, 2, 3, 4, 5].map(n => opt(n, over.days, n + '×')).join('')}</select></div>
+        <div><label>Sezon</label><select id="ctxSeason" class="cv-input">${opt('', over.season, 'auto z opisu')}${opt('w sezonie', over.season, 'w sezonie')}${opt('poza sezonem', over.season, 'poza sezonem')}${opt('brak', over.season, 'nie dotyczy')}</select></div>
+      </div>
+      <div class="cv-row" style="margin-top:12px;"><button class="btn" id="ctxSave">💾 Zapisz kontekst</button><span class="cv-small" id="ctxSaved">${cx.savedAt ? 'Zapisano ' + escapeHtml(tstDayPl(cx.savedAt)) : 'Jeszcze nie zapisano.'}</span></div>
+    </div>
+    <div class="cv-card"><h4>📋 Co z tego wynika do planu <span class="cv-small" style="font-weight:400;">reguły z badań</span></h4><div id="ctxOut"></div></div>
+  </div>`;
+}
+function ctxBind(c, d){
+  const val = () => ({ text: $('ctxText').value, over: { level: $('ctxLevel').value || null, days: $('ctxDays').value || null, season: $('ctxSeason').value || null } });
+  const draw = () => {
+    const v = val(), R = ctxParsed(c, d, v.text, v.over), T = ctxTestsFor(c.id);
+    const o = RULES.build(R, T.tests, library);
+    $('ctxChips').innerHTML = ctxChipsHtml(R, !!v.text.trim());
+    $('ctxOut').innerHTML = (v.text.trim() || R.fromCard.length) ? ctxOutHtml(o, T.info) : '<div class="cv-small">Wpisz opis po lewej — tu pojawią się wnioski.</div>';
+  };
+  let tmr = null;
+  const dirty = () => { ctxDraft[c.id] = val(); $('ctxSaved').textContent = '● niezapisane zmiany'; };
+  if(ctxDraft[c.id]) $('ctxSaved').textContent = '● niezapisane zmiany';
+  $('ctxText').oninput = () => { clearTimeout(tmr); tmr = setTimeout(draw, 250); dirty(); };
+  ['ctxLevel', 'ctxDays', 'ctxSeason'].forEach(id => $(id).onchange = () => { draw(); dirty(); });
+  $('ctxSave').onclick = async () => {
+    const v = val();
+    d.context = { text: v.text.trim(), over: v.over, savedAt: todayKey() };
+    if(await saveClientNotes(c.id)){ delete ctxDraft[c.id]; $('ctxSaved').textContent = 'Zapisano ' + tstDayPl(d.context.savedAt); toast('Zapisano kontekst'); }
+  };
+  draw();
+  if(!testsCache && typeof loadAllTests === 'function') loadAllTests().then(() => { if($('ctxOut')) draw(); });
+}
+
+/* ---------- Biblioteka: kolumna tagów ---------- */
+function gtCellHtml(ex){
+  const t = TAGS.tagEx(ex);
+  const chips = t.tags.filter(k => k !== 'uni_leg').map(k => `<span class="gt-chip">${escapeHtml(TAGS.LABEL[k] || k)}</span>`).join('');
+  return `<span class="gt-lvl" title="Poziom trudności: 1 proste, 3 tylko zaawansowani">P${t.level}</span>${chips || '<span class="gt-unk">⚠ brak tagu – kliknij</span>'}${t.manual ? '<span class="gt-man">✎ ręcznie</span>' : ''}`;
+}
+function gtBindCell(cell, ex){
+  cell.innerHTML = gtCellHtml(ex);
+  cell.title = 'Kliknij, żeby poprawić tagi';
+  cell.onclick = e => {
+    if(cell.querySelector('.gt-edit')) return;
+    const t = TAGS.tagEx(ex);
+    const box = document.createElement('div'); box.className = 'gt-edit';
+    box.innerHTML = `<div>${TAGS.EDITABLE.map(k => `<label><input type="checkbox" value="${k}" ${t.tags.includes(k) ? 'checked' : ''}>${escapeHtml(TAGS.LABEL[k] || k)}</label>`).join('')}</div>
+      <div class="row">Poziom <select class="gt-l">${[1, 2, 3].map(n => `<option ${n === t.level ? 'selected' : ''}>${n}</option>`).join('')}</select>
+      <button class="btn small gt-ok">Zapisz</button>${ex.genTags ? '<button class="btn ghost small gt-auto">Przywróć auto</button>' : ''}<button class="btn ghost small gt-no">Anuluj</button></div>`;
+    cell.innerHTML = ''; cell.appendChild(box);
+    box.onclick = ev => ev.stopPropagation();
+    const save = async genTags => {
+      const fresh = await safeGet('exercise_library');
+      if(fresh === null){ alert('Nie udało się pobrać aktualnej biblioteki. Nic nie zapisano.'); return; }
+      const list = fresh.map(l => { if(l.id !== ex.id) return l; const n = Object.assign({}, l); if(genTags) n.genTags = genTags; else delete n.genTags; return n; });
+      if(await persistWithFeedback('exercise_library', list)){ library = list; const nx = list.find(l => l.id === ex.id) || ex; toast('Zapisano tagi'); gtBindCell(cell, nx); }
+    };
+    box.querySelector('.gt-ok').onclick = () => save({ tags: [...box.querySelectorAll('input:checked')].map(i => i.value), level: +box.querySelector('.gt-l').value });
+    if(box.querySelector('.gt-auto')) box.querySelector('.gt-auto').onclick = () => save(null);
+    box.querySelector('.gt-no').onclick = () => gtBindCell(cell, ex);
+  };
 }
 
 </script>
