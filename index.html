@@ -6008,7 +6008,7 @@ function renderExRows(day, category){
       : '';
     tr.innerHTML = `
       <td><span class="drag-handle" title="Przeciągnij, żeby zmienić kolejność">⠿</span></td>
-      <td><span class="ex-label">${escapeHtml(ex.label || '')}</span> ${escapeHtml(exName)}${relinkIcon}</td>
+      <td><span class="ex-label">${escapeHtml(ex.label || '')}</span> ${escapeHtml(exName)}${relinkIcon}<span class="swap-ex" title="Zamień na inne ćwiczenie z biblioteki (litera, serie i powtórzenia zostają)">⇄</span></td>
       <td><input class="pill-input" data-f="sets" value="${ex.sets}" ${ex.splitLR?'disabled':''}></td>
       <td><input class="pill-input" data-f="reps" value="${ex.reps}"></td>
       <td><input class="pill-input" data-f="tempo" value="${ex.tempo}"></td>
@@ -6057,10 +6057,37 @@ function renderExRows(day, category){
       const el = document.getElementById('pgwhy-' + b.dataset.pgwhy);
       if(el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
     });
+    tr.querySelector('.swap-ex').onclick = function(){
+      const input = document.createElement('input');
+      input.setAttribute('list', 'libNamesList');
+      input.placeholder = 'Nowe ćwiczenie z biblioteki…';
+      input.className = 'swap-ex-input';
+      this.replaceWith(input);
+      input.focus();
+      let done = false;
+      input.onblur = async () => {
+        if(done) return; done = true;
+        const libEx = library.find(l => l.name === input.value.trim());
+        if(!libEx || libEx.id === ex.libraryId){ if(input.value.trim() && !libEx) toast('Wybierz ćwiczenie z podpowiedzi listy'); renderDayPanel(); return; }
+        const sig = daySig(day), idxNow = day.exercises.indexOf(ex), oldName = exName;
+        applyExSwap(ex, libEx);
+        await persistCurrentDayFn();
+        renderDayPanel(); renderCalendar();
+        if(!editingTemplateMode && selectedClientId) offerSameDays({ clientId: selectedClientId, dateStr: selectedDateStr, sig, idx: idxNow,
+          what: `${ex.label ? ex.label + ' ' : ''}${oldName} → ${libEx.name}`, apply: t => applyExSwap(t, libEx) });
+      };
+      input.onkeydown = e => { if(e.key === 'Enter') input.blur(); if(e.key === 'Escape'){ done = true; renderDayPanel(); } };
+    };
     tr.querySelectorAll('input[data-f]').forEach(inp => {
       inp.onchange = async () => {
         const field = inp.dataset.f;
+        const sigBefore = daySig(day), oldVal = ex[field];
         ex[field] = inp.value;
+        if(SAME_DAY_FIELDS[field] && !editingTemplateMode && selectedClientId && String(oldVal ?? '') !== String(inp.value)){
+          const v = inp.value, idxNow = day.exercises.indexOf(ex);
+          setTimeout(() => offerSameDays({ clientId: selectedClientId, dateStr: selectedDateStr, sig: sigBefore, idx: idxNow,
+            what: `${ex.label ? ex.label + ' ' : ''}${exName}: ${SAME_DAY_FIELDS[field]} ${oldVal || '—'} → ${v || '—'}`, apply: t => { t[field] = v; } }), 0);
+        }
         if(field === 'suggestedWeight'){
           ex.suggestedManual = inp.value.trim() !== '';
           if(!ex.suggestedManual) ex.suggestedWeight = '';
@@ -13166,6 +13193,65 @@ function gtBindCell(cell, ex){
   };
 }
 
+</script>
+<script>
+/* ===== ZMIANA W TAKICH SAMYCH DNIACH (#22) =====
+   „Taki sam dzień” = ta sama lista ćwiczeń w tej samej kolejności (np. po „Duplikuj dzień”).
+   Zmieniamy tylko dni PO edytowanym dniu i tylko niezrobione (bez żadnego wpisanego wyniku). */
+const SAME_DAY_FIELDS = { sets: 'serie', reps: 'powt.', tempo: 'tempo', rest: 'przerwa', setsRight: 'serie P', setsLeft: 'serie L' };
+function daySig(day){ return ((day && day.exercises) || []).map(ex => ex.category + ':' + plSearchKey(resolveExName(ex)).trim()).join('|'); }
+function sameDaysAfter(clientId, dateStr, sig){
+  const plan = plansCache[clientId] || {};
+  return Object.keys(plan).filter(ds => ds > dateStr && plan[ds] && (plan[ds].exercises || []).length && dayFill(plan[ds]).anyFilled === 0 && daySig(plan[ds]) === sig).sort();
+}
+function applyExSwap(t, libEx){
+  t.libraryId = libEx.id; t.name = libEx.name; t.videoUrl = libEx.videoUrl || '';
+  t.suggestedWeight = ''; t.suggestedManual = false; t.progFlagAck = false;
+}
+let sameDayOffer = null;
+(function(){ const st = document.createElement('style'); st.textContent = `
+ .swap-ex{cursor:pointer;margin-left:6px;font-size:12px;color:var(--muted);border:1px solid var(--line);border-radius:5px;padding:0 5px;opacity:.7}
+ .swap-ex:hover{opacity:1;color:var(--text);border-color:var(--accent-dim)}
+ .swap-ex-input{width:200px;background:var(--bg);border:1px solid var(--accent-dim);border-radius:5px;padding:3px 6px;font-size:12px;margin-left:6px}
+ .sd-box{position:fixed;right:16px;bottom:16px;z-index:9000;width:min(380px,calc(100vw - 32px));background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.18);padding:14px;font-size:13px}
+ .sd-box h4{margin:0 0 6px;font-size:14px}.sd-chg{background:var(--surface-2);border-radius:6px;padding:5px 8px;margin:3px 0;font-size:12.5px}
+ .sd-dates{display:flex;flex-wrap:wrap;gap:4px 10px;margin:8px 0;max-height:120px;overflow:auto}.sd-dates label{display:inline-flex;gap:4px;align-items:center;font-size:12.5px;white-space:nowrap}
+ .sd-btns{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+`; document.head.appendChild(st); })();
+function sdDayPl(ds){ const d = new Date(ds + 'T12:00:00'); return ['nd','pon','wt','śr','czw','pt','sob'][d.getDay()] + ' ' + ds.slice(8, 10) + '.' + ds.slice(5, 7); }
+function offerSameDays(o){
+  if(sameDayOffer && (sameDayOffer.clientId !== o.clientId || sameDayOffer.dateStr !== o.dateStr)) closeSameDays();
+  if(!sameDayOffer){
+    const dates = sameDaysAfter(o.clientId, o.dateStr, o.sig);
+    if(!dates.length) return;
+    sameDayOffer = { clientId: o.clientId, dateStr: o.dateStr, dates, checked: new Set(dates), changes: [] };
+  }
+  sameDayOffer.changes.push({ what: o.what, idx: o.idx, apply: o.apply });
+  renderSameDays();
+}
+function closeSameDays(){ sameDayOffer = null; const b = document.getElementById('sdBox'); if(b) b.remove(); }
+function renderSameDays(){
+  const S = sameDayOffer; if(!S) return;
+  let b = document.getElementById('sdBox');
+  if(!b){ b = document.createElement('div'); b.id = 'sdBox'; b.className = 'sd-box'; document.body.appendChild(b); }
+  const cl = clients.find(c => c.id === S.clientId);
+  b.innerHTML = `<h4>🔁 Zmienić też w takich samych dniach?</h4>${cl ? `<div class="cv-small" style="margin:-2px 0 4px;">${escapeHtml(cl.name)}</div>` : ''}
+    ${S.changes.map(c => `<div class="sd-chg">${escapeHtml(c.what)}</div>`).join('')}
+    <div class="cv-small" style="margin-top:6px;">Takie same dni po ${escapeHtml(sdDayPl(S.dateStr))}, jeszcze niezrobione (${S.dates.length}):</div>
+    <div class="sd-dates">${S.dates.map(ds => `<label><input type="checkbox" data-sd="${ds}" ${S.checked.has(ds) ? 'checked' : ''}>${escapeHtml(sdDayPl(ds))}</label>`).join('')}</div>
+    <div class="sd-btns"><button class="btn ghost" id="sdNo">Tylko tutaj</button><button class="btn" id="sdYes">Zmień w zaznaczonych (${S.checked.size})</button></div>`;
+  b.querySelectorAll('[data-sd]').forEach(i => i.onchange = () => { if(i.checked) S.checked.add(i.dataset.sd); else S.checked.delete(i.dataset.sd); b.querySelector('#sdYes').textContent = `Zmień w zaznaczonych (${S.checked.size})`; });
+  b.querySelector('#sdNo').onclick = closeSameDays;
+  b.querySelector('#sdYes').onclick = async () => {
+    const plan = plansCache[S.clientId]; const targets = [...S.checked].filter(ds => plan && plan[ds]);
+    if(!targets.length){ closeSameDays(); return; }
+    let n = 0;
+    targets.forEach(ds => { const exs = plan[ds].exercises || []; S.changes.forEach(c => { const t = exs[c.idx]; if(t){ c.apply(t); n++; } }); if(typeof relabelExercises === 'function') relabelExercises(plan[ds]); });
+    closeSameDays();
+    const ok = await persistPlan(S.clientId);
+    if(ok !== false){ toast(`Zmieniono w ${targets.length} ${plPlural(targets.length, 'dniu', 'dniach', 'dniach')}`); if(typeof renderCalendar === 'function') renderCalendar(); }
+  };
+}
 </script>
 </body>
 </html>
