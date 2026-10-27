@@ -5610,6 +5610,7 @@ function renderMain(){
     <div class="section-title"><div class="bar"></div><h2 id="clientNameHeader">${escapeHtml(client.name)}</h2></div>
     <div class="section-desc">Kalendarz, plan treningowy, testy i raport postępów.</div>
     <div id="cvAlertHolder"></div>
+    <div id="genCardHolder"></div>
 
     <div class="tools-panel">
       <h4>📄 Generuj plan jako PDF</h4>
@@ -5649,6 +5650,7 @@ function renderMain(){
   renderLibraryList();
   bindClientViewTop();
   refreshClientAlert();
+  if(window.genRenderCard) genRenderCard(client.id);
 }
 
 function renderCalendar(){
@@ -8591,8 +8593,9 @@ function renderLibraryView(){
       <textarea id="newExNote" class="lib-note-new" rows="2" placeholder="Stałe uwagi do ćwiczenia (opcjonalnie) — klient zobaczy je przy tym ćwiczeniu w każdym treningu, np. „Kolana prowadź nad palcami, plecy w neutralu”."></textarea>
     </div>
 
+    <div id="genLibF" class="gen-libf"></div>
     <table class="exlist" id="libFullTable">
-      <thead><tr><th>Nazwa</th><th>Link YouTube</th><th title="Krok ciężaru w progresji: sztanga 2,5 kg · hantle 1 kg do 10 kg, potem 2,5 kg · wyciąg (linka) 2,5 kg · maszyna 2,5 kg · masa ciała bez zmiany ciężaru">Sprzęt</th><th title="Tagi dla generatora planu: wzorzec ruchu i poziom trudności (P1 proste – P3 tylko zaawansowani). Nadane automatycznie z nazwy — kliknij, żeby poprawić.">Tagi (generator)</th><th>Grupa</th><th>Stałe uwagi</th><th style="text-align:center;">Nie MoveU</th><th></th></tr></thead>
+      <thead><tr><th>Nazwa</th><th>Link YouTube</th><th title="Krok ciężaru w progresji: sztanga 2,5 kg · hantle 1 kg do 10 kg, potem 2,5 kg · wyciąg (linka) 2,5 kg · maszyna 2,5 kg · masa ciała bez zmiany ciężaru">Sprzęt</th><th title="Tagi dla generatora planu: wzorzec ruchu i poziom trudności (P1 proste – P3 tylko zaawansowani). Nadane automatycznie z nazwy — kliknij, żeby poprawić.">Tagi (generator)</th><th title="Grupy mięśniowe dla generatora (liczenie serii na grupę, priorytet). Nadane automatycznie z nazwy — ✎ żeby poprawić.">Grupy mięśniowe</th><th>Grupa</th><th>Stałe uwagi</th><th style="text-align:center;">Nie MoveU</th><th></th></tr></thead>
       <tbody id="libFullRows"></tbody>
     </table>
   `;
@@ -8658,6 +8661,7 @@ function renderLibFullTable(){
   const tbody = $('libFullRows');
   const groupFiltered = (libFilterGroupId && libFilterGroupId !== 'all');
   let rows = groupFiltered ? library.filter(l => l.groupId === libFilterGroupId) : library;
+  if(window.genLibFilter){ genLibFilterBar(); rows = genLibFilter(rows); }
   const tokens = plSearchKey(libSearchQuery).split(/\s+/).filter(Boolean);
   if(tokens.length){
     rows = rows.filter(l => {
@@ -8672,7 +8676,7 @@ function renderLibFullTable(){
     : `${library.length} ${plPlural(library.length, 'ćwiczenie', 'ćwiczenia', 'ćwiczeń')}`;
   if(clr) clr.style.display = libSearchQuery ? '' : 'none';
   if(rows.length === 0){
-    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:16px;">${tokens.length ? 'Brak ćwiczeń pasujących do „' + escapeHtml(libSearchQuery.trim()) + '”.' : 'Brak ćwiczeń w tej grupie.'}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:16px;">${tokens.length ? 'Brak ćwiczeń pasujących do „' + escapeHtml(libSearchQuery.trim()) + '”.' : 'Brak ćwiczeń w tej grupie.'}</td></tr>`;
     return;
   }
   tbody.innerHTML = '';
@@ -8684,6 +8688,7 @@ function renderLibFullTable(){
       <td><span class="yt-hover-wrap"><span class="ex-edit-video" style="cursor:text;color:var(--muted);font-size:12px;">${ex.videoUrl?escapeHtml(ex.videoUrl):'— brak linku —'}</span>${ex.videoUrl ? '' : '<button class="yt-pick-btn" type="button" title="Wybierz film z Twojego kanału YouTube">🔗 Wybierz film</button>'}${getYoutubeId(ex.videoUrl) ? `<span class="yt-hover-thumb"><img src="https://img.youtube.com/vi/${getYoutubeId(ex.videoUrl)}/hqdefault.jpg" loading="lazy"></span>` : ''}</span></td>
       <td class="eq-cell"></td>
       <td class="gt-cell"></td>
+      <td class="mg-cell" style="min-width:150px;max-width:240px;"></td>
       <td></td>
       <td><textarea class="lib-note-input" rows="1" placeholder="dodaj stałe uwagi…">${escapeHtml(ex.note || '')}</textarea></td>
       <td style="text-align:center;"><input type="checkbox" class="notmoveu-check" ${ex.notMoveU?'checked':''}></td>
@@ -8727,6 +8732,7 @@ function renderLibFullTable(){
     };
     tr.children[4].appendChild(groupSel);
     gtBindCell(tr.querySelector('.gt-cell'), ex);
+    if(window.genMgCell) genMgCell(tr.querySelector('.mg-cell'), ex);
     {
       const eqi = equipmentInfo(ex.name);
       const sel = document.createElement('select');
@@ -13139,7 +13145,7 @@ function ctxTabHtml(c, d){
       <div class="cv-row" style="margin-top:12px;"><button class="btn" id="ctxSave">💾 Zapisz kontekst</button><span class="cv-small" id="ctxSaved">${cx.savedAt ? 'Zapisano ' + escapeHtml(tstDayPl(cx.savedAt)) : 'Jeszcze nie zapisano.'}</span></div>
     </div>
     <div class="cv-card"><h4>📋 Co z tego wynika do planu <span class="cv-small" style="font-weight:400;">reguły z badań</span></h4><div id="ctxOut"></div></div>
-  </div>`;
+  </div>${window.genCtxPrioHtml ? genCtxPrioHtml(c, d) : ''}`;
 }
 function ctxBind(c, d){
   const val = () => ({ text: $('ctxText').value, over: { level: $('ctxLevel').value || null, days: $('ctxDays').value || null, season: $('ctxSeason').value || null } });
@@ -13150,16 +13156,18 @@ function ctxBind(c, d){
     $('ctxOut').innerHTML = (v.text.trim() || R.fromCard.length) ? ctxOutHtml(o, T.info) : '<div class="cv-small">Wpisz opis po lewej — tu pojawią się wnioski.</div>';
   };
   let tmr = null;
-  const dirty = () => { ctxDraft[c.id] = val(); $('ctxSaved').textContent = '● niezapisane zmiany'; };
+  const dirty = () => { const pr = ctxDraft[c.id] && ctxDraft[c.id].prio; ctxDraft[c.id] = val(); if(pr) ctxDraft[c.id].prio = pr; $('ctxSaved').textContent = '● niezapisane zmiany'; };
   if(ctxDraft[c.id]) $('ctxSaved').textContent = '● niezapisane zmiany';
   $('ctxText').oninput = () => { clearTimeout(tmr); tmr = setTimeout(draw, 250); dirty(); };
   ['ctxLevel', 'ctxDays', 'ctxSeason'].forEach(id => $(id).onchange = () => { draw(); dirty(); });
   $('ctxSave').onclick = async () => {
     const v = val();
-    d.context = { text: v.text.trim(), over: v.over, savedAt: todayKey() };
+    const prio = (ctxDraft[c.id] && ctxDraft[c.id].prio) || (d.context && d.context.prio) || [];
+    d.context = { text: v.text.trim(), over: v.over, prio, savedAt: todayKey() };
     if(await saveClientNotes(c.id)){ delete ctxDraft[c.id]; $('ctxSaved').textContent = 'Zapisano ' + tstDayPl(d.context.savedAt); toast('Zapisano kontekst'); }
   };
   draw();
+  if(window.genCtxPrioBind) genCtxPrioBind(c, d);
   if(!testsCache && typeof loadAllTests === 'function') loadAllTests().then(() => { if($('ctxOut')) draw(); });
 }
 
@@ -13252,6 +13260,603 @@ function renderSameDays(){
     if(ok !== false){ toast(`Zmieniono w ${targets.length} ${plPlural(targets.length, 'dniu', 'dniach', 'dniach')}`); if(typeof renderCalendar === 'function') renderCalendar(); }
   };
 }
+</script>
+<script>
+/* ===== GENERATOR BLOKU 3 TYG. (#23) =====
+   Tylko dla zwykłych klientów. Działa w całości w przeglądarce – nic nie jest wysyłane na zewnątrz.
+   Zasady (własnymi słowami, ze szkoleń + decyzji Bartosza): serie A/B/C, fazy Ak1 → Int1 → Ak2 → Int2,
+   bez deloadu, co blok nowe ćwiczenia, frekwencja < 66% = powtórka fazy, staż wyżej po 4 cyklach (za zgodą). */
+(function(){
+(function(){ const st = document.createElement('style'); st.textContent = `
+ .gen-card .gen-meta{font-size:12.5px;color:var(--muted)}
+ .gen-chips{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}
+ .gen-chip{font-size:12px;padding:3px 9px;border-radius:20px;background:var(--surface-2);border:1px solid var(--line)}
+ .gen-chip.ok{background:#E3F4E9;color:#2E7D4F;border-color:transparent}
+ .gen-chip.warn{background:#FDECE8;color:#B4472E;border-color:transparent}
+ .gen-btn{background:#E8604A;color:#fff;border:none}
+ .gen-ov{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9500;display:flex;align-items:flex-start;justify-content:center;padding:24px 12px;overflow:auto}
+ .gen-modal{background:var(--surface);border-radius:12px;width:min(1100px,100%);border:1px solid var(--line);display:flex;flex-direction:column;max-height:calc(100vh - 48px)}
+ .gen-mh{padding:16px 18px;border-bottom:1px solid var(--line);display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+ .gen-mh h2{margin:0;font-size:18px}
+ .gen-steps{display:flex;gap:6px;margin-left:auto}.gen-steps span{font-size:12px;padding:4px 10px;border-radius:20px;background:var(--surface-2);color:var(--muted)}.gen-steps span.on{background:var(--accent);color:#fff}
+ .gen-mb{padding:16px 18px;overflow:auto;display:flex;flex-direction:column;gap:14px}
+ .gen-mf{padding:12px 18px;border-top:1px solid var(--line);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+ .gen-sp{flex:1}
+ .gen-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+ .gen-fld{display:flex;flex-direction:column;gap:5px}.gen-fld.wide{grid-column:1/-1}
+ .gen-lbl{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+ .gen-hint{font-size:12px;color:var(--muted)}
+ .gen-seg{display:flex;flex-wrap:wrap;gap:4px}
+ .gen-seg button{border:1px solid var(--line);background:var(--surface);border-radius:7px;padding:6px 10px;font-size:12.5px;cursor:pointer;color:var(--text)}
+ .gen-seg button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+ .gen-box{background:var(--surface-2);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:4px;font-size:13px}
+ .gen-box.prev{border:1px solid var(--line);background:var(--surface)}
+ .gen-up{background:#F5ECD4;color:#7A5A12;border-radius:8px;padding:8px 10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+ .gen-tw{overflow-x:auto;border:1px solid var(--line);border-radius:8px}
+ .gen-t{border-collapse:collapse;width:100%;min-width:760px;font-size:13px}
+ .gen-t th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);background:var(--surface-2);padding:7px 8px;border-bottom:1px solid var(--line)}
+ .gen-t td{padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+ .gen-t td.n{white-space:nowrap;font-variant-numeric:tabular-nums}
+ .gen-lab{display:inline-flex;min-width:28px;height:24px;padding:0 6px;border-radius:12px;align-items:center;justify-content:center;font-weight:700;font-size:12px}
+ .gen-why{font-size:11.5px;color:var(--muted);margin-top:2px}
+ .gen-tag{font-size:10.5px;font-weight:700;padding:1px 6px;border-radius:4px;background:#F5ECD4;color:#7A5A12;margin-left:6px;white-space:nowrap}
+ .gen-tag.new{background:#FDECE8;color:#B4472E}.gen-tag.pr{background:#E3F4E9;color:#2E7D4F}
+ .gen-swap{border:1px solid var(--line);background:var(--surface);border-radius:6px;cursor:pointer;padding:2px 7px}
+ .gen-dayt{display:flex;gap:10px;align-items:baseline;margin:2px 0 6px}.gen-dayt h3{margin:0;font-size:15px}.gen-dayt span{font-size:12px;color:var(--muted)}
+ .gen-vol{display:grid;grid-template-columns:150px 1fr 90px;gap:4px 10px;align-items:center;font-size:12.5px}
+ .gen-bar{height:8px;background:var(--surface-2);border-radius:4px;position:relative;overflow:hidden}.gen-bar i{position:absolute;inset:0 auto 0 0;background:var(--accent);border-radius:4px}.gen-bar b{position:absolute;top:0;bottom:0;background:rgba(46,125,79,.35)}
+ .gen-dows{display:flex;gap:4px;flex-wrap:wrap}
+ .mg-chip{display:inline-block;font-size:11px;padding:1px 7px;border-radius:10px;margin:1px 3px 1px 0;background:var(--surface-2);border:1px solid var(--line)}
+ .mg-chip.m1{background:#E3F4E9;color:#2E7D4F;border-color:transparent}
+ .mg-edit{cursor:pointer;color:var(--muted);font-size:12px;margin-left:4px}
+ .mg-pop{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}.mg-pop button{font-size:11.5px;border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:3px 7px;cursor:pointer}.mg-pop button.on{background:var(--accent);color:#fff}
+ .gen-libf{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 10px}
+ .ctx-prio button{font-size:12.5px}
+`; document.head.appendChild(st); })();
+
+/* ---------- grupy mięśniowe ---------- */
+const MG = {quad:'Czworogłowe uda',glute:'Pośladki',ham:'Tył uda',add:'Przywodziciele',calf:'Łydki',chest:'Klatka',back:'Plecy',shF:'Barki – przód',shS:'Barki – bok',shR:'Barki – tył',biceps:'Biceps',triceps:'Triceps',scap:'Łopatka / rotatory',core:'Brzuch',lowback:'Prostowniki grzbietu',neck:'Kark'};
+const MG_PRIO = ['quad','glute','ham','add','calf','chest','back','shF','shS','shR','biceps','triceps'];
+const LEGG = new Set(['quad','glute','ham','add','calf']);
+const MRULES = [
+ [/^rzut|rzut pil|^skok|skoki|pogo|zeskok|depth jump|ladowanie|drop catch|swing|zarzut|san|bieg|air bike|skierg|rozgrzewka|mobilizacja|kocie|rozciaganie/,{}],
+ [/kark/,{neck:1}],
+ [/odwrotny aniolek|odwrotne rozpietki|face pull|w opadzie/,{shR:1,scap:.5}],
+ [/trap 3|y trap|w to y|rotacja zewn|superman- trap|alfabet|pompki \(barkowe\)|rotacja przedramienia|rotacja wewnetrzna/,{scap:1}],
+ [/uginanie przedramion|zottman/,{biceps:1}],
+ [/prostowanie przedramion|wyprosty przedramion|francuskie/,{triceps:1}],
+ [/uginanie podudzi|nordic|nordyckie|gh roller|hamstring/,{ham:1}],
+ [/wyprosty podudzi|^tke|vmo/,{quad:1}],
+ [/kopenhask|przywodz|pachwina|sciskanie/,{add:1}],
+ [/wspieci|wspiecie|wspeci|piszczelowy/,{calf:1}],
+ [/hip thrust|hip trust|glute bridge|mostek biodrowy|kickback|posladk|muszelka|odwodz|odwiedzenie nogi|krok dostawny|monster|unoszenie nogi do boku|wyprost biodra/,{glute:1}],
+ [/rdl|dzien dobry/,{ham:1,glute:1,lowback:.5}],
+ [/martwy ciag|trap bar/,{glute:1,ham:.5,quad:.5,lowback:.5}],
+ [/wykrok|wykroczny|bulgarsk|zakrok|step up|wejscia|wejscie|wypad|skater/,{quad:1,glute:.5}],
+ [/przysiad do boku/,{quad:1,add:.5,glute:.5}],
+ [/hack|przysiad|krzeselko/,{quad:1,glute:.5}],
+ [/wioslowanie|pendlay|scott/,{back:1,biceps:.5,shR:.5}],
+ [/podciag|sciaganie|odwrotna pompka/,{back:1,biceps:.5}],
+ [/nad glowe|arnold|landmine|polsztang|wycisko/,{shF:1,shS:.5,triceps:.5}],
+ [/rozpietki/,{chest:1,shF:.5}],
+ [/dipy|pompk|wyciskanie/,{chest:1,triceps:.5,shF:.5}],
+ [/wznosy hantli|wznosy bokiem/,{shS:1}],
+ [/brzu|plank|hollow|martwy robak|sklon|t2b|garham|rotacja tulowia|lifting|siady|sit up|pallof|deska|zgiecia bokiem|zgiecia biodra|voyager|stir|wood/,{core:1}],
+ [/wyprosty tulowia|wznosy tulowia|ghd|superman/,{lowback:1,glute:.5}]
+];
+function genMusclesAuto(name){ const n = plSearchKey(name); for(const [re, m] of MRULES) if(re.test(n)) return m; return {}; }
+function genMuscles(name){ const l = genLib(name); if(l && l.muscles && typeof l.muscles === 'object') return l.muscles; return genMusclesAuto(name); }
+window.genMuscles = genMuscles;
+
+/* ---------- biblioteka ---------- */
+const gKey = n => plSearchKey(n).replace(/\s+/g, ' ').replace(/\s*-\s*/g, '-').trim();
+let LIBIDX = null, LIBREF = null;
+function genLib(name){
+  if(LIBREF !== library){ LIBIDX = new Map(); library.forEach(l => { const k = gKey(l.name); if(!LIBIDX.has(k)) LIBIDX.set(k, l); }); LIBREF = library; }
+  return LIBIDX.get(gKey(name)) || null;
+}
+
+/* ---------- pule ćwiczeń (nazwy z biblioteki MoveU; kolejność = preferencja) ---------- */
+const P={
+ sqBack:['Przysiad - ze sztanga na plecach','Przysiad - Safety bar'],
+ sqFront:['Przysiad ze sztangą - z przodu','Przysiad - Safety bar'],
+ sqBox:['Przysiad - ze sztangą na plecach - do skrzyni','Przysiad - Safety bar'],
+ sqNovice:['Przysiad goblet','Przysiad - ze sztangą na plecach - do skrzyni','Przysiad - Safety bar'],
+ hinge:['Trap bar - martwy ciąg','Martwy ciąg w trap barze - z podwyższenia'],
+ sqB:['Hack przysiad - na maszynie','Przysiad - Safety bar'],
+ lunge:['Przysiad bułgarski - hantle','Przysiad wykroczny- przednia noga/pięta na podwyższeniu','Przysiad wykroczny - ze sztangą na plecach','Zakrok- hantle','Przysiad do boku- z hantlem','Przysiad wykroczny do boku','Box step up- ze sztanga na plecach - 50cm'],
+ lungeKnee:['Zakrok- hantle','Przysiad do boku- z hantlem','Wejścia na podest z krązkiem - 50cm'],
+ ham:['Uginanie podudzi - na maszynie - leżąc - obunóż - stopy neutralnie','Uginanie podudzi - na maszynie - leżąc - obunóż - stopy zgięte grzbietowo - do środka','Uginanie podudzi - na maszynie - obunóż - leżąc - stopy zgięte grzbietowo - do zewnątrz','Uginanie podudzi - jednonóż - na maszynie - siedząc','Nordyckie opadanie'],
+ hip:['Hip thrust - ze sztangą - obunóż','RDL - jednonóż - półsztanga','Hip thrust - stagger position','Dzień dobry - z hantlem - siedząc','Wznosy tułowia - ławka rzymska - akcentowana ekscentryka 2:1'],
+ knee:['VMO - wstępowania','TKE','Wyprosty podudzi na maszynie - obunóż','Wyprosty podudzi na maszynie - metoda 2:1'],
+ kneePain:['TKE','VMO - wstępowania','Wyprosty podudzi na maszynie - obunóż'],
+ calf:['Wspięcia na palce siedząc - jednonóż','Wspięcia na palce - jednonóż','Wspięcia na palce- obunóż - hack maszyna','Wspięcia na palce - stojąc - metoda 2:1'],
+ add:['Izometryczne kopenhaskie przywodzenie - krótka dźwignia','Kopenhaskie przywodzenie - na kolanie','Kopenhaskie przywodzenie- długa dźwignia'],
+ gmed:['Leżąc na boku - unoszenie nogi do boku - prosta noga - mięsień pośladkowy','Leżąc na boku - unoszenie nogi do boku - zgięta noga- mięśnie pośladkowe'],
+ coreFront:['Wznosy Garhamera - ławka dodatnia','Hollow body','Plank - dotykanie barków','T2B (Toes to bar)','Brzuszki - Voyager'],
+ coreRot:['Pallof press','Lifting - wyciąg dolny - klecząc','Rotacja tułowia - wyciąg - stojąc'],
+ coreSide:['Deska bokiem','Plank zapaśniczy- piłka szwajcarska','Zgięcia bokiem - ławka rzymska'],
+ press:{BP:['Wyciskanie sztangi - ławka pozioma'],OHP:['Wyciskanie sztangi - nad głowę - stojąc'],SKOS:['Wyciskanie hantli - leżąc na ławce skośnej - dodatniej'],DIP:['Dipy']},
+ pressNov:{BP:['Wyciskanie hantli - na ławce - poziomej'],OHP:['Wyciskanie hantli- nad głowę siedząc - z oparciem'],SKOS:['Wyciskanie hantli - leżąc na ławce skośnej - dodatniej']},
+ perp:{BP:['Wyciskanie hantli- nad głowę siedząc - z oparciem','Wyciskanie hantli - nad głowę - stojąc - oburącz'],OHP:['Wyciskanie hantli - na ławce - poziomej','Wyciskanie hantli - ławka dodatnia - neutralnie'],SKOS:['Wyciskanie hantli - na ławce - poziomej','Dipy','Wyciskanie hantli - na ławce poziomej - wąsko'],DIP:['Wyciskanie hantli - ławka dodatnia - neutralnie','Wyciskanie hantli - leżąc na ławce skośnej - dodatniej']},
+ pullGrip:{podchwyt:['Podciągnie - podchwytem'],nachwyt:['Podciąganie - nachwytem'],neutral:['Podciąganie na drążku - chwyt neutralny','Ściąganie drążka wyciągu górnego- do klatki piersiowej- chwyt neutralny- wydłużona ekscentryka']},
+ pullAny:['Podciągnie - podchwytem','Podciąganie - nachwytem','Ściąganie drążka wyciągu górnego- do klatki - nachwytem'],
+ latNov:{nachwyt:['Ściąganie drążka wyciągu górnego- do klatki - nachwytem'],neutral:['Ściąganie drążka wyciągu górnego- do klatki piersiowej- chwyt neutralny- wydłużona ekscentryka'],podchwyt:['Ściąganie drążka wyciągu górnego- do klatki - nachwytem']},
+ rowGrip:{podchwyt:['Wiosłowanie - kółka gimnastyczne - podchwytem - z pauzą'],nachwyt:['Wiosłowanie sztangą - Pendlay row'],neutral:['Wiosłowanie hantlem - jednorącz - w oparciu o ławkę','Wiosłowanie hantlem w oparciu - jednorącz']},
+ rowAny:['Wiosłowanie hantlem - jednorącz - w oparciu o ławkę','Wiosłowanie sztangą - Pendlay row','Wiosłowanie hantlami - leżąc na ławce - skośnej - oburącz','Wiosłowanie - kółka gimnastyczne - podchwytem - z pauzą','Wiosłowanie Scott’a - klęk jednonóż','Wiosłowanie hantlem w oparciu - jednorącz'],
+ shoulder:['Trap 3 - ławka skośna','Rotacja zewnętrzna przedramienia- na kolanie siedząc - hantlem- akcentowana ekscentryka 2:1','Rotacja zewnętrza przedramienia - stojąc - na wyciągu','Y trap raise - leżąc na ławce - skośnej','Trap 3- jednorącz -w oparciu o ławkę','Odwrotny aniołek','Odwrotne rozpiętki- z gumą'],
+ biceps:['Uginanie przedramion - z hantlami - leżąc na ławce skośnej - podchwytem','Uginanie przedramion- zottman - siedząc na ławce','Uginanie przedramion - wyciąg dolny - chwyt neutralny'],
+ triceps:['Francuskie wyciskanie hantli - leżąc na ławce poziomej - oburącz','Prostowanie przedramion - na wyciągu - chwyt neutralny','Wyprosty przedramion - nachwytem - znad głowy - wyciąg górny'],
+ delt:['Wznosy hantli bokiem - stojąc','Wznosy hantli bokiem - siedząc','Wznosy bokiem na wyciągu - jednorącz']
+};
+const GRIP={BP:{a2:'neutral',a2t:'neutralnie, szeroko',b2:'nachwyt',b2t:'nachwyt, na szer. barków'},
+            OHP:{a2:'podchwyt',a2t:'podchwyt, na szer. barków',b2:'neutral',b2t:'neutralnie, wąsko'},
+            SKOS:{a2:'neutral',a2t:'neutralnie, wąsko',b2:'podchwyt',b2t:'podchwyt, na szer. barków'},
+            DIP:{a2:'nachwyt',a2t:'nachwyt, na szer. barków',b2:'neutral',b2t:'neutralnie, szeroko'}};
+const PNAME={BP:'ławka płaska',OHP:'nad głowę',SKOS:'skos dodatni',DIP:'poręcze'};
+const UNI=/jednonóż|jednorącz|bułgarski|wykroczny|Zakrok|step up|Wejścia|do boku|wstępowania/i;
+const PAR={A:{p:{Ak:[3,10,12],Int:[4,8,10]},s:{Ak:[4,6,8],Int:[5,4,6]},z:{Ak:[5,4,6],Int:[6,2,4]}},
+           B:{p:{Ak:[2,12,15],Int:[3,10,12]},s:{Ak:[3,10,12],Int:[4,8,10]},z:{Ak:[4,8,10],Int:[5,6,8]}},
+           C:{p:{Ak:[1,15,20],Int:[2,15,20]},s:{Ak:[2,12,15],Int:[3,12,15]},z:{Ak:[3,10,12],Int:[4,8,10]}}};
+const MAXS={A:{p:4,s:6,z:8},B:{p:3,s:4,z:6},C:{p:2,s:3,z:4}};
+const STAZ={p:'początkujący (< 1 rok)',s:'średni (2–3 lata)',z:'zaawansowany (4+ lata)'};
+const STAZ_CTX={p:'nowicjusz',s:'średni',z:'zaawansowany'};
+const NEXT={Ak1:'Int1',Int1:'Ak2',Ak2:'Int2',Int2:'Ak1'};
+const TGT={p:[10,12],s:[14,18],z:[16,20]};
+const METHOD=/izometr|pauz|tempo malejące|przeciążenie|supramax|flywheel|drop catch|gumy|2:1|wydłużona/i;
+const DUPS=[['Wyciskanie sztangi - nad głowę - stojąc','Wyciskanie sztangi - nad głowę - stojąc'],['Przysiad - ze sztanga na plecach','Przysiad ze sztangą - na plecach'],['Wspięcie na palce siedząc - jednonóż','Wspięcia na palce siedząc - jednonóż'],['Wznosy hantli bokiem - siedząc','Wznosy hantli - bokiem - siedząc'],['Wiosłowanie hantlem - jednorącz - w oparciu o ławkę','Wiosłowanie hantlem w oparciu - jednorącz']];
+const TYPOS=['Podciągnie - podchwytem','Przysiad - ze sztanga na plecach','Box step up- ze sztanga na plecach - 50cm','Izometryczny hip trust','Wejścia na podest z krązkiem - 50cm','Rotacja zewnętrza przedramienia - stojąc - na wyciągu','Rzut piłką o ściane - z rotacji - przodem','Wiosłowanie hantlem-w oparciu o ławke - Gruby chwyt','Wejscie na skrzynie - pierwszy krok - z gumą oporową','pól-siadu','Wznosy Garhamera - ławka dodatnia'];
+const DOWN=['pn','wt','śr','czw','pt','sb','nd'];
+
+/* ---------- daty ---------- */
+const dParse = s => new Date(s + 'T12:00:00');
+const dStr = d => fmtDate(d.getFullYear(), d.getMonth(), d.getDate());
+const dAdd = (s, n) => { const d = dParse(s); d.setDate(d.getDate() + n); return dStr(d); };
+const dPl = s => { const d = dParse(s); return DOWN[(d.getDay() + 6) % 7] + ' ' + d.getDate() + '.' + String(d.getMonth() + 1).padStart(2, '0'); };
+function nextMonday(s){ const d = dParse(s), w = (d.getDay() + 6) % 7; return w === 0 ? s : dAdd(s, 7 - w); }
+
+/* ---------- bloki z kalendarza ---------- */
+function genBlocks(clientId){
+  const plan = plansCache[clientId] || {}, B = {};
+  Object.keys(plan).sort().forEach(ds => {
+    const d = plan[ds]; if(!d || !d.gen || !d.gen.bid) return;
+    const g = d.gen, b = B[g.bid] = B[g.bid] || { meta: g, dates: [], days: {} };
+    b.dates.push(ds);
+    if(!b.days[g.dayIdx] || (g.week === 0 && b.days[g.dayIdx].week !== 0))
+      b.days[g.dayIdx] = { week: g.week, name: g.dayName, rows: (d.exercises || []).filter(e => e.category !== 'warmup' && e.gk).map(e => ({ key: e.gk, name: resolveExName(e), sets: +e.gsets || +e.sets || 0, lo: e.glo, hi: e.ghi, role: e.grole, legs: !!e.glegs })) };
+  });
+  return Object.values(B).sort((a, b) => a.dates[0] < b.dates[0] ? -1 : 1).map(b => {
+    const today = todayKey(), past = b.dates.filter(ds => ds < today);
+    const done = past.filter(ds => { const d = plan[ds]; return d && (d.resolution === 'agreed' || dayFill(d).anyFilled > 0); });
+    const m = b.meta;
+    return { bid: m.bid, phase: m.phase, cycle: m.cycle, blockNo: m.blockNo, staz: m.staz, daysN: m.daysN, gripMode: m.grip, prio: m.prio || [], label: m.label,
+      days: Object.keys(b.days).sort().map(k => b.days[k]), dates: b.dates, first: b.dates[0], last: b.dates[b.dates.length - 1],
+      pastN: past.length, doneN: done.length, attend: past.length ? Math.round(done.length / b.dates.length * 100) : null, finished: !b.dates.some(ds => ds >= today) };
+  });
+}
+
+/* ---------- profil klienta z kontekstu ---------- */
+function genProfile(c, d){
+  const cx = (d && d.context) || {}, R = ctxParsed(c, d || normalizeNotes(null), cx.text || '', cx.over || {});
+  const txt = plSearchKey((cx.text || '') + ' ' + ((d && d.goal) || ''));
+  const physique = /sylwetk|redukc|\bmas[aey]\b|masie|hipertrof|odchudz|schudn/.test(txt) || R.goals.some(g => /redukcja|masa/.test(g));
+  const knee = R.injuries.some(i => /kolan/i.test(i.site + ' ' + (i.detail || '')) && (i.current || i.recurrent || (i.weeks != null && i.weeks < 26)));
+  const shoulder = R.injuries.some(i => /bark/i.test(i.site + ' ' + (i.detail || '')) && (i.current || i.recurrent));
+  let lv = R.level === 'nowicjusz' ? 'p' : R.level === 'zaawansowany' ? 'z' : R.level === 'średni' ? 's' : null;
+  if(!lv){ // „trenuje 2 lata”, „na siłowni od 5 lat”, „staż 3 lata”, „pół roku”
+    const m = txt.match(/(trenuj\w*|staz\w*|silowni\w*|cwicz\w*)[^.]{0,25}?(\d+|pol)\s*(roku|rok|lata|lat)/);
+    if(m){ const y = m[2] === 'pol' ? 0.5 : +m[2]; lv = y < 1.5 ? 'p' : y < 4 ? 's' : 'z'; }
+  }
+  return { name: c.name, sex: R.sex || null, staz: lv, stazKnown: !!lv, days: R.days ? Math.max(2, Math.min(4, R.days)) : null, physique, knee, shoulderWeak: shoulder,
+    prio: Array.isArray(cx.prio) ? cx.prio.slice(0, 2) : [], hasCtx: !!(cx.text && cx.text.trim()), goals: R.goals, age: R.age };
+}
+
+/* ---------- stan okna ---------- */
+let G = null, USED = null, PLAN_SKIPPED = [], KEEP = {}, AVOID = new Set(), PREV = {}, CORE_PLAN = [], CORE_I = 0, GC = null;
+const usable = n => !!genLib(n);
+const meso = p => p.endsWith('1') ? 1 : 2;
+function suggestPhase(){ return G.attend != null && G.attend < 66 ? G.prev.phase : NEXT[G.prev.phase]; }
+function transType(){ if(!G || !G.prev) return null; const a = G.prev.phase, b = G.phase; if(a === b) return 'repeat'; if(meso(a) === meso(b) && !(a === 'Int2' && b === 'Ak1')) return 'same'; return 'rotate'; }
+function cycleNo(){ if(!G.prev) return 1; if(transType() === 'repeat') return G.prev.cycle; if(G.prev.phase === 'Int2' && G.staz !== G.prev.staz) return 1; return G.prev.phase === 'Int2' ? G.prev.cycle + 1 : G.prev.cycle; }
+function blockNo(){ if(!G.prev) return 0; return transType() === 'repeat' ? G.prev.blockNo : G.prev.blockNo + 1; }
+
+function pick(list, key, why, opts){
+  opts = opts || {};
+  const kn = KEEP[key];
+  if(kn && !G.swaps[key] && (usable(kn) || G.addMissing) && !USED.has(kn)){ USED.add(kn); return meta({ name: kn, why, key, alts: 2, grip: opts.grip || null }); }
+  let c = list.slice();
+  if(!G.addMissing){ const f = c.filter(usable); if(f.length < c.length) PLAN_SKIPPED.push(...c.filter(n => !usable(n))); c = f; }
+  const ex = new Set(opts.allow || []);
+  let free = c.filter(n => !USED.has(n));
+  const fa = free.filter(n => ex.has(n) || !AVOID.has(n)); if(fa.length) free = fa;
+  let note = '';
+  if(!free.length){ free = c.length ? c : list; note = ' (powtórka – brak innej opcji w bibliotece)'; }
+  const sw = G.swaps[key] || 0, name = free[sw % free.length];
+  USED.add(name);
+  return meta({ name, why: why + note, key, alts: free.length, grip: opts.grip || null });
+}
+function meta(o){ const L = genLib(o.name); if(L) o.name = L.name; o.lib = L; o.isNew = !L; o.video = !!(L && String(L.videoUrl || '').trim()); o.nm = !!(L && L.notMoveU); return o; }
+function par(role, legs, name){
+  const ph = G.phase.startsWith('Ak') ? 'Ak' : 'Int', st = G.staz;
+  let [s, lo, hi] = PAR[role][st][ph];
+  if(G.phase.endsWith('2')) s = Math.min(s + 1, MAXS[role][st]);
+  const cy = Math.min(4, G.prev ? cycleNo() : 1);
+  if(cy >= 2) s = Math.min(s + 1, MAXS[role][st] + 1);
+  if(cy >= 3 && hi - lo >= 1){ lo = Math.max(3, lo - (cy - 2)); hi = Math.max(lo + 1, hi - (cy - 2)); }
+  if(/z przodu|martwy ciąg klasyczny/i.test(name) && hi > 6){ hi = 6; lo = 4; }
+  let tempo = role === 'A' ? (st === 'p' ? '4010' : (/martwy ciąg/i.test(name) ? '41X0' : '40X0')) : role === 'B' ? '3010' : '2010';
+  if(/izometr/i.test(name)) tempo = 'izo';
+  const fem = GC.sex === 'K', uni = UNI.test(name);
+  let rest;
+  if(role === 'A') rest = legs ? (ph === 'Ak' ? (fem ? 135 : 150) : (fem ? 165 : 210)) : (ph === 'Ak' ? 90 : 120);
+  else if(role === 'B') rest = legs && !uni ? 150 : (uni ? 75 : 90);
+  else rest = 45;
+  return { sets: s, lo, hi, tempo, rest };
+}
+function R(lab, role, legs, ex, over){ const p = par(role, legs, ex.name); return Object.assign({ lab, role, legs }, ex, p, over || {}); }
+function pullRow(lab, role, pk, key){
+  const g = GRIP[pk], st = G.staz;
+  if(G.shoulderWeak){ const l = G.grip === 'auto' ? [...P.rowGrip[g.a2], ...P.rowAny] : P.rowAny;
+    return R(lab, role, false, pick(l, key, 'Słaby bark → wiosło zamiast podciągania', { grip: g.a2t, allow: G.grip === 'auto' ? P.rowGrip[g.a2] : [] })); }
+  if(st === 'p'){ const l = G.grip === 'auto' ? [...P.latNov[g.a2], ...P.latNov.nachwyt] : [...P.latNov.nachwyt, ...P.latNov.neutral];
+    return R(lab, role, false, pick(l, key, 'Początkujący: ściąganie – cel 12 podciągnięć zanim dociążenie', { grip: g.a2t, allow: G.grip === 'auto' ? P.latNov[g.a2] : [] })); }
+  const l = G.grip === 'auto' ? [...P.pullGrip[g.a2], ...P.pullAny] : P.pullAny;
+  return R(lab, role, false, pick(l, key, `Chwyt dobrany do wyciskania (${PNAME[pk]})`, { grip: g.a2t, allow: G.grip === 'auto' ? [...P.pullGrip[g.a2], ...(P.pullGrip[g.a2].every(n => !usable(n)) ? P.latNov[g.a2] || [] : [])] : [] }));
+}
+function rowRow(lab, pk, key){ const g = GRIP[pk]; const l = G.grip === 'auto' ? [...P.rowGrip[g.b2], ...P.rowAny] : P.rowAny;
+  return R(lab, 'B', false, pick(l, key, 'Przyciąganie poziome – chwyt, którego brakuje w podciąganiu', { grip: g.b2t, allow: G.grip === 'auto' ? P.rowGrip[g.b2] : [] })); }
+function pressRow(lab, role, pk, key){ const l = (G.staz === 'p' ? P.pressNov[pk] : P.press[pk]) || P.press[pk]; return R(lab, role, false, pick(l, key, `Wyciskanie: ${PNAME[pk]} – kąt zmienia się co trening`)); }
+function pkList(){ const base = G.staz === 'p' ? ['BP','OHP','SKOS'] : ['BP','OHP','SKOS','DIP'], n = blockNo();
+  if(G.days === 4){ const pairs = G.staz === 'p' ? [['BP','OHP'],['SKOS','BP']] : [['BP','OHP'],['SKOS','DIP']]; return pairs[n % 2]; }
+  return base.map((_, k) => base[(k + n * 3) % base.length]); }
+const CORE = [['coreFront','Brzuch – antyprzeprost'],['coreRot','Brzuch – antyrotacja'],['coreSide','Brzuch – boczna ściana']];
+function coreRows(base, day, key){ const n = CORE_PLAN[day] || 0, out = []; for(let k = 0; k < n; k++){ const [pool, w] = CORE[CORE_I++ % 3]; out.push(R(n > 1 ? base + (k + 1) : base, 'C', false, pick(P[pool], key + k, w))); } return out; }
+const LEG_A = ['Przysiad - ze sztanga na plecach','Przysiad ze sztangą - z przodu','Trap bar - martwy ciąg','Przysiad - Safety bar','Przysiad - ze sztangą na plecach - do skrzyni','Martwy ciąg w trap barze - z podwyższenia','Martwy ciąg klasyczny','Hip thrust - ze sztangą - obunóż'];
+const LEG_A_KNEE = ['Przysiad - ze sztangą na plecach - do skrzyni','Trap bar - martwy ciąg','Hip thrust - ze sztangą - obunóż','Martwy ciąg w trap barze - z podwyższenia','Przysiad - Safety bar'];
+function legA(i, key){
+  const order = G.knee ? [['sqBox','Ból kolana → przysiad do skrzyni'],['hinge','Martwy ciąg w trap barze – mniej zgięcia kolana'],['hip','Biodro zamiast kolana']]
+    : G.staz === 'p' ? [['sqNovice','Początkujący: goblet – technika przed ciężarem'],['hinge','Trap bar – najprostszy zawias'],['sqBox','Przysiad do skrzyni – kontrola głębokości']]
+    : [['sqBack','Przysiad tył – główne ćwiczenie nóg'],['hinge','Martwy ciąg w trap barze'],['sqFront','Przysiad przedni (≤6 powt.)']];
+  const [pool, w] = order[i % order.length];
+  const ex = pick([...new Set([...P[pool], ...(G.knee ? LEG_A_KNEE : LEG_A)])], key, w);
+  if(!P[pool].includes(ex.name)) ex.why = 'Nowy blok – inne ćwiczenie z serii A dla nóg';
+  return { row: R('A', 'A', true, ex), isHinge: /martwy|trap bar|hip thrust/i.test(ex.name) };
+}
+function fbwDay(i){
+  const pk = pkList()[i % 3], rows = [];
+  const a = legA(i, 'fA' + i); rows.push(a.row);
+  rows.push(pressRow('B1', 'B', pk, 'fB1' + i));
+  rows.push(pullRow('B2', 'B', pk, 'fB2' + i));
+  rows.push(R('C1', 'C', true, pick(G.knee ? P.lungeKnee : P.lunge, 'fC1' + i, G.knee ? 'Jednonóż z małym zgięciem kolana' : 'Jednonóż – słabsza noga zaczyna')));
+  if(a.isHinge) rows.push(R('C2', 'C', true, pick(G.knee ? P.kneePain : P.knee, 'fC2' + i, G.knee ? 'Kolano: TKE/VMO w krótkim zakresie, bez bólu' : 'Wyprost kolana / VMO – w dzień zawiasu')));
+  else rows.push(R('C2', 'C', true, pick(P.ham, 'fC2' + i, 'Tył uda jako zginacz kolana – co trening inne ustawienie stóp')));
+  rows.push(R('D1', 'C', false, pick(pk === 'BP' || G.shoulderWeak ? P.shoulder : (pk === 'OHP' ? P.biceps : P.triceps), 'fD1' + i, pk === 'BP' || G.shoulderWeak ? 'Po ławce – naprawczo bark (rotatory / trap 3)' : 'Ramiona po wyciskaniu')));
+  rows.push(R('D2', 'C', true, pick(i % 2 === 0 ? P.add : P.calf, 'fD2' + i, i % 2 === 0 ? 'Przywodziciele – zwykle zaniedbane' : 'Łydki')));
+  rows.push(...coreRows('E', i, 'fE' + i));
+  return { name: `FBW ${i + 1}`, sub: `wyciskanie: ${PNAME[pk]}`, rows };
+}
+function upperDay(pk, tag, coreI){
+  const rows = [];
+  rows.push(pressRow('A1', 'A', pk, tag + 'A1'));
+  rows.push(pullRow('A2', 'A', pk, tag + 'A2'));
+  rows.push(R('B1', 'B', false, pick(P.perp[pk].filter(n => !(n === 'Dipy' && pkList().includes('DIP'))), tag + 'B1', 'Kąt prostopadły do A1')));
+  rows.push(rowRow('B2', pk, tag + 'B2'));
+  rows.push(R('C1', 'C', false, pick(P.shoulder, tag + 'C1', G.shoulderWeak ? 'Słaby bark → retrakcja/rotatory w każdym treningu góry' : 'Bark – równowaga do wyciskań')));
+  rows.push(R('C2', 'C', false, pick(pk === 'BP' ? P.biceps : P.triceps, tag + 'C2', pk === 'BP' ? 'Biceps' : 'Triceps')));
+  rows.push(...coreRows('D', coreI, tag + 'D'));
+  return rows;
+}
+function lowerDay(v, tag, coreI){
+  const rows = [];
+  const a = legA(v, tag + 'A'); rows.push(a.row);
+  rows.push(R('B1', 'B', true, pick(G.knee ? P.lungeKnee : P.lunge, tag + 'B1', 'Jednonóż – słabsza noga zaczyna')));
+  rows.push(R('B2', 'B', true, pick(v === 0 ? P.ham : P.hip, tag + 'B2', v === 0 ? 'Tył uda jako zginacz kolana' : 'Wyprost biodra')));
+  rows.push(R('C1', 'C', true, pick(v === 0 ? (G.knee ? P.kneePain : P.knee) : P.add, tag + 'C1', v === 0 ? 'Wyprost kolana / VMO' : 'Przywodziciele')));
+  rows.push(R('C2', 'C', true, pick(v === 0 ? P.calf : P.gmed, tag + 'C2', v === 0 ? 'Łydki' : 'Pośladek średni')));
+  rows.push(...coreRows('D', coreI, tag + 'D'));
+  return rows;
+}
+const fmtS = x => (Math.round(x * 2) / 2).toString().replace('.', ',');
+function tally(days){ const t = {}; days.forEach(d => d.rows.forEach(r => { const m = genMuscles(r.name); for(const g in m) t[g] = (t[g] || 0) + r.sets * m[g]; })); return t; }
+const gSets = (d, g) => tally([d])[g] || 0;
+function prioPool(g){
+  const cur = {quad:[...P.sqB,...P.knee,...P.lunge,'Przysiad ze sztangą - z przodu'],glute:[...P.hip,...P.gmed,'Kickback - wyciąg'],ham:[...P.ham,'RDL - jednonóż - półsztanga'],
+    chest:['Wyciskanie hantli - na ławce - poziomej','Rozpiętki z hantlami - leżąc na ławce - poziomej','Wyciskanie hantli - leżąc na ławce skośnej - dodatniej','Dipy'],back:[...P.rowAny,'Ściąganie drążka wyciągu górnego- do klatki - nachwytem'],
+    shS:[...P.delt],shF:['Wyciskanie hantli - nad głowę - stojąc - oburącz','Wyciskanie hantli- nad głowę siedząc - z oparciem','Wyciskanie nad głowę - jednorącz - landmine - klęcząc'],shR:['Odwrotne rozpiętki- z gumą','Odwrotny aniołek','Face pull','Odwrotne rozpiętki z hantlami w opadzie'],biceps:P.biceps,triceps:P.triceps,calf:P.calf,add:P.add}[g] || [];
+  const dup = new Set(DUPS.map(d => gKey(d[1])));
+  const rest = library.map(l => l.name).filter(n => (genMuscles(n)[g] || 0) >= 1 && !METHOD.test(n) && !cur.includes(n));
+  return [...cur, ...rest].filter(n => !dup.has(gKey(n)) || gKey(n) === gKey(DUPS[0][0]));
+}
+function relabel(day){ const cnt = {}; day.rows.forEach(r => { const L = r.lab[0]; cnt[L] = (cnt[L] || 0) + 1; }); const i = {}; day.rows.forEach(r => { const L = r.lab[0]; i[L] = (i[L] || 0) + 1; r.lab = cnt[L] > 1 ? L + i[L] : L; }); }
+function applyPriority(days, why){
+  if(!G.prio.length) return null;
+  const [lo, hi] = TGT[G.staz], out = [];
+  G.prio.forEach(g => {
+    const before = tally(days)[g] || 0; let t = before, added = 0, boosted = 0, guard = 0;
+    while(t < lo && guard++ < 30){
+      let cand = null;
+      days.forEach(d => d.rows.forEach(r => { const w = genMuscles(r.name)[g] || 0; if(w >= 1 && r.role !== 'A' && r.sets < 5 && (!cand || r.sets < cand.sets)) cand = r; }));
+      if(cand && boosted < days.length){ cand.sets++; cand.boost = (cand.boost || 0) + 1; boosted++; }
+      else {
+        const reg = days.filter(d => d.rows.length < 10 && (!/^(Góra|Dół)/.test(d.name) || d.name.startsWith(LEGG.has(g) ? 'Dół' : 'Góra')));
+        const day = (reg.length ? reg : days.filter(d => d.rows.length < 10)).filter(d => !d.rows.some(r => r.prioAdd === g)).sort((a, b) => gSets(a, g) - gSets(b, g))[0];
+        if(!day) break;
+        const ex = pick(prioPool(g), 'P' + g + days.indexOf(day) + '_' + added, `Priorytet: ${MG[g]} – dołożone, bo samo dodanie serii nie wystarczyło`);
+        if(ex.why.includes('powtórka')) break;
+        const row = R('C', 'C', LEGG.has(g), ex, { prio: g, prioAdd: g }); row.sets = 3;
+        const ai = day.rows.findIndex(r => r.lab[0] === 'C'); day.rows.splice(ai < 0 ? day.rows.length : ai, 0, row); relabel(day); added++;
+      }
+      t = tally(days)[g] || 0;
+    }
+    days.forEach(d => d.rows.forEach(r => { if((genMuscles(r.name)[g] || 0) >= 1) r.prio = g; }));
+    const parts = []; if(boosted) parts.push(`+${boosted} ${plPlural(boosted, 'seria', 'serie', 'serii')} w ćwiczeniach na tę grupę`); if(added) parts.push(`+${added} ćw.`);
+    if(t < lo) parts.push(`brakuje ${fmtS(lo - t)} serii – max 1 dodatkowe ćwiczenie na dzień`);
+    why.push(`Priorytet ${MG[g]}: ${fmtS(before)} → ${fmtS(t)} serii/tydz. (cel ${lo}–${hi})${parts.length ? ' · ' + parts.join(', ') : ' · cel spełniony bez zmian'}`);
+    out.push({ g, before, after: t, lo, hi });
+  });
+  return out;
+}
+function build(){
+  const why = []; USED = new Set(); PLAN_SKIPPED = []; CORE_I = 0; KEEP = {}; AVOID = new Set(); PREV = {};
+  const tt = transType();
+  if(G.prev){
+    G.prev.days.forEach(d => d.rows.forEach(r => { PREV[r.key] = r; if(tt === 'repeat') KEEP[r.key] = r.name; else AVOID.add(r.name); }));
+    const rot = `${G.prev.phase} → ${G.phase}: nowy blok = nowe ćwiczenia z tych samych serii (A nóg → inne A nóg, wyciskanie → inny kąt, chwyty idą za nim)`;
+    why.push(({ same: rot + (G.phase.startsWith('Int') ? '; rośnie intensywność' : ''), rotate: rot + (G.prev.phase === 'Int2' ? `; start cyklu ${cycleNo()} (bez deloadu)` : ''),
+      repeat: `Frekwencja poniżej 66% → powtarzam ${G.phase} z tymi samymi ćwiczeniami` })[tt]);
+  }
+  CORE_PLAN = ({ 2: [0, 2], 3: [1, 0, 2], 4: [0, 1, 0, 2] })[G.days];
+  let days = [];
+  const cyN = cycleNo(), label = `Cykl ${cyN} · ${G.phase} · ${G.days}× w tygodniu`;
+  why.push(`Staż: ${STAZ[G.staz]} → serie i powtórzenia A/B/C z tabel`);
+  why.push(`Ćwiczenia z Twojej biblioteki (${library.length}); w tygodniu bez powtórek`);
+  why.push(`Brzuch: ${({ 2: '1 dzień × 2 ćwiczenia', 3: '2 dni – 1 i 2 ćwiczenia', 4: '2 dni – 1 i 2 ćwiczenia' })[G.days]}; funkcje rotują`);
+  if(cyN > 1) why.push(`Cykl ${cyN}: +1 seria${cyN >= 3 ? `, o ${Math.min(cyN, 4) - 2} powt. mniej` : ''} względem cyklu 1`);
+  if(G.days === 4){ const pl = pkList(); days = [{ name: 'Góra 1', sub: 'wyciskanie: ' + PNAME[pl[0]], rows: upperDay(pl[0], 'g1', 0) }, { name: 'Dół 1', sub: 'przysiad', rows: lowerDay(0, 'd1', 1) }, { name: 'Góra 2', sub: 'wyciskanie: ' + PNAME[pl[1]], rows: upperDay(pl[1], 'g2', 2) }, { name: 'Dół 2', sub: 'drugi wzorzec nóg', rows: lowerDay(1, 'd2', 3) }]; }
+  else for(let i = 0; i < G.days; i++) days.push(fbwDay(i));
+  why.push(G.phase.startsWith('Ak') ? 'Akumulacja: więcej powtórzeń, krótsze przerwy' : 'Intensyfikacja: mniej powtórzeń, więcej serii, dłuższe przerwy');
+  why.push('Powtórzenia rosną tydz. 1 → 3 w zakresie; ciężar liczy silnik RPE 9');
+  if(GC.sex === 'K') why.push('Kobieta → krótsze przerwy w serii A nóg');
+  const pr = GC.physique ? applyPriority(days, why) : null;
+  if(G.knee) why.push('Ból kolana → przysiad do skrzyni, jednonóż z małym zgięciem, TKE');
+  if(G.shoulderWeak) why.push('Słaby bark → wiosło zamiast podciągania, bark w każdym treningu góry');
+  const missing = []; days.forEach(d => d.rows.forEach(r => { if(r.isNew) missing.push(r.name); r.prev = G.prev ? PREV[r.key] || null : undefined; }));
+  return { days, why, label, cycle: cyN, missing: [...new Set(missing)], skipped: [...new Set(PLAN_SKIPPED)], tally: tally(days), pr };
+}
+
+/* ---------- powtórzenia na tydzień ---------- */
+function repsWeek(r, w){ if(r.tempo === 'izo') return [20, 25, 30][w] + 's'; const m = Math.round((r.lo + r.hi) / 2); return String(r.lo === r.hi ? r.lo : [r.lo, m, r.hi][w]); }
+function dowsFor(n){ return ({ 2: [0, 3], 3: [0, 2, 4], 4: [0, 1, 3, 4] })[n]; }
+function sessionDates(){ const out = []; for(let w = 0; w < 3; w++) G.dows.forEach((dw, i) => out.push({ w, i, ds: dAdd(G.start, w * 7 + dw) })); return out; }
+
+/* ---------- karta w widoku Plan ---------- */
+async function genRenderCard(clientId){
+  const h = $('genCardHolder'); if(!h) return;
+  const c = clients.find(x => x.id === clientId); if(!c) return;
+  const d = await loadClientNotes(clientId);
+  if(selectedClientId !== clientId || !$('genCardHolder')) return;
+  const pf = genProfile(c, d), bl = genBlocks(clientId), last = bl[bl.length - 1];
+  const chips = [];
+  chips.push(pf.hasCtx ? '<span class="gen-chip ok">Kontekst ✓</span>' : '<span class="gen-chip warn">Brak kontekstu – uzupełnij w Informacje → 🧠 Kontekst</span>');
+  if(pf.goals.length) chips.push(`<span class="gen-chip">Cel: ${escapeHtml(pf.goals.join(', '))}</span>`);
+  if(pf.physique && pf.prio.length) chips.push(`<span class="gen-chip">Priorytet: ${pf.prio.map(g => MG[g]).join(', ')}</span>`);
+  chips.push(`<span class="gen-chip">${pf.staz ? 'Staż: ' + STAZ[pf.staz] : 'Staż: nie wiem'}</span>`);
+  chips.push(`<span class="gen-chip">${pf.days ? pf.days + '×/tydz.' : 'treningi/tydz.: nie wiem'}</span>`);
+  if(pf.knee) chips.push('<span class="gen-chip warn">🩹 kolano</span>');
+  if(pf.shoulderWeak) chips.push('<span class="gen-chip warn">🩹 bark</span>');
+  const info = last ? `Ostatni blok: <b>Cykl ${last.cycle} · ${last.phase}</b> (${dPl(last.first)} – ${dPl(last.last)}) → następny: <b>${last.attend != null && last.attend < 66 ? last.phase + ' (powtórka)' : NEXT[last.phase]}</b>${last.attend != null ? ` · frekwencja ${last.attend}%` : ''}`
+    : 'Brak bloków z generatora → zacznę od <b>Cykl 1 · Ak1</b>';
+  h.innerHTML = `<div class="tools-panel gen-card"><h4>⚡ Generator planu <span class="gen-meta" style="font-weight:400;">dla zwykłych klientów · blok 3 tygodnie</span></h4>
+    <div class="gen-meta">${info}</div><div class="gen-chips">${chips.join('')}</div>
+    <div class="tools-row"><button class="btn gen-btn" id="genOpenBtn">⚡ ${last ? `Zrób kolejny blok (${last.attend != null && last.attend < 66 ? last.phase : NEXT[last.phase]})` : 'Zrób blok 3 tyg.'}</button><span class="gen-meta">Otworzy okno: ustawienia → podgląd → wstaw</span></div></div>`;
+  $('genOpenBtn').onclick = () => genOpen(clientId);
+}
+window.genRenderCard = genRenderCard;
+
+/* ---------- okno ---------- */
+async function genOpen(clientId){
+  if(typeof roBlocked === 'function' && roBlocked()) return;
+  const c = clients.find(x => x.id === clientId); if(!c) return;
+  await ensurePlanLoaded(clientId);
+  const d = await loadClientNotes(clientId);
+  GC = genProfile(c, d); GC.clientId = clientId; GC.d = d;
+  const bl = genBlocks(clientId), prev = bl[bl.length - 1] || null;
+  G = { step: 1, phase: 'Ak1', days: GC.days || 3, staz: GC.staz || 's', grip: 'auto', addMissing: true, swaps: {}, prev: null, prio: GC.physique ? GC.prio.slice() : [],
+    knee: GC.knee, shoulderWeak: GC.shoulderWeak, warmup: true, attend: null };
+  if(prev){
+    Object.assign(G, { prev, days: prev.daysN || G.days, grip: prev.gripMode || 'auto', attend: prev.attend });
+    if(prev.prio && prev.prio.length && !G.prio.length && GC.physique) G.prio = prev.prio.slice();
+    G.phase = suggestPhase();
+    if(GC.staz && GC.staz !== prev.staz) G.staz = GC.staz; else G.staz = prev.staz || G.staz;
+    if(prev.phase === 'Int2' && prev.cycle % 4 === 0 && (G.attend == null || G.attend >= 66) && G.staz !== 'z') G.stazUp = G.staz === 'p' ? 's' : 'z';
+    G.start = nextMonday(dAdd(prev.last, 1));
+  } else G.start = nextMonday(todayKey());
+  G.dows = dowsFor(G.days);
+  genRender();
+}
+function genClose(){ const r = $('genRoot'); if(r) r.remove(); G = null; }
+function seg(id, opts, val){ return `<div class="gen-seg" data-seg="${id}">${opts.map(o => `<button type="button" class="${String(o[0]) === String(val) ? 'on' : ''}" data-v="${o[0]}">${o[1]}</button>`).join('')}</div>`; }
+function labStyle(lab){ const sc = getSeriesStyle(lab); return `background:${sc.bg};color:${sc.text}`; }
+function exCell(r){
+  let tags = '';
+  if(r.isNew) tags += '<span class="gen-tag new">brak w bibliotece</span>';
+  else if(!r.video) tags += '<span class="gen-tag">bez filmu</span>';
+  else if(r.nm) tags += '<span class="gen-tag">film nie MoveU</span>';
+  if(r.prio) tags += `<span class="gen-tag pr">priorytet: ${MG[r.prio]}</span>`;
+  if(r.grip) tags += `<span class="gen-tag">chwyt: ${escapeHtml(r.grip)}</span>`;
+  let cmp = '';
+  if(r.prev !== undefined){ const p = r.prev;
+    if(!p) cmp = '＋ nowe miejsce w planie';
+    else if(gKey(p.name) === gKey(r.name)) cmp = `↺ bez zmian · było ${p.sets}×${p.lo === p.hi ? p.lo : p.lo + '–' + p.hi}`;
+    else cmp = `⇄ było: ${escapeHtml(p.name)}`; }
+  return `<b>${escapeHtml(r.name)}</b>${tags}<div class="gen-why">💡 ${escapeHtml(r.why)}${cmp ? ' · ' + cmp : ''}</div>`;
+}
+function dayTable(d){
+  return `<div class="gen-tw"><table class="gen-t"><thead><tr><th></th><th>Ćwiczenie</th><th>Tydz. 1</th><th>Tydz. 2</th><th>Tydz. 3</th><th>Tempo</th><th>Przerwa</th><th></th></tr></thead><tbody>${d.rows.map(r =>
+    `<tr><td><span class="gen-lab" style="${labStyle(r.lab)}">${r.lab}</span></td><td>${exCell(r)}</td>${[0, 1, 2].map(w => `<td class="n">${r.sets}×${repsWeek(r, w)}</td>`).join('')}<td class="n">${r.tempo === 'izo' ? '—' : r.tempo}</td><td class="n">${r.rest}"</td><td>${r.alts > 1 ? `<button type="button" class="gen-swap" data-k="${r.key}" title="Zamień na inne z biblioteki">⇄</button>` : ''}</td></tr>`).join('')}</tbody></table></div>`;
+}
+function volBox(plan){
+  const t = plan.tally, keys = Object.keys(t).filter(g => t[g] > 0).sort((a, b) => (G.prio.includes(b) - G.prio.includes(a)) || t[b] - t[a]);
+  const max = Math.max(...keys.map(g => t[g]), 20), [lo, hi] = TGT[G.staz];
+  return `<div class="gen-box prev"><b>Serie w tygodniu na grupę mięśniową</b><span class="gen-hint">ćwiczenie główne dla grupy = 1 seria, pomocnicze = ½</span>
+    <div class="gen-vol">${keys.map(g => { const p = G.prio.includes(g); return `<span>${MG[g]}${p ? ' ★' : ''}</span><div class="gen-bar"><i style="width:${t[g] / max * 100}%"></i>${p ? `<b style="left:${lo / max * 100}%;width:${(hi - lo) / max * 100}%"></b>` : ''}</div><span class="n">${fmtS(t[g])}${p ? ` / ${lo}–${hi}` : ''}</span>`; }).join('')}</div></div>`;
+}
+function conflicts(){ const plan = plansCache[GC.clientId] || {}; return sessionDates().filter(s => plan[s.ds] && (plan[s.ds].exercises || []).length); }
+function genRender(){
+  let root = $('genRoot'); if(!root){ root = document.createElement('div'); root.id = 'genRoot'; document.body.appendChild(root); }
+  const plan = build();
+  let body = '';
+  if(G.step === 1){
+    const pv = G.prev;
+    body = `${pv ? `<div class="gen-box prev"><b>Poprzedni blok: Cykl ${pv.cycle} · ${pv.phase} (${dPl(pv.first)} – ${dPl(pv.last)})</b>
+      <span>Frekwencja: ${pv.attend != null ? `<b>${pv.attend}%</b> (${pv.doneN} z ${pv.dates.length} treningów zrobionych${pv.finished ? '' : ', blok jeszcze trwa'})` : 'blok jeszcze się nie zaczął'}</span>
+      ${G.stazUp ? `<div class="gen-up">🎓 Minęły ${pv.cycle} cykle (ok. ${pv.cycle / 4} rok) → proponuję podnieść staż na <b>${G.stazUp === 's' ? '2–3 lata' : '4+ lata'}</b> <button type="button" class="btn" id="genStazOk">Zatwierdzam</button></div>` : ''}
+      <span>→ Proponuję: <b>${suggestPhase()}</b> · ${({ same: 'nowe ćwiczenia z tych samych serii, rośnie intensywność', rotate: 'nowe ćwiczenia z tych samych serii (A → inne A)', repeat: 'powtórka tej samej fazy – za mało treningów, żeby iść dalej' })[transType()] || ''}</span></div>` : ''}
+    <div class="gen-grid">
+      <div class="gen-fld"><span class="gen-lbl">Faza bloku</span>${seg('phase', [['Ak1', 'Ak1'], ['Int1', 'Int1'], ['Ak2', 'Ak2'], ['Int2', 'Int2']], G.phase)}<span class="gen-hint">${pv ? `Po ${pv.phase} proponuję ${suggestPhase()}.` : 'Pierwszy blok → Ak1.'}</span></div>
+      <div class="gen-fld"><span class="gen-lbl">Treningi w tygodniu</span>${seg('days', [[2, '2× FBW'], [3, '3× FBW'], [4, '4× góra/dół']], G.days)}<span class="gen-hint">${GC.days ? 'Z kontekstu: ' + GC.days + '×' : 'Nie ma w kontekście – wybierz.'}</span></div>
+      <div class="gen-fld"><span class="gen-lbl">Staż</span>${seg('staz', [['p', '< 1 rok'], ['s', '2–3 lata'], ['z', '4+ lata']], G.staz)}<span class="gen-hint">${GC.stazKnown ? 'Z kontekstu.' : '⚠ Nie ma w kontekście – sprawdź.'}</span></div>
+      <div class="gen-fld"><span class="gen-lbl">Start (poniedziałek)</span><input type="date" id="genStart" value="${G.start}" class="pill-input" style="width:auto;"><span class="gen-hint">Dni: ${seg('dows', DOWN.map((x, i) => [i, x]), '')}</span><span class="gen-hint">Zaznacz ${G.days} ${plPlural(G.days, 'dzień', 'dni', 'dni')} (${G.dows.length}/${G.days}).</span></div>
+      ${GC.physique ? `<div class="gen-fld wide"><span class="gen-lbl">Priorytet mięśniowy (z kontekstu · max 2)</span><div class="gen-seg" id="genPrio">${MG_PRIO.map(k => `<button type="button" class="${G.prio.includes(k) ? 'on' : ''}" data-g="${k}">${MG[k]}</button>`).join('')}</div><span class="gen-hint">Cel sylwetkowy → dokładam serie na wybrane grupy (cel ${TGT[G.staz].join('–')} serii/tydz.).</span></div>` : '<div class="gen-fld wide"><span class="gen-hint">Priorytet mięśniowy: nieaktywny – w kontekście nie ma celu sylwetkowego (sylwetka / masa / redukcja).</span></div>'}
+      <div class="gen-fld"><span class="gen-lbl">Ograniczenia</span><label class="gen-hint"><input type="checkbox" id="genKnee" ${G.knee ? 'checked' : ''}> ból kolana</label><label class="gen-hint"><input type="checkbox" id="genSh" ${G.shoulderWeak ? 'checked' : ''}> słaby bark / Trap 3</label></div>
+      <div class="gen-fld"><span class="gen-lbl">Chwyty i rozgrzewka</span><label class="gen-hint"><input type="checkbox" id="genGrip" ${G.grip === 'auto' ? 'checked' : ''}> dobieraj chwyty automatycznie</label><label class="gen-hint"><input type="checkbox" id="genWu" ${G.warmup ? 'checked' : ''}> dodaj „Rozgrzewka - całość”</label></div>
+    </div>
+    <div class="gen-box"><b>Co weźmie pod uwagę generator</b>${plan.why.map(w => `<span>• ${escapeHtml(w)}</span>`).join('')}</div>`;
+  } else {
+    const cf = conflicts(), miss = plan.missing;
+    body = `<div class="gen-box"><b>${escapeHtml(plan.label)} · start ${dPl(G.start)}</b>${plan.why.map(w => `<span>• ${escapeHtml(w)}</span>`).join('')}</div>
+    ${GC.physique ? volBox(plan) : ''}
+    ${plan.days.map((d, i) => `<div><div class="gen-dayt"><h3>${d.name}</h3><span>${DOWN[G.dows[i]]} · ${d.sub} · ${d.rows.length} ćw.</span></div>${dayTable(d)}</div>`).join('')}
+    <div class="gen-box prev">${miss.length ? `<label><input type="checkbox" id="genAddMiss" ${G.addMissing ? 'checked' : ''}> Dopisz brakujące do biblioteki (bez filmu – dodasz sam): <b>${miss.map(escapeHtml).join(', ')}</b></label>` : '<span>✓ Wszystkie ćwiczenia są w Twojej bibliotece.</span>'}
+      ${!G.addMissing && plan.skipped.length ? `<span class="gen-hint">Zamiast brakujących wziąłem najbliższe z biblioteki.</span>` : ''}
+      ${cf.length ? `<span style="color:#B4472E;">⚠ ${cf.length} ${plPlural(cf.length, 'dzień ma', 'dni mają', 'dni ma')} już trening (${cf.map(s => dPl(s.ds)).join(', ')}) – tych dni NIE nadpiszę. Zmień start albo dni, jeśli chcesz cały blok.</span>` : '<span>✓ Kalendarz w tych dniach jest wolny.</span>'}</div>`;
+  }
+  const okDows = G.dows.length === G.days;
+  root.innerHTML = `<div class="gen-ov" id="genOv"><div class="gen-modal" role="dialog" aria-label="Zrób blok 3 tygodnie">
+    <div class="gen-mh"><h2>⚡ Zrób blok 3 tyg. – ${escapeHtml(GC.name)}</h2><div class="gen-steps"><span class="${G.step === 1 ? 'on' : ''}">1 Ustawienia</span><span class="${G.step === 2 ? 'on' : ''}">2 Podgląd</span></div></div>
+    <div class="gen-mb" id="genMb">${body}</div>
+    <div class="gen-mf">${G.step === 1 ? `<button type="button" class="btn ghost" id="genCancel">Anuluj</button><span class="gen-sp"></span>${okDows ? '' : '<span class="gen-hint" style="color:#B4472E;">Zaznacz właściwą liczbę dni</span>'}<button type="button" class="btn" id="genNext" ${okDows ? '' : 'disabled'}>Pokaż podgląd →</button>`
+      : `<button type="button" class="btn ghost" id="genBack">← Ustawienia</button><span class="gen-sp"></span><span class="gen-hint">Ciężary policzy silnik RPE 9.</span><button type="button" class="btn gen-btn" id="genIns">Wstaw do kalendarza</button>`}</div>
+  </div></div>`;
+  root.querySelectorAll('[data-seg]').forEach(sg => sg.querySelectorAll('button').forEach(b => b.onclick = () => {
+    const k = sg.dataset.seg; let v = b.dataset.v;
+    if(k === 'dows'){ v = +v; G.dows = G.dows.includes(v) ? G.dows.filter(x => x !== v) : [...G.dows, v].sort(); if(G.dows.length > G.days) G.dows = G.dows.slice(-G.days).sort(); genRender(); return; }
+    if(k === 'days'){ v = +v; G.dows = dowsFor(v); }
+    G[k] = v; G.swaps = {}; genRender();
+  }));
+  root.querySelectorAll('[data-seg="dows"] button').forEach(b => b.classList.toggle('on', G.dows.includes(+b.dataset.v)));
+  root.querySelectorAll('#genPrio button').forEach(b => b.onclick = () => { const g = b.dataset.g; G.prio = G.prio.includes(g) ? G.prio.filter(x => x !== g) : [...G.prio, g].slice(-2); G.swaps = {}; genRender(); });
+  const q = id => document.getElementById(id);
+  if(q('genStart')) q('genStart').onchange = e => { if(e.target.value){ G.start = e.target.value; genRender(); } };
+  if(q('genKnee')) q('genKnee').onchange = e => { G.knee = e.target.checked; G.swaps = {}; genRender(); };
+  if(q('genSh')) q('genSh').onchange = e => { G.shoulderWeak = e.target.checked; G.swaps = {}; genRender(); };
+  if(q('genGrip')) q('genGrip').onchange = e => { G.grip = e.target.checked ? 'auto' : 'tip'; G.swaps = {}; genRender(); };
+  if(q('genWu')) q('genWu').onchange = e => { G.warmup = e.target.checked; };
+  if(q('genStazOk')) q('genStazOk').onclick = async () => { G.staz = G.stazUp; G.stazUp = null; G.swaps = {}; G.stazChanged = true; genRender(); toast('Staż podniesiony – zapiszę go w kontekście po wstawieniu'); };
+  if(q('genCancel')) q('genCancel').onclick = genClose;
+  if(q('genNext')) q('genNext').onclick = () => { G.step = 2; genRender(); q('genMb').scrollTop = 0; };
+  if(q('genBack')) q('genBack').onclick = () => { G.step = 1; genRender(); };
+  if(q('genAddMiss')) q('genAddMiss').onchange = e => { G.addMissing = e.target.checked; G.swaps = {}; genRender(); };
+  if(q('genIns')) q('genIns').onclick = () => genInsert(plan);
+  root.querySelectorAll('.gen-swap').forEach(b => b.onclick = () => { const k = b.dataset.k; G.swaps[k] = (G.swaps[k] || 0) + 1; const sc = q('genMb').scrollTop; genRender(); q('genMb').scrollTop = sc; });
+  q('genOv').onclick = e => { if(e.target.id === 'genOv') genClose(); };
+}
+
+/* ---------- wstawienie ---------- */
+async function genInsert(plan){
+  const btn = $('genIns'); if(btn){ btn.disabled = true; btn.textContent = 'Wstawiam…'; }
+  const clientId = GC.clientId;
+  // 1) brakujące ćwiczenia → biblioteka
+  let added = 0;
+  if(G.addMissing && plan.missing.length){
+    const fresh = await safeGet('exercise_library');
+    if(fresh === null){ alert('Nie udało się pobrać aktualnej biblioteki. Nic nie wstawiono.'); if(btn){ btn.disabled = false; btn.textContent = 'Wstaw do kalendarza'; } return; }
+    const have = new Set(fresh.map(l => gKey(l.name)));
+    const list = fresh.slice();
+    plan.missing.forEach((n, i) => { if(!have.has(gKey(n))){ list.push({ id: 'l_' + Date.now() + '_' + i, name: n, videoUrl: '', groupId: null, genAdded: true }); have.add(gKey(n)); added++; } });
+    if(added){ if(!(await persistWithFeedback('exercise_library', list))){ if(btn){ btn.disabled = false; btn.textContent = 'Wstaw do kalendarza'; } return; } library = list; }
+  }
+  // 2) dni w kalendarzu
+  const pl = plansCache[clientId] = plansCache[clientId] || {};
+  const bid = 'gb_' + Date.now(), wu = G.warmup ? genLib('Rozgrzewka - całość') : null;
+  let n = 0; const skipped = [];
+  const exObj = (o) => Object.assign({ id: 'e_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7), labelManual: false, suggestedWeight: '', suggestedManual: false, isTest: false, noWeight: false,
+    isInterval: false, workTime: '', restTime: '', effortPercent: '', restBetweenSets: '', splitLR: false, setsRight: '', setsLeft: '', note: '', rpeProgression: false, targetRpe: '', rpe: null, clientNote: '', log: [] }, o);
+  sessionDates().forEach(s => {
+    if(pl[s.ds] && (pl[s.ds].exercises || []).length){ skipped.push(s.ds); return; }
+    const d = plan.days[s.i], exs = [];
+    if(wu) exs.push(exObj({ name: wu.name, videoUrl: wu.videoUrl || '', libraryId: wu.id, category: 'warmup', sets: '1', reps: '1', tempo: '', rest: '' }));
+    d.rows.forEach(r => { const L = genLib(r.name);
+      exs.push(exObj({ name: L ? L.name : r.name, videoUrl: L ? (L.videoUrl || '') : '', libraryId: L ? L.id : undefined, category: 'main', label: r.lab, labelManual: true,
+        sets: String(r.sets), reps: repsWeek(r, s.w), tempo: r.tempo === 'izo' ? '' : r.tempo, rest: r.rest + '"', note: r.grip && G.grip === 'auto' ? 'Chwyt: ' + r.grip : '',
+        gk: r.key, glo: r.lo, ghi: r.hi, grole: r.role, glegs: !!r.legs, gsets: r.sets, gwhy: r.why })); });
+    const day = { title: d.name, subtitle: `${G.phase} · tydzień ${s.w + 1}/3 · ${d.sub}`, exercises: exs,
+      gen: { bid, phase: G.phase, cycle: plan.cycle, blockNo: blockNo(), staz: G.staz, daysN: G.days, grip: G.grip, prio: G.prio.slice(), dayIdx: s.i, week: s.w, dayName: d.name, label: plan.label } };
+    relabelExercises(day);
+    pl[s.ds] = day; n++;
+  });
+  const ok = await persistPlan(clientId);
+  if(ok === false){ if(btn){ btn.disabled = false; btn.textContent = 'Wstaw do kalendarza'; } return; }
+  // 3) staż / priorytet zapamiętane w kontekście
+  const d = GC.d; let ctxCh = false;
+  if(d){ d.context = d.context || { text: '', over: {} }; d.context.over = d.context.over || {};
+    if(G.stazChanged){ d.context.over.level = STAZ_CTX[G.staz]; ctxCh = true; }
+    if(GC.physique && JSON.stringify(d.context.prio || []) !== JSON.stringify(G.prio)){ d.context.prio = G.prio.slice(); ctxCh = true; }
+    if(ctxCh) await saveClientNotes(clientId); }
+  const first = G.start;
+  genClose();
+  if(selectedClientId === clientId){ viewDate = dParse(first); viewDate.setDate(1); selectedDateStr = first; if($('calGrid')){ renderCalendar(); renderDayPanel(); genRenderCard(clientId); } }
+  toast(`Wstawiono ${n} ${plPlural(n, 'trening', 'treningi', 'treningów')}${added ? ` · dopisano ${added} ćw. do biblioteki` : ''}${skipped.length ? ` · pominięto ${skipped.length} zajętych dni` : ''}`);
+}
+
+/* ---------- Kontekst: priorytet mięśniowy ---------- */
+window.genCtxPrioHtml = function(c, d){
+  const pf = genProfile(c, d), cur = (ctxDraft[c.id] && ctxDraft[c.id].prio) || ((d.context && d.context.prio) || []);
+  return `<div class="cv-card" style="margin-top:14px;"><h4>💪 Priorytet mięśniowy <span class="cv-small" style="font-weight:400;">tylko przy celu sylwetkowym · max 2 · dla generatora planu</span></h4>
+    <div class="gen-seg ctx-prio" id="ctxPrio">${MG_PRIO.map(k => `<button type="button" class="${cur.includes(k) ? 'on' : ''}" data-g="${k}">${MG[k]}</button>`).join('')}</div>
+    <div class="cv-small" style="margin-top:6px;" id="ctxPrioInfo">${pf.physique ? 'Cel sylwetkowy wykryty ✓ – generator dołoży serie na zaznaczone grupy.' : 'W opisie nie widzę celu sylwetkowego (sylwetka / masa / redukcja) – priorytet nie zadziała, dopóki go nie dopiszesz.'}</div></div>`;
+};
+window.genCtxPrioBind = function(c, d){
+  const el = $('ctxPrio'); if(!el) return;
+  el.querySelectorAll('button').forEach(b => b.onclick = () => {
+    const cur = ((ctxDraft[c.id] && ctxDraft[c.id].prio) || (d.context && d.context.prio) || []).slice(), g = b.dataset.g;
+    const nx = cur.includes(g) ? cur.filter(x => x !== g) : [...cur, g].slice(-2);
+    ctxDraft[c.id] = Object.assign({}, ctxDraft[c.id] || { text: $('ctxText').value, over: { level: $('ctxLevel').value || null, days: $('ctxDays').value || null, season: $('ctxSeason').value || null } }, { prio: nx });
+    el.querySelectorAll('button').forEach(x => x.classList.toggle('on', nx.includes(x.dataset.g)));
+    $('ctxSaved').textContent = '● niezapisane zmiany';
+  });
+};
+
+/* ---------- Biblioteka: grupy mięśniowe + filtry ---------- */
+let LIBF = 'all', MG_EDIT = null;
+const dupSet = () => new Set(DUPS.flatMap(d => [gKey(d[0]), gKey(d[1])]).concat(TYPOS.map(gKey)));
+function libCat(l){ const v = !!String(l.videoUrl || '').trim(); return { novid: !v, nm: v && !!l.notMoveU, added: !!l.genAdded, nogroup: !Object.keys(genMuscles(l.name)).length, check: dupSet().has(gKey(l.name)) || TYPOS.some(t => gKey(l.name).includes(gKey(t))) }; }
+window.genLibFilter = rows => LIBF === 'all' ? rows : rows.filter(l => libCat(l)[LIBF]);
+window.genLibFilterBar = function(){
+  const h = $('genLibF'); if(!h) return;
+  const cnt = { novid: 0, nm: 0, added: 0, nogroup: 0, check: 0 }; library.forEach(l => { const c = libCat(l); for(const k in cnt) if(c[k]) cnt[k]++; });
+  const b = (k, t, n) => `<button type="button" class="btn ${LIBF === k ? '' : 'ghost'}" data-lf="${k}" style="padding:6px 12px;font-size:12px;">${t}${n != null ? ` <span style="opacity:.7">${n}</span>` : ''}</button>`;
+  h.innerHTML = b('all', 'Wszystkie', library.length) + b('novid', 'Bez filmu', cnt.novid) + b('nm', 'Film nie MoveU', cnt.nm) + b('added', 'Dopisane przez generator', cnt.added) + b('nogroup', 'Bez grupy mięśniowej', cnt.nogroup) + b('check', 'Do sprawdzenia', cnt.check);
+  h.querySelectorAll('[data-lf]').forEach(x => x.onclick = () => { LIBF = x.dataset.lf; genLibFilterBar(); renderLibFullTable(); });
+};
+window.genMgCell = function(td, ex){
+  const m = genMuscles(ex.name), man = !!(ex.muscles && typeof ex.muscles === 'object');
+  const chips = Object.entries(m).sort((a, b) => b[1] - a[1]).map(([g, w]) => `<span class="mg-chip ${w >= 1 ? 'm1' : ''}">${MG[g]}${w < 1 ? ' ½' : ''}</span>`).join('') || '<span class="cv-small">brak – generator pominie</span>';
+  td.innerHTML = chips + `<span class="mg-edit" title="Zmień grupy">✎${man ? ' ręcznie' : ''}</span>` + (MG_EDIT === ex.id ? `<div class="mg-pop">${Object.keys(MG).map(g => `<button type="button" class="${(m[g] || 0) >= 1 ? 'on' : ''}" data-g="${g}">${MG[g]}</button>`).join('')}${man ? '<button type="button" data-auto="1">↺ auto</button>' : ''}<button type="button" data-ok="1">Zapisz</button></div>` : '');
+  td.querySelector('.mg-edit').onclick = () => { MG_EDIT = MG_EDIT === ex.id ? null : ex.id; genMgCell(td, ex); };
+  if(MG_EDIT !== ex.id) return;
+  const sel = {}; Object.entries(m).forEach(([g, w]) => { if(w >= 1) sel[g] = 1; });
+  td.querySelectorAll('[data-g]').forEach(b => b.onclick = () => { const g = b.dataset.g; if(sel[g]) delete sel[g]; else sel[g] = 1; b.classList.toggle('on', !!sel[g]); });
+  const save = async val => {
+    const fresh = await safeGet('exercise_library'); if(fresh === null){ alert('Nie udało się pobrać aktualnej biblioteki. Nic nie zapisano.'); return; }
+    const list = fresh.map(l => { if(l.id !== ex.id) return l; const nn = Object.assign({}, l); if(val) nn.muscles = val; else delete nn.muscles; return nn; });
+    if(await persistWithFeedback('exercise_library', list)){ library = list; MG_EDIT = null; toast('Zapisano grupy'); genMgCell(td, list.find(l => l.id === ex.id) || ex); }
+  };
+  td.querySelector('[data-ok]').onclick = () => save(Object.keys(sel).length ? sel : {});
+  if(td.querySelector('[data-auto]')) td.querySelector('[data-auto]').onclick = () => save(null);
+};
+window.GEN_TEST = { genBlocks, genProfile, build: () => build(), get G(){ return G; } };
+})();
 </script>
 </body>
 </html>
