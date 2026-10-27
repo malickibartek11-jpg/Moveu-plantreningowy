@@ -13616,6 +13616,15 @@ function applyEdits(days){
     relabel(d);
   });
 }
+/* litery serii idą po kolei bez dziur (A, B, C…); układ serii (ile ćwiczeń w serii) zostaje na swoich miejscach,
+   a ćwiczenia przesuwane ↑↓ przechodzą przez te miejsca i dostają ich litery */
+function seriesLabels(d, ord){
+  const sizes = []; let prev = null;
+  d.rows.forEach(r => { const L = r.lab[0]; if(L === prev) sizes[sizes.length - 1]++; else { sizes.push(1); prev = L; } });
+  if(ord && ord.length){ const orig = new Map(d.rows.map((r, i) => [r.key, i])), pos = k => { const i = ord.indexOf(k); return i < 0 ? 1e6 + orig.get(k) : i; };
+    d.rows.sort((a, b) => pos(a.key) - pos(b.key)); }
+  let i = 0; sizes.forEach((n, g) => { const L = String.fromCharCode(65 + g); for(let k = 0; k < n; k++) d.rows[i++].lab = n > 1 ? L + (k + 1) : L; });
+}
 function relabel(day){ const cnt = {}; day.rows.forEach(r => { const L = r.lab[0]; cnt[L] = (cnt[L] || 0) + 1; }); const i = {}; day.rows.forEach(r => { const L = r.lab[0]; i[L] = (i[L] || 0) + 1; r.lab = cnt[L] > 1 ? L + i[L] : L; }); }
 function applyPriority(days, why){
   if(!G.prio.length) return null;
@@ -13668,7 +13677,8 @@ function build(){
   why.push('Powtórzenia rosną tydz. 1 → 3 w zakresie; ciężar liczy silnik RPE 9');
   if(GC.sex === 'K') why.push('Kobieta → krótsze przerwy w serii A nóg');
   const pr = GC.physique ? applyPriority(days, why) : null;
-  days.forEach(d => { const n = d.rows.length; d.rows = d.rows.filter(r => !G.removed[r.key]); if(d.rows.length !== n) relabel(d); });
+  days.forEach(d => { d.rows = d.rows.filter(r => !G.removed[r.key]); });
+  days.forEach((d, di) => seriesLabels(d, G.order[di]));
   days.forEach(d => d.rows.forEach(r => { const o = G.ov[r.key]; if(!o) return;
     if(o.sets && +o.sets > 0) r.sets = +o.sets; if(o.tempo != null) r.tempo = o.tempo; if(o.rest != null && o.rest !== '') r.rest = o.rest; if(o.wk) r.wk = o.wk.slice(); r.edited = true; }));
   const nMan = Object.keys(G.ov).length + Object.keys(G.repl).length + Object.keys(G.removed).length + Object.values(G.extra).reduce((a, x) => a + x.length, 0);
@@ -13716,7 +13726,7 @@ async function genOpen(clientId){
   const d = await loadClientNotes(clientId);
   GC = genProfile(c, d); GC.clientId = clientId; GC.d = d;
   const bl = genBlocks(clientId), prev = bl[bl.length - 1] || null;
-  G = { step: 1, phase: 'Ak1', days: GC.days || 3, staz: GC.staz || 's', grip: 'auto', addMissing: true, swaps: {}, ov: {}, wuP: {}, repl: {}, removed: {}, extra: {}, wu: {}, xn: 0, pick: null, prev: null, prio: GC.physique ? GC.prio.slice() : [],
+  G = { step: 1, phase: 'Ak1', days: GC.days || 3, staz: GC.staz || 's', grip: 'auto', addMissing: true, swaps: {}, ov: {}, wuP: {}, order: {}, repl: {}, removed: {}, extra: {}, wu: {}, xn: 0, pick: null, prev: null, prio: GC.physique ? GC.prio.slice() : [],
     knee: GC.knee, shoulderWeak: GC.shoulderWeak, warmup: true, attend: null };
   if(prev){
     Object.assign(G, { prev, days: prev.daysN || G.days, grip: prev.gripMode || 'auto', attend: prev.attend });
@@ -13750,10 +13760,10 @@ function dayTable(d, di){
   const wu = wuList(di);
   const wi = (j, n, f, v, cls) => { const ch = ((G.wuP[di] || {})[n] || {})[f] != null; return `<input class="gen-in gen-win ${cls || ''} ${ch ? 'ch' : ''}" data-d="${di}" data-j="${j}" data-f="${f}" value="${escapeHtml(String(v))}" ${f === 'sets' || f === 'rest' ? 'inputmode="numeric"' : ''} aria-label="${f}">`; };
   return `<div class="gen-sec">Rozgrzewka</div>${wu.length ? `<div class="gen-tw" style="margin-bottom:6px"><table class="gen-t gen-wt"><thead><tr><th>Ćwiczenie</th><th>Serie</th><th>Powt.</th><th>Tempo</th><th>Przerwa (s)</th><th></th></tr></thead><tbody>${wu.map((n, j) => { const L = genLib(n), p = wuPar(di, n);
-    return `<tr><td><b>${escapeHtml(n)}</b>${L && !String(L.videoUrl || '').trim() ? '<span class="gen-tag">bez filmu</span>' : ''}</td><td class="n">${wi(j, n, 'sets', p.sets)}</td><td class="n">${wi(j, n, 'reps', p.reps)}</td><td class="n">${wi(j, n, 'tempo', p.tempo, 'w')}</td><td class="n">${wi(j, n, 'rest', p.rest)}</td><td class="gen-act"><button type="button" class="gen-swap gen-wdel" data-d="${di}" data-j="${j}" title="Usuń z rozgrzewki" style="color:#B4472E">✕</button></td></tr>`; }).join('')}</tbody></table></div>` : '<div class="gen-hint" style="margin-bottom:6px">brak</div>'}
+    return `<tr><td><b>${escapeHtml(n)}</b>${L && !String(L.videoUrl || '').trim() ? '<span class="gen-tag">bez filmu</span>' : ''}</td><td class="n">${wi(j, n, 'sets', p.sets)}</td><td class="n">${wi(j, n, 'reps', p.reps)}</td><td class="n">${wi(j, n, 'tempo', p.tempo, 'w')}</td><td class="n">${wi(j, n, 'rest', p.rest)}</td><td class="gen-act"><button type="button" class="gen-swap gen-wmv" data-d="${di}" data-j="${j}" data-dir="-1" title="Przesuń w górę">↑</button> <button type="button" class="gen-swap gen-wmv" data-d="${di}" data-j="${j}" data-dir="1" title="Przesuń w dół">↓</button> <button type="button" class="gen-swap gen-wdel" data-d="${di}" data-j="${j}" title="Usuń z rozgrzewki" style="color:#B4472E">✕</button></td></tr>`; }).join('')}</tbody></table></div>` : '<div class="gen-hint" style="margin-bottom:6px">brak</div>'}
   <div class="gen-wu"><button type="button" class="gen-addb gen-wadd" data-d="${di}">+ Dodaj do rozgrzewki</button></div>
   <div class="gen-sec">Ćwiczenia główne</div><div class="gen-tw"><table class="gen-t gen-main"><thead><tr><th></th><th>Ćwiczenie</th><th>Serie</th><th title="Powtórzenia w tygodniu 1">Powt. t1</th><th title="Powtórzenia w tygodniu 2">t2</th><th title="Powtórzenia w tygodniu 3">t3</th><th>Tempo</th><th>Przerwa (s)</th><th></th></tr></thead><tbody>${d.rows.map(r =>
-    `<tr><td><span class="gen-lab" style="${labStyle(r.lab)}">${r.lab}</span></td><td>${exCell(r)}</td><td class="n">${inp(r, 'sets', r.sets)}</td>${[0, 1, 2].map(w => `<td class="n">${inp(r, 'w' + w, repsWeek(r, w))}</td>`).join('')}<td class="n">${inp(r, 'tempo', r.tempo === 'izo' ? '' : r.tempo, 'w')}</td><td class="n">${inp(r, 'rest', r.rest)}</td><td class="gen-act"><button type="button" class="gen-swap" data-k="${r.key}" title="Zamień ćwiczenie">⇄</button> <button type="button" class="gen-swap gen-del" data-k="${r.key}" data-d="${di}" title="Usuń ćwiczenie" style="color:#B4472E">✕</button></td></tr>`).join('')}</tbody></table></div>
+    `<tr><td><span class="gen-lab" style="${labStyle(r.lab)}">${r.lab}</span></td><td>${exCell(r)}</td><td class="n">${inp(r, 'sets', r.sets)}</td>${[0, 1, 2].map(w => `<td class="n">${inp(r, 'w' + w, repsWeek(r, w))}</td>`).join('')}<td class="n">${inp(r, 'tempo', r.tempo === 'izo' ? '' : r.tempo, 'w')}</td><td class="n">${inp(r, 'rest', r.rest)}</td><td class="gen-act"><button type="button" class="gen-swap gen-mv" data-k="${r.key}" data-d="${di}" data-dir="-1" title="Przesuń w górę">↑</button> <button type="button" class="gen-swap gen-mv" data-k="${r.key}" data-d="${di}" data-dir="1" title="Przesuń w dół">↓</button> <button type="button" class="gen-swap" data-k="${r.key}" title="Zamień ćwiczenie">⇄</button> <button type="button" class="gen-swap gen-del" data-k="${r.key}" data-d="${di}" title="Usuń ćwiczenie" style="color:#B4472E">✕</button></td></tr>`).join('')}</tbody></table></div>
   <div style="margin-top:6px"><button type="button" class="gen-addb gen-add" data-d="${di}">+ Dodaj ćwiczenie</button></div>`;
 }
 function inp(r, f, v, cls){ const o = G.ov[r.key] || {}, ch = f.startsWith('w') ? !!(o.wk && o.wk[+f[1]] != null) : o[f] != null;
@@ -13805,7 +13815,7 @@ function genRender(){
   root.querySelectorAll('[data-seg]').forEach(sg => sg.querySelectorAll('button').forEach(b => b.onclick = () => {
     const k = sg.dataset.seg; let v = b.dataset.v;
     if(k === 'dows'){ v = +v; G.dows = G.dows.includes(v) ? G.dows.filter(x => x !== v) : [...G.dows, v].sort(); if(G.dows.length > G.days) G.dows = G.dows.slice(-G.days).sort(); genRender(); return; }
-    if(k === 'days'){ v = +v; G.dows = dowsFor(v); Object.assign(G, { repl: {}, removed: {}, extra: {}, wu: {}, wuP: {}, ov: {} }); }
+    if(k === 'days'){ v = +v; G.dows = dowsFor(v); Object.assign(G, { repl: {}, removed: {}, extra: {}, wu: {}, wuP: {}, ov: {}, order: {} }); }
     G[k] = v; G.swaps = {}; genRender();
   }));
   root.querySelectorAll('[data-seg="dows"] button').forEach(b => b.classList.toggle('on', G.dows.includes(+b.dataset.v)));
@@ -13823,7 +13833,7 @@ function genRender(){
   if(q('genAddMiss')) q('genAddMiss').onchange = e => { G.addMissing = e.target.checked; G.swaps = {}; genRender(); };
   if(q('genIns')) q('genIns').onclick = () => genInsert(LASTPLAN || plan);
   const keepScroll = fn => { const sc = q('genMb').scrollTop; fn(); genRender(); if(q('genMb')) q('genMb').scrollTop = sc; };
-  root.querySelectorAll('.gen-swap:not(.gen-del):not(.gen-wdel)').forEach(b => b.onclick = () => openPicker({ mode: 'swap', key: b.dataset.k, tab: 'all', q: '' }));
+  root.querySelectorAll('.gen-swap:not(.gen-del):not(.gen-wdel):not(.gen-mv):not(.gen-wmv)').forEach(b => b.onclick = () => openPicker({ mode: 'swap', key: b.dataset.k, tab: 'all', q: '' }));
   root.querySelectorAll('.gen-in:not(.gen-win)').forEach(i => i.onchange = () => {
     const k = i.dataset.k, f = i.dataset.f, row = curRow(k); if(!row) return;
     const o = G.ov[k] = G.ov[k] || {}, v = i.value.trim();
@@ -13842,6 +13852,12 @@ function genRender(){
     const P = G.wuP[di] = G.wuP[di] || {}, o = P[n] = P[n] || {};
     if(v === '') delete o[f]; else o[f] = f === 'sets' || f === 'rest' ? String(parseInt(v) || '') : v;
     i.classList.toggle('ch', o[f] != null); });
+  root.querySelectorAll('.gen-mv').forEach(b => b.onclick = () => keepScroll(() => {
+    const di = +b.dataset.d, keys = LASTPLAN.days[di].rows.map(r => r.key), i = keys.indexOf(b.dataset.k), j = i + +b.dataset.dir;
+    if(i < 0 || j < 0 || j >= keys.length) return; [keys[i], keys[j]] = [keys[j], keys[i]]; G.order[di] = keys; }));
+  root.querySelectorAll('.gen-wmv').forEach(b => b.onclick = () => keepScroll(() => {
+    const di = +b.dataset.d, l = wuList(di).slice(), i = +b.dataset.j, j = i + +b.dataset.dir;
+    if(j < 0 || j >= l.length) return; [l[i], l[j]] = [l[j], l[i]]; G.wu[di] = l; }));
   root.querySelectorAll('.gen-wdel').forEach(b => b.onclick = () => keepScroll(() => { const di = +b.dataset.d, l = wuList(di).slice(); l.splice(+b.dataset.j, 1); G.wu[di] = l; }));
   q('genOv').onclick = e => { if(e.target.id === 'genOv') genClose(); };
 }
