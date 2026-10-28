@@ -5968,7 +5968,7 @@ function renderProgFlagsRow(tbody, day, items){
       return;
     }
     if(ex.suggestedManual && ex.suggestedWeight) return;
-    const info = computeSuggestedWeightInfo(selectedClientId, name, ex.reps, selectedDateStr, ex.targetRpe, {});
+    const info = computeSuggestedWeightInfo(selectedClientId, name, ex.reps, selectedDateStr, ex.targetRpe, { slowPct: ex.genKgPct });
     if(info && info.flag) rows.push({ ex, name, text: info.flag, cut: info.source === 'last' ? eqDn1(info.value, info.eq) : null });
   });
   if(!rows.length) return;
@@ -5994,7 +5994,7 @@ function renderExRows(day, category){
     tr.draggable = true;
     const isTestEx = category === 'main' && ex.isTest;
     const exName = resolveExName(ex);
-    const autoInfo = (editingTemplateMode || ex.noWeight || ex.isInterval) ? null : computeSuggestedWeightInfo(selectedClientId, exName, ex.reps, selectedDateStr, ex.targetRpe, { progOff: !!ex.progOff || category !== 'main' });
+    const autoInfo = (editingTemplateMode || ex.noWeight || ex.isInterval) ? null : computeSuggestedWeightInfo(selectedClientId, exName, ex.reps, selectedDateStr, ex.targetRpe, { slowPct: ex.genKgPct, progOff: !!ex.progOff || category !== 'main' });
     const autoVal = autoInfo ? autoInfo.value : null;
     const displayVal = ex.suggestedManual ? (ex.suggestedWeight||'') : (autoVal !== null ? String(autoVal) : '');
     const suggTitle = ex.suggestedManual ? 'Wpisane ręcznie (wyczyść pole, żeby wrócić do automatycznej podpowiedzi)' : (autoInfo ? suggestedSourceText(autoInfo) : 'Brak podpowiedzi: brak wcześniejszych treningów tego ćwiczenia (do 10 powt.) i testu 1RM');
@@ -6613,13 +6613,17 @@ function computeSuggestedWeightInfo(clientId, exerciseName, plannedReps, beforeD
     if(!isNaN(reps) && reps >= 1 && prev.reps !== reps && prev.reps >= 1){
       value = eqSnap(d.nk * pctForReps(reps) / pctForReps(prev.reps), eq); conv = true;
     }
-    return Object.assign(base, { value, rule: d.rule, flag: d.flag, raw: d.raw, f: d.f, conv,
+    /* #24 metody: wolna ekscentryka (z generatora) – gdy poprzedni wynik był ze zwykłego tempa, ciężar −18% */
+    const eccS = t => { t = String(t || ''); const m = t.match(/^(\d+)-/); return m ? +m[1] : (/^\d/.test(t) ? +t[0] : 0); };
+    let slowRule = '';
+    if(opts.slowPct && eccS(prev.ex.tempo) < 6 && !prev.ex.genKgPct){ value = eqSnap(value * opts.slowPct, eq); slowRule = ` · wolna ekscentryka: −${Math.round((1 - opts.slowPct) * 100)}% od zwykłego`; }
+    return Object.assign(base, { value, rule: d.rule + slowRule, flag: d.flag, raw: d.raw, f: d.f, conv,
       rpe: isNaN(actual) ? null : { actual, target } });
   }
   const test = getLatestTest1RM(clientId, exerciseName);
   if(test){
     const pct = pctForReps(reps || 1);
-    return { value: eqSnap(test.oneRM * pct / 100, eq), source: 'test', date: test.date, eq, eqAuto: eqi.auto, eqKnown: eqi.known };
+    return { value: eqSnap(test.oneRM * pct / 100 * (opts.slowPct || 1), eq), source: 'test', date: test.date, eq, eqAuto: eqi.auto, eqKnown: eqi.known };
   }
   return null;
 }
@@ -10352,7 +10356,7 @@ function athleteWeightInfo(clientId, ex, dateStr){
   const exName = resolveExName(ex);
   const isT = ex.category === 'main' && ex.isTest;
   if(isT || ex.noWeight || ex.isInterval) return { display: '', progKg: null, info: null };
-  const info = computeSuggestedWeightInfo(clientId, exName, ex.reps, dateStr, ex.targetRpe, { progOff: !!ex.progOff || ex.category !== 'main' });
+  const info = computeSuggestedWeightInfo(clientId, exName, ex.reps, dateStr, ex.targetRpe, { slowPct: ex.genKgPct, progOff: !!ex.progOff || ex.category !== 'main' });
   let display = '';
   if(ex.suggestedManual && ex.suggestedWeight) display = String(ex.suggestedWeight);
   else if(info) display = String(info.value);
@@ -10740,7 +10744,7 @@ async function exportRangeToExcel(clientId, fromStr, toStr){
       const isTestEx = ex.category==='main' && ex.isTest;
       const exName = resolveExName(ex);
       const exVideo = resolveExVideo(ex);
-      const autoVal = isTestEx ? null : computeSuggestedWeight(clientId, exName, ex.reps, null, ex.targetRpe);
+      const autoVal = isTestEx ? null : computeSuggestedWeight(clientId, exName, ex.reps, null, ex.targetRpe, { slowPct: ex.genKgPct });
       const suggested = isTestEx ? '— TEST —' : (autoVal!==null?autoVal:'');
       const numSets = Math.min(MAX_EXPORT_SETS, Math.max(1, parseInt(ex.sets)||1));
       const rowFill = isTestEx ? XLS_WARN : null;
@@ -13313,7 +13317,9 @@ function renderSameDays(){
  .gen-libf{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 10px}
  .ctx-prio button{font-size:12.5px}
  .gen-in{width:56px;border:1px solid var(--line);background:var(--surface-2);border-radius:6px;padding:4px 6px;font:inherit;font-size:12.5px;color:var(--text);text-align:center}
- .gen-in.w{width:64px}.gen-in.ch{border-color:#E8604A;background:#FDECE8}
+ .gen-in.w{width:64px}.gen-in.wide{width:118px}.gen-in.ch{border-color:#E8604A;background:#FDECE8}
+ .gen-labpop{position:fixed;z-index:9700;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;box-shadow:0 10px 30px rgba(0,0,0,.2);width:310px}
+ .gen-labpop .gen-seg button{min-width:34px}
  .gen-sec{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:8px 0 4px}
  .gen-wu{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:6px}
  .gen-wi{display:inline-flex;gap:6px;align-items:center;font-size:12.5px;padding:4px 6px 4px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
@@ -13383,29 +13389,29 @@ const P={
  sqNovice:['Przysiad goblet','Przysiad - ze sztangą na plecach - do skrzyni','Przysiad - Safety bar'],
  hinge:['Trap bar - martwy ciąg','Martwy ciąg w trap barze - z podwyższenia'],
  sqB:['Hack przysiad - na maszynie','Przysiad - Safety bar'],
- lunge:['Przysiad bułgarski - hantle','Przysiad wykroczny- przednia noga/pięta na podwyższeniu','Przysiad wykroczny - ze sztangą na plecach','Zakrok- hantle','Przysiad do boku- z hantlem','Przysiad wykroczny do boku','Box step up- ze sztanga na plecach - 50cm'],
+ lunge:['Przysiad bułgarski - hantle','Przysiad wykroczny- przednia noga/pięta na podwyższeniu','Przysiad wykroczny - ze sztangą na plecach','Zakrok- hantle','Przysiad do boku- z hantlem','Przysiad wykroczny do boku','Box step up- ze sztanga na plecach - 50cm','Przysiad bułgarski - ze sztangą na plecach','Przysiad wykroczny - z hantlem z przodu - goblet - na klinie','Przysiad do boku- landmine'],
  lungeKnee:['Zakrok- hantle','Przysiad do boku- z hantlem','Wejścia na podest z krązkiem - 50cm'],
- ham:['Uginanie podudzi - na maszynie - leżąc - obunóż - stopy neutralnie','Uginanie podudzi - na maszynie - leżąc - obunóż - stopy zgięte grzbietowo - do środka','Uginanie podudzi - na maszynie - obunóż - leżąc - stopy zgięte grzbietowo - do zewnątrz','Uginanie podudzi - jednonóż - na maszynie - siedząc','Nordyckie opadanie'],
- hip:['Hip thrust - ze sztangą - obunóż','RDL - jednonóż - półsztanga','Hip thrust - stagger position','Dzień dobry - z hantlem - siedząc','Wznosy tułowia - ławka rzymska - akcentowana ekscentryka 2:1'],
+ ham:['Uginanie podudzi - na maszynie - leżąc - obunóż - stopy neutralnie','Uginanie podudzi - na maszynie - leżąc - obunóż - stopy zgięte grzbietowo - do środka','Uginanie podudzi - na maszynie - obunóż - leżąc - stopy zgięte grzbietowo - do zewnątrz','Uginanie podudzi - jednonóż - na maszynie - siedząc','Nordyckie opadanie','Gh roller - uginanie podudzi - jednonóż','Uginanie podudzi - na piłce szwajcarskiej','Uginanie podudzi stojąc - jednonóż','Uginanie podudzi - na maszynie - leżąc - jednonóż - stopa neutralnie'],
+ hip:['Hip thrust - ze sztangą - obunóż','RDL - jednonóż - półsztanga','Hip thrust - stagger position','Dzień dobry - z hantlem - siedząc','Wznosy tułowia - ławka rzymska - akcentowana ekscentryka 2:1','Hip thrust - jednonóż','RDL - jednonóż - hantel + zginacz biodra'],
  knee:['VMO - wstępowania','TKE','Wyprosty podudzi na maszynie - obunóż','Wyprosty podudzi na maszynie - metoda 2:1'],
  kneePain:['TKE','VMO - wstępowania','Wyprosty podudzi na maszynie - obunóż'],
- calf:['Wspięcia na palce siedząc - jednonóż','Wspięcia na palce - jednonóż','Wspięcia na palce- obunóż - hack maszyna','Wspięcia na palce - stojąc - metoda 2:1'],
+ calf:['Wspięcia na palce siedząc - jednonóż','Wspięcia na palce - jednonóż','Wspięcia na palce- obunóż - hack maszyna','Wspięcia na palce - stojąc - metoda 2:1','Wspięcia na palce - maszyna smitha- obunóż'],
  add:['Izometryczne kopenhaskie przywodzenie - krótka dźwignia','Kopenhaskie przywodzenie - na kolanie','Kopenhaskie przywodzenie- długa dźwignia'],
  gmed:['Leżąc na boku - unoszenie nogi do boku - prosta noga - mięsień pośladkowy','Leżąc na boku - unoszenie nogi do boku - zgięta noga- mięśnie pośladkowe'],
- coreFront:['Wznosy Garhamera - ławka dodatnia','Hollow body','Plank - dotykanie barków','T2B (Toes to bar)','Brzuszki - Voyager'],
- coreRot:['Pallof press','Lifting - wyciąg dolny - klecząc','Rotacja tułowia - wyciąg - stojąc'],
- coreSide:['Deska bokiem','Plank zapaśniczy- piłka szwajcarska','Zgięcia bokiem - ławka rzymska'],
- press:{BP:['Wyciskanie sztangi - ławka pozioma'],OHP:['Wyciskanie sztangi - nad głowę - stojąc'],SKOS:['Wyciskanie hantli - leżąc na ławce skośnej - dodatniej'],DIP:['Dipy']},
- pressNov:{BP:['Wyciskanie hantli - na ławce - poziomej'],OHP:['Wyciskanie hantli- nad głowę siedząc - z oparciem'],SKOS:['Wyciskanie hantli - leżąc na ławce skośnej - dodatniej']},
+ coreFront:['Wznosy Garhamera - ławka dodatnia','Hollow body','Plank - dotykanie barków','T2B (Toes to bar)','Brzuszki - Voyager','Martwy robak','Hollow body - jednostronnie - pół-przetoczenia','Martwy robak - z rollerem - po przekątnej','Plank zapaśniczy- piłka szwajcarska'],
+ coreRot:['Pallof press','Lifting - wyciąg dolny - klecząc','Rotacja tułowia - wyciąg - stojąc','Rotacja tułowia - wykrok - chodzone','Plank na piłce szwajcarskiej - jednorącz'],
+ coreSide:['Deska bokiem','Zgięcia bokiem - ławka rzymska'],
+ press:{BP:['Wyciskanie sztangi - ławka pozioma','Wyciskanie hantli - na ławce - poziomej','Wyciskanie hantli - leżąc - ławka prosta - z rotacją'],OHP:['Wyciskanie sztangi - nad głowę - stojąc','Wyciskanie hantli - nad głowę - stojąc - oburącz','Wyciskanie hantli - nad głowę stojąc - oburącz - Arnoldki','Wyciskanie nad głowę - klęk jednonóż - arnold'],SKOS:['Wyciskanie hantli - leżąc na ławce skośnej - dodatniej','Wyciskanie hantli - ławka dodatnia - neutralnie'],DIP:['Dipy']},
+ pressNov:{BP:['Wyciskanie hantli - na ławce - poziomej','Wyciskanie hantli - na ławce poziomej - wąsko'],OHP:['Wyciskanie hantli- nad głowę siedząc - z oparciem','Wyciskanie hantli nad głowę - siedząc z oparciem - oburącz - Arnoldki','Wyciskanie nad głowę - jednorącz - landmine - klęcząc'],SKOS:['Wyciskanie hantli - leżąc na ławce skośnej - dodatniej','Wyciskanie hantli - ławka dodatnia - neutralnie']},
  perp:{BP:['Wyciskanie hantli- nad głowę siedząc - z oparciem','Wyciskanie hantli - nad głowę - stojąc - oburącz'],OHP:['Wyciskanie hantli - na ławce - poziomej','Wyciskanie hantli - ławka dodatnia - neutralnie'],SKOS:['Wyciskanie hantli - na ławce - poziomej','Dipy','Wyciskanie hantli - na ławce poziomej - wąsko'],DIP:['Wyciskanie hantli - ławka dodatnia - neutralnie','Wyciskanie hantli - leżąc na ławce skośnej - dodatniej']},
  pullGrip:{podchwyt:['Podciągnie - podchwytem'],nachwyt:['Podciąganie - nachwytem'],neutral:['Podciąganie na drążku - chwyt neutralny','Ściąganie drążka wyciągu górnego- do klatki piersiowej- chwyt neutralny- wydłużona ekscentryka']},
  pullAny:['Podciągnie - podchwytem','Podciąganie - nachwytem','Ściąganie drążka wyciągu górnego- do klatki - nachwytem'],
  latNov:{nachwyt:['Ściąganie drążka wyciągu górnego- do klatki - nachwytem'],neutral:['Ściąganie drążka wyciągu górnego- do klatki piersiowej- chwyt neutralny- wydłużona ekscentryka'],podchwyt:['Ściąganie drążka wyciągu górnego- do klatki - nachwytem']},
  rowGrip:{podchwyt:['Wiosłowanie - kółka gimnastyczne - podchwytem - z pauzą'],nachwyt:['Wiosłowanie sztangą - Pendlay row'],neutral:['Wiosłowanie hantlem - jednorącz - w oparciu o ławkę','Wiosłowanie hantlem w oparciu - jednorącz']},
- rowAny:['Wiosłowanie hantlem - jednorącz - w oparciu o ławkę','Wiosłowanie sztangą - Pendlay row','Wiosłowanie hantlami - leżąc na ławce - skośnej - oburącz','Wiosłowanie - kółka gimnastyczne - podchwytem - z pauzą','Wiosłowanie Scott’a - klęk jednonóż','Wiosłowanie hantlem w oparciu - jednorącz'],
- shoulder:['Trap 3 - ławka skośna','Rotacja zewnętrzna przedramienia- na kolanie siedząc - hantlem- akcentowana ekscentryka 2:1','Rotacja zewnętrza przedramienia - stojąc - na wyciągu','Y trap raise - leżąc na ławce - skośnej','Trap 3- jednorącz -w oparciu o ławkę','Odwrotny aniołek','Odwrotne rozpiętki- z gumą'],
- biceps:['Uginanie przedramion - z hantlami - leżąc na ławce skośnej - podchwytem','Uginanie przedramion- zottman - siedząc na ławce','Uginanie przedramion - wyciąg dolny - chwyt neutralny'],
- triceps:['Francuskie wyciskanie hantli - leżąc na ławce poziomej - oburącz','Prostowanie przedramion - na wyciągu - chwyt neutralny','Wyprosty przedramion - nachwytem - znad głowy - wyciąg górny'],
+ rowAny:['Wiosłowanie hantlem - jednorącz - w oparciu o ławkę','Wiosłowanie sztangą - Pendlay row','Wiosłowanie hantlami - leżąc na ławce - skośnej - oburącz','Wiosłowanie - kółka gimnastyczne - podchwytem - z pauzą','Wiosłowanie Scott’a - klęk jednonóż','Wiosłowanie hantlem w oparciu - jednorącz','Wiosłowanie - Bird-Dog - hantel'],
+ shoulder:['Trap 3 - ławka skośna','Rotacja zewnętrzna przedramienia- na kolanie siedząc - hantlem- akcentowana ekscentryka 2:1','Rotacja zewnętrza przedramienia - stojąc - na wyciągu','Y trap raise - leżąc na ławce - skośnej','Trap 3- jednorącz -w oparciu o ławkę','Odwrotny aniołek','Odwrotne rozpiętki- z gumą','W to Y raise - w leżeniu na brzuchu'],
+ biceps:['Uginanie przedramion - z hantlami - leżąc na ławce skośnej - podchwytem','Uginanie przedramion- zottman - siedząc na ławce','Uginanie przedramion - wyciąg dolny - chwyt neutralny','Uginanie przedramion- chwyt neutralny - stojąc - naprzemiennie','Uginanie przedramion - podchwytem - z użyciem wyciągu dolnego'],
+ triceps:['Francuskie wyciskanie hantli - leżąc na ławce poziomej - oburącz','Prostowanie przedramion - na wyciągu - chwyt neutralny','Wyprosty przedramion - nachwytem - znad głowy - wyciąg górny','Wyprosty przedramion - chwyt neutralny - znad głowy - wyciąg górny','Wyprosty przedramion - nachwytem - wyciąg górny'],
  delt:['Wznosy hantli bokiem - stojąc','Wznosy hantli bokiem - siedząc','Wznosy bokiem na wyciągu - jednorącz']
 };
 const GRIP={BP:{a2:'neutral',a2t:'neutralnie, szeroko',b2:'nachwyt',b2t:'nachwyt, na szer. barków'},
@@ -13422,7 +13428,7 @@ const STAZ={p:'początkujący (< 1 rok)',s:'średni (2–3 lata)',z:'zaawansowan
 const STAZ_CTX={p:'nowicjusz',s:'średni',z:'zaawansowany'};
 const NEXT={Ak1:'Int1',Int1:'Ak2',Ak2:'Int2',Int2:'Ak1'};
 const TGT={p:[10,12],s:[14,18],z:[16,20]};
-const METHOD=/izometr|pauz|tempo malejące|przeciążenie|supramax|flywheel|drop catch|gumy|2:1|wydłużona/i;
+const METHOD=/izometr|pauz|opuszczanie|tempo malejące|przeciążenie|supramax|flywheel|drop catch|gumy|2:1|wydłużona/i;
 const DUPS=[['Wyciskanie sztangi - nad głowę - stojąc','Wyciskanie sztangi - nad głowę - stojąc'],['Przysiad - ze sztanga na plecach','Przysiad ze sztangą - na plecach'],['Wspięcie na palce siedząc - jednonóż','Wspięcia na palce siedząc - jednonóż'],['Wznosy hantli bokiem - siedząc','Wznosy hantli - bokiem - siedząc'],['Wiosłowanie hantlem - jednorącz - w oparciu o ławkę','Wiosłowanie hantlem w oparciu - jednorącz']];
 const TYPOS=['Podciągnie - podchwytem','Przysiad - ze sztanga na plecach','Box step up- ze sztanga na plecach - 50cm','Izometryczny hip trust','Wejścia na podest z krązkiem - 50cm','Rotacja zewnętrza przedramienia - stojąc - na wyciągu','Rzut piłką o ściane - z rotacji - przodem','Wiosłowanie hantlem-w oparciu o ławke - Gruby chwyt','Wejscie na skrzynie - pierwszy krok - z gumą oporową','pól-siadu','Wznosy Garhamera - ławka dodatnia'];
 const DOWN=['pn','wt','śr','czw','pt','sb','nd'];
@@ -13448,7 +13454,7 @@ function genBlocks(clientId){
     const today = todayKey(), past = b.dates.filter(ds => ds < today);
     const done = past.filter(ds => { const d = plan[ds]; return d && (d.resolution === 'agreed' || dayFill(d).anyFilled > 0); });
     const m = b.meta;
-    return { bid: m.bid, phase: m.phase, cycle: m.cycle, blockNo: m.blockNo, staz: m.staz, daysN: m.daysN, gripMode: m.grip, prio: m.prio || [], label: m.label,
+    return { bid: m.bid, phase: m.phase, cycle: m.cycle, blockNo: m.blockNo, staz: m.staz, daysN: m.daysN, gripMode: m.grip, prio: m.prio || [], label: m.label, pkOff: m.pkOff, legOff: m.legOff, method: m.method || 'sila', stage: m.stage || null,
       days: Object.keys(b.days).sort().map(k => b.days[k]), dates: b.dates, first: b.dates[0], last: b.dates[b.dates.length - 1],
       pastN: past.length, doneN: done.length, attend: past.length ? Math.round(done.length / b.dates.length * 100) : null, finished: !b.dates.some(ds => ds >= today) };
   });
@@ -13467,7 +13473,8 @@ function genProfile(c, d){
     if(m){ const y = m[2] === 'pol' ? 0.5 : +m[2]; lv = y < 1.5 ? 'p' : y < 4 ? 's' : 'z'; }
   }
   return { name: c.name, sex: R.sex || null, staz: lv, stazKnown: !!lv, days: R.days ? Math.max(2, Math.min(4, R.days)) : null, physique, knee, shoulderWeak: shoulder,
-    prio: Array.isArray(cx.prio) ? cx.prio.slice(0, 2) : [], hasCtx: !!(cx.text && cx.text.trim()), goals: R.goals, age: R.age };
+    prio: Array.isArray(cx.prio) ? cx.prio.slice(0, 2) : [], hasCtx: !!(cx.text && cx.text.trim()), goals: R.goals, age: R.age, sport: R.sport || null,
+    tests: (typeof ctxTestsFor === 'function' && c.id) ? (ctxTestsFor(c.id) || {}).tests || null : null };
 }
 
 /* ---------- stan okna ---------- */
@@ -13478,8 +13485,13 @@ const meso = p => p.endsWith('1') ? 1 : 2;
 function suggestPhase(){ return G.attend != null && G.attend < 66 ? G.prev.phase : NEXT[G.prev.phase]; }
 function transType(){ if(!G || !G.prev) return null; const a = G.prev.phase, b = G.phase; if(a === b) return 'repeat'; if(meso(a) === meso(b) && !(a === 'Int2' && b === 'Ak1')) return 'same'; return 'rotate'; }
 function cycleNo(){ if(!G.prev) return 1; if(transType() === 'repeat') return G.prev.cycle; if(G.prev.phase === 'Int2' && G.staz !== G.prev.staz) return 1; return G.prev.phase === 'Int2' ? G.prev.cycle + 1 : G.prev.cycle; }
-function blockNo(){ if(!G.prev) return 0; return transType() === 'repeat' ? G.prev.blockNo : G.prev.blockNo + 1; }
+function blockNo(){ if(!G.prev) return 0; if(G.method && G.method !== 'sila') return G.repeatM ? (G.prev.blockNo || 0) : (G.prev.blockNo || 0) + 1; return transType() === 'repeat' ? G.prev.blockNo : G.prev.blockNo + 1; }
 
+/* losowość: ziarno losowane przy każdym otwarciu okna (i przyciskiem 🎲); ten sam klucz + ziarno = ten sam wybór,
+   więc podgląd nie „skacze” przy każdym kliknięciu */
+function rnd(key){ let h = (2166136261 ^ (G.seed || 1)) >>> 0; for(let i = 0; i < key.length; i++) h = Math.imul(h ^ key.charCodeAt(i), 16777619);
+  h ^= h >>> 13; h = Math.imul(h, 0x5bd1e995); h ^= h >>> 15; return (h >>> 0) / 4294967296; }
+function shuffled(arr, key){ return arr.map((x, i) => [rnd(key + '#' + x), x]).sort((a, b) => a[0] - b[0]).map(x => x[1]); }
 function pick(list, key, why, opts){
   opts = opts || {};
   if(G.repl[key]){ const nm = G.repl[key]; USED.add(nm); POOLS[key] = list.concat(similarFor(list)); return meta({ name: nm, why: 'Wybrane ręcznie', key, alts: 2, grip: opts.grip || null, manual: true }); }
@@ -13495,7 +13507,13 @@ function pick(list, key, why, opts){
   const fa = free.filter(n => ex.has(n) || !AVOID.has(n)); if(fa.length) free = fa;
   let note = '';
   if(!free.length){ free = c.length ? c : list; note = ' (powtórka – brak innej opcji w bibliotece)'; }
-  const sw = G.swaps[key] || 0, name = free[sw % free.length];
+  // najpierw ćwiczenia z chwytem dobranym do wyciskania, potem losowo z puli; w C/D/E czasem (20%) coś z biblioteki na tę samą partię
+  const okGrip = free.filter(n => ex.has(n)), top = opts.top || list.length;
+  const cand = okGrip.length ? okGrip : free;
+  const core = cand.filter(n => { const i = list.indexOf(n); return i > -1 && i < top; }), extra = cand.filter(n => !core.includes(n));
+  let base = core.length ? core : cand;
+  if(!note && extra.length && core.length && !okGrip.length && /^(f|g\d|d\d)[CDE]|^P/.test(key) && rnd(key + '~x') < 0.2) base = extra;   // tylko ćwiczenia pomocnicze (C/D/E)
+  const name = shuffled(base, key)[0];
   USED.add(name);
   return meta({ name, why: why + note, key, alts: free.length, grip: opts.grip || null });
 }
@@ -13541,18 +13559,18 @@ function rowRow(lab, pk, key){ const g = GRIP[pk]; const l = G.grip === 'auto' ?
   return R(lab, 'B', false, pick(l, key, 'Przyciąganie poziome – chwyt, którego brakuje w podciąganiu', { grip: g.b2t, allow: G.grip === 'auto' ? P.rowGrip[g.b2] : [] })); }
 function pressRow(lab, role, pk, key){ const l = (G.staz === 'p' ? P.pressNov[pk] : P.press[pk]) || P.press[pk]; return R(lab, role, false, pick(l, key, `Wyciskanie: ${PNAME[pk]} – kąt zmienia się co trening`)); }
 function pkList(){ const base = G.staz === 'p' ? ['BP','OHP','SKOS'] : ['BP','OHP','SKOS','DIP'], n = blockNo();
-  if(G.days === 4){ const pairs = G.staz === 'p' ? [['BP','OHP'],['SKOS','BP']] : [['BP','OHP'],['SKOS','DIP']]; return pairs[n % 2]; }
-  return base.map((_, k) => base[(k + n * 3) % base.length]); }
+  if(G.days === 4){ const pairs = G.staz === 'p' ? [['BP','OHP'],['SKOS','BP']] : [['BP','OHP'],['SKOS','DIP']]; return pairs[(n + (G.pkOff || 0)) % 2]; }
+  return base.map((_, k) => base[(k + n * 3 + (G.pkOff || 0)) % base.length]); }
 const CORE = [['coreFront','Brzuch – antyprzeprost'],['coreRot','Brzuch – antyrotacja'],['coreSide','Brzuch – boczna ściana']];
-function coreRows(base, day, key){ const n = CORE_PLAN[day] || 0, out = []; for(let k = 0; k < n; k++){ const [pool, w] = CORE[CORE_I++ % 3]; out.push(R(n > 1 ? base + (k + 1) : base, 'C', false, pick(P[pool], key + k, w))); } return out; }
+function coreRows(base, day, key){ const n = CORE_PLAN[day] || 0, out = []; for(let k = 0; k < n; k++){ const [pool, w] = CORE[(CORE_I++ + (G.coreOff || 0)) % 3]; out.push(R(n > 1 ? base + (k + 1) : base, 'C', false, pick(P[pool], key + k, w))); } return out; }
 const LEG_A = ['Przysiad - ze sztanga na plecach','Przysiad ze sztangą - z przodu','Trap bar - martwy ciąg','Przysiad - Safety bar','Przysiad - ze sztangą na plecach - do skrzyni','Martwy ciąg w trap barze - z podwyższenia','Martwy ciąg klasyczny','Hip thrust - ze sztangą - obunóż'];
 const LEG_A_KNEE = ['Przysiad - ze sztangą na plecach - do skrzyni','Trap bar - martwy ciąg','Hip thrust - ze sztangą - obunóż','Martwy ciąg w trap barze - z podwyższenia','Przysiad - Safety bar'];
 function legA(i, key){
   const order = G.knee ? [['sqBox','Ból kolana → przysiad do skrzyni'],['hinge','Martwy ciąg w trap barze – mniej zgięcia kolana'],['hip','Biodro zamiast kolana']]
     : G.staz === 'p' ? [['sqNovice','Początkujący: goblet – technika przed ciężarem'],['hinge','Trap bar – najprostszy zawias'],['sqBox','Przysiad do skrzyni – kontrola głębokości']]
     : [['sqBack','Przysiad tył – główne ćwiczenie nóg'],['hinge','Martwy ciąg w trap barze'],['sqFront','Przysiad przedni (≤6 powt.)']];
-  const [pool, w] = order[i % order.length];
-  const ex = pick([...new Set([...P[pool], ...(G.knee ? LEG_A_KNEE : LEG_A)])], key, w);
+  const [pool, w] = order[(i + (G.legOff || 0)) % order.length];
+  const ex = pick([...new Set([...P[pool], ...(G.knee ? LEG_A_KNEE : LEG_A)])], key, w, { top: P[pool].length, noExt: true });
   if(!P[pool].includes(ex.name)) ex.why = 'Nowy blok – inne ćwiczenie z serii A dla nóg';
   return { row: R('A', 'A', true, ex), isHinge: /martwy|trap bar|hip thrust/i.test(ex.name) };
 }
@@ -13601,8 +13619,8 @@ function prioPool(g){
   const rest = library.map(l => l.name).filter(n => (genMuscles(n)[g] || 0) >= 1 && !METHOD.test(n) && !cur.includes(n));
   return [...cur, ...rest].filter(n => !dup.has(gKey(n)) || gKey(n) === gKey(DUPS[0][0]));
 }
-function wuList(i){ return G.wu[i] !== undefined ? G.wu[i] : (G.warmup && genLib('Rozgrzewka - całość') ? [genLib('Rozgrzewka - całość').name] : []); }
-function wuPar(di, n){ const whole = /rozgrzewka - całość/i.test(n), d = whole ? { sets: '1', reps: '1', tempo: '', rest: '' } : { sets: '1', reps: '10', tempo: '3010', rest: '30' };
+function wuList(i){ return G.wu[i] !== undefined ? G.wu[i] : (G.warmup && genLib('Rozgrzewka - całość') ? [genLib('Rozgrzewka - całość').name] : []).concat((G.pogoWu && G.pogoWu[i]) || []); }
+function wuPar(di, n){ const whole = /rozgrzewka - całość/i.test(n), d = whole ? { sets: '1', reps: '1', tempo: '', rest: '' } : isPogo(n) ? { sets: '2', reps: /intensyw/i.test(n) ? '10' : '15', tempo: '', rest: '30' } : isSpeed(n) ? { sets: '3', reps: '4', tempo: '', rest: '60' } : { sets: '1', reps: '10', tempo: '3010', rest: '30' };
   return Object.assign(d, (G.wuP[di] || {})[n] || {}); }
 function applyEdits(days){
   days.forEach((d, i) => {
@@ -13611,14 +13629,26 @@ function applyEdits(days){
     if(ex.length){
       const base = String.fromCharCode(Math.max(67, ...d.rows.map(r => r.lab.charCodeAt(0))) + 1);
       ex.forEach(x => { const m = genMuscles(x.name), legs = Object.keys(m).some(g => m[g] >= 1 && LEGG.has(g)); USED.add(x.name);
-        d.rows.push(R(base, 'C', legs, meta({ name: x.name, why: 'Dodane ręcznie', key: x.key, alts: 2, manual: true }))); });
+        const row = R(base, 'C', legs, meta({ name: x.name, why: 'Dodane ręcznie', key: x.key, alts: 2, manual: true }));
+        if(isPogo(x.name)){ const t = pogoTarget(d, null); row.sets = 2; row.wk = ['15', '20', '20']; row.tempo = 'X'; row.rest = 60; row.plyo = 1; row.why = `Pogo – na początek treningu (seria ${t})`; placePogoRow(d, row, t); }
+        else if(isSpeed(x.name)){ row.lab = 'A'; row.tempo = 'X'; row.why = 'Ćwiczenie szybkościowe – do serii A'; const last = d.rows.map(r => r.lab[0]).lastIndexOf('A'); d.rows.splice(last + 1, 0, row); relabel(d); }
+        else d.rows.push(row); });
     }
     relabel(d);
   });
 }
 /* litery serii idą po kolei bez dziur (A, B, C…); układ serii (ile ćwiczeń w serii) zostaje na swoich miejscach,
    a ćwiczenia przesuwane ↑↓ przechodzą przez te miejsca i dostają ich litery */
-function seriesLabels(d, ord){
+function seriesLabels(d, ord, groups){
+  if(groups && groups.length){
+    const byKey = new Map(d.rows.map(r => [r.key, r])), gs = groups.map(g => g.filter(k => byKey.has(k))).filter(g => g.length);
+    const known = new Set(gs.flat()), extra = []; let prevL = null;
+    d.rows.forEach(r => { if(known.has(r.key)) return; if(r.lab[0] === prevL && extra.length) extra[extra.length - 1].push(r.key); else { extra.push([r.key]); prevL = r.lab[0]; } });
+    const all = gs.concat(extra);
+    d.rows = all.flat().map(k => byKey.get(k));
+    let i = 0; all.forEach((g, gi) => { const L = String.fromCharCode(65 + gi); g.forEach((k, j) => { d.rows[i++].lab = g.length > 1 ? L + (j + 1) : L; }); });
+    return;
+  }
   const sizes = []; let prev = null;
   d.rows.forEach(r => { const L = r.lab[0]; if(L === prev) sizes[sizes.length - 1]++; else { sizes.push(1); prev = L; } });
   if(ord && ord.length){ const orig = new Map(d.rows.map((r, i) => [r.key, i])), pos = k => { const i = ord.indexOf(k); return i < 0 ? 1e6 + orig.get(k) : i; };
@@ -13656,7 +13686,14 @@ function applyPriority(days, why){
 }
 function build(){
   const why = []; POOLS = {}; USED = new Set(); PLAN_SKIPPED = []; CORE_I = 0; KEEP = {}; AVOID = new Set(); PREV = {};
-  const tt = transType();
+  const tt = G.method === 'sila' ? transType() : (G.prev && G.prev.stage === G.stage && G.repeatM ? 'repeat' : 'rotate');
+  if(G.prevAny && G.prevAny !== G.prev && tt !== 'repeat') G.prevAny.days.forEach(d => d.rows.forEach(r => AVOID.add(r.name)));
+  if(G.method !== 'sila'){
+    if(G.prev) G.prev.days.forEach(d => d.rows.forEach(r => { PREV[r.key] = r; if(tt === 'repeat') KEEP[r.key] = r.name; else AVOID.add(r.name); }));
+    why.push(G.prev ? (tt === 'repeat' ? `Frekwencja poniżej 66% → powtarzam etap ${G.stage} z tymi samymi ćwiczeniami` : `Poprzedni blok tej metody: etap ${G.prev.stage} → teraz etap ${G.stage}; nowy blok = nowe ćwiczenia`) : `${METHODS[G.method]} – etap ${G.stage}`);
+    const days = methodDays(why);
+    return finishBuild(days, why, `${MNAME[G.method]} ${G.stage} · ${G.days}× w tygodniu`, 1, null);
+  }
   if(G.prev){
     G.prev.days.forEach(d => d.rows.forEach(r => { PREV[r.key] = r; if(tt === 'repeat') KEEP[r.key] = r.name; else AVOID.add(r.name); }));
     const rot = `${G.prev.phase} → ${G.phase}: nowy blok = nowe ćwiczenia z tych samych serii (A nóg → inne A nóg, wyciskanie → inny kąt, chwyty idą za nim)`;
@@ -13677,16 +13714,255 @@ function build(){
   why.push('Powtórzenia rosną tydz. 1 → 3 w zakresie; ciężar liczy silnik RPE 9');
   if(GC.sex === 'K') why.push('Kobieta → krótsze przerwy w serii A nóg');
   const pr = GC.physique ? applyPriority(days, why) : null;
+  return finishBuild(days, why, label, cyN, pr, true);
+}
+function finishBuild(days, why, label, cyN, pr, sila){
+  if(!sila) applyEdits(days);
   days.forEach(d => { d.rows = d.rows.filter(r => !G.removed[r.key]); });
-  days.forEach((d, di) => seriesLabels(d, G.order[di]));
+  days.forEach((d, di) => seriesLabels(d, G.order[di], G.groups[di]));
+  eccCap(days, why);
   days.forEach(d => d.rows.forEach(r => { const o = G.ov[r.key]; if(!o) return;
-    if(o.sets && +o.sets > 0) r.sets = +o.sets; if(o.tempo != null) r.tempo = o.tempo; if(o.rest != null && o.rest !== '') r.rest = o.rest; if(o.wk) r.wk = o.wk.slice(); r.edited = true; }));
+    if(o.sets){ const sw = String(o.sets).split('/').map(x => parseInt(x)).filter(x => x > 0); if(sw.length === 3){ r.setsWk = sw; r.sets = sw[0]; } else if(sw.length){ r.sets = sw[0]; r.setsWk = null; } }
+    if(o.tempo != null){ r.tempo = o.tempo; r.tempoWk = String(o.tempo).includes('/') ? String(o.tempo).split('/') : null; } if(o.rest != null && o.rest !== '') r.rest = o.rest; if(o.wk) r.wk = o.wk.slice(); r.edited = true; }));
   const nMan = Object.keys(G.ov).length + Object.keys(G.repl).length + Object.keys(G.removed).length + Object.values(G.extra).reduce((a, x) => a + x.length, 0);
   if(nMan) why.push(`Twoje zmiany w podglądzie: ${nMan} (parametry / zamiany / usunięcia / dodane ćwiczenia)`);
-  if(G.knee) why.push('Ból kolana → przysiad do skrzyni, jednonóż z małym zgięciem, TKE');
-  if(G.shoulderWeak) why.push('Słaby bark → wiosło zamiast podciągania, bark w każdym treningu góry');
-  const missing = []; days.forEach(d => d.rows.forEach(r => { if(r.isNew) missing.push(r.name); r.prev = G.prev ? PREV[r.key] || null : undefined; }));
+  if(!sila){ applyTests(days, why); plyoLimit(days, why); }
+  if(sila && G.knee) why.push('Ból kolana → przysiad do skrzyni, jednonóż z małym zgięciem, TKE');
+  if(sila && G.shoulderWeak) why.push('Słaby bark → wiosło zamiast podciągania, bark w każdym treningu góry');
+  const missing = []; days.forEach(d => d.rows.forEach(r => { if(r.isNew) missing.push(r.name); r.prev = sila && G.prev ? PREV[r.key] || null : undefined; }));
   return { days, why, label, cycle: cyN, missing: [...new Set(missing)], skipped: [...new Set(PLAN_SKIPPED)], tally: tally(days), pr };
+}
+
+/* ---------- METODY (#24): Trójfazowa / Blok tylko ekscentryka / Blok tylko izometria (28.10) ----------
+   Progresja blok po bloku („najpierw zamulić, potem peakować”):
+   ekscentryka 1 wydłużona → 2 dropy/zeskoki → 3 supramaksymalna (2:1)
+   izometria   1 długa ustępująca → 2 pauzy / do wyczerpania → 3 napieranie na piny
+   koncentryka 1 20X0 + kontrast ze skokiem → 2 klastry + gumy → 3 olimpijskie + skoki reaktywne */
+const METHODS = { sila: 'Trening siłowy', tri: 'Trójfazowa', ecc: 'Blok tylko ekscentryka', iso: 'Blok tylko izometria' };
+const MNAME = { tri: 'Trójfazowa', ecc: 'Ekscentryka', iso: 'Izometria' };
+const STAGE_TXT = {
+  ecc: ['wydłużona ekscentryka', 'dropy / zeskoki', 'supramaksymalna ekscentryka (2:1)'],
+  iso: ['długa izometria ustępująca', 'pauzy w najsłabszej pozycji / do wyczerpania', 'napieranie na piny (maks.)'],
+  con: ['20X0 + kontrast ze skokiem', 'klastry + gumy', 'olimpijskie + skoki reaktywne']
+};
+const PLYO_MAX = { p: 40, s: 80, z: 120 };
+/* izometria w 3 pozycjach: dolna / środkowa / górna (istniejące nazwy z biblioteki mają pierwszeństwo) */
+const POSN = ['dolna', 'środkowa', 'górna'];
+const ISO_HAVE = { 'Przysiad|dolna': 'Przysiad obunóż - izometria - dolna pozycja', 'Przysiad wykroczny|dolna': 'Przysiad wykroczny - izometria - dolna pozycja' };
+const isoVar = pat => POSN.map(p => ISO_HAVE[pat + '|' + p] || `${pat} - izometria - ${p} pozycja`);
+const pinVar = pat => POSN.map(p => `Napieranie na piny - ${pat} - ${p} pozycja`);
+const MP = {
+  legMain: ['Przysiad - ze sztanga na plecach', 'Przysiad ze sztangą - z przodu', 'Trap bar - martwy ciąg', 'Przysiad - Safety bar', 'Martwy ciąg klasyczny', 'Przysiad - ze sztangą na plecach - do skrzyni'],
+  hipMain: ['Hip thrust - ze sztangą - obunóż', 'Trap bar - martwy ciąg', 'Martwy ciąg w trap barze - z podwyższenia', 'RDL - jednonóż - półsztanga'],
+  pressMain: ['Wyciskanie sztangi - ławka pozioma', 'Wyciskanie sztangi - nad głowę - stojąc', 'Wyciskanie hantli - leżąc na ławce skośnej - dodatniej', 'Dipy', 'Wyciskanie hantli - na ławce - poziomej', 'Wyciskanie hantli - nad głowę - stojąc - oburącz', 'Wyciskanie hantli - ławka dodatnia - neutralnie', 'Wyciskanie hantli nad głowę - siedząc z oparciem - oburącz - Arnoldki'],
+  pullMain: ['Podciąganie - nachwytem', 'Podciągnie - podchwytem', 'Podciąganie na drążku - chwyt neutralny', 'Wiosłowanie sztangą - Pendlay row'],
+  pullEcc: ['Podciąganie - opuszczanie - ekscentryka', 'Ściąganie drążka wyciągu górnego- do klatki piersiowej- chwyt neutralny- wydłużona ekscentryka'],
+  hamEcc: ['Nordyckie opadanie', 'Wznosy tułowia - ławka rzymska - akcentowana ekscentryka 2:1', 'RDL - jednonóż - półsztanga'],
+  uniEcc: ['Przysiad wykroczny - wydłużona ekscentryka', 'Przysiad bułgarski - hantle', 'Zakrok- hantle'],
+  dropLand: ['Drop catch - przysiad - pozycja atletyczna', 'Drop Catch - przysiad wykroczny', 'Zeskok ze skrzyni - lądowanie'],
+  dropHam: ['GH roller - drop - jednonóż', 'Nordyckie opadanie'],
+  supraLeg: ['Przysiad bułgarski - ekscentryczne przeciążenie - hantle'],
+  supra21: ['Uginanie podudzi - na maszynie - leżąc - metoda 2:1', 'Wyprosty podudzi na maszynie - metoda 2:1', 'Wspięcia na palce - stojąc - metoda 2:1', 'Wspięcia na palce - metoda 2:1- hack maszyna', 'Uginanie podudzi - leżąc - z piłką gimnastyczną - metoda 2:1'],
+  supraUp: ['Wyciskanie półsztangi - klęcząc - metoda 2:1', 'Wiosłowanie w podporze głową o ławeczkę - neutralnie do pronacji - ekscentryczne przeciążenie'],
+  isoLongLeg: [...isoVar('Przysiad'), ...isoVar('Martwy ciąg')],
+  isoLongUni: [...isoVar('Przysiad wykroczny'), 'Przysiad wykroczny- noga z przodu/ podniesiona pięta - izometria', 'Izometryczny przysiad „hokejowy” do boku z hantlem'],
+  isoLongHip: [...isoVar('Hip thrust'), 'Izometryczny hip trust - jednonóż', 'Izometryczny mostek biodrowy obunóż', 'Izometryczny wyprost biodra - jednonóż - stopa na ścianie'],
+  isoLongUp: [...isoVar('Wyciskanie leżąc'), ...isoVar('Podciąganie'), ...isoVar('Wiosłowanie'), 'Odwrotna pompka- górna pozycja- podchwytem- izometria'],
+  isoAdd: ['Izometryczne kopenhaskie przywodzenie - krótka dźwignia', 'Kopenhaskie przywodzenie- długa dźwignia'],
+  isoCalf: [...isoVar('Wspięcia na palce'), 'Wspięcia na palce- jednonóż - dolna pozycja w rozciągnięciu - z hantlem - izometria', 'Wspięcia na palce- izometria - jednonóż - safety bar'],
+  pausePress: ['Wyciskanie hantli - na ławce poziomej- 3 pauzy izometryczne w ekscentryce'],
+  pausePull: ['Podciąganie - 3 pauzy 5 sekundowe ekscentryczne - w każdym powtórzeniu', 'Ściąganie drążka wyciągu górnego do klatki- chwyt neutralny- 3 pauzy izometryczne w ekscentryce'],
+  pauseHam: ['Uginanie podudzi na piłce szwajcarskiej- obunóż- 3 pauzy izometryczne w ekscentryce', 'Uginanie podudzi na piłce szwajcarskiej- jednonóż- 3 pauzy izometryczne w ekscentryce'],
+  pauseKnee: ['Wyprosty podudzi na maszynie - jednonóż - 3 pauzy izometryczne', 'Izometryczny przysiad wykroczny + pulsowanie'],
+  pinLeg: [...pinVar('przysiad'), ...pinVar('martwy ciąg')],
+  pinUp: [...pinVar('wyciskanie leżąc'), ...pinVar('wyciskanie nad głowę')],
+  jumpCon: ['Skoki-obunóż', 'Wskok na skrzynię', 'Skoki z hantlami'],
+  bandMain: ['Przysiad ze sztangą na plecach - do skrzyni - gumy oporowe', 'Trap bar - gumy oporowe'],
+  jumpReact: ['Zeskoki ze skrzyni z wyskokiem - Box 30 cm', 'Depth jump - 20cm', 'Skok w dal - jednonóż - na stopie - reaktywny'],
+  pogoExt: ['Pogo Jumps - ekstensywne', 'Pogo Jumps - ekstensywne (na boki)'],
+  pogoInt: ['Pogo Jumps - intensywne(w górę)', 'Pogo Jumps - intensywne (w przód)'],
+  boxHeavy: ['Przysiad - ze sztangą na plecach - do skrzyni', 'Przysiad ze sztangą na plecach - do skrzyni - gumy oporowe'],
+  swing: ['Swing kettlebell - dynamiczny'],
+  oly: ['Zarzut sztangi- znad kolan', 'Rwanie sztangi ze zwisu', 'Zarzut siłowy ze zwisu'],
+  throwUp: ['Rzut piłką - o ścianę - znad głowy', 'Rzut piłki o ziemię - znad głowy', 'Rzut piłką o ścianę - z zakroku - reaktywnie', 'Rzut piłką o ściane - z rotacji - przodem'],
+  coreIso: ['Deska bokiem', 'Hollow body', 'L- sit up - izometria', 'Plank zapaśniczy- piłka szwajcarska', 'Krzesełko-izometria'],
+  coreDyn: ['Pallof press', 'Martwy robak', 'Lifting - wyciąg dolny - klecząc', 'Rotacja tułowia - wyciąg - stojąc']
+};
+/* wiersz metody: lab, rola, ćwiczenie, serie, powt. tydz. 1–3, tempo, przerwa, uwaga, kontakty plyo/seria */
+const pickA = (l, k, w) => pick(l, k, w, { noExt: true });   // seria A: tylko ćwiczenia główne (bez dociągania podobnych z biblioteki)
+function MR(lab, role, ex, sets, wk, tempo, rest, note, plyo){
+  const m = genMuscles(ex.name), legs = Object.keys(m).some(g => m[g] >= 1 && LEGG.has(g));
+  const nums = wk.map(x => parseInt(x)).filter(x => !isNaN(x));
+  const tw = String(tempo).includes('/') ? String(tempo).split('/') : null;
+  return Object.assign({ lab, role, legs }, ex, { sets: typeof sets === 'number' ? sets : sets[0], setsWk: Array.isArray(sets) ? sets : null, wk: wk.map(String), lo: nums.length ? Math.min(...nums) : 1, hi: nums.length ? Math.max(...nums) : 1, tempo, tempoWk: tw, rest, mnote: note || '', plyo: plyo || 0 });
+}
+const KG_ECC = 'ciężar ok. 80–85% tego, co zwykle na te powtórzenia (−15–20%)';
+function eccDay(st, k, i){
+  const r = [], pk = pkList()[i % pkList().length];
+  if(st === 1){
+    const tw = ['60X0', '80X0', '10-0-X-0'], tn = 'ekscentryka 6 → 8 → 10 s, w górę maks. szybko; ' + KG_ECC;
+    r.push(MR('A1', 'A', pickA(MP.legMain, k + 'A1', 'Wydłużona ekscentryka – główne ćwiczenie nóg'), 4, [5, 4, 3], tw.join('/'), 180, tn));
+    r.push(MR('A2', 'A', pickA(G.staz === 'p' ? P.pressNov[pk] : MP.pressMain, k + 'A2', `Wydłużona ekscentryka – wyciskanie (${PNAME[pk]})`), 4, [5, 4, 3], tw.join('/'), 120, tn));
+    r.push(MR('B1', 'B', pick(MP.pullEcc.concat(MP.pullMain), k + 'B1', 'Przyciąganie – opuszczanie 4 s'), 3, [5, 5, 4], '40X0', 90, 'opuszczanie 4 s'));
+    r.push(MR('B2', 'B', pick(MP.hamEcc, k + 'B2', 'Tył uda ekscentrycznie'), 3, [4, 5, 6], '50X0', 90, 'kontrolowane opadanie'));
+    r.push(MR('C1', 'C', pick(MP.uniEcc, k + 'C1', 'Jednonóż – wydłużona ekscentryka'), 2, [6, 6, 5], '50X0', 60));
+  } else if(st === 2){
+    r.push(MR('A1', 'A', pickA(MP.legMain, k + 'A1', 'Główne nogi – ekscentryka 4 s'), 4, [5, 5, 4], '40X0', 20, KG_ECC + '; zaraz potem A2'));
+    r.push(MR('A2', 'A', pick(MP.dropLand, k + 'A2', 'Kontrast: dropy zaraz po ciężkiej serii (ekscentryka plyometryczna)'), 4, [3, 3, 4], 'X', 30, 'wysokość = max wyskok; miękkie, ciche lądowanie, bez odbicia', 1));
+    r.push(MR('A3', 'A', pickA(G.staz === 'p' ? P.pressNov[pk] : MP.pressMain, k + 'A3', `Wyciskanie (${PNAME[pk]}) – ekscentryka 4 s`), 4, [6, 5, 5], '40X0', 150, KG_ECC));
+    r.push(MR('B1', 'B', pick(MP.pullMain, k + 'B1', 'Przyciąganie – ekscentryka 4 s'), 3, [6, 6, 5], '40X0', 90));
+    r.push(MR('B2', 'B', pick(MP.hamEcc, k + 'B2', 'Tył uda ekscentrycznie'), 3, [4, 5, 5], '50X0', 90));
+  } else {
+    r.push(MR('A1', 'A', pickA(MP.legMain, k + 'A1', 'Supramaksymalna ekscentryka – główne nogi'), 3, [3, 2, 2], '50X0', 210, 'opuszczanie 105–120% ciężaru maks. TYLKO z asekuracją / hakami ekscentrycznymi; w górę z pomocą'));
+    r.push(MR('A2', 'A', pick(MP.supraUp, k + 'A2', 'Góra 2:1 – w górę oburącz, w dół jedną'), 3, [5, 4, 4], '50X0', 120, '2:1 – w górę oburącz, w dół jedną ręką 5 s'));
+    r.push(MR('B1', 'B', pick(MP.supraLeg, k + 'B1', 'Jednonóż – ekscentryczne przeciążenie'), 3, [5, 5, 4], '50X0', 90));
+    r.push(MR('B2', 'B', pick(MP.supra21, k + 'B2', 'Maszyna 2:1 – w górę obunóż, w dół jedną'), 3, [6, 5, 5], '50X0', 90, '2:1 – w górę dwiema, w dół jedną 5 s'));
+    r.push(MR('C1', 'C', pick(MP.supra21, k + 'C1', 'Łydki / kolano 2:1'), 2, [8, 8, 6], '50X0', 60, '2:1'));
+  }
+  r.push(MR('D', 'C', pick(MP.coreDyn, k + 'D', 'Brzuch'), 2, [10, 10, 10], '3010', 45));
+  return { name: 'Ekscentryka', sub: 'etap ' + st + ': ' + STAGE_TXT.ecc[st - 1], rows: r, type: 'ecc' };
+}
+function isoDay(st, k, i, short){
+  const r = [], pk = pkList()[(i + 1) % pkList().length];
+  if(st === 1){
+    r.push(MR('A1', 'A', pick(MP.isoLongLeg, k + 'A1', 'Długa izometria ustępująca – nogi („zamula”)', { noExt: true }), 3, ['20s', '25s', '30s'], 'izo', 120, 'trzymanie w pozycji z nazwy; ciężar ok. 60–70%'));
+    r.push(MR('A2', 'A', pick(MP.isoLongUp, k + 'A2', 'Długa izometria – góra', { noExt: true }), 3, ['20s', '25s', '30s'], 'izo', 90, 'trzymanie w pozycji z nazwy'));
+    if(!short) r.push(MR('B1', 'B', pick(MP.isoLongUni, k + 'B1', 'Jednonóż – izometria', { noExt: true }), 3, ['20s', '25s', '30s'], 'izo', 60, 'na każdą nogę'));
+    if(!short) r.push(MR('B2', 'B', pick(MP.isoLongHip, k + 'B2', 'Biodro – izometria', { noExt: true }), 3, ['20s', '25s', '30s'], 'izo', 60));
+  } else if(st === 2){
+    const pn = '3 pauzy po 3 s w ekscentryce: górna, środkowa, dolna pozycja; ostatnia seria: trzymanie do wyczerpania przy 70–80%';
+    r.push(MR('A1', 'A', pickA(MP.legMain, k + 'A1', 'Pauzy w najsłabszej pozycji – główne nogi'), 4, [4, 4, 3], '3 pauzy', 180, pn));
+    r.push(MR('A2', 'A', pick(MP.pausePress.concat(MP.pressMain), k + 'A2', 'Wyciskanie z pauzami'), 4, [5, 4, 4], '3 pauzy', 120, '3 pauzy po 3 s w ekscentryce: górna, środkowa, dolna pozycja'));
+    if(!short) r.push(MR('B1', 'B', pick(MP.pausePull, k + 'B1', 'Przyciąganie z pauzami'), 3, [4, 4, 3], '3 pauzy', 90));
+    if(!short) r.push(MR('B2', 'B', pick(MP.pauseHam.concat(MP.pauseKnee), k + 'B2', 'Tył uda / kolano – pauzy'), 3, [6, 6, 5], '3 pauzy', 60));
+  } else {
+    r.push(MR('A1', 'A', pick(MP.pinLeg, k + 'A1', 'Napieranie na piny – maks. izometria pokonująca (peak)', { noExt: true }), [4, 5, 5], ['6s', '5s', '4s'], 'izo', 120, 'maksymalny napór w piny w pozycji z nazwy; sztanga się nie rusza'));
+    r.push(MR('A2', 'A', pick(MP.pinUp, k + 'A2', 'Napieranie na piny – góra', { noExt: true }), [3, 4, 4], ['6s', '5s', '4s'], 'izo', 120, 'maksymalny napór'));
+    if(!short) r.push(MR('B1', 'B', pick(MP.isoLongUni, k + 'B1', 'Jednonóż – krótka maks. izometria', { noExt: true }), 3, ['10s', '8s', '6s'], 'izo', 60, 'maksymalne napięcie'));
+  }
+  r.push(MR('C1', 'C', pick(MP.isoAdd, k + 'C1', 'Przywodziciele – izometria', { noExt: true }), 2, ['20s', '25s', '30s'], 'izo', 45));
+  if(!short) r.push(MR('C2', 'C', pick(MP.isoCalf, k + 'C2', 'Łydka – izometria', { noExt: true }), 2, ['20s', '25s', '30s'], 'izo', 45));
+  r.push(MR('D', 'C', pick(MP.coreIso, k + 'D', 'Brzuch – izometria', { noExt: true }), 2, ['30s', '35s', '40s'], 'izo', 45));
+  return { name: 'Izometria', sub: 'etap ' + st + ': ' + STAGE_TXT.iso[st - 1], rows: r, type: 'iso' };
+}
+function conDay(st, k, i){
+  const r = [], pk = pkList()[(i + 2) % pkList().length];
+  if(st === 1){
+    r.push(MR('A1', 'A', pickA(MP.legMain, k + 'A1', 'Koncentryka – ciężko i szybko w górę'), 4, [5, 4, 3], '20X0', 20, 'w górę najszybciej jak się da; ciężar RPE 8; zaraz potem A2'));
+    r.push(MR('A2', 'A', pick(MP.jumpCon, k + 'A2', 'Kontrast: skok zaraz po ciężkiej serii'), 4, [3, 3, 3], 'X', 30, 'skok 10–20 s po A1', 1));
+    r.push(MR('A3', 'A', pickA(G.staz === 'p' ? P.pressNov[pk] : MP.pressMain, k + 'A3', `Wyciskanie (${PNAME[pk]}) – szybko`), 4, [5, 4, 3], '20X0', 150, 'w górę najszybciej jak się da'));
+    r.push(MR('B1', 'B', pick(MP.pullMain, k + 'B1', 'Przyciąganie – ciężko, szybko'), 3, [5, 5, 4], '20X0', 20, 'zaraz potem B2'));
+    r.push(MR('B2', 'B', pick(MP.throwUp, k + 'B2', 'Kontrast: rzut po ciężkim przyciąganiu'), 3, [5, 5, 5], 'X', 90));
+  } else if(st === 2){
+    r.push(MR('A1', 'A', pick(MP.bandMain.concat(MP.legMain), k + 'A1', 'Klastry z gumami – prędkość'), 5, ['2+2', '2+2', '2+2+2'], '10X0', 20, 'klaster: 2 powt., 15 s przerwy, 2 powt.; gumy oporowe; zaraz potem A2'));
+    r.push(MR('A2', 'A', pick(MP.jumpReact, k + 'A2', 'Kontrast: skok reaktywny'), 4, [3, 3, 4], 'X', 30, 'krótki kontakt z podłożem', 1));
+    r.push(MR('A3', 'A', pickA(G.staz === 'p' ? P.pressNov[pk] : MP.pressMain, k + 'A3', 'Wyciskanie – klastry'), 4, ['3+3', '3+3', '2+2+2'], '10X0', 150, 'klaster: 15 s przerwy'));
+    r.push(MR('B1', 'B', pick(MP.pullMain, k + 'B1', 'Przyciąganie – klastry'), 3, ['3+3', '3+3', '2+2+2'], '10X0', 20, 'zaraz potem B2'));
+    r.push(MR('B2', 'B', pick(MP.throwUp, k + 'B2', 'Kontrast: rzut reaktywny'), 3, [5, 5, 6], 'X', 90));
+  } else {
+    r.push(MR('A1', 'A', pick(MP.oly, k + 'A1', 'Olimpijskie – moc'), 5, [3, 3, 2], 'X', 30, 'technika > ciężar; zaraz potem A2'));
+    r.push(MR('A2', 'A', pick(MP.throwUp, k + 'A2', 'Kontrast: rzut piłką po zarzucie'), 5, [4, 4, 4], 'X', 120));
+    r.push(MR('B1', 'B', pickA(MP.boxHeavy.concat(MP.legMain), k + 'B1', 'Ciężko: przysiad do skrzyni'), 4, [4, 3, 3], '20X0', 20, 'ciężko, w górę maks. szybko; zaraz potem B2'));
+    r.push(MR('B2', 'B', pick(MP.swing.concat(MP.jumpReact), k + 'B2', 'Kontrast: swing KB dynamiczny / skok reaktywny'), 4, [8, 8, 6], 'X', 90, 'maks. szybkość biodra', 0));
+    r.push(MR('B3', 'B', pickA(G.staz === 'p' ? P.pressNov[pk] : MP.pressMain, k + 'B3', `Wyciskanie (${PNAME[pk]}) – szybko`), 3, [4, 3, 3], '20X0', 120));
+  }
+  if(st === 3) r.push(MR('C1', 'C', pick(MP.pullMain, k + 'C1', 'Przyciąganie'), 3, [5, 5, 4], '20X0', 90));
+  r.push(MR('C2', 'C', pick(P.calf, k + 'C2', 'Łydki'), 2, [10, 10, 12], '20X0', 60));
+  r.push(MR('D', 'C', pick(MP.coreDyn, k + 'D', 'Brzuch'), 2, [8, 8, 8], '20X0', 45));
+  return { name: 'Koncentryka', sub: 'etap ' + st + ': ' + STAGE_TXT.con[st - 1], rows: r, type: 'con' };
+}
+/* Pogo każdego rodzaju zawsze na początku treningu: rozgrzewka albo pierwsze w serii A;
+   do serii B (pierwsze), gdy w serii A jest ćwiczenie na górę ciała */
+const isPogo = n => /pogo/i.test(n);
+const isSpeed = n => /skok|skoki|zeskok|depth|drop catch|wskok|rzut|zarzut|rwanie|swing|pogo/i.test(n);
+const isUpper = r => { const m = genMuscles(r.name); return Object.keys(m).some(g => m[g] >= 1 && ['chest','back','shF','shS','shR','biceps','triceps'].includes(g)); };
+function pogoTarget(d, k){
+  const aUp = d.rows.some(r => r.lab[0] === 'A' && !isPogo(r.name) && isUpper(r));
+  if(k != null && rnd(k + '~wu') < 0.34) return 'wu';
+  return aUp ? 'B' : 'A';
+}
+function placePogoRow(d, row, target){
+  row.lab = target; const i = d.rows.findIndex(r => r.lab[0] === target);
+  d.rows.splice(i < 0 ? 0 : i, 0, row); relabel(d);
+}
+function addPogo(d, di, k, intensive){
+  const ex = pick(intensive ? MP.pogoInt : MP.pogoExt, k + 'pogo', intensive ? 'Pogo intensywne – sztywność i reaktywność na start' : 'Pogo ekstensywne – sprężystość stopy na start');
+  const t = pogoTarget(d, k);
+  if(t === 'wu'){ (G.pogoWu[di] = G.pogoWu[di] || []).push(ex.name); return; }
+  placePogoRow(d, MR(t, t, ex, 2, intensive ? [8, 10, 10] : [15, 20, 20], 'X', 60, 'na początku treningu', 1), t);
+}
+function eccSec(t){ t = String(t || ''); const m = t.match(/^(\d+)-/); if(m) return +m[1]; return /^\d/.test(t) ? +t[0] : 0; }
+function capEcc(t){ t = String(t); const m = t.match(/^(\d+)-(\d+)-(\w)-(\d+)$/); if(m) return '5' + m[2] + m[3] + m[4]; return /^\d/.test(t) && +t[0] > 5 ? '5' + t.slice(1) : t; }
+const ECC_LONG_MAX = 2;   // decyzja 28.10: max 2 ćwiczenia z ekscentryką do 10 s, reszta max 5 s
+function eccCap(days, why){
+  let capped = 0;
+  days.forEach(d => { let n = 0; d.rows.forEach(r => {
+    if(r.tempoWk && r.lab[0] !== 'A' && !(G.ov[r.key] && G.ov[r.key].tempo != null)){ r.tempo = capEcc(r.tempoWk[1] || r.tempoWk[0]); r.tempoWk = null; }   // progresja tempem tylko w serii A
+    const tw = r.tempoWk || [r.tempo], long = tw.some(t => eccSec(t) > 5);
+    if(!long) return;
+    if(n < ECC_LONG_MAX){ n++; return; }
+    if(r.tempoWk){ r.tempoWk = r.tempoWk.map(capEcc); r.tempo = r.tempoWk.join('/'); } else r.tempo = capEcc(r.tempo);
+    capped++; }); });
+  why.push(`Ekscentryka: progresja tempa 6 → 8 → 10 s tylko w serii A (max ${ECC_LONG_MAX} ćwiczenia w dniu), pozostałe stałe, max 5 s${capped ? ` (skrócono ${capped})` : ''}`);
+  why.push('Seria A zawsze: główne ćwiczenie na dół + główne ćwiczenie na górę');
+}
+function shiftLetters(rows, n){ rows.forEach(r => { r.lab = String.fromCharCode(r.lab.charCodeAt(0) + n) + r.lab.slice(1); }); return rows; }
+function methodDays(why){
+  const st = G.stage, D = []; G.pogoWu = {};
+  if(G.method === 'tri'){
+    if(G.days === 2){
+      D.push(eccDay(st, 'm0', 0));
+      const iso = isoDay(st, 'm1i', 1, true), con = conDay(st, 'm1c', 1);
+      const isoA = iso.rows.filter(r => r.lab[0] === 'A');           // izometria jako pierwsza seria dnia
+      const rest = con.rows; shiftLetters(rest, 1);
+      D.push({ name: 'Izometria + koncentryka', sub: `etap ${st}: ${STAGE_TXT.iso[st - 1]} + ${STAGE_TXT.con[st - 1]}`, rows: isoA.concat(rest), type: 'isocon' });
+      why.push('Trójfazowa 2×: dzień 1 ekscentryka, dzień 2 izometria + koncentryka');
+    } else { D.push(eccDay(st, 'm0', 0), isoDay(st, 'm1', 1), conDay(st, 'm2', 2)); why.push('Trójfazowa 3×: ekscentryka → izometria → koncentryka (osobne dni)'); }
+    why.push(`Etap ${st}/3 – ekscentryka: ${STAGE_TXT.ecc[st - 1]}; izometria: ${STAGE_TXT.iso[st - 1]}; koncentryka: ${STAGE_TXT.con[st - 1]}`);
+  } else {
+    const f = G.method === 'ecc' ? eccDay : isoDay;
+    for(let i = 0; i < G.days; i++) D.push(f(st, 'm' + i, i));
+    why.push(`${METHODS[G.method]} – etap ${st}/3: ${STAGE_TXT[G.method][st - 1]} (w tygodniu różne ćwiczenia)`);
+  }
+  D.forEach((d, di) => { if(d.type === 'con' || d.type === 'isocon') addPogo(d, di, 'pg' + di, st > 1); });
+  why.push('Skoki Pogo zawsze na początku treningu: w rozgrzewce albo pierwsze w serii A (w serii B, gdy w A jest ćwiczenie na górę)');
+  why.push('Progresja blok po bloku: najpierw „zamulić” (dłużej, wolniej), potem peak (krótko, maksymalnie)');
+  if(G.method !== 'iso') why.push('Ekscentryka max 10 s; ciężar przy ekscentryce/izometrii −15–20% od zwykłego (opis przy ćwiczeniu)');
+  return D;
+}
+/* plyometria: limit kontaktów na tydzień wg stażu (liczony z tygodnia 3) */
+function plyoLimit(days, why){
+  const lim = PLYO_MAX[G.staz] || 80;
+  const count = () => days.reduce((a, d) => a + d.rows.reduce((b, r) => { if(!r.plyo) return b; const s = r.setsWk ? r.setsWk[2] : r.sets; return b + s * (parseInt(r.wk[2]) || 0) * r.plyo; }, 0), 0);
+  const wuC = () => Object.entries(G.pogoWu || {}).reduce((a, [di, l]) => a + l.reduce((b, n) => { const p = wuPar(+di, n); return b + (+p.sets || 0) * (parseInt(p.reps) || 0); }, 0), 0);
+  const count0 = count; const countAll = () => count0() + wuC();
+  let c = countAll(), guard = 0;
+  while(c > lim && guard++ < 40){
+    let big = null; days.forEach(d => d.rows.forEach(r => { if(r.plyo && (r.setsWk ? r.setsWk[2] : r.sets) > 2 && (!big || (big.setsWk ? big.setsWk[2] : big.sets) < (r.setsWk ? r.setsWk[2] : r.sets))) big = r; }));
+    if(!big) break;
+    if(big.setsWk) big.setsWk = big.setsWk.map(x => Math.max(2, x - 1)); big.sets = Math.max(2, big.sets - 1);
+    c = countAll();
+  }
+  const total = countAll();
+  why.push(`Plyometria: ${total} kontaktów/tydz. (limit ${lim} przy stażu ${G.staz === 'p' ? '< 1 rok' : G.staz === 's' ? '2–3 lata' : '4+'})${total > lim ? ' ⚠ powyżej limitu – zmniejsz ręcznie' : ''}`);
+  return total;
+}
+/* testy CMJ/SJ: asymetria ≥15% → +1 seria słabsza noga w ćwiczeniach jednonóż; niskie EUR → dodatkowy skok reaktywny */
+function applyTests(days, why){
+  const T = G.tests; if(!T) return;
+  if(T.asym != null && T.asym >= 15 && T.weak){
+    let n = 0; days.forEach(d => d.rows.forEach(r => { if(UNI.test(r.name) && r.role !== 'A'){ r.split = T.weak; n++; } }));
+    if(n) why.push(`CMJ: asymetria ${T.asym}% (słabsza ${T.weak}) → +1 seria na słabszą nogę w ${n} ćw. jednonóż`);
+  }
+  if(T.eur != null && T.eur < 1.1){
+    const d = days.find(x => x.type === 'con' || x.type === 'isocon');
+    if(d && !d.eurWu){
+      // dodatkowy skok reaktywny jako pierwsze ćwiczenie serii B (świeżo, zaraz po serii A)
+      const ex = pick(['Depth jump - 20cm', 'Skok w dal - jednonóż - na stopie - reaktywny', 'Zeskoki ze skrzyni z wyskokiem - Box 30 cm'], 'eurX', 'Niskie EUR');
+      const di = days.indexOf(d); (G.pogoWu[di] = G.pogoWu[di] || []).push(ex.name); d.eurWu = ex.name;
+      why.push(`CMJ/SJ: EUR ${T.eur} (niskie) → dodatkowy skok reaktywny w rozgrzewce dnia koncentryki`);
+    }
+  }
 }
 
 /* ---------- powtórzenia na tydzień ---------- */
@@ -13709,11 +13985,13 @@ async function genRenderCard(clientId){
   chips.push(`<span class="gen-chip">${pf.days ? pf.days + '×/tydz.' : 'treningi/tydz.: nie wiem'}</span>`);
   if(pf.knee) chips.push('<span class="gen-chip warn">🩹 kolano</span>');
   if(pf.shoulderWeak) chips.push('<span class="gen-chip warn">🩹 bark</span>');
-  const info = last ? `Ostatni blok: <b>Cykl ${last.cycle} · ${last.phase}</b> (${dPl(last.first)} – ${dPl(last.last)}) → następny: <b>${last.attend != null && last.attend < 66 ? last.phase + ' (powtórka)' : NEXT[last.phase]}</b>${last.attend != null ? ` · frekwencja ${last.attend}%` : ''}`
+  const nextOf = b => (b.method || 'sila') === 'sila' ? (b.attend != null && b.attend < 66 ? b.phase : NEXT[b.phase]) : `${MNAME[b.method]} ${b.attend != null && b.attend < 66 ? b.stage : (b.stage % 3) + 1}`;
+  const info = last && (last.method || 'sila') !== 'sila' ? `Ostatni blok: <b>${escapeHtml(last.phase)}</b> (${dPl(last.first)} – ${dPl(last.last)}) → następny: <b>${nextOf(last)}</b>${last.attend != null ? ` · frekwencja ${last.attend}%` : ''}`
+    : last ? `Ostatni blok: <b>Cykl ${last.cycle} · ${last.phase}</b> (${dPl(last.first)} – ${dPl(last.last)}) → następny: <b>${last.attend != null && last.attend < 66 ? last.phase + ' (powtórka)' : NEXT[last.phase]}</b>${last.attend != null ? ` · frekwencja ${last.attend}%` : ''}`
     : 'Brak bloków z generatora → zacznę od <b>Cykl 1 · Ak1</b>';
-  h.innerHTML = `<div class="tools-panel gen-card"><h4>⚡ Generator planu <span class="gen-meta" style="font-weight:400;">dla zwykłych klientów · blok 3 tygodnie</span></h4>
+  h.innerHTML = `<div class="tools-panel gen-card"><h4>⚡ Generator planu <span class="gen-meta" style="font-weight:400;">blok 3 tygodnie · trening siłowy / trójfazowa / ekscentryka / izometria</span></h4>
     <div class="gen-meta">${info}</div><div class="gen-chips">${chips.join('')}</div>
-    <div class="tools-row"><button class="btn gen-btn" id="genOpenBtn">⚡ ${last ? `Zrób kolejny blok (${last.attend != null && last.attend < 66 ? last.phase : NEXT[last.phase]})` : 'Zrób blok 3 tyg.'}</button><span class="gen-meta">Otworzy okno: ustawienia → podgląd → wstaw</span></div></div>`;
+    <div class="tools-row"><button class="btn gen-btn" id="genOpenBtn">⚡ ${last ? `Zrób kolejny blok (${nextOf(last)})` : 'Zrób blok 3 tyg.'}</button><span class="gen-meta">Otworzy okno: ustawienia → podgląd → wstaw</span></div></div>`;
   $('genOpenBtn').onclick = () => genOpen(clientId);
 }
 window.genRenderCard = genRenderCard;
@@ -13726,18 +14004,40 @@ async function genOpen(clientId){
   const d = await loadClientNotes(clientId);
   GC = genProfile(c, d); GC.clientId = clientId; GC.d = d;
   const bl = genBlocks(clientId), prev = bl[bl.length - 1] || null;
-  G = { step: 1, phase: 'Ak1', days: GC.days || 3, staz: GC.staz || 's', grip: 'auto', addMissing: true, swaps: {}, ov: {}, wuP: {}, order: {}, repl: {}, removed: {}, extra: {}, wu: {}, xn: 0, pick: null, prev: null, prio: GC.physique ? GC.prio.slice() : [],
+  G = { step: 1, phase: 'Ak1', days: GC.days || 3, staz: GC.staz || 's', grip: 'auto', addMissing: true, swaps: {}, ov: {}, wuP: {}, order: {}, groups: {}, repl: {}, removed: {}, extra: {}, wu: {}, xn: 0, pick: null, prev: null, prio: GC.physique ? GC.prio.slice() : [],
     knee: GC.knee, shoulderWeak: GC.shoulderWeak, warmup: true, attend: null };
+  G.seed = (Math.random() * 4294967296) >>> 0;
+  G.pkOff = prev && prev.pkOff != null ? prev.pkOff : Math.floor(rnd('pkOff') * 4);
+  G.legOff = prev && prev.legOff != null ? prev.legOff : Math.floor(rnd('legOff') * 3);
+  G.coreOff = Math.floor(rnd('coreOff') * 3);
   if(prev){
     Object.assign(G, { prev, days: prev.daysN || G.days, grip: prev.gripMode || 'auto', attend: prev.attend });
     if(prev.prio && prev.prio.length && !G.prio.length && GC.physique) G.prio = prev.prio.slice();
-    G.phase = suggestPhase();
+    G.phase = suggestPhase() || 'Ak1';
     if(GC.staz && GC.staz !== prev.staz) G.staz = GC.staz; else G.staz = prev.staz || G.staz;
     if(prev.phase === 'Int2' && prev.cycle % 4 === 0 && (G.attend == null || G.attend >= 66) && G.staz !== 'z') G.stazUp = G.staz === 'p' ? 's' : 'z';
     G.start = nextMonday(dAdd(prev.last, 1));
   } else G.start = nextMonday(todayKey());
-  G.dows = dowsFor(G.days);
+  G.blocks = bl; G.prevAny = prev; G.silaDays = G.days; G.tests = GC.tests || null;
+  setMethod(prev ? (prev.method || 'sila') : (GC.sport ? 'tri' : 'sila'), true);
   genRender();
+}
+/* wybór metody: poprzedni blok TEJ metody decyduje o fazie/etapie; ostatni blok dowolnej metody – o starcie i wymianie ćwiczeń */
+function setMethod(m, init){
+  G.method = m;
+  const same = G.blocks.filter(b => (b.method || 'sila') === m), pv = same[same.length - 1] || null;
+  if(m === 'sila'){
+    G.prev = pv;
+    if(pv){ G.attend = pv.attend; G.phase = suggestPhase(); } else G.phase = 'Ak1';
+    if(!init) G.days = Math.min(4, Math.max(2, G.silaDays || G.days));
+  } else {
+    G.prev = pv; G.repeatM = !!(pv && pv.attend != null && pv.attend < 66);
+    G.stage = pv ? (G.repeatM ? pv.stage : (pv.stage % 3) + 1) : 1;
+    G.days = pv ? pv.daysN : Math.min(3, Math.max(2, GC.days || 3));
+    if(G.days > 3) G.days = 3;
+  }
+  G.dows = dowsFor(G.days);
+  if(!init) Object.assign(G, { repl: {}, removed: {}, extra: {}, wu: {}, wuP: {}, ov: {}, order: {}, groups: {} });
 }
 function genClose(){ const r = $('genRoot'); if(r) r.remove(); G = null; }
 function seg(id, opts, val){ return `<div class="gen-seg" data-seg="${id}">${opts.map(o => `<button type="button" class="${String(o[0]) === String(val) ? 'on' : ''}" data-v="${o[0]}">${o[1]}</button>`).join('')}</div>`; }
@@ -13749,6 +14049,9 @@ function exCell(r){
   else if(r.nm) tags += '<span class="gen-tag">film nie MoveU</span>';
   if(r.prio) tags += `<span class="gen-tag pr">priorytet: ${MG[r.prio]}</span>`;
   if(r.grip) tags += `<span class="gen-tag">chwyt: ${escapeHtml(r.grip)}</span>`;
+  if(r.split) tags += `<span class="gen-tag pr">+1 seria ${r.split === 'L' ? 'lewa' : 'prawa'}</span>`;
+  if(r.plyo) tags += `<span class="gen-tag">plyo</span>`;
+  if(r.mnote) tags += `<div class="gen-why">📝 ${escapeHtml(r.mnote)}</div>`;
   let cmp = '';
   if(r.prev !== undefined){ const p = r.prev;
     if(!p) cmp = '＋ nowe miejsce w planie';
@@ -13763,7 +14066,7 @@ function dayTable(d, di){
     return `<tr><td><b>${escapeHtml(n)}</b>${L && !String(L.videoUrl || '').trim() ? '<span class="gen-tag">bez filmu</span>' : ''}</td><td class="n">${wi(j, n, 'sets', p.sets)}</td><td class="n">${wi(j, n, 'reps', p.reps)}</td><td class="n">${wi(j, n, 'tempo', p.tempo, 'w')}</td><td class="n">${wi(j, n, 'rest', p.rest)}</td><td class="gen-act"><button type="button" class="gen-swap gen-wmv" data-d="${di}" data-j="${j}" data-dir="-1" title="Przesuń w górę">↑</button> <button type="button" class="gen-swap gen-wmv" data-d="${di}" data-j="${j}" data-dir="1" title="Przesuń w dół">↓</button> <button type="button" class="gen-swap gen-wdel" data-d="${di}" data-j="${j}" title="Usuń z rozgrzewki" style="color:#B4472E">✕</button></td></tr>`; }).join('')}</tbody></table></div>` : '<div class="gen-hint" style="margin-bottom:6px">brak</div>'}
   <div class="gen-wu"><button type="button" class="gen-addb gen-wadd" data-d="${di}">+ Dodaj do rozgrzewki</button></div>
   <div class="gen-sec">Ćwiczenia główne</div><div class="gen-tw"><table class="gen-t gen-main"><thead><tr><th></th><th>Ćwiczenie</th><th>Serie</th><th title="Powtórzenia w tygodniu 1">Powt. t1</th><th title="Powtórzenia w tygodniu 2">t2</th><th title="Powtórzenia w tygodniu 3">t3</th><th>Tempo</th><th>Przerwa (s)</th><th></th></tr></thead><tbody>${d.rows.map(r =>
-    `<tr><td><span class="gen-lab" style="${labStyle(r.lab)}">${r.lab}</span></td><td>${exCell(r)}</td><td class="n">${inp(r, 'sets', r.sets)}</td>${[0, 1, 2].map(w => `<td class="n">${inp(r, 'w' + w, repsWeek(r, w))}</td>`).join('')}<td class="n">${inp(r, 'tempo', r.tempo === 'izo' ? '' : r.tempo, 'w')}</td><td class="n">${inp(r, 'rest', r.rest)}</td><td class="gen-act"><button type="button" class="gen-swap gen-mv" data-k="${r.key}" data-d="${di}" data-dir="-1" title="Przesuń w górę">↑</button> <button type="button" class="gen-swap gen-mv" data-k="${r.key}" data-d="${di}" data-dir="1" title="Przesuń w dół">↓</button> <button type="button" class="gen-swap" data-k="${r.key}" title="Zamień ćwiczenie">⇄</button> <button type="button" class="gen-swap gen-del" data-k="${r.key}" data-d="${di}" title="Usuń ćwiczenie" style="color:#B4472E">✕</button></td></tr>`).join('')}</tbody></table></div>
+    `<tr><td><span class="gen-lab" role="button" tabindex="0" title="Kliknij, żeby zmienić literę / numer serii" style="${labStyle(r.lab)};cursor:pointer" data-k="${r.key}" data-d="${di}">${r.lab}</span></td><td>${exCell(r)}</td><td class="n">${inp(r, 'sets', r.setsWk ? r.setsWk.join('/') : r.sets, r.setsWk ? 'w' : '')}</td>${[0, 1, 2].map(w => `<td class="n">${inp(r, 'w' + w, repsWeek(r, w))}</td>`).join('')}<td class="n">${inp(r, 'tempo', r.tempo === 'izo' ? '' : r.tempo, String(r.tempo).length > 6 ? 'w wide' : 'w')}</td><td class="n">${inp(r, 'rest', r.rest)}</td><td class="gen-act"><button type="button" class="gen-swap gen-mv" data-k="${r.key}" data-d="${di}" data-dir="-1" title="Przesuń w górę">↑</button> <button type="button" class="gen-swap gen-mv" data-k="${r.key}" data-d="${di}" data-dir="1" title="Przesuń w dół">↓</button> <button type="button" class="gen-swap" data-k="${r.key}" title="Zamień ćwiczenie">⇄</button> <button type="button" class="gen-swap gen-del" data-k="${r.key}" data-d="${di}" title="Usuń ćwiczenie" style="color:#B4472E">✕</button></td></tr>`).join('')}</tbody></table></div>
   <div style="margin-top:6px"><button type="button" class="gen-addb gen-add" data-d="${di}">+ Dodaj ćwiczenie</button></div>`;
 }
 function inp(r, f, v, cls){ const o = G.ov[r.key] || {}, ch = f.startsWith('w') ? !!(o.wk && o.wk[+f[1]] != null) : o[f] != null;
@@ -13781,11 +14084,24 @@ function genRender(){
   let body = '';
   if(G.step === 1){
     const pv = G.prev;
+    const mSeg = `<div class="gen-fld wide"><span class="gen-lbl">Metoda</span>${seg('method', Object.entries(METHODS), G.method)}<span class="gen-hint">${G.method === 'sila' ? 'Akumulacja / intensyfikacja po 3 tyg.' : G.method === 'tri' ? 'Ekscentryka → izometria → koncentryka. 3× = osobne dni, 2× = ecc + (iso i con w jednym dniu).' : 'Cały blok jednym rodzajem skurczu; etap rośnie co blok: zamulić → peak.'}${GC.sport && G.method === 'sila' ? ' · W kontekście jest sport – może Trójfazowa?' : ''}</span></div>`;
+    if(G.method !== 'sila'){
+      const stOpts = [1, 2, 3].map(n => [n, G.method === 'tri' ? `${n}: ${STAGE_TXT.ecc[n - 1].split(' ')[0]} / ${STAGE_TXT.iso[n - 1].split(' ')[0]} / ${STAGE_TXT.con[n - 1].split(' ')[0]}` : `${n}: ${STAGE_TXT[G.method][n - 1]}`]);
+      body = `${pv ? `<div class="gen-box prev"><b>Poprzedni blok tej metody: ${escapeHtml(pv.phase)} (${dPl(pv.first)} – ${dPl(pv.last)})</b><span>Frekwencja: ${pv.attend != null ? `<b>${pv.attend}%</b>` : 'blok jeszcze się nie zaczął'}</span><span>→ Proponuję: <b>etap ${G.stage}</b>${G.repeatM ? ' (powtórka – za mało treningów)' : ''}</span></div>` : ''}
+      <div class="gen-grid">${mSeg}
+      <div class="gen-fld wide"><span class="gen-lbl">Etap (blok po bloku)</span>${seg('stage', stOpts, G.stage)}<span class="gen-hint">${pv ? `Po etapie ${pv.stage} proponuję ${G.stage}.` : 'Pierwszy blok tej metody → etap 1.'}</span></div>
+      <div class="gen-fld"><span class="gen-lbl">Treningi w tygodniu</span>${seg('days', [[2, '2×'], [3, '3×']], G.days)}<span class="gen-hint">${G.method === 'tri' ? (G.days === 2 ? 'Dzień 1 ekscentryka, dzień 2 izometria + koncentryka.' : 'Ekscentryka / izometria / koncentryka.') : ''}</span></div>
+      <div class="gen-fld"><span class="gen-lbl">Staż</span>${seg('staz', [['p', '< 1 rok'], ['s', '2–3 lata'], ['z', '4+ lata']], G.staz)}<span class="gen-hint">Limit plyometrii: ${PLYO_MAX[G.staz]} kontaktów/tydz.</span></div>
+      <div class="gen-fld"><span class="gen-lbl">Start (poniedziałek)</span><input type="date" id="genStart" value="${G.start}" class="pill-input" style="width:auto;"><span class="gen-hint">Dni: ${seg('dows', DOWN.map((x, i) => [i, x]), '')}</span><span class="gen-hint">Zaznacz ${G.days} ${plPlural(G.days, 'dzień', 'dni', 'dni')} (${G.dows.length}/${G.days}).</span></div>
+      <div class="gen-fld"><span class="gen-lbl">Testy CMJ/SJ</span><span class="gen-hint">${GC.tests ? `asymetria ${GC.tests.asym != null ? GC.tests.asym + '%' + (GC.tests.weak ? ' (' + GC.tests.weak + ')' : '') : '–'} · EUR ${GC.tests.eur != null ? GC.tests.eur : '–'} → plan uwzględnia` : 'Brak testów z ostatnich 8 tyg. – plan bez korekt.'}</span><label class="gen-hint"><input type="checkbox" id="genWu" ${G.warmup ? 'checked' : ''}> dodaj „Rozgrzewka - całość”</label></div>
+      </div>
+      <div class="gen-box"><b>Co weźmie pod uwagę generator</b>${plan.why.map(w => `<span>• ${escapeHtml(w)}</span>`).join('')}</div>`;
+    } else {
     body = `${pv ? `<div class="gen-box prev"><b>Poprzedni blok: Cykl ${pv.cycle} · ${pv.phase} (${dPl(pv.first)} – ${dPl(pv.last)})</b>
       <span>Frekwencja: ${pv.attend != null ? `<b>${pv.attend}%</b> (${pv.doneN} z ${pv.dates.length} treningów zrobionych${pv.finished ? '' : ', blok jeszcze trwa'})` : 'blok jeszcze się nie zaczął'}</span>
       ${G.stazUp ? `<div class="gen-up">🎓 Minęły ${pv.cycle} cykle (ok. ${pv.cycle / 4} rok) → proponuję podnieść staż na <b>${G.stazUp === 's' ? '2–3 lata' : '4+ lata'}</b> <button type="button" class="btn" id="genStazOk">Zatwierdzam</button></div>` : ''}
       <span>→ Proponuję: <b>${suggestPhase()}</b> · ${({ same: 'nowe ćwiczenia z tych samych serii, rośnie intensywność', rotate: 'nowe ćwiczenia z tych samych serii (A → inne A)', repeat: 'powtórka tej samej fazy – za mało treningów, żeby iść dalej' })[transType()] || ''}</span></div>` : ''}
-    <div class="gen-grid">
+    <div class="gen-grid">${mSeg}
       <div class="gen-fld"><span class="gen-lbl">Faza bloku</span>${seg('phase', [['Ak1', 'Ak1'], ['Int1', 'Int1'], ['Ak2', 'Ak2'], ['Int2', 'Int2']], G.phase)}<span class="gen-hint">${pv ? `Po ${pv.phase} proponuję ${suggestPhase()}.` : 'Pierwszy blok → Ak1.'}</span></div>
       <div class="gen-fld"><span class="gen-lbl">Treningi w tygodniu</span>${seg('days', [[2, '2× FBW'], [3, '3× FBW'], [4, '4× góra/dół']], G.days)}<span class="gen-hint">${GC.days ? 'Z kontekstu: ' + GC.days + '×' : 'Nie ma w kontekście – wybierz.'}</span></div>
       <div class="gen-fld"><span class="gen-lbl">Staż</span>${seg('staz', [['p', '< 1 rok'], ['s', '2–3 lata'], ['z', '4+ lata']], G.staz)}<span class="gen-hint">${GC.stazKnown ? 'Z kontekstu.' : '⚠ Nie ma w kontekście – sprawdź.'}</span></div>
@@ -13795,6 +14111,7 @@ function genRender(){
       <div class="gen-fld"><span class="gen-lbl">Chwyty i rozgrzewka</span><label class="gen-hint"><input type="checkbox" id="genGrip" ${G.grip === 'auto' ? 'checked' : ''}> dobieraj chwyty automatycznie</label><label class="gen-hint"><input type="checkbox" id="genWu" ${G.warmup ? 'checked' : ''}> dodaj „Rozgrzewka - całość”</label></div>
     </div>
     <div class="gen-box"><b>Co weźmie pod uwagę generator</b>${plan.why.map(w => `<span>• ${escapeHtml(w)}</span>`).join('')}</div>`;
+    }
   } else {
     const cf = conflicts(), miss = plan.missing;
     body = `<div class="gen-box"><b>${escapeHtml(plan.label)} · start ${dPl(G.start)}</b>${plan.why.map(w => `<span>• ${escapeHtml(w)}</span>`).join('')}</div>
@@ -13810,12 +14127,14 @@ function genRender(){
     <div class="gen-mh"><h2>⚡ Zrób blok 3 tyg. – ${escapeHtml(GC.name)}</h2><div class="gen-steps"><span class="${G.step === 1 ? 'on' : ''}">1 Ustawienia</span><span class="${G.step === 2 ? 'on' : ''}">2 Podgląd</span></div></div>
     <div class="gen-mb" id="genMb">${body}</div>
     <div class="gen-mf">${G.step === 1 ? `<button type="button" class="btn ghost" id="genCancel">Anuluj</button><span class="gen-sp"></span>${okDows ? '' : '<span class="gen-hint" style="color:#B4472E;">Zaznacz właściwą liczbę dni</span>'}<button type="button" class="btn" id="genNext" ${okDows ? '' : 'disabled'}>Pokaż podgląd →</button>`
-      : `<button type="button" class="btn ghost" id="genBack">← Ustawienia</button><span class="gen-sp"></span><span class="gen-hint">Ciężary policzy silnik RPE 9.</span><button type="button" class="btn gen-btn" id="genIns">Wstaw do kalendarza</button>`}</div>
+      : `<button type="button" class="btn ghost" id="genBack">← Ustawienia</button><button type="button" class="btn ghost" id="genRoll" title="Nowe losowanie ćwiczeń (Twoje ręczne zmiany zostają)">🎲 Losuj inne ćwiczenia</button><span class="gen-sp"></span><span class="gen-hint">Ciężary policzy silnik RPE 9.</span><button type="button" class="btn gen-btn" id="genIns">Wstaw do kalendarza</button>`}</div>
   </div></div>`;
   root.querySelectorAll('[data-seg]').forEach(sg => sg.querySelectorAll('button').forEach(b => b.onclick = () => {
     const k = sg.dataset.seg; let v = b.dataset.v;
     if(k === 'dows'){ v = +v; G.dows = G.dows.includes(v) ? G.dows.filter(x => x !== v) : [...G.dows, v].sort(); if(G.dows.length > G.days) G.dows = G.dows.slice(-G.days).sort(); genRender(); return; }
-    if(k === 'days'){ v = +v; G.dows = dowsFor(v); Object.assign(G, { repl: {}, removed: {}, extra: {}, wu: {}, wuP: {}, ov: {}, order: {} }); }
+    if(k === 'method'){ setMethod(v); G.swaps = {}; genRender(); return; }
+    if(k === 'stage'){ G.stage = +v; Object.assign(G, { repl: {}, removed: {}, extra: {}, ov: {}, order: {}, groups: {} }); genRender(); return; }
+    if(k === 'days'){ v = +v; G.dows = dowsFor(v); if(G.method === 'sila') G.silaDays = v; Object.assign(G, { repl: {}, removed: {}, extra: {}, wu: {}, wuP: {}, ov: {}, order: {}, groups: {} }); }
     G[k] = v; G.swaps = {}; genRender();
   }));
   root.querySelectorAll('[data-seg="dows"] button').forEach(b => b.classList.toggle('on', G.dows.includes(+b.dataset.v)));
@@ -13830,6 +14149,7 @@ function genRender(){
   if(q('genCancel')) q('genCancel').onclick = genClose;
   if(q('genNext')) q('genNext').onclick = () => { G.step = 2; genRender(); q('genMb').scrollTop = 0; };
   if(q('genBack')) q('genBack').onclick = () => { G.step = 1; genRender(); };
+  if(q('genRoll')) q('genRoll').onclick = () => { G.seed = (Math.random() * 4294967296) >>> 0; if(!G.prev){ G.pkOff = Math.floor(rnd('pkOff') * 4); G.legOff = Math.floor(rnd('legOff') * 3); } G.coreOff = Math.floor(rnd('coreOff') * 3); const sc = q('genMb').scrollTop; genRender(); q('genMb').scrollTop = sc; toast('Wylosowano inne ćwiczenia'); };
   if(q('genAddMiss')) q('genAddMiss').onchange = e => { G.addMissing = e.target.checked; G.swaps = {}; genRender(); };
   if(q('genIns')) q('genIns').onclick = () => genInsert(LASTPLAN || plan);
   const keepScroll = fn => { const sc = q('genMb').scrollTop; fn(); genRender(); if(q('genMb')) q('genMb').scrollTop = sc; };
@@ -13838,7 +14158,7 @@ function genRender(){
     const k = i.dataset.k, f = i.dataset.f, row = curRow(k); if(!row) return;
     const o = G.ov[k] = G.ov[k] || {}, v = i.value.trim();
     if(f[0] === 'w'){ o.wk = o.wk || [null, null, null]; o.wk[+f[1]] = v === '' ? null : v; if(o.wk.every(x => x == null)) delete o.wk; }
-    else if(v === '') delete o[f]; else o[f] = f === 'sets' || f === 'rest' ? String(parseInt(v) || '') : v;
+    else if(v === '') delete o[f]; else o[f] = f === 'rest' ? String(parseInt(v) || '') : f === 'sets' ? v.replace(/[^0-9/]/g, '') : v;
     if(!Object.keys(o).length) delete G.ov[k];
     i.classList.toggle('ch', !!G.ov[k] && (f[0] === 'w' ? !!(G.ov[k].wk && G.ov[k].wk[+f[1]] != null) : G.ov[k][f] != null));
     const p = build(); LASTPLAN = p; const vb = $('genVol'); if(vb && GC.physique) vb.outerHTML = volBox(p);
@@ -13850,11 +14170,13 @@ function genRender(){
   root.querySelectorAll('.gen-win').forEach(i => i.onchange = () => {
     const di = +i.dataset.d, n = wuList(di)[+i.dataset.j], f = i.dataset.f, v = i.value.trim(); if(!n) return;
     const P = G.wuP[di] = G.wuP[di] || {}, o = P[n] = P[n] || {};
-    if(v === '') delete o[f]; else o[f] = f === 'sets' || f === 'rest' ? String(parseInt(v) || '') : v;
+    if(v === '') delete o[f]; else o[f] = f === 'rest' ? String(parseInt(v) || '') : f === 'sets' ? v.replace(/[^0-9/]/g, '') : v;
     i.classList.toggle('ch', o[f] != null); });
   root.querySelectorAll('.gen-mv').forEach(b => b.onclick = () => keepScroll(() => {
-    const di = +b.dataset.d, keys = LASTPLAN.days[di].rows.map(r => r.key), i = keys.indexOf(b.dataset.k), j = i + +b.dataset.dir;
-    if(i < 0 || j < 0 || j >= keys.length) return; [keys[i], keys[j]] = [keys[j], keys[i]]; G.order[di] = keys; }));
+    const di = +b.dataset.d, gs = curGroups(di), keys = gs.flat(), i = keys.indexOf(b.dataset.k), j = i + +b.dataset.dir;
+    if(i < 0 || j < 0 || j >= keys.length) return; [keys[i], keys[j]] = [keys[j], keys[i]];
+    let p = 0; G.groups[di] = gs.map(g => keys.slice(p, p += g.length)); delete G.order[di]; }));
+  root.querySelectorAll('.gen-main .gen-lab').forEach(b => b.onclick = e => { e.stopPropagation(); openLabPop(b, +b.dataset.d, b.dataset.k); });
   root.querySelectorAll('.gen-wmv').forEach(b => b.onclick = () => keepScroll(() => {
     const di = +b.dataset.d, l = wuList(di).slice(), i = +b.dataset.j, j = i + +b.dataset.dir;
     if(j < 0 || j >= l.length) return; [l[i], l[j]] = [l[j], l[i]]; G.wu[di] = l; }));
@@ -13862,7 +14184,38 @@ function genRender(){
   q('genOv').onclick = e => { if(e.target.id === 'genOv') genClose(); };
 }
 
+/* ---------- zmiana litery / numeru serii ---------- */
+function openLabPop(el, di, key){
+  const old = $('genLabPop'); if(old) old.remove();
+  const gs = curGroups(di), row = curRow(key), curL = row.lab[0];
+  const nG = gs.length, letters = Array.from({ length: Math.min(8, nG + 1) }, (_, i) => String.fromCharCode(65 + i));
+  let L = curL;
+  const pop = document.createElement('div'); pop.id = 'genLabPop'; pop.className = 'gen-labpop';
+  const draw = () => {
+    const ti = L.charCodeAt(0) - 65, size = ti < nG ? gs[ti].filter(k => k !== key).length : 0;
+    pop.innerHTML = `<div class="gen-lbl">Seria</div><div class="gen-seg">${letters.map(x => `<button type="button" data-l="${x}" class="${x === L ? 'on' : ''}">${x}</button>`).join('')}</div>
+      <div class="gen-lbl" style="margin-top:6px">Pozycja w serii ${L}</div><div class="gen-seg"><button type="button" data-n="0">samo ${L}</button>${Array.from({ length: Math.max(4, size + 1) }, (_, i) => `<button type="button" data-n="${i + 1}">${L}${i + 1}</button>`).join('')}</div>
+      <div class="gen-hint" style="margin-top:6px">„samo ${L}” = osobna seria, bez łączenia. W serii ${L} jest teraz ${size} ${plPlural(size, 'inne ćwiczenie', 'inne ćwiczenia', 'innych ćwiczeń')} – numery idą po kolei, więc wybór dalszego numeru stawia ćwiczenie na końcu serii (np. ${L}${size + 1}). Reszta przeliczy się sama.</div>`;
+    pop.querySelectorAll('[data-l]').forEach(b => b.onclick = ev => { ev.stopPropagation(); L = b.dataset.l; draw(); });
+    pop.querySelectorAll('[data-n]').forEach(b => b.onclick = ev => { ev.stopPropagation(); const sc = $('genMb').scrollTop; setLabel(di, key, L, +b.dataset.n); pop.remove(); genRender(); $('genMb').scrollTop = sc; });
+  };
+  draw();
+  $('genRoot').appendChild(pop);
+  const r = el.getBoundingClientRect(); pop.style.left = Math.max(8, Math.min(window.innerWidth - 300, r.left)) + 'px'; pop.style.top = (r.bottom + 6) + 'px';
+  setTimeout(() => document.addEventListener('click', function off(ev){ if(!pop.contains(ev.target)){ pop.remove(); document.removeEventListener('click', off); } }), 0);
+}
+
 /* ---------- wybór ćwiczenia (zamiana / dodanie / rozgrzewka) ---------- */
+function curGroups(di){ const out = []; let prevL = null; LASTPLAN.days[di].rows.forEach(r => { if(r.lab[0] === prevL) out[out.length - 1].push(r.key); else { out.push([r.key]); prevL = r.lab[0]; } }); return out; }
+/* zmiana litery/numeru: ćwiczenie trafia do serii L na pozycję n (n = 0 → samo, bez łączenia); reszta przelicza się sama */
+function setLabel(di, key, L, n){
+  let gs = curGroups(di).map(g => g.filter(k => k !== key)).filter(g => g.length);
+  const t = L.charCodeAt(0) - 65;
+  if(!n) gs.splice(Math.min(t, gs.length), 0, [key]);
+  else if(t < gs.length) gs[t].splice(Math.min(n - 1, gs[t].length), 0, key);
+  else gs.push([key]);
+  G.groups[di] = gs; delete G.order[di];
+}
 function curRow(key){ for(const d of (LASTPLAN ? LASTPLAN.days : [])) for(const r of d.rows) if(r.key === key) return r; return null; }
 function pickerItems(P0){
   const row = P0.key ? curRow(P0.key) : null, cur = row ? gKey(row.name) : null;
@@ -13934,10 +14287,14 @@ async function genInsert(plan){
       exs.push(exObj({ name: W.name, videoUrl: W.videoUrl || '', libraryId: W.id, category: 'warmup', sets: String(p.sets || '1'), reps: String(p.reps || ''), tempo: p.tempo || '', rest: p.rest ? String(p.rest).replace(/"$/, '') + '"' : '' })); });
     d.rows.forEach(r => { const L = genLib(r.name);
       exs.push(exObj({ name: L ? L.name : r.name, videoUrl: L ? (L.videoUrl || '') : '', libraryId: L ? L.id : undefined, category: 'main', label: r.lab, labelManual: true,
-        sets: String(r.sets), reps: repsWeek(r, s.w), tempo: r.tempo === 'izo' ? '' : r.tempo, rest: String(r.rest).replace(/"$/, '') + '"', note: r.grip && G.grip === 'auto' ? 'Chwyt: ' + r.grip : '',
+        sets: String(r.setsWk ? r.setsWk[s.w] : r.sets), reps: repsWeek(r, s.w), tempo: (t => /^[0-9X-]+$/i.test(t) ? t : '')(String(r.tempoWk ? r.tempoWk[s.w] : r.tempo)), rest: String(r.rest).replace(/"$/, '') + '"',
+        note: [r.grip && G.grip === 'auto' ? 'Chwyt: ' + r.grip : '', r.mnote || '', !/^[0-9X\/-]+$/i.test(String(r.tempo)) && r.tempo !== 'izo' ? String(r.tempo) : ''].filter(Boolean).join(' · '),
+        splitLR: !!r.split, setsLeft: r.split ? String((r.setsWk ? r.setsWk[s.w] : r.sets) + (r.split === 'L' ? 1 : 0)) : '', setsRight: r.split ? String((r.setsWk ? r.setsWk[s.w] : r.sets) + (r.split === 'P' ? 1 : 0)) : '',
+        genKgPct: r.mnote && r.mnote.includes('80–85%') ? 0.82 : undefined, noWeight: /^Napieranie na piny/i.test(r.name) || undefined,
         gk: r.key, glo: r.lo, ghi: r.hi, grole: r.role, glegs: !!r.legs, gsets: r.sets, gwhy: r.why })); });
-    const day = { title: G.phase, subtitle: 'Dzień ' + (s.i + 1), exercises: exs,
-      gen: { bid, phase: G.phase, cycle: plan.cycle, blockNo: blockNo(), staz: G.staz, daysN: G.days, grip: G.grip, prio: G.prio.slice(), dayIdx: s.i, week: s.w, dayName: d.name, label: plan.label } };
+    const bname = G.method === 'sila' ? G.phase : `${MNAME[G.method]} ${G.stage}`;
+    const day = { title: bname, subtitle: 'Dzień ' + (s.i + 1) + (G.method === 'tri' ? ' · ' + d.name.toLowerCase() : ''), exercises: exs,
+      gen: { bid, phase: bname, method: G.method, stage: G.method === 'sila' ? null : G.stage, cycle: plan.cycle, blockNo: blockNo(), staz: G.staz, daysN: G.days, grip: G.grip, prio: G.prio.slice(), dayIdx: s.i, week: s.w, dayName: d.name, label: plan.label, pkOff: G.pkOff, legOff: G.legOff } };
     relabelExercises(day);
     pl[s.ds] = day; n++;
   });
@@ -14001,6 +14358,7 @@ window.genMgCell = function(td, ex){
   td.querySelector('[data-ok]').onclick = () => save(Object.keys(sel).length ? sel : {});
   if(td.querySelector('[data-auto]')) td.querySelector('[data-auto]').onclick = () => save(null);
 };
+window.genOpen = genOpen;
 window.GEN_TEST = { genBlocks, genProfile, build: () => build(), get G(){ return G; } };
 })();
 </script>
