@@ -1354,6 +1354,8 @@
   @media (prefers-reduced-motion:reduce){ .tp-tap.go{animation:none;} }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -2980,6 +2982,7 @@ function ensureLog(ex){
     while(ex.logRight.length < nR) ex.logRight.push({weight:'', reps:''});
     while(ex.logLeft.length < nL) ex.logLeft.push({weight:'', reps:''});
   }
+  if(typeof serEnsureLog === 'function') serEnsureLog(ex);
   return ex.log;
 }
 
@@ -3335,7 +3338,8 @@ function normalizeNotes(d){
     notes: Array.isArray(d.notes) ? d.notes : [], injuries: Array.isArray(d.injuries) ? d.injuries : [],
     tests: Array.isArray(d.tests) ? d.tests : [], asym: Array.isArray(d.asym) ? d.asym : [],
     contact: Object.assign({ phone:'', ig:'', guardian:'', rodo:'', image:'' }, d.contact || {}),
-    context: (d.context && typeof d.context === 'object') ? d.context : null
+    context: (d.context && typeof d.context === 'object') ? d.context : null,
+    dynamo: (d.dynamo && typeof d.dynamo === 'object') ? d.dynamo : undefined
   };
 }
 async function loadClientNotes(id){
@@ -3538,7 +3542,7 @@ function renderClientInfo(){
   if(infoTab === 'post') body = clientProgressHtml(id);
   if(infoTab === 'tes'){
     const e1 = clientE1rmList(id);
-    body = tstClientCardHtml(id) + `<div class="cv-grid2">
+    body = tstClientCardHtml(id) + (window.dynCardHtml ? dynCardHtml(c, d) : '') + `<div class="cv-grid2">
       <div class="cv-card"><h4>🏋️ Szacowane 1RM z treningów <span class="cv-small" style="font-weight:400;">liczone automatycznie</span></h4>
         ${e1.length ? `<table class="report-table"><tr><th>Ćwiczenie</th><th>1RM</th><th>Z serii</th><th>Data</th></tr>${e1.map(x => `<tr><td>${escapeHtml(x.name)}</td><td><b>${Math.round(x.e1 * 2) / 2} kg</b></td><td>${x.w} kg × ${x.r}</td><td>${escapeHtml(x.date)}</td></tr>`).join('')}</table>` : '<div class="cv-small">Brak wpisanych ciężarów (serie 1–10 powt.).</div>'}
         <h4 style="margin-top:14px;">📝 Inne testy <span class="cv-small" style="font-weight:400;">np. CMJ, sprint, zasięg</span></h4>
@@ -3588,7 +3592,7 @@ function renderClientInfo(){
   document.querySelectorAll('.cv-tab').forEach(t => t.onclick = () => { infoTab = t.dataset.t; renderClientInfo(); });
   if(infoTab === 'post') bindClientProgress();
   if(infoTab === 'ank') bindClientSurveyTab(id);
-  if(infoTab === 'tes') tstBindClientCard(id);
+  if(infoTab === 'tes'){ tstBindClientCard(id); if(window.dynBind) dynBind(c, d); }
   if(infoTab === 'ctx') ctxBind(c, d);
   const uid = () => 'n_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
   const rerender = () => { if(selectedClientId === id && clientView === 'info') renderClientInfo(); };
@@ -5768,7 +5772,7 @@ function renderDayPanel(){
 
         <div class="section-label">Ćwiczenia główne</div>
         <table class="exlist">
-          <thead><tr><th></th><th>Ćwiczenie</th><th>Serie</th><th>Powt.</th><th>Tempo</th><th>Przerwa</th><th>Sugerowany kg</th><th></th><th>Bez ciężaru</th><th>Interwał</th><th>Podział P/L</th><th>Progresja RPE</th><th>Test</th><th></th></tr></thead>
+          <thead><tr><th></th><th>Ćwiczenie</th><th>Serie</th><th>Powt.</th><th>Tempo</th><th>Przerwa</th><th>Sugerowany kg</th><th></th><th>Bez ciężaru</th><th>Interwał</th><th>Podział P/L</th><th>Progresja RPE</th><th>Rodzaj serii</th><th>Test</th><th></th></tr></thead>
           <tbody id="exRows-main"></tbody>
         </table>
         <div class="add-ex-row">
@@ -5968,7 +5972,7 @@ function renderProgFlagsRow(tbody, day, items){
       return;
     }
     if(ex.suggestedManual && ex.suggestedWeight) return;
-    const info = computeSuggestedWeightInfo(selectedClientId, name, ex.reps, selectedDateStr, ex.targetRpe, { slowPct: ex.genKgPct });
+    const info = serInfo(selectedClientId, ex, selectedDateStr, { slowPct: ex.genKgPct });
     if(info && info.flag) rows.push({ ex, name, text: info.flag, cut: info.source === 'last' ? eqDn1(info.value, info.eq) : null });
   });
   if(!rows.length) return;
@@ -5994,7 +5998,7 @@ function renderExRows(day, category){
     tr.draggable = true;
     const isTestEx = category === 'main' && ex.isTest;
     const exName = resolveExName(ex);
-    const autoInfo = (editingTemplateMode || ex.noWeight || ex.isInterval) ? null : computeSuggestedWeightInfo(selectedClientId, exName, ex.reps, selectedDateStr, ex.targetRpe, { slowPct: ex.genKgPct, progOff: !!ex.progOff || category !== 'main' });
+    const autoInfo = (editingTemplateMode || ex.noWeight || ex.isInterval) ? null : serInfo(selectedClientId, ex, selectedDateStr, { slowPct: ex.genKgPct, progOff: !!ex.progOff || category !== 'main' });
     const autoVal = autoInfo ? autoInfo.value : null;
     const displayVal = ex.suggestedManual ? (ex.suggestedWeight||'') : (autoVal !== null ? String(autoVal) : '');
     const suggTitle = ex.suggestedManual ? 'Wpisane ręcznie (wyczyść pole, żeby wrócić do automatycznej podpowiedzi)' : (autoInfo ? suggestedSourceText(autoInfo) : 'Brak podpowiedzi: brak wcześniejszych treningów tego ćwiczenia (do 10 powt.) i testu 1RM');
@@ -6003,19 +6007,21 @@ function renderExRows(day, category){
       ? `<td><span class="hist-icon" tabindex="0">🏋️<span class="hist-tip">Ostatnio: ${escapeHtml(String(lastStats.last.reps))} powt. ${escapeHtml(String(lastStats.last.weight))}kg</span></span></td>`
       : '<td></td>';
     const testCell = category === 'main'
-      ? `<td><label class="test-toggle"><input type="checkbox" class="test-ex-check" ${ex.isTest?'checked':''}></label></td>`
+      ? `<td><label class="test-toggle"><input type="checkbox" class="settype-check" ${ex.setType?'checked':''} title="Rodzaj serii (rosnąca, malejąca, drop set, klaster…) – ciężar i powtórzenia na każdą serię"></label></td><td><label class="test-toggle"><input type="checkbox" class="test-ex-check" ${ex.isTest?'checked':''}></label></td>`
       : '';
+    const serT = ex.setType && SER_BY[ex.setType.id];
+    const serChip = serT ? `<span class="ser-chip ${serT.ph}" title="Kliknij, żeby zmienić rodzaj albo powtórzenia">${escapeHtml(serT.nm)} · ${escapeHtml(ex.reps)} · ${ex.setType.pr === 'kg' ? 'rośnie kg' : 'rosną powt.'} ✎</span>` : '';
     const relinkIcon = !ex.libraryId
       ? `<span class="relink-icon" title="To ćwiczenie nie jest połączone z aktualną pozycją w bibliotece - kliknij, żeby połączyć ręcznie" style="cursor:pointer;color:var(--warn);font-size:11px;margin-left:4px;">🔗</span>`
       : '';
     tr.innerHTML = `
       <td><span class="drag-handle" title="Przeciągnij, żeby zmienić kolejność">⠿</span></td>
-      <td><span class="ex-label">${escapeHtml(ex.label || '')}</span> ${escapeHtml(exName)}${relinkIcon}<span class="swap-ex" title="Zamień na inne ćwiczenie z biblioteki (litera, serie i powtórzenia zostają)">⇄</span></td>
-      <td><input class="pill-input" data-f="sets" value="${ex.sets}" ${ex.splitLR?'disabled':''}></td>
+      <td><span class="ex-label">${escapeHtml(ex.label || '')}</span> ${escapeHtml(exName)}${relinkIcon}<span class="swap-ex" title="Zamień na inne ćwiczenie z biblioteki (litera, serie i powtórzenia zostają)">⇄</span>${serChip}</td>
+      <td><input class="pill-input" data-f="sets" value="${ex.sets}" ${(ex.splitLR || (serT && serT.kind === 'seq'))?'disabled':''} ${serT && serT.kind === 'seq' ? 'title="Liczba serii wynika z zapisu powtórzeń"' : ''}></td>
       <td><input class="pill-input" data-f="reps" value="${ex.reps}"></td>
       <td><input class="pill-input" data-f="tempo" value="${ex.tempo}"></td>
       <td><input class="pill-input" data-f="rest" value="${ex.rest}"></td>
-      <td>${isTestEx ? '<span style="color:var(--warn);font-size:11px;">to jest test</span>' : `<input class="pill-input" data-f="suggestedWeight" value="${displayVal}" placeholder="${editingTemplateMode ? 'auto' : 'kg'}" title="${escapeHtml(editingTemplateMode ? 'Puste = aplikacja zaproponuje ciężar każdej osobie' : suggTitle)}">${(editingTemplateMode || category !== 'main') ? '' : progBadgeHtml(autoInfo, !!(ex.suggestedManual && ex.suggestedWeight), ex.id)}`}</td>
+      <td>${isTestEx ? '<span style="color:var(--warn);font-size:11px;">to jest test</span>' : `<input class="pill-input" data-f="suggestedWeight" value="${displayVal}" placeholder="${editingTemplateMode ? 'auto' : 'kg'}" title="${escapeHtml(editingTemplateMode ? 'Puste = aplikacja zaproponuje ciężar każdej osobie' : (serPlan(ex) ? 'Ciężar najcięższej serii – pozostałe serie liczone z tabeli %. ' : '') + suggTitle)}">${(editingTemplateMode || category !== 'main') ? '' : progBadgeHtml(autoInfo, !!(ex.suggestedManual && ex.suggestedWeight), ex.id)}`}</td>
       ${lastIconCell}
       <td><label class="test-toggle"><input type="checkbox" class="noweight-check" ${ex.noWeight?'checked':''}></label></td>
       <td><label class="test-toggle"><input type="checkbox" class="interval-check" ${ex.isInterval?'checked':''}></label></td>
@@ -6048,6 +6054,12 @@ function renderExRows(day, category){
       renderDayPanel();
     };
     if(category === 'main'){
+      const serOpen = () => serOpenPicker(ex, async v => { if(serApply(ex, v)){ await persistCurrentDayFn(); } renderDayPanel(); });
+      tr.querySelector('.settype-check').onchange = async (e) => {
+        if(e.target.checked){ e.target.checked = !!ex.setType; serOpen(); }
+        else { serApply(ex, null); await persistCurrentDayFn(); renderDayPanel(); }
+      };
+      const chipEl = tr.querySelector('.ser-chip'); if(chipEl) chipEl.onclick = serOpen;
       tr.querySelector('.test-ex-check').onchange = async (e) => {
         ex.isTest = e.target.checked;
         await persistCurrentDayFn();
@@ -6213,6 +6225,7 @@ function renderExRows(day, category){
       <td></td>
       <td colspan="11">
         ${libNoteFor(ex) ? `<div class="lib-note-hint">Stałe uwagi z biblioteki (klient widzi zawsze): ${escapeHtml(libNoteFor(ex))}</div>` : ''}
+        ${serPlan(ex) ? `<div class="ser-prev"><b>Klient zobaczy:</b> ${escapeHtml(serPreviewText(ex, pf(displayVal), autoInfo && autoInfo.eq))}${pf(displayVal) > 0 ? '' : ' (ciężar pojawi się po pierwszym treningu albo teście 1RM)'}</div>` : ''}
         <span class="note-label">Notatka dla klienta na ten dzień (widoczna w jego widoku)</span>
         <input class="note-input" data-nf="note" value="${escapeHtml(ex.note||'')}" placeholder="np. Trzymaj plecy w neutralu...">
       </td>
@@ -6505,22 +6518,24 @@ function eqMove(w, f, eq){
 const pf = v => parseFloat(String(v == null ? '' : v).replace(',', '.'));
 /* statystyki jednej strony / logu: tylko wpisane serie; puste powt. przy wpisanym ciezarze = plan */
 function progLogStats(log, plannedReps, fallbackW){
+  /* #27: plannedReps może być tablicą (rodzaj serii – inne powtórzenia w każdej serii) */
+  const plan = i => Array.isArray(plannedReps) ? (plannedReps[i] != null ? plannedReps[i] : plannedReps[plannedReps.length - 1]) : plannedReps;
   const sets = [];
-  (log || []).forEach(l => {
+  (log || []).forEach((l, i) => {
     if(!l) return;
     const hasW = String(l.weight || '').trim() !== '', hasR = String(l.reps || '').trim() !== '';
     if(!hasW && !hasR) return;
     let w = pf(l.weight); if(isNaN(w) || w <= 0) w = fallbackW;
-    let r = parseInt(l.reps); if(isNaN(r)) r = plannedReps;
+    let r = parseInt(l.reps); if(isNaN(r)) r = plan(i);
     if(!(w > 0)) return;
-    sets.push({ w, r });
+    sets.push({ w, r, p: plan(i) });
   });
-  if(!sets.length || !(plannedReps > 0)) return null;
-  const done = sets.reduce((a, s) => a + s.r, 0), planned = sets.length * plannedReps;
+  if(!sets.length || !(Array.isArray(plannedReps) ? plannedReps.length : plannedReps > 0)) return null;
+  const done = sets.reduce((a, s) => a + s.r, 0), planned = sets.reduce((a, s) => a + (s.p || 0), 0);
   return { sets, reps: sets.map(s => s.r), done, planned, pct: done / planned, top: Math.max(...sets.map(s => s.w)) };
 }
 function progExStats(ex){
-  const plannedReps = parseInt(ex.reps);
+  const plannedReps = (typeof serPlanned === 'function' && serPlanned(ex)) || parseInt(ex.reps);
   const fb = ex.suggestedManual ? pf(ex.suggestedWeight) : NaN;
   if(ex.splitLR){
     const a = progLogStats(ex.logRight, plannedReps, fb), b = progLogStats(ex.logLeft, plannedReps, fb);
@@ -6538,7 +6553,7 @@ function progSessionsBefore(clientId, exerciseName, beforeDate){
     const d = plan[dateStr]; if(!d || !d.exercises) return;
     d.exercises.filter(ex => resolveExName(ex) === exerciseName && !ex.isTest).forEach(ex => {
       const st = progExStats(ex);
-      if(st) out.push({ date: dateStr, ex, st, reps: parseInt(ex.reps) });
+      if(st) out.push({ date: dateStr, ex, st, reps: parseInt(typeof serRefReps === 'function' ? serRefReps(ex) : ex.reps) });
     });
   });
   return out;
@@ -10356,13 +10371,13 @@ function athleteWeightInfo(clientId, ex, dateStr){
   const exName = resolveExName(ex);
   const isT = ex.category === 'main' && ex.isTest;
   if(isT || ex.noWeight || ex.isInterval) return { display: '', progKg: null, info: null };
-  const info = computeSuggestedWeightInfo(clientId, exName, ex.reps, dateStr, ex.targetRpe, { slowPct: ex.genKgPct, progOff: !!ex.progOff || ex.category !== 'main' });
+  const info = serInfo(clientId, ex, dateStr, { slowPct: ex.genKgPct, progOff: !!ex.progOff || ex.category !== 'main' });
   let display = '';
   if(ex.suggestedManual && ex.suggestedWeight) display = String(ex.suggestedWeight);
   else if(info) display = String(info.value);
   else { const ls = getExerciseStats(clientId, exName); if(ls) display = String(ls.last.weight); }
   let progKg = null;
-  const cur = pf(display), reps = parseInt(ex.reps);
+  const cur = pf(display), reps = parseInt(serRefReps(ex));
   if(!isNaN(cur) && ex.category === 'main'){
     const same = progSessionsBefore(clientId, exName, dateStr).filter(x => x.reps === reps);
     if(same.length){ const d = Math.round((cur - same[same.length - 1].st.top) * 100) / 100; if(d > 0) progKg = d; }
@@ -10396,7 +10411,18 @@ function renderAthleteDetail(day){
   const suggestedDisplay = wiA.display;
   const needRpe = progActive(ex);
 
-  const setRows = ex.log.map((l, i) => ex.noWeight ? `
+  const serP = serPlan(ex), serW = (serP && !ex.noWeight && pf(suggestedDisplay) > 0) ? serWeights(serP, pf(suggestedDisplay), (wiA.info && wiA.info.eq) || equipmentInfo(exName).eq) : null;
+  const serPhW = i => serW && serW[i] ? serW[i].w : suggestedDisplay;
+  const serPhR = i => serP && serP.sets[i] ? serP.sets[i].lab : ex.reps;
+  const setRows = serP ? ex.log.map((l, i) => `
+    <tr>
+      <td style="font-weight:700;font-family:'Space Grotesk';">${i+1}</td>
+      ${ex.noWeight ? '' : `<td><input class="set-input" data-i="${i}" data-f="weight" value="${escapeHtml(l.weight)}" placeholder="${serPhW(i) ? escapeHtml(fmtKg(serPhW(i)))+' kg' : '—'}"></td>`}
+      <td><input class="set-input" data-i="${i}" data-f="reps" value="${escapeHtml(l.reps)}" placeholder="${escapeHtml(serPhR(i))}"></td>
+    </tr>${serP.kind === 'drop' && serP.sets[i] ? serP.sets[i].drops.map((d, k) => `
+    <tr class="ser-dd"><td style="font-size:11px;color:var(--muted);">↳ ${k+1}</td>
+      ${ex.noWeight ? '' : `<td><input class="set-input" data-i="${i}" data-dd="${k}" data-f="weight" value="${escapeHtml(((l.dd||[])[k]||{}).weight||'')}" placeholder="${serW && serW[i] ? escapeHtml(fmtKg(serW[i].drops[k]))+' kg' : 'kg'}"></td>`}
+      <td><input class="set-input" data-i="${i}" data-dd="${k}" data-f="reps" value="${escapeHtml(((l.dd||[])[k]||{}).reps||'')}" placeholder="${d.r}"></td></tr>`).join('') : ''}`).join('') : ex.log.map((l, i) => ex.noWeight ? `
     <tr>
       <td style="font-weight:700;font-family:'Space Grotesk';">${i+1}</td>
       <td><input class="set-input" data-i="${i}" data-f="reps" value="${escapeHtml(l.reps)}" placeholder="${escapeHtml(ex.reps)}"></td>
@@ -10550,7 +10576,7 @@ function renderAthleteDetail(day){
       openTempoTimer(ex, (reps) => {
         if(aDetailExId !== ex.id || ex.splitLR) return;
         const idx = (ex.log || []).findIndex(l => !String(l.reps || '').trim());
-        const inp = idx >= 0 ? holder.querySelector(`.set-input[data-f="reps"][data-i="${idx}"]`) : null;
+        const inp = idx >= 0 ? holder.querySelector(`.set-input[data-f="reps"][data-i="${idx}"]:not([data-dd])`) : null;
         if(inp){ inp.value = String(reps); inp.dispatchEvent(new Event('change', { bubbles: true })); }
       });
     };
@@ -10582,10 +10608,19 @@ function renderAthleteDetail(day){
   holder.querySelectorAll('.set-input').forEach(inp => {
     inp.onchange = async () => {
       const i = parseInt(inp.dataset.i);
+      if(inp.dataset.dd != null){
+        /* #27 drop set: kolejny zrzut */
+        const k = parseInt(inp.dataset.dd); serEnsureLog(ex); const e2 = ex.log[i].dd[k]; e2[inp.dataset.f] = inp.value;
+        const ph = serW && serW[i] ? serW[i].drops[k] : null;
+        if(inp.dataset.f === 'reps' && inp.value.trim() && !ex.noWeight && !String(e2.weight || '').trim() && ph){
+          e2.weight = String(ph); const w = holder.querySelector(`.set-input[data-i="${i}"][data-dd="${k}"][data-f="weight"]`); if(w) w.value = fmtKg(ph); }
+        applyRpeLock(); await saveResultWithOfflineBackup(aClientId, aSelectedDateStr, day); return;
+      }
       ex.log[i][inp.dataset.f] = inp.value;
-      if(inp.dataset.f === 'reps' && inp.value.trim() && !ex.noWeight && !String(ex.log[i].weight || '').trim() && suggestedDisplay){
-        ex.log[i].weight = String(suggestedDisplay);   // klient zostawil podpowiedz -> zapisujemy ja jako zrobiony ciezar
-        const w = holder.querySelector(`.set-input[data-i="${i}"][data-f="weight"]`); if(w) w.value = fmtKg(suggestedDisplay);
+      const phW = serPhW(i);
+      if(inp.dataset.f === 'reps' && inp.value.trim() && !ex.noWeight && !String(ex.log[i].weight || '').trim() && phW){
+        ex.log[i].weight = String(phW);   // klient zostawil podpowiedz -> zapisujemy ja jako zrobiony ciezar
+        const w = holder.querySelector(`.set-input[data-i="${i}"][data-f="weight"]:not([data-dd])`); if(w) w.value = fmtKg(phW);
       }
       applyRpeLock();
       await saveResultWithOfflineBackup(aClientId, aSelectedDateStr, day);
@@ -10744,7 +10779,7 @@ async function exportRangeToExcel(clientId, fromStr, toStr){
       const isTestEx = ex.category==='main' && ex.isTest;
       const exName = resolveExName(ex);
       const exVideo = resolveExVideo(ex);
-      const autoVal = isTestEx ? null : computeSuggestedWeight(clientId, exName, ex.reps, null, ex.targetRpe, { slowPct: ex.genKgPct });
+      const autoVal = isTestEx ? null : (i => i ? i.value : null)(serInfo(clientId, ex, null, { slowPct: ex.genKgPct }));
       const suggested = isTestEx ? '— TEST —' : (autoVal!==null?autoVal:'');
       const numSets = Math.min(MAX_EXPORT_SETS, Math.max(1, parseInt(ex.sets)||1));
       const rowFill = isTestEx ? XLS_WARN : null;
@@ -12269,6 +12304,7 @@ const TST_PHASES = [
 ];
 const TST_MODE_LABEL = { rehab: 'Rehabilitacja — wszystkie próby', performance: 'Wydajność — najlepsza próba', fatigue: 'Stan zmęczeniowy — ostatnia seria' };
 let testsCache = null, testsTableMissing = false, tstSettings = { names: {}, modes: {} };
+let tstPendingDyn = [], tstImportFrom = null;
 let tstPendingImport = null, tstProfileId = null, tstShowAll = false;
 
 const tstF = (v, d = 1) => (v === null || v === undefined || Number.isNaN(v)) ? '—' : Number(v).toLocaleString('pl-PL', { minimumFractionDigits: d, maximumFractionDigits: d });
@@ -12361,11 +12397,20 @@ function tstMatchClient(name){
   if(bySur.length === 1) return { id: bySur[0].id, how: 'podobne — sprawdź' };
   return { id: null, how: '' };
 }
-async function tstHandleFiles(fileList){
-  const files = Array.from(fileList || []).filter(f => /\.xlsx$/i.test(f.name));
-  if(!files.length){ toast('Wybierz pliki .xlsx z eksportu platformy'); return; }
+async function tstHandleFiles(fileList, forceClient){
+  /* #26: jeden import – .xlsx = CC Athletics, .pdf = VALD DynaMo; osobę rozpoznaje po nazwisku w pliku */
+  const all = Array.from(fileList || []);
+  const files = all.filter(f => /\.xlsx$/i.test(f.name)), pdfs = all.filter(f => /\.pdf$/i.test(f.name)), unk = all.filter(f => !/\.(xlsx|pdf)$/i.test(f.name));
+  if(!files.length && !pdfs.length){ toast('Wybierz pliki .xlsx (CC Athletics) albo .pdf (VALD DynaMo)'); return; }
+  tstImportFrom = forceClient || null;
   $('main').innerHTML = '<div class="empty-state">Odczytuję pliki…</div>';
-  const recs = [], errs = [];
+  const recs = [], errs = unk.map(f => `${f.name}: nieobsługiwany plik (tylko .xlsx z CC Athletics i .pdf z DynaMo)`);
+  tstPendingDyn = [];
+  if(pdfs.length){
+    if(!window.dynReadFiles) errs.push('Czytnik DynaMo niedostępny');
+    else { const D = await dynReadFiles(pdfs); D.bad.forEach(b => errs.push(`${b}: to nie raport DynaMo z VALD Hub`));
+      tstPendingDyn = D.items.map(it => { const m = forceClient ? { id: forceClient, how: 'z karty klienta' } : dynMatch(it.r.profile); return Object.assign(it, { clientId: m.id, how: m.how }); }); }
+  }
   for(const f of files){
     try{
       const rows = await CMJ.readFirstSheet(await f.arrayBuffer());
@@ -12386,7 +12431,7 @@ async function tstHandleFiles(fileList){
   });
   tstPendingImport = [...groups.values()].map(g => {
     const qc = tstQualityCheck(g.trials, g.type);
-    const m = tstMatchClient(g.name);
+    const m = forceClient ? { id: forceClient, how: 'z karty klienta' } : tstMatchClient(g.name);
     return Object.assign(g, { ok: qc.ok, skipped: qc.skipped, clientId: m.id, how: m.how, mode: (m.id && tstSettings.modes[m.id]) || 'rehab' });
   });
   tstRenderImport(errs.concat(unsupported.map(u => 'Nieobsługiwany test: ' + u)));
@@ -12394,10 +12439,11 @@ async function tstHandleFiles(fileList){
 function tstRenderImport(errors){
   const G = tstPendingImport || [];
   const opts = sel => `<option value="">— wybierz klienta —</option>` + clients.slice().sort((a, b) => a.name.localeCompare(b.name, 'pl')).map(c => `<option value="${c.id}" ${c.id === sel ? 'selected' : ''}>${escapeHtml(c.name)}</option>`).join('');
+  const D = tstPendingDyn || [], readyD = D.filter(x => x.clientId).length;
   const ready = G.filter(g => g.clientId && g.ok.length).length;
   $('main').innerHTML = `<span class="back-link" id="tstImpBack">← Testy</span>
     <div class="section-title"><div class="bar"></div><h2>Wgrywanie wyników</h2></div>
-    <div class="section-desc">${G.reduce((a, g) => a + g.trials.length, 0)} ${plPlural(G.reduce((a, g) => a + g.trials.length, 0), 'plik', 'pliki', 'plików')} → ${G.length} ${plPlural(G.length, 'sesja', 'sesje', 'sesji')}. CMJ i SJ z tego samego dnia są liczone osobno. Duplikaty, próby odstające i SJ z zamachem są pomijane automatycznie.</div>
+    <div class="section-desc">${G.length ? `CC Athletics: ${G.reduce((a, g) => a + g.trials.length, 0)} ${plPlural(G.reduce((a, g) => a + g.trials.length, 0), 'plik', 'pliki', 'plików')} → ${G.length} ${plPlural(G.length, 'sesja', 'sesje', 'sesji')}. ` : ''}${D.length ? `DynaMo: ${D.length} ${plPlural(D.length, 'plik', 'pliki', 'plików')} PDF. ` : ''} CMJ i SJ z tego samego dnia są liczone osobno. Duplikaty, próby odstające i SJ z zamachem są pomijane automatycznie.</div>
     ${(errors || []).length ? `<div class="tst-warn">⚠️ ${errors.map(escapeHtml).join('<br>')}</div>` : ''}
     ${G.map((g, i) => {
       const comp = g.ok.length ? tstCompute(g.ok, g.mode) : null;
@@ -12408,19 +12454,23 @@ function tstRenderImport(errors){
         <div class="tst-trials">${g.trials.map(t => { const sk = g.skipped.find(s => s.f === t.sourceLabel);
           return `<div class="${sk ? 'sk' : ''}">${escapeHtml((t.dateRaw || '').split(' ')[1] || '')} · ${tstF(CMJ.g(t.metrics, 'jump height ni'))} cm${t.comment ? ` · „${escapeHtml(t.comment)}”` : ''}${sk ? ` <span class="why">⤬ ${escapeHtml(sk.why)}</span>` : ''}</div>`; }).join('')}</div>
         ${comp ? `<div class="cv-small" style="margin-top:6px;">Wynik sesji: <b>${tstF(comp.summary.jh)} cm</b> · RSI-mod ${tstF(comp.summary.rsi, 2)} · ${comp.summary.n} ${plPlural(comp.summary.n, 'próba', 'próby', 'prób')} w obliczeniach</div>` : '<div class="tst-warn" style="margin-top:6px;">Wszystkie próby pominięte — ta sesja się nie zapisze.</div>'}
-      </div>`; }).join('') || '<div class="empty-state">Nie znaleziono testów CMJ/SJ w plikach.</div>'}
-    <div class="tst-actions"><button class="btn ghost" id="tstImpCancel">Anuluj</button><button class="btn" id="tstImpSave" style="background:#2E9E5B;" ${ready ? '' : 'disabled'}>✓ Zapisz ${ready} ${plPlural(ready, 'sesję', 'sesje', 'sesji')}</button></div>
+      </div>`; }).join('') || (D.length ? '' : '<div class="empty-state">Nie znaleziono testów CMJ/SJ ani DynaMo w plikach.</div>')}
+    ${window.dynImportHtml ? dynImportHtml(D) : ''}
+    <div class="tst-actions"><button class="btn ghost" id="tstImpCancel">Anuluj</button><button class="btn" id="tstImpSave" style="background:#2E9E5B;" ${ready + readyD ? '' : 'disabled'}>✓ Zapisz ${[ready ? ready + ' ' + plPlural(ready, 'sesję', 'sesje', 'sesji') + ' CC' : '', readyD ? readyD + ' DynaMo' : ''].filter(Boolean).join(' + ') || 'wyniki'}</button></div>
     <div class="cv-small">Sesja tej samej osoby, rodzaju skoku i dnia, wgrana drugi raz, zastępuje poprzednią.</div>`;
-  $('tstImpBack').onclick = $('tstImpCancel').onclick = () => { tstPendingImport = null; renderTestsHome(); };
+  $('tstImpBack').onclick = $('tstImpCancel').onclick = () => { tstPendingImport = null; tstPendingDyn = []; if(tstImportFrom) tstOpenClientTests(tstImportFrom); else renderTestsHome(); };
+  document.querySelectorAll('.dyn-imp-client').forEach(s => s.onchange = () => { const x = tstPendingDyn[+s.dataset.i]; x.clientId = s.value || null; x.how = s.value ? 'wybrane ręcznie' : ''; tstRenderImport(errors); });
   document.querySelectorAll('.tst-imp-client').forEach(s => s.onchange = () => { const g = tstPendingImport[+s.dataset.i]; g.clientId = s.value || null; g.how = s.value ? 'wybrane ręcznie' : ''; if(s.value && tstSettings.modes[s.value]) g.mode = tstSettings.modes[s.value]; tstRenderImport(errors); });
   document.querySelectorAll('.tst-imp-mode').forEach(s => s.onchange = () => { tstPendingImport[+s.dataset.i].mode = s.value; tstRenderImport(errors); });
   $('tstImpSave').onclick = tstSaveImport;
 }
 async function tstSaveImport(){
-  const G = (tstPendingImport || []).filter(g => g.clientId && g.ok.length);
-  if(!G.length) return;
+  const G = (tstPendingImport || []).filter(g => g.clientId && g.ok.length), DY = (tstPendingDyn || []).filter(x => x.clientId);
+  if(!G.length && !DY.length) return;
   setStatus('Zapisuję testy…');
-  let saved = 0, lastClient = null, fail = null;
+  let saved = 0, lastClient = null, fail = null, savedD = 0;
+  for(const id of [...new Set(DY.map(x => x.clientId))]){ const its = DY.filter(x => x.clientId === id);
+    if(await dynSaveTo(id, its)){ savedD += its.length; its.forEach(x => { if(x.r.profile) tstSettings.names[x.r.profile] = id; }); } }
   for(const g of G){
     const comp = tstCompute(g.ok, g.mode);
     const row = { id: `t_${g.clientId}_${g.type}_${g.leg}_${g.day}`, client_id: g.clientId, test_type: g.type, leg: g.leg, test_day: g.day, mode: comp.mode,
@@ -12438,12 +12488,14 @@ async function tstSaveImport(){
     return;
   }
   await saveTestSettings();
-  tstPendingImport = null;
+  tstPendingImport = null; tstPendingDyn = [];
   await loadAllTests(true);
   updateTestsBadge();
-  toast(`Zapisano ${saved} ${plPlural(saved, 'sesję', 'sesje', 'sesji')} testów`);
-  const people = new Set(G.map(g => g.clientId));
-  if(people.size === 1) renderTestProfile(lastClient); else renderTestsHome();
+  toast([saved ? `Zapisano ${saved} ${plPlural(saved, 'sesję', 'sesje', 'sesji')} CC` : '', savedD ? `DynaMo: ${savedD} ${plPlural(savedD, 'test', 'testy', 'testów')}` : ''].filter(Boolean).join(' · ') || 'Nic nie zapisano');
+  const people = new Set(G.map(g => g.clientId).concat(DY.map(x => x.clientId)));
+  if(tstImportFrom) tstOpenClientTests(tstImportFrom);
+  else if(people.size === 1) (DY.length ? tstOpenClientTests([...people][0]) : renderTestProfile(lastClient)); else renderTestsHome();
+  tstImportFrom = null;
 }
 
 /* ---------- LISTA / PRZYPOMNIENIA ---------- */
@@ -12465,9 +12517,9 @@ async function renderTestsHome(){
   const recent = rows.slice().sort((a, b) => String(b.created_at || b.test_day).localeCompare(String(a.created_at || a.test_day))).slice(0, 12);
   const people = [...new Set(rows.map(r => r.client_id))].filter(id => clients.some(c => c.id === id));
   main.innerHTML = `<div class="section-title"><div class="bar"></div><h2>Testy</h2></div>
-    <div class="section-desc">CMJ i Squat Jump z platformy CC Athletics. Wgraj pliki .xlsx z eksportu (można wiele naraz). Wyniki widzisz tylko Ty.</div>
+    <div class="section-desc">CMJ i Squat Jump z CC Athletics (.xlsx) + siła z VALD DynaMo (.pdf). Wrzuć wszystkie pliki naraz. Wyniki widzisz tylko Ty.</div>
     ${testsTableMissing ? `<div class="tst-warn">🛠️ <b>Brakuje tabeli na testy w bazie.</b> Wklej polecenie z pliku <b>supabase-testy.html</b> w Supabase (SQL Editor) — jednorazowo.</div>` : ''}
-    <label class="tst-drop" id="tstDrop"><input type="file" id="tstFile" accept=".xlsx" multiple style="display:none;"><span class="ic">⬆️</span><span><b>Wgraj wyniki (.xlsx)</b><small>Przeciągnij pliki tutaj albo kliknij. Aplikacja sama rozpozna osobę, CMJ/SJ i dzień.</small></span></label>
+    <label class="tst-drop" id="tstDrop"><input type="file" id="tstFile" accept=".xlsx,.pdf" multiple style="display:none;"><span class="ic">⬆️</span><span><b>Wgraj wyniki (CC Athletics .xlsx / VALD DynaMo .pdf)</b><small>Przeciągnij pliki tutaj albo kliknij – można wszystkie naraz. Aplikacja sama rozpozna, co jest czym, osobę, test i dzień.</small></span></label>
     <div class="tst-grid2">
       <div class="tst-card"><h4>⏰ Czas na retest <span class="tst-n">${due.length}</span></h4>${due.map(x => `<div class="tst-it" data-p="${x.id}"><div><b>${escapeHtml(tstClientName(x.id))}</b><span>ostatni CMJ ${tstDayPl(x.d)}</span></div><span class="tst-pill warn">${Math.floor(x.days / 7)} tyg. temu</span></div>`).join('') || '<div class="cv-small">Nikt — wszystkie CMJ młodsze niż 6 tygodni.</div>'}</div>
       <div class="tst-card"><h4>🆕 Ostatnio wgrane</h4>${recent.map(r => `<div class="tst-it" data-p="${r.client_id}"><span class="tst-type ${r.test_type}">${String(r.test_type).toUpperCase()}</span><div><b>${escapeHtml(tstClientName(r.client_id))}</b><span>${tstDayPl(r.test_day)} · ${tstF(r.summary && r.summary.jh)} cm</span></div></div>`).join('') || '<div class="cv-small">Jeszcze nic nie wgrano.</div>'}</div>
@@ -12480,6 +12532,8 @@ async function renderTestsHome(){
   tstBindDrop();
   main.querySelectorAll('[data-p]').forEach(e => e.onclick = () => navigateTo(() => renderTestProfile(e.dataset.p)));
 }
+/* karta klienta → zakładka Testy (tam są i CC, i DynaMo) */
+function tstOpenClientTests(id){ navigateTo(async () => { trainerViewMode = 'clients'; selectedClientId = id; renderClientList(); clientView = 'info'; infoTab = 'tes'; await showClientView(); }); }
 function tstBindDrop(){
   const dz = $('tstDrop'), inp = $('tstFile'); if(!dz) return;
   inp.onchange = e => tstHandleFiles(e.target.files);
@@ -12561,7 +12615,7 @@ async function renderTestProfile(clientId){
   const head = `<span class="back-link" id="tstBack">← Wszystkie testy</span>
     <div class="tst-top"><div><b>${escapeHtml(c ? c.name : '?')}</b><span>Testy${lastCmjDay ? ` · ostatni CMJ ${tstDayPl(lastCmjDay)}` : ''}${A.SJ ? ` · SJ ${tstDayPl(A.SJ.day)}` : ''}</span></div>
       <div class="tst-top-r"><label class="cv-small">Uśrednianie: <select id="tstMode"><option value="">jak przy wgraniu</option>${Object.keys(TST_MODE_LABEL).map(k => `<option value="${k}" ${k === modeSel ? 'selected' : ''}>${TST_MODE_LABEL[k]}</option>`).join('')}</select></label>
-      <label class="btn ghost small" style="cursor:pointer;">⬆ Wgraj<input type="file" id="tstFile" accept=".xlsx" multiple style="display:none;"></label>${R ? '<button class="btn ghost small" id="tstPdf">📄 PDF dla klienta</button>' : ''}</div></div>`;
+      <label class="btn ghost small" style="cursor:pointer;">⬆ Wgraj<input type="file" id="tstFile" accept=".xlsx,.pdf" multiple style="display:none;"></label>${R ? '<button class="btn ghost small" id="tstPdf">📄 PDF dla klienta</button>' : ''}</div></div>`;
   if(!R){
     main.innerHTML = head + `<div class="empty-state">Brak testów CMJ obunóż dla tej osoby.${A.sjAll.length ? ' Są tylko SJ.' : ''} Wgraj pliki .xlsx z platformy.</div>`;
     tstBindProfile(clientId, null, A); return;
@@ -12643,7 +12697,7 @@ function tstClientCardHtml(clientId){
   if(!testsCache) return `<div class="cv-card" style="margin-bottom:12px;"><h4>🦘 Testy z platformy (CMJ / SJ)</h4><div class="cv-small">Ładowanie…</div></div>`;
   const A = tstAnalyze(clientId), R = tstBuildReadable(A);
   return `<div class="cv-card" style="margin-bottom:12px;"><h4>🦘 Testy z platformy (CMJ / SJ)</h4>
-    ${R ? `<div style="font-size:14px;font-weight:600;margin:4px 0;">${R.tone} ${escapeHtml(R.v1)}</div><div class="cv-small">${escapeHtml(R.v2)} · ostatni CMJ ${tstDayPl(A.L.day)}</div>` : '<div class="cv-small">Brak testów z platformy. Wgraj pliki .xlsx w zakładce 🧪 Testy.</div>'}
+    ${R ? `<div style="font-size:14px;font-weight:600;margin:4px 0;">${R.tone} ${escapeHtml(R.v1)}</div><div class="cv-small">${escapeHtml(R.v2)} · ostatni CMJ ${tstDayPl(A.L.day)}</div>` : '<div class="cv-small">Brak testów z platformy. Wgraj pliki przyciskiem w karcie DynaMo poniżej albo w 🧪 Testy.</div>'}
     <button class="btn ghost" id="cvOpenTests" style="margin-top:8px;">🧪 Otwórz profil testów →</button></div>`;
 }
 function tstBindClientCard(clientId){
@@ -13421,8 +13475,9 @@ const GRIP={BP:{a2:'neutral',a2t:'neutralnie, szeroko',b2:'nachwyt',b2t:'nachwyt
 const PNAME={BP:'ławka płaska',OHP:'nad głowę',SKOS:'skos dodatni',DIP:'poręcze'};
 const UNI=/jednonóż|jednorącz|bułgarski|wykroczny|Zakrok|step up|Wejścia|do boku|wstępowania/i;
 const PAR={A:{p:{Ak:[3,10,12],Int:[4,8,10]},s:{Ak:[4,6,8],Int:[5,4,6]},z:{Ak:[5,4,6],Int:[6,2,4]}},
-           B:{p:{Ak:[2,12,15],Int:[3,10,12]},s:{Ak:[3,10,12],Int:[4,8,10]},z:{Ak:[4,8,10],Int:[5,6,8]}},
-           C:{p:{Ak:[1,15,20],Int:[2,15,20]},s:{Ak:[2,12,15],Int:[3,12,15]},z:{Ak:[3,10,12],Int:[4,8,10]}}};
+           /* #26 (28.10): B i C – serie ze środka zakresu SCEC, zaokrąglone w górę (B 2–3/3–4/4–6 → 3/4/5; C 1–2/2–3/3–4 → 2/3/4) */
+           B:{p:{Ak:[3,12,15],Int:[3,10,12]},s:{Ak:[4,10,12],Int:[4,8,10]},z:{Ak:[5,8,10],Int:[5,6,8]}},
+           C:{p:{Ak:[2,15,20],Int:[2,15,20]},s:{Ak:[3,12,15],Int:[3,12,15]},z:{Ak:[4,10,12],Int:[4,8,10]}}};
 const MAXS={A:{p:4,s:6,z:8},B:{p:3,s:4,z:6},C:{p:2,s:3,z:4}};
 const STAZ={p:'początkujący (< 1 rok)',s:'średni (2–3 lata)',z:'zaawansowany (4+ lata)'};
 const STAZ_CTX={p:'nowicjusz',s:'średni',z:'zaawansowany'};
@@ -13474,7 +13529,8 @@ function genProfile(c, d){
   }
   return { name: c.name, sex: R.sex || null, staz: lv, stazKnown: !!lv, days: R.days ? Math.max(2, Math.min(4, R.days)) : null, physique, knee, shoulderWeak: shoulder,
     prio: Array.isArray(cx.prio) ? cx.prio.slice(0, 2) : [], hasCtx: !!(cx.text && cx.text.trim()), goals: R.goals, age: R.age, sport: R.sport || null,
-    tests: (typeof ctxTestsFor === 'function' && c.id) ? (ctxTestsFor(c.id) || {}).tests || null : null };
+    tests: (typeof ctxTestsFor === 'function' && c.id) ? (ctxTestsFor(c.id) || {}).tests || null : null,
+    dyn: (typeof window.dynSummary === 'function' && d) ? window.dynSummary(d) : null };
 }
 
 /* ---------- stan okna ---------- */
@@ -13685,7 +13741,7 @@ function applyPriority(days, why){
   return out;
 }
 function build(){
-  const why = []; POOLS = {}; USED = new Set(); PLAN_SKIPPED = []; CORE_I = 0; KEEP = {}; AVOID = new Set(); PREV = {};
+  const why = []; POOLS = {}; USED = new Set(); if(G.method === 'sila') G.pogoWu = {}; PLAN_SKIPPED = []; CORE_I = 0; KEEP = {}; AVOID = new Set(); PREV = {};
   const tt = G.method === 'sila' ? transType() : (G.prev && G.prev.stage === G.stage && G.repeatM ? 'repeat' : 'rotate');
   if(G.prevAny && G.prevAny !== G.prev && tt !== 'repeat') G.prevAny.days.forEach(d => d.rows.forEach(r => AVOID.add(r.name)));
   if(G.method !== 'sila'){
@@ -13718,7 +13774,10 @@ function build(){
 }
 function finishBuild(days, why, label, cyN, pr, sila){
   if(!sila) applyEdits(days);
+  if(!G.pogoWu) G.pogoWu = {};
+  applyTests(days, why, sila);
   days.forEach(d => { d.rows = d.rows.filter(r => !G.removed[r.key]); });
+  if(sila) applySetTypes(days, why);
   days.forEach((d, di) => seriesLabels(d, G.order[di], G.groups[di]));
   eccCap(days, why);
   days.forEach(d => d.rows.forEach(r => { const o = G.ov[r.key]; if(!o) return;
@@ -13726,11 +13785,89 @@ function finishBuild(days, why, label, cyN, pr, sila){
     if(o.tempo != null){ r.tempo = o.tempo; r.tempoWk = String(o.tempo).includes('/') ? String(o.tempo).split('/') : null; } if(o.rest != null && o.rest !== '') r.rest = o.rest; if(o.wk) r.wk = o.wk.slice(); r.edited = true; }));
   const nMan = Object.keys(G.ov).length + Object.keys(G.repl).length + Object.keys(G.removed).length + Object.values(G.extra).reduce((a, x) => a + x.length, 0);
   if(nMan) why.push(`Twoje zmiany w podglądzie: ${nMan} (parametry / zamiany / usunięcia / dodane ćwiczenia)`);
-  if(!sila){ applyTests(days, why); plyoLimit(days, why); }
+  if(!sila) plyoLimit(days, why);
   if(sila && G.knee) why.push('Ból kolana → przysiad do skrzyni, jednonóż z małym zgięciem, TKE');
-  if(sila && G.shoulderWeak) why.push('Słaby bark → wiosło zamiast podciągania, bark w każdym treningu góry');
+  if(sila && G.shoulderWeak && !G.shFromDyn) why.push('Słaby bark → wiosło zamiast podciągania, bark w każdym treningu góry');
   const missing = []; days.forEach(d => d.rows.forEach(r => { if(r.isNew) missing.push(r.name); r.prev = sila && G.prev ? PREV[r.key] || null : undefined; }));
   return { days, why, label, cycle: cyN, missing: [...new Set(missing)], skipped: [...new Set(PLAN_SKIPPED)], tally: tally(days), pr };
+}
+
+/* ---------- RODZAJE SERII (#26, 28.10) – tylko trening siłowy ----------
+   Wg notatek SCEC: Ak → rosnące / powracające / drop / piramidowe; Int → malejące / stopniowe / Paler / falowe / klastry.
+   Zasady Bartosza: max 1 metoda na dzień, tylko seria A albo B, nigdy plyometria ani ćwiczenia naprawcze/rehab.
+   Ile: Ak1 – 1 dzień w tygodniu, Int1 – 2 dni, od Ak2 (i w kolejnych cyklach) – może każdy dzień.
+   Poziom: początkujący max 2, średni max 3, zaawansowany max 4; trudniejsze odblokowują się z blokami. */
+/* Źródła (notatki Bartosza): SC-085 malejące → intensyfikacja (ostatnia seria najcięższa), rosnące i powracające → akumulacja
+   (ostatnia seria najbliżej hipertrofii); SC-088 drop → akumulacja; MT-30 tabela hipertrofii (70–76%) + fazy: Ak = proste, drop,
+   Int = proste, klastry, malejące, falowe; SC-086 stopniowe malejące; SC-087 Poler malejący 5,5,5/3,3, falowe najlepsze dla zaawansowanych;
+   SC-088 klastry – zaawansowani, 4–6 RM, (1,1,1,1,1) 10 s. Piramidowe pominięte (SC-086: faza zależy od ostatniej serii – do decyzji). */
+const AK_TAB = {   // MT-30: tabela hipertrofii – docelowe powtórzenia → wzorce
+  12: { ros: '10-12-15', drop: '12/10/8' },
+  11: { ros: '10-11-12', pow: '12-11-9-12', stro: '10-10-12-12', drop: '12/11/10' },
+  10: { ros: '11-12-13-14', pow: '12-10-8-6-15', stro: '9-9-11-11', drop: '10/8/6' },
+  9: { ros: '6-8-10-12', pow: '12-10-8-6-15', stro: '9-9-11-11', drop: '8/6/4' }
+};
+const akPat = (r, k) => { const t = Math.max(9, Math.min(12, Math.round((r.lo + r.hi) / 2))); for(let x = t; x >= 9; x--) if(AK_TAB[x][k]) return AK_TAB[x][k]; for(let x = t; x <= 12; x++) if(AK_TAB[x][k]) return AK_TAB[x][k]; return null; };
+const nSets = p => String(p).split(/[-]/).length;
+const SET_TYPES = [
+  // akumulacja – tylko gdy ćwiczenie ma zakres hipertrofii (śr. ≥ 8 powt.)
+  { id: 'ros', ph: 'Ak', lv: 2, roles: 'AB', nm: 'seria rosnąca', f: r => { const p = akPat(r, 'ros'); return { sets: nSets(p), reps: p, note: 'Seria rosnąca: z każdą serią więcej powtórzeń, ciężar w dół – ostatnia seria najbliżej hipertrofii' }; } },
+  { id: 'pow', ph: 'Ak', lv: 3, roles: 'B', nm: 'seria powracająca', f: r => { const p = akPat(r, 'pow'); return { sets: nSets(p), reps: p, note: 'Seria powracająca: ciężar rośnie, ostatnia seria lżej na więcej powtórzeń' }; } },
+  { id: 'stro', ph: 'Ak', lv: 3, roles: 'B', nm: 'seria stopniowa rosnąca', f: r => { const p = akPat(r, 'stro'); return { sets: nSets(p), reps: p, note: 'Stopniowa rosnąca: po 2 serie tym samym ciężarem, potem lżej na więcej powtórzeń' }; } },
+  { id: 'drop', ph: 'Ak', lv: 3, roles: 'B', nm: 'drop set', f: r => { const p = akPat(r, 'drop'); return { sets: Math.max(2, r.sets - 1), reps: p, note: `Drop set: ${p.split('/').join(' → ')} powt. bez przerwy, za każdym razem ciężar −10–15% = 1 seria` }; } },
+  // intensyfikacja
+  { id: 'mal', ph: 'Int', lv: 2, roles: 'AB', nm: 'seria malejąca', f: r => { const p = [3, 2, 1, 0].map(k => r.lo + k).join('-'); return { sets: 4, reps: p, note: 'Seria malejąca: z każdą serią 1 powtórzenie mniej, ciężar +2–3% – ostatnia seria najcięższa' }; } },
+  { id: 'stop', ph: 'Int', lv: 3, roles: 'A', nm: 'seria stopniowa malejąca', f: () => ({ sets: 6, reps: '8-8-6-6-4-4', note: 'Stopniowa malejąca: para serii tym samym ciężarem, potem +3–5%; nigdy nie schodzimy z ciężarem' }) },
+  { id: 'paler', ph: 'Int', lv: 3, roles: 'A', nm: 'Poler malejący', f: () => ({ sets: 5, reps: '5-5-5-3-3', note: 'Poler malejący: 3 serie po 5 jednym ciężarem, potem 2 serie po 3 cięższe' }) },
+  { id: 'stop2', ph: 'Int', lv: 4, roles: 'A', nm: 'seria stopniowa malejąca (ciężka)', f: () => ({ sets: 6, reps: '5-5-3-3-1-1', note: 'Stopniowa malejąca: para serii tym samym ciężarem, potem +3–5%; nigdy nie schodzimy z ciężarem' }) },
+  { id: 'fal', ph: 'Int', lv: 4, roles: 'A', nm: 'seria falowa', f: r => { const p = r.lo <= 4 ? '3-2-1-3-2-1' : '8-6-4-8-6-4'; return { sets: 6, reps: p, note: 'Seria falowa: 2 fale, druga fala cięższa od pierwszej (pierwsza potencjuje drugą)' }; } },
+  { id: 'klas', ph: 'Int', lv: 4, roles: 'A', nm: 'klaster', f: () => ({ sets: 3, reps: '1+1+1+1+1', note: 'Klaster: ciężar na 4–6 RM, 5 × 1 powt. z 10 s przerwy = 1 seria, ten sam ciężar w całości' }) },
+  /* #27 (28.10) – dodane z badań / praktyki: fale 7-5-3 i 5-3-1, kontrast 6/1, klaster 4 × 2/2/2 i 10 × 3, myo-reps */
+  { id: 'fal7', ph: 'Int', lv: 3, roles: 'A', nm: 'seria falowa 7-5-3', f: () => ({ sets: 6, reps: '7-5-3-7-5-3', note: 'Seria falowa: 2 fale 7-5-3 (~70/80/90%), druga fala cięższa o 2,5–5%' }) },
+  { id: 'fal5', ph: 'Int', lv: 4, roles: 'A', nm: 'seria falowa 5-3-1', f: () => ({ sets: 6, reps: '5-3-1-5-3-1', note: 'Seria falowa: 2 fale 5-3-1 (~80/90/97%), druga fala cięższa o 2,5–5%' }) },
+  { id: 'kon', ph: 'Int', lv: 4, roles: 'A', nm: 'kontrast 6/1', f: () => ({ sets: 6, reps: '6-1-6-1-6-1', note: 'Kontrast 6/1: seria na 6 powt. (~80%), potem pojedyncze powtórzenie bardzo ciężko (>95%). Co rundę +2,5–5%' }) },
+  { id: 'klas2', ph: 'Int', lv: 3, roles: 'A', nm: 'klaster 2/2/2', f: () => ({ sets: 4, reps: '2+2+2', note: 'Klaster: 2 powt. → 15 s przerwy → 2 → 15 s → 2 = 1 seria, ten sam ciężar' }) },
+  { id: 'kl10', ph: 'Int', lv: 3, roles: 'A', nm: 'klaster 10 × 3', f: () => ({ sets: 10, reps: '3', rest: 20, note: 'Klaster 10 × 3: 10 serii po 3 powt., tylko 20 s przerwy między seriami, ten sam ciężar' }) },
+  { id: 'myo', ph: 'Ak', lv: 3, roles: 'B', nm: 'myo-reps', f: () => ({ sets: 2, reps: '12+4+4+4', note: 'Myo-reps: seria na 12 blisko upadku → 20–30 s → 4 powt. → 20–30 s → 4 → 20–30 s → 4, ten sam ciężar' }) }
+];
+/* id w generatorze → rodzaj serii w aplikacji (serie.js) */
+const ST_APP = { stop2: 'stop', fal7: 'fal', fal5: 'fal', klas2: 'klas' };
+/* progresja w bloku: początkujący/średni – rosną powtórzenia (+1/tydz.), zaawansowani – rośnie ciężar; klastry, myo, kontrast, 10×3 – zawsze ciężar */
+function stWeeks(t, m){
+  const fixed = /\+/.test(m.reps) || ['kon', 'kl10'].includes(t.id);
+  const pr = (G.staz === 'z' || fixed) ? 'kg' : 'reps';
+  const wk = [0, 1, 2].map(w => pr === 'kg' ? m.reps : m.reps.replace(/\d+/g, x => String(+x + w)));
+  return { pr, wk };
+}
+const ST_NOFIT = /skok|wyskok|pogo|rzut|zarzut|rwani|podrzut|swing|zeskok|drop jump|plyo|sprint|bieg|skip|izometr|pauz|opuszczanie|wydłużona|2:1|TKE|rotacj|face pull|trap 3|kopenhask|przywodz|odwodz|nordyck|VMO|Peterson|Poliquin|wspięci|ściskanie|martwy robak|deska|plank|pallof/i;
+function applySetTypes(days, why){
+  const ph = G.phase.startsWith('Ak') ? 'Ak' : 'Int', idx = { Ak1: 0, Int1: 1, Ak2: 2, Int2: 3 }[G.phase] || 0;
+  const cy = Math.min(4, G.prev ? cycleNo() : 1);
+  const cap = Math.min({ p: 2, s: 3, z: 4 }[G.staz] || 2, cy >= 2 ? 4 : [2, 3, 4, 4][idx]);
+  const nDays = Math.min(days.length, cy >= 2 ? days.length : [1, 2, days.length, days.length][idx]);
+  const pool = SET_TYPES.filter(t => t.ph === ph && t.lv <= cap);
+  if(!pool.length) return;
+  const top = pool.filter(t => t.lv >= cap - 1);   // im dalej w blokach, tym trudniejsze
+  const order = shuffled(days.map((d, i) => i), 'stDays');
+  const done = [];
+  order.slice(0, nDays).forEach(di => {
+    const d = days[di];
+    /* #27b (28.10): rodzaj serii tylko w ćwiczeniu, które klient już robił (jest historia ciężarów) */
+    const hist = r => { try{ return !!(GC && GC.clientId && progSessionsBefore(GC.clientId, r.name, G.start).length); }catch(e){ return false; } };
+    const ok = r => (r.role === 'A' || r.role === 'B') && hist(r) && !r.plyo && !r.split && r.tempo !== 'izo' && !/^P/.test(r.key || '') && !ST_NOFIT.test(r.name) && !(G.ov[r.key] && (G.ov[r.key].sets || G.ov[r.key].wk));
+    const cands = d.rows.filter(ok); if(!cands.length) return;
+    const types = shuffled(top.map((t, i) => i), 'stT' + di).map(i => top[i]);
+    for(const t of types){
+      const fit = cands.filter(r => t.roles.includes(r.role) && (t.ph === 'Int' || (r.lo + r.hi) / 2 >= 8)), rows = shuffled(fit.map((r, i) => i), 'stR' + di + t.id).map(i => fit[i]).sort((a, b) => (a.role === 'A' ? 0 : 1) - (b.role === 'A' ? 0 : 1));
+      const r = rows[0]; if(!r) continue;
+      const m = t.f(r);
+      const sw = stWeeks(t, m);
+      r.sets = m.sets; r.setsWk = null; r.wk = sw.wk; r.mnote = [m.note, r.mnote].filter(Boolean).join(' · '); r.setType = t.id; r.setPr = sw.pr; if(m.rest) r.rest = m.rest;
+      done.push(`dzień ${di + 1}: ${t.nm} ${sw.wk[0]}${sw.pr === 'reps' ? ' → ' + sw.wk[2] + ' (rosną powt.)' : ' (rośnie ciężar)'} – ${r.name}`); break;
+    }
+  });
+  if(!done.length && order.length) why.push('Rodzaje serii: brak – żadne ćwiczenie A/B w tym planie nie ma jeszcze historii ciężarów u tego klienta');
+  if(done.length) why.push(`Rodzaje serii (${ph === 'Ak' ? 'akumulacja' : 'intensyfikacja'}, poziom ≤ ${cap}, max 1 na dzień, tylko A/B): ${done.join('; ')}`);
 }
 
 /* ---------- METODY (#24): Trójfazowa / Blok tylko ekscentryka / Blok tylko izometria (28.10) ----------
@@ -13948,21 +14085,64 @@ function plyoLimit(days, why){
   return total;
 }
 /* testy CMJ/SJ: asymetria ≥15% → +1 seria słabsza noga w ćwiczeniach jednonóż; niskie EUR → dodatkowy skok reaktywny */
-function applyTests(days, why){
-  const T = G.tests; if(!T) return;
-  if(T.asym != null && T.asym >= 15 && T.weak){
-    let n = 0; days.forEach(d => d.rows.forEach(r => { if(UNI.test(r.name) && r.role !== 'A'){ r.split = T.weak; n++; } }));
-    if(n) why.push(`CMJ: asymetria ${T.asym}% (słabsza ${T.weak}) → +1 seria na słabszą nogę w ${n} ćw. jednonóż`);
+/* testy: CC Athletics (CMJ/SJ) + VALD DynaMo (siła maks.) → zmiany w planie.
+   Progi asymetrii jak w CMJ: ≥10% obserwacja, ≥15% priorytet (+1 seria na słabszą stronę). */
+const DYN_G = { kneeExt: 'quad', kneeFlex: 'ham', hipExt: 'glute', hipAbd: 'glute', hipAdd: 'add', ankPF: 'calf' };
+const DYN_PL = { kneeExt: 'wyprost kolana', kneeFlex: 'zgięcie kolana', hipExt: 'wyprost biodra', hipAbd: 'odwodzenie biodra', hipAdd: 'przywodzenie biodra', ankPF: 'zgięcie podeszwowe' };
+const isLegDay = d => !/^Góra/.test(d.name);
+function addRowC(d, list, key, why){
+  if(d.rows.length >= 11) return null;
+  const ex = pick(list, key, why); const m = genMuscles(ex.name);
+  const row = R('C', 'C', Object.keys(m).some(g => m[g] >= 1 && LEGG.has(g)), ex);
+  const last = d.rows.map(r => r.lab[0]).lastIndexOf('C'), lastB = d.rows.map(r => r.lab[0]).lastIndexOf('B');
+  d.rows.splice((last >= 0 ? last : lastB) + 1, 0, row); relabel(d); return row;
+}
+function applyTests(days, why, sila){
+  const T = G.tests, D = GC.dyn;
+  const splitG = (g, side) => { let k = 0; days.forEach(d => d.rows.forEach(r => { if(r.role !== 'A' && UNI.test(r.name) && (genMuscles(r.name)[g] || 0) >= 1 && !r.split){ r.split = side; k++; } })); return k; };
+  const hasG = (d, g) => d.rows.some(r => (genMuscles(r.name)[g] || 0) >= 1);
+  const covered = new Set();
+  // 1) DynaMo: asymetria siły maks. ≥15% (łydka ≥10%) → +1 seria na słabszą stronę w ćw. jednonóż na tę grupę
+  if(D) Object.entries(DYN_G).forEach(([role, g]) => { const x = D.roles[role]; if(!x || x.a == null) return;
+    const lim = role === 'ankPF' ? 10 : 15; if(x.a < lim) return;
+    const k = splitG(g, x.weak); covered.add(x.weak + g);
+    why.push(`DynaMo: ${DYN_PL[role]} ${x.a}% słabsza ${x.weak} → +1 seria ${x.weak} w ${k} ćw. jednonóż na ${MG[g].toLowerCase()}${k ? '' : ' (brak ćw. jednonóż w planie – dodaj ręcznie)'}`); });
+  // 2) CMJ ≥15%: jeśli DynaMo pokazuje źródło (ta sama strona ≥10%) – tylko te grupy; inaczej wszystkie ćw. jednonóż
+  if(T && T.asym != null && T.asym >= 15 && T.weak){
+    const src = D ? Object.entries({ kneeExt: 'quad', hipExt: 'glute', kneeFlex: 'ham' }).filter(([role]) => D.roles[role] && D.roles[role].a >= 10 && D.roles[role].weak === T.weak).map(([, g]) => g) : [];
+    if(src.length){ let k = 0; src.forEach(g => { if(!covered.has(T.weak + g)) k += splitG(g, T.weak); });
+      why.push(`CMJ: asymetria ${T.asym}% (słabsza ${T.weak}); DynaMo pokazuje źródło: ${src.map(g => MG[g].toLowerCase()).join(', ')} → seria dokładana tylko tam${k ? ` (+${k} ćw.)` : ''}`); }
+    else { let n = 0; days.forEach(d => d.rows.forEach(r => { if(UNI.test(r.name) && r.role !== 'A' && !r.split){ r.split = T.weak; n++; } }));
+      if(n) why.push(`CMJ: asymetria ${T.asym}% (słabsza ${T.weak}) → +1 seria na słabszą nogę w ${n} ćw. jednonóż${D ? '' : ' (bez DynaMo nie wiadomo, która grupa – wgraj test kolana/biodra)'}`); }
   }
-  if(T.eur != null && T.eur < 1.1){
+  // 3) proporcje z DynaMo
+  if(D && D.ratios){
+    const R0 = D.ratios;
+    if(R0.addAbd != null && R0.addAbd < 0.8){ let k = 0; days.filter(isLegDay).forEach((d, i) => { if(k < 3 && !hasG(d, 'add') && addRowC(d, P.add, 'dynAdd' + i, `DynaMo: ADD:ABD ${R0.addAbd.toFixed(2).replace('.', ',')} → przywodziciele (kopenhaskie)`)) k++; else if(hasG(d, 'add')) k++; });
+      why.push(`DynaMo: ADD:ABD ${R0.addAbd.toFixed(2).replace('.', ',')} (< 0,8) → przywodziciele/kopenhaskie w ${Math.min(3, k)} dniach w tygodniu`); }
+    if(R0.hq != null && R0.hq < 0.45){ let k = 0; days.filter(isLegDay).forEach((d, i) => { if(!hasG(d, 'ham') && addRowC(d, P.ham, 'dynHam' + i, `DynaMo: H:Q ${R0.hq.toFixed(2).replace('.', ',')} → tył uda w każdym dniu nóg`)) k++; });
+      why.push(`DynaMo: H:Q ${R0.hq.toFixed(2).replace('.', ',')} (< 0,45) → tył uda w każdym dniu nóg${k ? ` (dodano w ${k})` : ''}`); }
+    if(R0.erir != null && R0.erir < 0.75){
+      if(!sila){ let k = 0; days.forEach((d, i) => { if(d.rows.some(r => isUpper(r)) && !hasG(d, 'scap') && addRowC(d, P.shoulder, 'dynSh' + i, `DynaMo: ER:IR ${R0.erir.toFixed(2).replace('.', ',')} → rotatory w każdym dniu z górą`)) k++; }); }
+      why.push(`DynaMo: ER:IR barku ${R0.erir.toFixed(2).replace('.', ',')} (< 0,75) → słaby bark: ${sila ? 'wiosło zamiast podciągania, bark w każdym treningu góry' : 'rotatory / łopatka w każdym dniu z górą'}`); }
+  }
+  // 4) EUR (tylko metody motoryczne)
+  if(!sila && T && T.eur != null && T.eur < 1.1){
     const d = days.find(x => x.type === 'con' || x.type === 'isocon');
     if(d && !d.eurWu){
-      // dodatkowy skok reaktywny jako pierwsze ćwiczenie serii B (świeżo, zaraz po serii A)
       const ex = pick(['Depth jump - 20cm', 'Skok w dal - jednonóż - na stopie - reaktywny', 'Zeskoki ze skrzyni z wyskokiem - Box 30 cm'], 'eurX', 'Niskie EUR');
       const di = days.indexOf(d); (G.pogoWu[di] = G.pogoWu[di] || []).push(ex.name); d.eurWu = ex.name;
       why.push(`CMJ/SJ: EUR ${T.eur} (niskie) → dodatkowy skok reaktywny w rozgrzewce dnia koncentryki`);
     }
   }
+}
+function testsInfo(){
+  const T = GC.tests, D = GC.dyn, p = [];
+  if(T) p.push(`CMJ: asymetria ${T.asym != null ? T.asym + '%' + (T.weak ? ' (' + T.weak + ')' : '') : '–'} · EUR ${T.eur != null ? String(T.eur).replace('.', ',') : '–'}`);
+  if(D){ const a = Object.entries(D.roles).filter(([r, x]) => DYN_PL[r] && x.a >= 10).map(([r, x]) => `${DYN_PL[r]} ${x.a}% ${x.weak}`);
+    const q = []; if(D.ratios.hq != null) q.push('H:Q ' + D.ratios.hq.toFixed(2).replace('.', ',')); if(D.ratios.addAbd != null) q.push('ADD:ABD ' + D.ratios.addAbd.toFixed(2).replace('.', ',')); if(D.ratios.erir != null) q.push('ER:IR ' + D.ratios.erir.toFixed(2).replace('.', ','));
+    p.push(`DynaMo (${D.last.slice(8, 10)}.${D.last.slice(5, 7)}): ${a.length ? a.join(', ') : 'asymetrie < 10%'}${q.length ? ' · ' + q.join(' · ') : ''}`); }
+  return p.length ? p.join('<br>') + '<br>→ plan uwzględnia' : 'Brak testów (CMJ z ostatnich 8 tyg. / DynaMo) – plan bez korekt z testów.';
 }
 
 /* ---------- powtórzenia na tydzień ---------- */
@@ -13983,6 +14163,8 @@ async function genRenderCard(clientId){
   if(pf.physique && pf.prio.length) chips.push(`<span class="gen-chip">Priorytet: ${pf.prio.map(g => MG[g]).join(', ')}</span>`);
   chips.push(`<span class="gen-chip">${pf.staz ? 'Staż: ' + STAZ[pf.staz] : 'Staż: nie wiem'}</span>`);
   chips.push(`<span class="gen-chip">${pf.days ? pf.days + '×/tydz.' : 'treningi/tydz.: nie wiem'}</span>`);
+  if(pf.tests && pf.tests.asym != null) chips.push(`<span class="gen-chip">CMJ: asym. ${pf.tests.asym}%${pf.tests.weak ? ' ' + pf.tests.weak : ''}</span>`);
+  if(pf.dyn) chips.push(`<span class="gen-chip">DynaMo ✓ ${Object.keys(pf.dyn.roles).length} ${Object.keys(pf.dyn.roles).length === 1 ? 'test' : 'testy'}</span>`);
   if(pf.knee) chips.push('<span class="gen-chip warn">🩹 kolano</span>');
   if(pf.shoulderWeak) chips.push('<span class="gen-chip warn">🩹 bark</span>');
   const nextOf = b => (b.method || 'sila') === 'sila' ? (b.attend != null && b.attend < 66 ? b.phase : NEXT[b.phase]) : `${MNAME[b.method]} ${b.attend != null && b.attend < 66 ? b.stage : (b.stage % 3) + 1}`;
@@ -14002,6 +14184,7 @@ async function genOpen(clientId){
   const c = clients.find(x => x.id === clientId); if(!c) return;
   await ensurePlanLoaded(clientId);
   const d = await loadClientNotes(clientId);
+  try{ if(typeof loadAllTests === 'function' && typeof testsCache !== 'undefined' && !testsCache) await loadAllTests(); }catch(e){}
   GC = genProfile(c, d); GC.clientId = clientId; GC.d = d;
   const bl = genBlocks(clientId), prev = bl[bl.length - 1] || null;
   G = { step: 1, phase: 'Ak1', days: GC.days || 3, staz: GC.staz || 's', grip: 'auto', addMissing: true, swaps: {}, ov: {}, wuP: {}, order: {}, groups: {}, repl: {}, removed: {}, extra: {}, wu: {}, xn: 0, pick: null, prev: null, prio: GC.physique ? GC.prio.slice() : [],
@@ -14019,6 +14202,7 @@ async function genOpen(clientId){
     G.start = nextMonday(dAdd(prev.last, 1));
   } else G.start = nextMonday(todayKey());
   G.blocks = bl; G.prevAny = prev; G.silaDays = G.days; G.tests = GC.tests || null;
+  if(GC.dyn && GC.dyn.shoulderWeak){ G.shoulderWeak = true; G.shFromDyn = true; }
   setMethod(prev ? (prev.method || 'sila') : (GC.sport ? 'tri' : 'sila'), true);
   genRender();
 }
@@ -14093,7 +14277,7 @@ function genRender(){
       <div class="gen-fld"><span class="gen-lbl">Treningi w tygodniu</span>${seg('days', [[2, '2×'], [3, '3×']], G.days)}<span class="gen-hint">${G.method === 'tri' ? (G.days === 2 ? 'Dzień 1 ekscentryka, dzień 2 izometria + koncentryka.' : 'Ekscentryka / izometria / koncentryka.') : ''}</span></div>
       <div class="gen-fld"><span class="gen-lbl">Staż</span>${seg('staz', [['p', '< 1 rok'], ['s', '2–3 lata'], ['z', '4+ lata']], G.staz)}<span class="gen-hint">Limit plyometrii: ${PLYO_MAX[G.staz]} kontaktów/tydz.</span></div>
       <div class="gen-fld"><span class="gen-lbl">Start (poniedziałek)</span><input type="date" id="genStart" value="${G.start}" class="pill-input" style="width:auto;"><span class="gen-hint">Dni: ${seg('dows', DOWN.map((x, i) => [i, x]), '')}</span><span class="gen-hint">Zaznacz ${G.days} ${plPlural(G.days, 'dzień', 'dni', 'dni')} (${G.dows.length}/${G.days}).</span></div>
-      <div class="gen-fld"><span class="gen-lbl">Testy CMJ/SJ</span><span class="gen-hint">${GC.tests ? `asymetria ${GC.tests.asym != null ? GC.tests.asym + '%' + (GC.tests.weak ? ' (' + GC.tests.weak + ')' : '') : '–'} · EUR ${GC.tests.eur != null ? GC.tests.eur : '–'} → plan uwzględnia` : 'Brak testów z ostatnich 8 tyg. – plan bez korekt.'}</span><label class="gen-hint"><input type="checkbox" id="genWu" ${G.warmup ? 'checked' : ''}> dodaj „Rozgrzewka - całość”</label></div>
+      <div class="gen-fld"><span class="gen-lbl">Testy (CC Athletics + DynaMo)</span><span class="gen-hint">${testsInfo()}</span><label class="gen-hint"><input type="checkbox" id="genWu" ${G.warmup ? 'checked' : ''}> dodaj „Rozgrzewka - całość”</label></div>
       </div>
       <div class="gen-box"><b>Co weźmie pod uwagę generator</b>${plan.why.map(w => `<span>• ${escapeHtml(w)}</span>`).join('')}</div>`;
     } else {
@@ -14107,7 +14291,8 @@ function genRender(){
       <div class="gen-fld"><span class="gen-lbl">Staż</span>${seg('staz', [['p', '< 1 rok'], ['s', '2–3 lata'], ['z', '4+ lata']], G.staz)}<span class="gen-hint">${GC.stazKnown ? 'Z kontekstu.' : '⚠ Nie ma w kontekście – sprawdź.'}</span></div>
       <div class="gen-fld"><span class="gen-lbl">Start (poniedziałek)</span><input type="date" id="genStart" value="${G.start}" class="pill-input" style="width:auto;"><span class="gen-hint">Dni: ${seg('dows', DOWN.map((x, i) => [i, x]), '')}</span><span class="gen-hint">Zaznacz ${G.days} ${plPlural(G.days, 'dzień', 'dni', 'dni')} (${G.dows.length}/${G.days}).</span></div>
       ${GC.physique ? `<div class="gen-fld wide"><span class="gen-lbl">Priorytet mięśniowy (z kontekstu · max 2)</span><div class="gen-seg" id="genPrio">${MG_PRIO.map(k => `<button type="button" class="${G.prio.includes(k) ? 'on' : ''}" data-g="${k}">${MG[k]}</button>`).join('')}</div><span class="gen-hint">Cel sylwetkowy → dokładam serie na wybrane grupy (cel ${TGT[G.staz].join('–')} serii/tydz.).</span></div>` : '<div class="gen-fld wide"><span class="gen-hint">Priorytet mięśniowy: nieaktywny – w kontekście nie ma celu sylwetkowego (sylwetka / masa / redukcja).</span></div>'}
-      <div class="gen-fld"><span class="gen-lbl">Ograniczenia</span><label class="gen-hint"><input type="checkbox" id="genKnee" ${G.knee ? 'checked' : ''}> ból kolana</label><label class="gen-hint"><input type="checkbox" id="genSh" ${G.shoulderWeak ? 'checked' : ''}> słaby bark / Trap 3</label></div>
+      <div class="gen-fld"><span class="gen-lbl">Ograniczenia</span><label class="gen-hint"><input type="checkbox" id="genKnee" ${G.knee ? 'checked' : ''}> ból kolana</label><label class="gen-hint"><input type="checkbox" id="genSh" ${G.shoulderWeak ? 'checked' : ''}> słaby bark / Trap 3${G.shFromDyn ? ' (z DynaMo: ER:IR)' : ''}</label></div>
+      <div class="gen-fld wide"><span class="gen-lbl">Testy (CC Athletics + DynaMo)</span><span class="gen-hint">${testsInfo()}</span></div>
       <div class="gen-fld"><span class="gen-lbl">Chwyty i rozgrzewka</span><label class="gen-hint"><input type="checkbox" id="genGrip" ${G.grip === 'auto' ? 'checked' : ''}> dobieraj chwyty automatycznie</label><label class="gen-hint"><input type="checkbox" id="genWu" ${G.warmup ? 'checked' : ''}> dodaj „Rozgrzewka - całość”</label></div>
     </div>
     <div class="gen-box"><b>Co weźmie pod uwagę generator</b>${plan.why.map(w => `<span>• ${escapeHtml(w)}</span>`).join('')}</div>`;
@@ -14291,6 +14476,7 @@ async function genInsert(plan){
         note: [r.grip && G.grip === 'auto' ? 'Chwyt: ' + r.grip : '', r.mnote || '', !/^[0-9X\/-]+$/i.test(String(r.tempo)) && r.tempo !== 'izo' ? String(r.tempo) : ''].filter(Boolean).join(' · '),
         splitLR: !!r.split, setsLeft: r.split ? String((r.setsWk ? r.setsWk[s.w] : r.sets) + (r.split === 'L' ? 1 : 0)) : '', setsRight: r.split ? String((r.setsWk ? r.setsWk[s.w] : r.sets) + (r.split === 'P' ? 1 : 0)) : '',
         genKgPct: r.mnote && r.mnote.includes('80–85%') ? 0.82 : undefined, noWeight: /^Napieranie na piny/i.test(r.name) || undefined,
+        setType: r.setType ? { id: ST_APP[r.setType] || r.setType, pr: r.setPr || 'kg' } : undefined,
         gk: r.key, glo: r.lo, ghi: r.hi, grole: r.role, glegs: !!r.legs, gsets: r.sets, gwhy: r.why })); });
     const bname = G.method === 'sila' ? G.phase : `${MNAME[G.method]} ${G.stage}`;
     const day = { title: bname, subtitle: 'Dzień ' + (s.i + 1) + (G.method === 'tri' ? ' · ' + d.name.toLowerCase() : ''), exercises: exs,
@@ -14361,6 +14547,399 @@ window.genMgCell = function(td, ex){
 window.genOpen = genOpen;
 window.GEN_TEST = { genBlocks, genProfile, build: () => build(), get G(){ return G; } };
 })();
+</script>
+<script>
+/* ===== VALD DYNAMO – import raportów PDF z VALD Hub (#25) =====
+   Czytane lokalnie w przeglądarce (pdf.js), nic nie jest wysyłane. Wyniki w informacjach o kliencie (data.dynamo).
+   Nazwy testów rozpoznawane po słowach kluczowych – nowy test z DynaMo (np. biodro, bark, IMTP) złapie się sam;
+   nieznany test też się zapisze i pokaże, tylko nie wpływa na plan. */
+(function(){
+const st = document.createElement('style'); st.textContent = `
+ .dyn-tests{display:flex;flex-direction:column;gap:12px;margin-top:10px}
+ .dyn-t{border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+ .dyn-th{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}.dyn-th b{font-size:15px}.dyn-th .s{margin-left:auto}
+ .dyn-chart{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;align-items:end}
+ .dyn-bars{display:flex;gap:5px;align-items:flex-end;height:110px;border-bottom:1px solid var(--line);padding:16px 8px 0}
+ .dyn-b{flex:1;max-width:38px;border-radius:4px 4px 0 0;position:relative;min-height:2px}.dyn-b span{position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:11px;white-space:nowrap}
+ .dyn-bL{background:#3E86C6}.dyn-bR{background:#E8904A}
+ .dyn-d{font-size:12px;text-align:center}
+ .dyn-pill{display:inline-block;font-size:11.5px;font-weight:600;padding:1px 8px;border-radius:10px;white-space:nowrap}
+ .dyn-ok{background:#E1F1E6;color:#2E7D4F}.dyn-w{background:#F7ECD2;color:#8A5E08}.dyn-bad{background:#F8E1DA;color:#B4472E}.dyn-i{background:#E2ECF5;color:#356C9C}
+ .dyn-tab{width:100%;border-collapse:collapse;font-size:12.5px}.dyn-tab th,.dyn-tab td{padding:5px 7px;border-top:1px solid var(--line);text-align:left;white-space:nowrap}
+ .dyn-ratios{display:flex;gap:8px;flex-wrap:wrap}.dyn-ratio{border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-size:12.5px}
+`; document.head.appendChild(st); })();
+
+(function(){
+const DYN_METRICS = { 'Max Force': 'maxF', 'Average Force': 'avgF', 'Impulse': 'imp', 'Average Impulse': 'avgImp', 'Max RFD': 'maxRfd', 'Average RFD': 'avgRfd', 'Min time to peak force': 'minTtp', 'Average time to peak force': 'avgTtp' };
+const DYN_MLAB = { maxF: 'Siła maks. [N]', avgF: 'Siła średnia [N]', imp: 'Impuls [N·s]', avgImp: 'Impuls średni [N·s]', maxRfd: 'RFD maks. [N/s]', avgRfd: 'RFD średni [N/s]', minTtp: 'Czas do szczytu min. [s]', avgTtp: 'Czas do szczytu śr. [s]' };
+/* rola testu po słowach kluczowych (angielskie nazwy z VALD Hub) */
+const DYN_ROLES = [
+  ['kneeExt', /knee.*exten/i, 'Wyprost kolana'], ['kneeFlex', /knee.*flex/i, 'Zgięcie kolana'],
+  ['hipAdd', /hip.*add|adduct|groin|squeeze/i, 'Przywodzenie biodra'], ['hipAbd', /hip.*abd|abduct/i, 'Odwodzenie biodra'],
+  ['hipExt', /hip.*exten/i, 'Wyprost biodra'], ['hipFlex', /hip.*flex/i, 'Zgięcie biodra'],
+  ['hipER', /hip.*ext(ernal)?.*rot/i, 'Rotacja zewn. biodra'], ['hipIR', /hip.*int(ernal)?.*rot/i, 'Rotacja wewn. biodra'],
+  ['shER', /(shoulder|glenohumeral).*ext(ernal)?.*rot|^(external rotation)/i, 'Rotacja zewn. barku'], ['shIR', /(shoulder|glenohumeral).*int(ernal)?.*rot|^(internal rotation)/i, 'Rotacja wewn. barku'],
+  ['ankPF', /plantar|calf|soleus|ankle.*flex/i, 'Zgięcie podeszwowe (łydka)'], ['imtp', /mid.?thigh|imtp/i, 'IMTP'], ['grip', /grip/i, 'Chwyt']
+];
+function dynRole(test){ const t = String(test || ''); // biodro: rotacje przed wyprostem/zgięciem
+  const order = ['hipER', 'hipIR', 'shER', 'shIR', 'kneeExt', 'kneeFlex', 'hipAdd', 'hipAbd', 'hipExt', 'hipFlex', 'ankPF', 'imtp', 'grip'];
+  for(const k of order){ const r = DYN_ROLES.find(x => x[0] === k); if(r[1].test(t)) return k; } return 'other'; }
+const dynRoleLabel = (role, test) => (DYN_ROLES.find(r => r[0] === role) || [0, 0, test])[2];
+const DYN_POS = { Seated: 'siedząc', Prone: 'na brzuchu', Supine: 'na plecach', Standing: 'stojąc', 'Side lying': 'na boku', Kneeling: 'klęcząc' };
+
+async function dynParsePdf(pdf){
+  const pages = [];
+  for(let i = 1; i <= pdf.numPages; i++){
+    const pg = await pdf.getPage(i), tc = await pg.getTextContent();
+    pages.push(tc.items.filter(it => it.str && it.str.trim()).map(it => ({ s: it.str.trim(), x: it.transform[4] + (it.width || 0) / 2, y: it.transform[5], x0: it.transform[4] })));
+  }
+  const dmy = s => { const m = s.match(/^(\d{2})\/(\d{2})\/(\d{4})$/); return m ? `${m[3]}-${m[2]}-${m[1]}` : null; };
+  const out = { test: null, position: null, profile: null, sessions: {}, warnings: [] };
+  const p1 = pages[0] || [];
+  const titleIt = p1.slice().sort((a, b) => b.y - a.y).find(it => !/^(Tests|Profile|Date|Test|Position|Reps|\(|\)|\d)/.test(it.s) && /[A-Za-z]/.test(it.s));
+  out.test = titleIt ? titleIt.s : null;
+  p1.filter(it => dmy(it.s)).forEach(d => {
+    const day = dmy(d.s), near = p1.filter(it => it !== d && it.y > d.y - 22 && it.y <= d.y + 10);
+    const time = near.find(it => /^\d{1,2}:\d{2}\s?(AM|PM)?$/i.test(it.s));
+    const pos = near.find(it => /^(Seated|Supine|Prone|Standing|Side ?lying|Kneeling|Semi-Prone|Hook ?lying|Half ?kneeling)/i.test(it.s));
+    const reps = near.filter(it => /^\d+\s?[LR]$/.test(it.s)).map(it => it.s.replace(/\s/g, ''));
+    out.sessions[day] = { date: day, time: time ? time.s : null, position: pos ? pos.s : null, reps: reps.sort().join(' '), m: {} };
+    if(pos && !out.position) out.position = pos.s;
+  });
+  const prof = p1.find(it => /^[A-ZĄĆĘŁŃÓŚŹŻ][\p{L}'-]+ [A-ZĄĆĘŁŃÓŚŹŻ][\p{L}'-]+$/u.test(it.s) && it.s !== out.test && dynRole(it.s) === 'other');
+  out.profile = prof ? prof.s : null;
+  pages.slice(1).forEach((items, pi) => {
+    const top = items.filter(it => it.x0 < 200 && it.y < 520); if(!top.length) return;
+    const hy = Math.max(...top.map(it => it.y));
+    const head = items.filter(it => Math.abs(it.y - hy) < 1.5 && it.x0 < 400).sort((a, b) => a.x0 - b.x0).map(it => it.s).join('').replace(/\s*\[/, ' [');
+    const hm = head.match(/^(.+?) \[([^\]]+)\]$/); if(!hm) return;
+    if(/^asymmetry/i.test(hm[1])) return;                                  // asymetrię liczymy sami
+    const key = DYN_METRICS[hm[1]] || ('x_' + hm[1].toLowerCase().replace(/[^a-z0-9]+/g, '_'));   // nowa metryka też się zapisze
+    if(!DYN_METRICS[hm[1]]) DYN_MLAB[key] = DYN_MLAB[key] || `${hm[1]} [${hm[2]}]`;
+    const cols = items.filter(it => dmy(it.s)).map(it => ({ day: dmy(it.s), x: it.x }));
+    items.filter(it => /^-?\d+(\.\d+)?\s?(N⋅s|N·s|N\/s|N|s|kg|Nm|°|%)$/.test(it.s)).forEach(it => {
+      if(!cols.length) return;
+      const c = cols.reduce((a, b) => Math.abs(b.x - it.x) < Math.abs(a.x - it.x) ? b : a), side = it.x < c.x ? 'L' : 'R';
+      const S = out.sessions[c.day] = out.sessions[c.day] || { date: c.day, m: {} };
+      (S.m[key] = S.m[key] || {})[side] = parseFloat(it.s);
+    });
+  });
+  out.sessions = Object.values(out.sessions).sort((a, b) => a.date.localeCompare(b.date));
+  return out;
+}
+window.dynParsePdf = dynParsePdf;
+
+const dynF = (v, d = 0) => v == null || isNaN(v) ? '—' : Number(v).toLocaleString('pl-PL', { minimumFractionDigits: d, maximumFractionDigits: d });
+const dynAsym = (L, R) => (L == null || R == null) ? null : Math.round(Math.abs(L - R) / Math.max(L, R) * 100);
+const dynLvl = a => a == null ? '' : a >= 15 ? 'dyn-bad' : a >= 10 ? 'dyn-w' : 'dyn-ok';
+const dynWeak = (L, R) => L < R ? 'L' : 'P';
+const dynDay = s => s.slice(8, 10) + '.' + s.slice(5, 7) + '.' + s.slice(0, 4);
+
+/* podsumowanie do generatora: ostatnia siła maks. na test + proporcje + flagi */
+function dynSummary(d){
+  const T = (d && d.dynamo) || {}, roles = {};
+  Object.values(T).forEach(t => { const S = (t.sessions || []).filter(s => s.m && s.m.maxF && s.m.maxF.L != null && s.m.maxF.R != null); if(!S.length) return;
+    const s = S[S.length - 1], L = s.m.maxF.L, R = s.m.maxF.R;
+    if(!roles[t.role] || roles[t.role].date < s.date) roles[t.role] = { L, R, date: s.date, a: dynAsym(L, R), weak: dynWeak(L, R), test: t.test }; });
+  if(!Object.keys(roles).length) return null;
+  const r = roles, ratios = {};
+  if(r.kneeExt && r.kneeFlex) ratios.hq = Math.min(r.kneeFlex.L / r.kneeExt.L, r.kneeFlex.R / r.kneeExt.R);
+  if(r.hipAdd && r.hipAbd) ratios.addAbd = (r.hipAdd.L + r.hipAdd.R) / (r.hipAbd.L + r.hipAbd.R);
+  if(r.shER && r.shIR) ratios.erir = Math.min(r.shER.L / r.shIR.L, r.shER.R / r.shIR.R);
+  const last = Object.values(roles).map(x => x.date).sort().pop();
+  return { roles, ratios, last, shoulderWeak: ratios.erir != null && ratios.erir < 0.75 };
+}
+window.dynSummary = dynSummary;
+
+function dynTestHtml(t, bm){
+  const S = (t.sessions || []).filter(s => s.m && s.m.maxF);
+  const max = Math.max(1, ...S.flatMap(s => [s.m.maxF.L || 0, s.m.maxF.R || 0])) * 1.15;
+  const bars = S.map(s => { const L = s.m.maxF.L, R = s.m.maxF.R, a = dynAsym(L, R);
+    return `<div><div class="dyn-bars"><div class="dyn-b dyn-bL" style="height:${(L || 0) / max * 100}%"><span>${dynF(L)}</span></div><div class="dyn-b dyn-bR" style="height:${(R || 0) / max * 100}%"><span>${dynF(R)}</span></div></div>
+      <div class="dyn-d">${dynDay(s.date)}<br>${a != null ? `<span class="dyn-pill ${dynLvl(a)}">${a}%${a >= 5 ? ' słabsza ' + dynWeak(L, R) : ''}</span>` : ''}${bm && L && R ? `<br><span class="cv-small">${dynF(L / bm, 1)} / ${dynF(R / bm, 1)} N/kg</span>` : ''}</div></div>`; }).join('');
+  const a = S[S.length - 1], b = S[S.length - 2];
+  const trend = a && b ? ['L', 'R'].map(k => { const d = a.m.maxF[k] - b.m.maxF[k]; return `${k === 'L' ? 'lewa' : 'prawa'} ${d >= 0 ? '+' : ''}${dynF(d)} N`; }).join(' · ') : '';
+  const one = (t.sessions || []).filter(s => /(^|\s)1[LR]/.test(s.reps || '')).map(s => `${dynDay(s.date)}: ${s.reps.match(/1[LR]/g).map(x => x.replace('R', 'P')).join(', ')} – 1 powtórzenie`);
+  const keys = Object.keys(DYN_MLAB).filter(k => (t.sessions || []).some(s => s.m[k]));
+  return `<div class="dyn-t"><div class="dyn-th"><b>${escapeHtml(dynRoleLabel(t.role, t.test))}</b><span class="cv-small">${escapeHtml(t.test)} · ${escapeHtml(DYN_POS[t.position] || t.position || '')}</span>${t.role === 'other' ? '<span class="dyn-pill dyn-i">nowy test – zapisany, bez wpływu na plan</span>' : ''}<span class="cv-small s">${escapeHtml(t.file || '')}</span></div>
+    <div class="cv-small"><span style="color:#3E86C6">■</span> lewa <span style="color:#E8904A">■</span> prawa · siła maks. [N] · asymetria &lt;10% OK · 10–15% obserwacja · ≥15% priorytet</div>
+    <div class="dyn-chart">${bars}</div>
+    ${trend ? `<div class="cv-small">Zmiana od ${dynDay(b.date)}: ${trend}</div>` : ''}${one.length ? `<div class="cv-small"><span class="dyn-pill dyn-w">uwaga</span> ${escapeHtml(one.join(' · '))}</div>` : ''}
+    <details><summary class="cv-small" style="cursor:pointer">Wszystkie metryki (L / P)</summary><div style="overflow-x:auto"><table class="dyn-tab"><tr><th>Metryka</th>${(t.sessions || []).map(s => `<th>${dynDay(s.date)}</th>`).join('')}</tr>
+      ${keys.map(k => `<tr><td>${escapeHtml(DYN_MLAB[k])}${/Rfd|Ttp/.test(k) ? ' <span class="dyn-pill dyn-i">do wglądu</span>' : ''}</td>${(t.sessions || []).map(s => s.m[k] ? `<td>${dynF(s.m[k].L, /Ttp/.test(k) ? 2 : 0)} / ${dynF(s.m[k].R, /Ttp/.test(k) ? 2 : 0)}</td>` : '<td>—</td>').join('')}</tr>`).join('')}</table></div></details></div>`;
+}
+window.dynCardHtml = function(c, d){
+  const T = Object.values((d && d.dynamo) || {}).sort((a, b) => a.role.localeCompare(b.role));
+  const wl = (c.weightLog || []).slice().sort((a, b) => String(a.date).localeCompare(String(b.date))), bm = wl.length ? parseFloat(String(wl[wl.length - 1].value).replace(',', '.')) || null : null;
+  const S = dynSummary(d), R = S ? S.ratios : {};
+  const rat = [];
+  if(R.hq != null) rat.push(`<span class="dyn-ratio">H:Q (zgięcie / wyprost kolana) <b>${dynF(R.hq, 2)}</b> <span class="dyn-pill ${R.hq < 0.45 ? 'dyn-w' : 'dyn-ok'}">${R.hq < 0.45 ? 'niskie' : 'OK'}</span></span>`);
+  if(R.addAbd != null) rat.push(`<span class="dyn-ratio">ADD:ABD <b>${dynF(R.addAbd, 2)}</b> <span class="dyn-pill ${R.addAbd < 0.8 ? 'dyn-bad' : 'dyn-ok'}">${R.addAbd < 0.8 ? 'poniżej 0,8' : 'OK'}</span></span>`);
+  if(R.erir != null) rat.push(`<span class="dyn-ratio">ER:IR bark <b>${dynF(R.erir, 2)}</b> <span class="dyn-pill ${R.erir < 0.75 ? 'dyn-w' : 'dyn-ok'}">${R.erir < 0.75 ? 'słaby bark' : 'OK'}</span></span>`);
+  return `<div class="cv-card" style="margin-bottom:12px;"><h4>💪 VALD DynaMo <span class="cv-small" style="font-weight:400;">raporty PDF z VALD Hub · czytane w aplikacji, nic nie jest wysyłane</span></h4>
+    <div class="cv-row" style="margin-top:6px;flex-wrap:wrap;gap:8px;"><label class="btn ghost" style="cursor:pointer;">⬆ Wgraj wyniki (CC .xlsx / DynaMo .pdf)<input type="file" id="dynFiles" accept=".pdf,.xlsx,application/pdf" multiple hidden></label><span class="cv-small" id="dynMsg">${T.length ? `${T.length} ${T.length === 1 ? 'test' : 'testy'} · ostatni ${S ? dynDay(S.last) : '—'}` : 'Brak testów DynaMo. Możesz wrzucić naraz pliki z CC Athletics i PDF-y z DynaMo – aplikacja sama rozpozna, co jest czym.'}</span></div>
+    ${rat.length ? `<div class="dyn-ratios" style="margin-top:8px;">${rat.join('')}</div><div class="cv-small" style="margin-top:4px;">Zakresy orientacyjne (H:Q z różnych pozycji – tylko orientacyjnie). Do generatora idzie tylko siła maks. i proporcje.</div>` : ''}
+    ${T.length ? `<div class="dyn-tests">${T.map(t => dynTestHtml(t, bm)).join('')}</div>` : ''}</div>`;
+};
+/* ---------- #26 wspólny import: czytanie, scalanie, zapis ---------- */
+window.dynReadFiles = async function(files){
+  const items = [], bad = [];
+  if(typeof pdfjsLib === 'undefined'){ files.forEach(f => bad.push(f.name + ' (nie udało się wczytać czytnika PDF – odśwież stronę)')); return { items, bad }; }
+  for(const f of files){
+    try{
+      const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(await f.arrayBuffer()) }).promise;
+      const r = await dynParsePdf(pdf);
+      if(!r.test || !r.sessions.some(s => s.m.maxF)){ bad.push(f.name); continue; }
+      items.push({ file: f.name, r, label: dynRoleLabel(dynRole(r.test), r.test) });
+    }catch(e){ console.warn(e); bad.push(f.name); }
+  }
+  return { items, bad };
+};
+function dynMerge(d, r, fname){
+  d.dynamo = d.dynamo || {};
+  const key = r.test + '|' + (r.position || ''), cur = d.dynamo[key] || { test: r.test, position: r.position, role: dynRole(r.test), sessions: [] };
+  r.sessions.forEach(s => { const i = cur.sessions.findIndex(x => x.date === s.date); if(i >= 0) cur.sessions[i] = s; else cur.sessions.push(s); });
+  cur.sessions.sort((a, b) => a.date.localeCompare(b.date)); cur.file = fname; cur.role = dynRole(r.test); cur.updatedAt = todayKey();
+  d.dynamo[key] = cur;
+}
+window.dynSaveTo = async function(clientId, items){
+  const d = await loadClientNotes(clientId);
+  items.forEach(it => dynMerge(d, it.r, it.file));
+  return saveClientNotes(clientId);
+};
+/* osoba z PDF → klient (imię nazwisko albo nazwisko imię) */
+window.dynMatch = function(profile){
+  if(!profile || typeof tstMatchClient !== 'function') return { id: null, how: '' };
+  const a = tstMatchClient(profile); if(a.id) return a;
+  const p = profile.split(' '); return p.length === 2 ? tstMatchClient(p[1] + ' ' + p[0]) : a;
+};
+/* karta na ekranie „Wgrywanie wyników” */
+window.dynImportHtml = function(D){
+  if(!D || !D.length) return '';
+  const opts = sel => `<option value="">— wybierz klienta —</option>` + clients.slice().sort((a, b) => a.name.localeCompare(b.name, 'pl')).map(c => `<option value="${c.id}" ${c.id === sel ? 'selected' : ''}>${escapeHtml(c.name)}</option>`).join('');
+  return `<div class="tst-card"><div class="tst-imp-h"><span class="tst-type" style="background:#1C1C1C;color:#fff;">DYNAMO</span><b>VALD DynaMo</b><span class="cv-small">${D.length} ${plPlural(D.length, 'plik', 'pliki', 'plików')} PDF · siła maks. L/P</span></div>
+    ${D.map((x, i) => { const s = x.r.sessions.filter(q => q.m.maxF), last = s[s.length - 1];
+      return `<div class="tst-imp-row" style="flex-wrap:wrap;"><div style="flex:1 1 260px;min-width:220px;"><b>${escapeHtml(x.label)}</b><div class="cv-small" style="font-weight:400;">${escapeHtml(x.file)} · ${s.length} ${plPlural(s.length, 'sesja', 'sesje', 'sesji')}${last ? ' · ostatnia ' + dynDay(last.date) + ': L ' + dynF(last.m.maxF.L) + ' / P ' + dynF(last.m.maxF.R) + ' N' : ''}</div></div>
+        <select class="dyn-imp-client" data-i="${i}">${opts(x.clientId)}</select><span class="cv-small ${(x.how || '').includes('sprawdź') || !x.clientId ? 'tst-amber' : ''}">w pliku: „${escapeHtml(x.r.profile || '?')}”${x.how ? ' · ' + escapeHtml(x.how) : ' · nie znalazłem – wybierz'}</span></div>`; }).join('')}</div>`;
+};
+
+window.dynBind = function(c, d){
+  const inp = document.getElementById('dynFiles'); if(!inp) return;
+  inp.onchange = async () => {
+    const all = [...inp.files]; if(!all.length) return;
+    /* są pliki z CC Athletics → ekran wgrywania (od razu przypisany do tej osoby) */
+    if(all.some(f => /\.xlsx$/i.test(f.name)) && typeof tstHandleFiles === 'function') return tstHandleFiles(all, c.id);
+    const files = all.filter(f => /\.pdf$/i.test(f.name)), skip = all.filter(f => !/\.pdf$/i.test(f.name)).map(f => f.name);
+    const msg = document.getElementById('dynMsg');
+    msg.textContent = 'Czytam pliki…';
+    const R = await dynReadFiles(files), bad = R.bad.concat(skip), other = [];
+    R.items.forEach(it => { const r = it.r; if(r.profile && c.name && !String(c.name).toLowerCase().includes(r.profile.split(' ').pop().toLowerCase()) && !String(c.name).toLowerCase().includes(r.profile.split(' ')[0].toLowerCase())) other.push(`${it.file}: w pliku „${r.profile}”`); dynMerge(d, r, it.file); });
+    if(R.items.length && await saveClientNotes(c.id)) toast(`Wczytano DynaMo: ${R.items.map(x => x.label).join(', ')}`);
+    renderClientInfo();
+    const m2 = document.getElementById('dynMsg');
+    if(m2 && (bad.length || other.length)) m2.innerHTML = (bad.length ? `<span class="dyn-pill dyn-bad">pominięto</span> ${escapeHtml(bad.join(', '))} (to nie raport DynaMo ani plik CC Athletics) ` : '') + (other.length ? `<span class="dyn-pill dyn-w">sprawdź osobę</span> ${escapeHtml(other.join(' · '))}` : '');
+  };
+};
+})();
+</script>
+<script>
+/* ===== #27 RODZAJE SERII (28.10) =====
+   ex.setType = { id, pr }  – rodzaj serii; zapis powtórzeń jest w ex.reps (np. „12-10-8-6-15”, „12/10/8”, „2+2+2”).
+   pr: 'reps' = w kolejnych tygodniach rosną powtórzenia, ciężar zostaje · 'kg' = ten sam zapis, rośnie ciężar (silnik RPE).
+   Ciężar na serię: silnik liczy ciężar dla serii najcięższej (ref), pozostałe serie z tabeli % przy RPE 8 (powt. + 2).
+   Źródła: notatki Bartosza (SC-085…088, MT-30) + badania/praktyka (Enes 2021 myo-reps, Tufano – klastry, Rappelt 2022 10×3, EliteFTS – fale, kontrast 6/1). */
+const SER_TYPES = [
+  { id: 'ros', ph: 'ak', kind: 'seq', nm: 'Seria rosnąca', lv: 'poziom 2 · od początkujących', d: 'Z każdą serią więcej powtórzeń, ciężar w dół.', src: 'SC-085, MT-30',
+    note: 'Seria rosnąca: z każdą serią więcej powtórzeń, ciężar w dół – ostatnia seria najbliżej hipertrofii.', pats: ['10-12-15', '10-11-12', '11-12-13-14', '6-8-10-12'] },
+  { id: 'pow', ph: 'ak', kind: 'seq', nm: 'Seria powracająca', lv: 'poziom 3 · od średnich', d: 'Ciężar rośnie, ostatnia seria lżej na dużo powtórzeń.', src: 'SC-085, MT-30',
+    note: 'Seria powracająca: ciężar rośnie do najcięższej serii, ostatnia seria lżej na więcej powtórzeń.', pats: ['12-10-8-6-15', '12-11-9-12'] },
+  { id: 'stro', ph: 'ak', kind: 'seq', nm: 'Stopniowa rosnąca', lv: 'poziom 3 · od średnich', d: 'Po 2 serie jednym ciężarem, potem lżej na więcej.', src: 'MT-30',
+    note: 'Stopniowa rosnąca: po 2 serie tym samym ciężarem, potem lżej na więcej powtórzeń.', pats: ['10-10-12-12', '9-9-11-11'] },
+  { id: 'drop', ph: 'ak', kind: 'drop', nm: 'Drop set', lv: 'poziom 3 · od średnich', d: 'Bez przerwy zrzucasz ciężar −10–15% i robisz dalej.', src: 'SC-088, MT-30',
+    note: 'Drop set: bez przerwy, za każdym razem ciężar −10–15% = 1 seria. Wpisz ciężar i powtórzenia każdego zrzutu.', pats: ['12/10/8', '12/11/10', '10/8/6', '8/6/4'] },
+  { id: 'myo', ph: 'ak', kind: 'myo', nm: 'Myo-reps', lv: 'poziom 3 · od średnich', d: 'Seria blisko upadku, potem krótkie mini-serie po 20–30 s.', src: 'Enes 2021',
+    note: 'Myo-reps: seria aktywacyjna blisko upadku → 20–30 s przerwy → mini-serie po kilka powtórzeń tym samym ciężarem.', pats: ['12+4+4+4', '15+5+5+5'] },
+  { id: 'mal', ph: 'int', kind: 'seq', nm: 'Seria malejąca', lv: 'poziom 2 · od początkujących', d: 'Z każdą serią mniej powtórzeń, ciężar w górę.', src: 'SC-085',
+    note: 'Seria malejąca: z każdą serią mniej powtórzeń, ciężar +2–3% – ostatnia seria najcięższa.', pats: ['9-8-7-6', '7-6-5-4', '5-4-3-2-1'] },
+  { id: 'stop', ph: 'int', kind: 'seq', nm: 'Stopniowa malejąca', lv: 'poziom 3 · od średnich', d: 'Para serii jednym ciężarem, potem +3–5%.', src: 'SC-086',
+    note: 'Stopniowa malejąca: para serii tym samym ciężarem, potem +3–5%. Nigdy nie schodzimy z ciężarem.', pats: ['8-8-6-6-4-4', '5-5-3-3-1-1'] },
+  { id: 'paler', ph: 'int', kind: 'seq', nm: 'Poler malejący', lv: 'poziom 3 · od średnich', d: '3 serie po 5, potem 2 cięższe po 3.', src: 'SC-087',
+    note: 'Poler malejący: 3 serie po 5 jednym ciężarem, potem 2 serie po 3 cięższe.', pats: ['5-5-5-3-3'] },
+  { id: 'fal', ph: 'int', kind: 'seq', nm: 'Seria falowa', lv: 'poziom 3–4 · od średnich', d: '2 fale, druga cięższa od pierwszej.', src: 'SC-087, EliteFTS',
+    note: 'Seria falowa: 2 fale, druga fala cięższa – pierwsza potencjuje drugą.', pats: ['8-6-4-8-6-4', '7-5-3-7-5-3', '5-3-1-5-3-1', '3-2-1-3-2-1'] },
+  { id: 'kon', ph: 'int', kind: 'seq', nm: 'Kontrast 6/1', lv: 'poziom 4 · zaawansowani', d: '6 powt. ~80%, potem 1 powt. >95%.', src: 'notatki (1-6-1-6), EliteFTS',
+    note: 'Kontrast 6/1: seria na 6 powt. (~80%), potem pojedyncze powtórzenie bardzo ciężko (>95%). Co rundę +2,5–5%.', pats: ['6-1-6-1-6-1'] },
+  { id: 'klas', ph: 'int', kind: 'clus', nm: 'Klaster', lv: 'poziom 3–4 · od średnich', d: 'Powtórzenia z 10–20 s przerwy, 1 ciężar.', src: 'SC-088, Tufano',
+    note: 'Klaster: krótkie przerwy 10–20 s między powtórzeniami (patrz zapis), ten sam ciężar przez całą serię.', pats: ['2+2+2', '3+3', '1+1+1+1+1', '3+1+1+1'] },
+  { id: 'kl10', ph: 'int', kind: 'plain', nm: 'Klaster 10 × 3', lv: 'poziom 3 · od średnich', d: '10 serii po 3 z 20 s przerwy zamiast 3 × 10.', src: 'Rappelt 2022', sets: 10, rest: '20"',
+    note: 'Klaster 10 × 3: 10 serii po 3 powtórzenia, tylko 20 s przerwy między seriami, ten sam ciężar.', pats: ['3'] }
+];
+const SER_BY = Object.fromEntries(SER_TYPES.map(t => [t.id, t]));
+const SER_DROP = 0.875;   // zrzut −12,5% (środek z notatek: −10–15%)
+function serPct(r){ r = Math.max(1, r); return r <= 15 ? pctForReps(r) : Math.max(50, 65 - (r - 15)); }
+function serNums(s, sep){ return String(s || '').split(sep).map(x => parseInt(x)).filter(x => x > 0); }
+/* plan serii dla ćwiczenia: null = zwykła seria prosta */
+function serPlan(ex){
+  if(!ex || !ex.setType || !ex.setType.id) return null;
+  const t = SER_BY[ex.setType.id]; const kind = t ? t.kind : 'seq';
+  const pat = String(ex.reps || '').trim(), n = Math.max(1, parseInt(ex.sets) || 1);
+  if(kind === 'drop'){
+    const d = serNums(pat, '/'); if(!d.length) return null;
+    return { kind, t, ref: d[0], sets: Array.from({ length: n }, () => ({ r: d[0], lab: String(d[0]), f: 1, drops: d.slice(1).map((x, k) => ({ r: x, f: Math.pow(SER_DROP, k + 1) })) })) };
+  }
+  if(kind === 'clus' || kind === 'myo'){
+    const p = serNums(pat, '+'); if(!p.length) return null;
+    const sum = p.reduce((a, b) => a + b, 0), ref = kind === 'myo' ? p[0] : Math.max(3, Math.min(6, sum));
+    return { kind, t, ref, sets: Array.from({ length: n }, () => ({ r: sum, lab: pat, f: 1 })) };
+  }
+  const p = serNums(pat, '-'); if(!p.length) return null;
+  if(p.length === 1) return { kind: 'plain', t, ref: p[0], sets: Array.from({ length: n }, () => ({ r: p[0], lab: String(p[0]), f: 1 })) };
+  const ref = Math.min(...p), h = p.length / 2;
+  const wave = p.length % 2 === 0 && p.slice(0, h).join() === p.slice(h).join() && new Set(p).size > 1;
+  return { kind: 'seq', t, ref, sets: p.map((r, i) => ({ r, lab: String(r), f: serPct(r + 2) / serPct(ref + 2) * (wave && i >= h ? 1.025 : 1) })) };
+}
+function serRefReps(ex){ const P = serPlan(ex); return P ? String(P.ref) : ex.reps; }
+/* ciężary na serię z ciężaru serii najcięższej */
+function serWeights(P, top, eq){
+  if(!P || !(top > 0)) return null;
+  return P.sets.map(s => { const w = eqSnap(top * s.f, eq || 'bar'); let prev = w;
+    return { w, drops: (s.drops || []).map(() => { prev = eqSnap(prev * SER_DROP, eq || 'bar'); return prev; }) }; });
+}
+/* opcje silnika: progresja powtórzeniami → ciężar jak na poprzednim treningu tego samego rodzaju serii (do 28 dni) */
+function serOpts(clientId, ex, dateStr, opts){
+  opts = Object.assign({}, opts || {});
+  if(ex && ex.setType && ex.setType.pr === 'reps' && clientId && typeof progSessionsBefore === 'function'){
+    const name = resolveExName(ex), lim = dateStr ? new Date(new Date(dateStr).getTime() - 28 * 864e5).toISOString().slice(0, 10) : '';
+    const prev = progSessionsBefore(clientId, name, dateStr).filter(s => s.ex.setType && s.ex.setType.id === ex.setType.id && (!lim || s.date >= lim));
+    if(prev.length){ opts.progOff = true; opts.serKeep = true; }
+  }
+  return opts;
+}
+function serInfo(clientId, ex, dateStr, opts){
+  const o = serOpts(clientId, ex, dateStr, opts);
+  const info = computeSuggestedWeightInfo(clientId, resolveExName(ex), serRefReps(ex), dateStr, ex.targetRpe, o);
+  if(info && o.serKeep) info.rule = 'rodzaj serii, progresja powtórzeniami → ciężar jak na poprzednim treningu';
+  if(info && serPlan(ex)) info.rule = (info.rule || '') + ` · ciężar dla najcięższej serii (${serRefReps(ex)} powt.), pozostałe z tabeli % przy RPE 8`;
+  return info;
+}
+/* planowane powtórzenia na serię (do liczenia % wykonania) */
+function serPlanned(ex){ const P = serPlan(ex); return P ? P.sets.map(s => s.r) : null; }
+/* log: drop set – kolejne zrzuty w l.dd */
+function serEnsureLog(ex){
+  const P = serPlan(ex); if(!P || P.kind !== 'drop' || !ex.log) return;
+  ex.log.forEach((l, i) => { const k = ((P.sets[i] || P.sets[0]).drops || []).length; if(!Array.isArray(l.dd)) l.dd = []; while(l.dd.length < k) l.dd.push({ weight: '', reps: '' }); });
+}
+function serFmtKg(x){ return typeof fmtKg === 'function' ? fmtKg(x) : String(x).replace('.', ','); }
+/* krótki podgląd dla trenera: „1: 12×60 · 2: 10×65 …” */
+function serPreviewText(ex, top, eq){
+  const P = serPlan(ex); if(!P) return '';
+  const W = serWeights(P, top, eq);
+  return P.sets.map((s, i) => { const w = W ? W[i] : null;
+    if(P.kind === 'drop') return `${i + 1}: ${s.r}${w ? '×' + serFmtKg(w.w) : ''}${s.drops.map((d, k) => ` → ${d.r}${w ? '×' + serFmtKg(w.drops[k]) : ''}`).join('')}`;
+    return `${i + 1}: ${s.lab}${w ? ' × ' + serFmtKg(w.w) + ' kg' : ''}`; }).join(' · ');
+}
+
+/* ---------- okno wyboru w edytorze dnia (krok 1: rodzaj, krok 2: dokładne powtórzenia + progresja) ---------- */
+(function(){
+  const css = `.ser-ov{position:fixed;inset:0;background:rgba(20,19,18,.45);z-index:9000;display:flex;align-items:flex-start;justify-content:center;padding:28px 16px;overflow-y:auto}
+  .ser-m{background:var(--surface,#fff);color:var(--text,#1C1B19);border-radius:14px;width:100%;max-width:660px;padding:18px;border:1px solid var(--line,#E1DFDA);font-size:14px}
+  .ser-mh{display:flex;align-items:center;gap:10px}.ser-mh h3{flex:1;margin:0;font-family:'Space Grotesk',sans-serif;font-size:18px}
+  .ser-x{width:30px;height:30px;border-radius:50%;border:1px solid var(--line,#E1DFDA);background:var(--surface-2,#EFEDE9);cursor:pointer;color:var(--muted,#77736C)}
+  .ser-cr{font-size:12px;color:var(--muted,#77736C);margin:4px 0 10px}
+  .ser-g{font-size:11px;letter-spacing:.07em;text-transform:uppercase;font-weight:700;margin:12px 0 6px;display:flex;gap:8px;align-items:center}
+  .ser-g small{font-weight:500;text-transform:none;letter-spacing:0;color:var(--muted,#77736C)}
+  .ser-ph{border-radius:5px;padding:2px 7px}.ser-ph.ak{background:#E3F1EA;color:#2E7D5B}.ser-ph.int{background:#F7E4DE;color:#B4472E}
+  .ser-os{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px}
+  .ser-o{text-align:left;background:var(--surface,#fff);border:1px solid var(--line,#E1DFDA);border-radius:10px;padding:10px 12px;cursor:pointer;font:inherit;color:inherit;display:flex;flex-direction:column;gap:3px}
+  .ser-o:hover{border-color:#F1850F}.ser-o.on{background:#FFF4E6;border-color:#F1850F}
+  .ser-o b{font-family:'Space Grotesk',sans-serif}.ser-o .d{font-size:12px;color:var(--muted,#77736C)}.ser-o .lv{font-size:10.5px;font-weight:600;color:var(--muted,#77736C)}
+  .ser-o .pat{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16px}
+  .ser-r{display:flex;flex-wrap:wrap;gap:14px;margin-top:14px;align-items:flex-end}
+  .ser-f{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted,#77736C)}
+  .ser-f input,.ser-f select{border:1px solid var(--line,#E1DFDA);border-radius:8px;padding:8px 10px;font:600 14px 'Space Grotesk',sans-serif;color:var(--text,#1C1B19);background:var(--surface,#fff)}
+  .ser-seg{display:flex;border:1px solid var(--line,#E1DFDA);border-radius:9px;overflow:hidden}.ser-seg button{border:0;background:var(--surface,#fff);padding:8px 11px;font:600 12.5px inherit;cursor:pointer;color:inherit}
+  .ser-seg button.on{background:#1C1C1C;color:#fff}
+  .ser-ft{display:flex;justify-content:space-between;gap:10px;margin-top:16px;flex-wrap:wrap}
+  .ser-hint{font-size:12px;color:var(--muted,#77736C);margin-top:10px}.ser-warn{font-size:12px;color:#B4472E;margin-top:8px}
+  .ser-chip{display:inline-block;font-size:11px;font-weight:600;border-radius:6px;padding:1px 7px;margin-left:6px;cursor:pointer;vertical-align:middle}
+  .ser-chip.ak{background:#E3F1EA;color:#2E7D5B}.ser-chip.int{background:#F7E4DE;color:#B4472E}
+  .ser-prev{font-size:12px;color:var(--muted,#77736C);margin:2px 0 6px}.ser-prev b{color:var(--text,#1C1B19)}
+  .ser-dd td{padding-top:0!important}.ser-dd .ser-ddw{display:flex;gap:6px;align-items:center;justify-content:center;font-size:11px;color:var(--muted,#77736C)}
+  .ser-dd .set-input{padding:8px 4px;font-size:14px}`;
+  const st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
+})();
+function serNoHist(ex){ try{ return !!(selectedClientId && !progSessionsBefore(selectedClientId, resolveExName(ex), selectedDateStr).length); }catch(e){ return false; } }
+function serPhaseOf(dateStr){
+  try{ const d = (plansCache[selectedClientId] || {})[dateStr]; const t = String((d && d.title) || ''); if(/^Int/i.test(t)) return 'int'; if(/^Ak/i.test(t)) return 'ak'; }catch(e){}
+  return null;
+}
+/* onDone(setType | null) */
+function serOpenPicker(ex, onDone){
+  const ov = document.createElement('div'); ov.className = 'ser-ov';
+  ov.innerHTML = '<div class="ser-m" role="dialog" aria-modal="true"></div>'; document.body.appendChild(ov);
+  const m = ov.firstChild, name = resolveExName(ex), phase = serPhaseOf(typeof selectedDateStr !== 'undefined' ? selectedDateStr : '');
+  const S = { id: ex.setType ? ex.setType.id : null, pat: ex.setType ? String(ex.reps) : null, n: parseInt(ex.sets) || 3, pr: ex.setType ? ex.setType.pr : 'reps', own: '' };
+  const close = v => { ov.remove(); document.removeEventListener('keydown', esc); onDone(v); };
+  const esc = e => { if(e.key === 'Escape') close(undefined); };
+  document.addEventListener('keydown', esc);
+  ov.addEventListener('click', e => { if(e.target === ov) close(undefined); });
+  const grp = (ph, title, hint) => `<div class="ser-g"><span class="ser-ph ${ph}">${title}</span><small>${hint}</small></div><div class="ser-os">${SER_TYPES.filter(t => t.ph === ph).map(t => `<button type="button" class="ser-o ${S.id === t.id ? 'on' : ''}" data-t="${t.id}"><b>${escapeHtml(t.nm)}</b><span class="d">${escapeHtml(t.d)}</span><span class="lv">${escapeHtml(t.lv)}</span></button>`).join('')}</div>`;
+  function step1(){
+    m.innerHTML = `<div class="ser-mh"><h3>Rodzaj serii</h3><button class="ser-x" type="button" data-x>✕</button></div>
+      <div class="ser-cr">${escapeHtml((ex.label ? ex.label + ' · ' : '') + name)} · krok 1 z 2: wybierz rodzaj</div>
+      ${serNoHist(ex) ? '<div class="ser-warn" style="margin:0 0 6px">⚠ Klient nie robił jeszcze tego ćwiczenia – brak historii ciężarów. Generator w takiej sytuacji nie daje rodzaju serii; tu możesz, ale ciężary w serii będą puste.</div>' : ''}
+      ${grp('ak', 'Akumulacja', 'ostatnia seria najbliżej hipertrofii')}${grp('int', 'Intensyfikacja', 'ostatnia seria najcięższa')}
+      <div class="ser-ft"><button class="btn ghost" type="button" data-x>Anuluj</button>${phase ? `<span class="ser-hint" style="margin:0">Blok tego dnia: <b>${phase === 'ak' ? 'akumulacja' : 'intensyfikacja'}</b></span>` : ''}</div>`;
+    m.querySelectorAll('[data-x]').forEach(b => b.onclick = () => close(undefined));
+    m.querySelectorAll('[data-t]').forEach(b => b.onclick = () => { if(S.id !== b.dataset.t){ S.id = b.dataset.t; S.pat = null; } step2(); });
+  }
+  function step2(){
+    const t = SER_BY[S.id]; if(!S.pat || (!t.pats.includes(S.pat) && S.pat !== '__own' && !S.own)) S.pat = S.pat && !t.pats.includes(S.pat) ? '__own' : t.pats[0];
+    if(S.pat === '__own' && !S.own && ex.setType && ex.setType.id === t.id) S.own = String(ex.reps);
+    const own = S.pat === '__own', many = t.kind === 'drop' || t.kind === 'clus' || t.kind === 'myo';
+    const cnt = own ? (S.own ? serNums(S.own, /[-\/+]/).length : 0) : serNums(S.pat, '-').length;
+    m.innerHTML = `<div class="ser-mh"><h3>${escapeHtml(t.nm)}</h3><button class="ser-x" type="button" data-x>✕</button></div>
+      <div class="ser-cr">${escapeHtml((ex.label ? ex.label + ' · ' : '') + name)} · krok 2 z 2: dokładne powtórzenia · źródło: ${escapeHtml(t.src)}</div>
+      <div class="ser-os">${t.pats.map(p => `<button type="button" class="ser-o ${S.pat === p ? 'on' : ''}" data-p="${p}"><span class="pat">${p}</span><span class="d">${t.kind === 'drop' ? serNums(p, '/').length + ' zrzuty w 1 serii' : many ? 'powtórzenia w 1 serii' : t.kind === 'plain' ? (t.sets || 3) + ' serii po ' + p : serNums(p, '-').length + ' serii'}</span></button>`).join('')}
+        <button type="button" class="ser-o ${own ? 'on' : ''}" data-p="__own"><b>Własny zapis</b><span class="d">wpisz sam, np. ${t.kind === 'drop' ? '10/8/6/4' : many ? '2+2+2' : '12-10-8-15'}</span></button></div>
+      <div class="ser-r">${own ? `<label class="ser-f">Twój zapis<input type="text" data-own value="${escapeHtml(S.own)}" placeholder="${t.kind === 'drop' ? '12/10/8' : many ? '2+2+2' : '12-10-8-15'}"></label>` : ''}
+        ${many || t.kind === 'plain' ? `<label class="ser-f">Liczba serii<select data-n>${[1, 2, 3, 4, 5, 6, 8, 10].map(n => `<option ${(t.kind === 'plain' && !ex.setType ? t.sets : S.n) === n ? 'selected' : ''}>${n}</option>`).join('')}</select></label>` : `<div class="ser-f">Liczba serii<b style="font:700 16px 'Space Grotesk',sans-serif;color:var(--text,#1C1B19);padding:6px 2px">${cnt || '–'}</b></div>`}
+        <div class="ser-f">Tydzień 1 → 3<div class="ser-seg"><button type="button" data-pr="reps" class="${S.pr === 'reps' ? 'on' : ''}">rosną powtórzenia</button><button type="button" data-pr="kg" class="${S.pr === 'kg' ? 'on' : ''}">rośnie ciężar</button></div></div></div>
+      <div class="ser-hint">${S.pr === 'reps' ? 'Ciężar zostaje jak na poprzednim treningu z tym rodzajem serii (do 4 tyg.); powtórzenia podnosisz Ty albo generator.' : 'Ten sam zapis, ciężar podnosi silnik progresji (RPE).'} Ciężar na serię: silnik liczy najcięższą serię, reszta z tabeli % (RPE 8). Opis metody trafi do notatki dla klienta.</div>
+      ${phase && phase !== t.ph ? `<div class="ser-warn">⚠ To metoda ${t.ph === 'ak' ? 'akumulacji' : 'intensyfikacji'}, a ten dzień to blok ${phase === 'ak' ? 'akumulacji' : 'intensyfikacji'} – możesz ją dać, ale wg notatek pasuje do innej fazy.</div>` : ''}
+      <div class="ser-ft"><button class="btn ghost" type="button" data-b>← Inny rodzaj</button><button class="btn" type="button" data-ok>Zastosuj</button></div>`;
+    m.querySelectorAll('[data-x]').forEach(b => b.onclick = () => close(undefined));
+    m.querySelector('[data-b]').onclick = step1;
+    m.querySelectorAll('[data-p]').forEach(b => b.onclick = () => { S.pat = b.dataset.p; step2(); });
+    m.querySelectorAll('[data-pr]').forEach(b => b.onclick = () => { S.pr = b.dataset.pr; step2(); });
+    const o = m.querySelector('[data-own]'); if(o){ o.oninput = () => { S.own = o.value; }; o.onchange = () => step2(); }
+    const nn = m.querySelector('[data-n]'); if(nn) nn.onchange = () => { S.n = +nn.value; };
+    m.querySelector('[data-ok]').onclick = () => {
+      const pat = own ? String(S.own || '').trim() : S.pat;
+      if(!pat || !serNums(pat, /[-\/+]/).length){ const i = m.querySelector('[data-own]'); if(i) i.focus(); return; }
+      const sets = t.kind === 'seq' ? serNums(pat, '-').length : (nn ? +nn.value : (t.sets || S.n));
+      close({ id: t.id, pr: S.pr, reps: pat, sets: String(sets), note: t.note, rest: t.rest || null });
+    };
+  }
+  if(S.id && SER_BY[S.id]) step2(); else step1();
+}
+/* zastosowanie wyboru na ćwiczeniu (z zapamiętaniem poprzednich serii/powt., żeby odznaczenie wracało) */
+function serApply(ex, v){
+  if(v === undefined) return false;
+  if(v === null){
+    if(ex.setTypeOrig){ ex.sets = ex.setTypeOrig.sets; ex.reps = ex.setTypeOrig.reps; if(ex.setTypeOrig.rest != null) ex.rest = ex.setTypeOrig.rest; }
+    const t = ex.setType && SER_BY[ex.setType.id]; if(t && String(ex.note || '').startsWith(t.note)) ex.note = String(ex.note).slice(t.note.length).replace(/^\s*·\s*/, '');
+    delete ex.setType; delete ex.setTypeOrig; return true;
+  }
+  if(!ex.setTypeOrig) ex.setTypeOrig = { sets: ex.sets, reps: ex.reps, rest: ex.rest };
+  const old = ex.setType && SER_BY[ex.setType.id];
+  let note = String(ex.note || ''); if(old && note.startsWith(old.note)) note = note.slice(old.note.length).replace(/^\s*·\s*/, '');
+  ex.setType = { id: v.id, pr: v.pr }; ex.reps = v.reps; ex.sets = v.sets; if(v.rest) ex.rest = v.rest;
+  ex.note = [v.note, note].filter(Boolean).join(' · ');
+  if(ex.log) ex.log = ex.log.slice(0, Math.max(1, parseInt(ex.sets) || 1));
+  ensureLog(ex);
+  return true;
+}
 </script>
 </body>
 </html>
