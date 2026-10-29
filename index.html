@@ -8599,7 +8599,7 @@ function renderLibraryView(){
     </div>
 
       <div class="tools-panel" id="packPanel">
-        <h4>📦 Wgraj paczkę ćwiczeń (plik .json od Claude)</h4>
+        <h4>📦 Wgraj paczkę ćwiczeń (plik .json od Claude) <span style="font-weight:400;font-size:11px;color:var(--muted);">· wersja aplikacji #31</span></h4>
         <div class="section-desc" style="margin:0 0 10px;">Doda wiele ćwiczeń naraz – z nazwą, filmem i grupą. Pomija te, które już są (ten sam film albo ta sama nazwa). Przed zapisem robi kopię biblioteki, więc można cofnąć.</div>
         <div class="lib-row" style="align-items:center;"><input type="file" id="packFile" accept=".json,application/json"><button class="btn ghost" id="packUndo">↩ Cofnij ostatnią paczkę</button></div>
         <div id="packOut" style="margin-top:10px;font-size:12.5px;"></div>
@@ -8713,6 +8713,7 @@ function packBind(){
   const f = $('packFile'); if(!f) return;
   f.onchange = async () => {
     const file = f.files && f.files[0]; if(!file) return;
+    f.value = '';   // ten sam plik można wybrać ponownie
     let pack; try { pack = JSON.parse(await file.text()); } catch(e){ $('packOut').innerHTML = '<span style="color:var(--warn);">To nie jest poprawny plik .json</span>'; return; }
     if(pack.format !== 'moveu-ex-pack'){ $('packOut').innerHTML = '<span style="color:var(--warn);">To nie jest paczka ćwiczeń MoveU.</span>'; return; }
     setStatus('Sprawdzam paczkę…');
@@ -8722,7 +8723,8 @@ function packBind(){
     $('packOut').innerHTML = `<div>Do dodania: <b>${P.add.length}</b>${P.upd.length ? ' · do aktualizacji (podgrupa / mięśnie / grupa): <b>' + P.upd.length + '</b>' : ''} · pominięte (już są): <b>${P.skip.length}</b>${P.newGroups.length ? ' · nowe grupy: <b>' + P.newGroups.map(g => escapeHtml(g.name)).join(', ') + '</b>' : ''}</div>
       <div class="cv-small" style="margin:6px 0;">${Object.keys(byG).map(g => escapeHtml(g) + ': ' + byG[g]).join(' · ')}</div>
       ${P.skip.length ? `<details><summary class="cv-small">Pominięte (${P.skip.length})</summary><div class="cv-small">${P.skip.map(escapeHtml).join(' · ')}</div></details>` : ''}
-      <button class="btn" id="packGo" style="margin-top:8px;" ${P.add.length || P.upd.length ? '' : 'disabled'}>${P.add.length ? 'Dodaj ' + P.add.length + ' ćwiczeń' : ''}${P.add.length && P.upd.length ? ' i ' : ''}${P.upd.length ? 'zaktualizuj ' + P.upd.length : ''}${!P.add.length && !P.upd.length ? 'Nic do zrobienia' : ''}</button>`;
+      <button class="btn" id="packGo" style="margin-top:8px;" ${P.add.length || P.upd.length ? '' : 'disabled'}>${P.add.length ? 'Dodaj ' + P.add.length + ' ćwiczeń' : ''}${P.add.length && P.upd.length ? ' i ' : ''}${P.upd.length ? 'zaktualizuj ' + P.upd.length : ''}${!P.add.length && !P.upd.length ? 'Nic do zrobienia' : ''}</button>
+      ${!P.add.length && !P.upd.length ? '<div style="margin-top:8px;padding:8px 10px;border-radius:8px;background:#E3F1EA;color:#2E7D5B;">✅ Wszystkie ćwiczenia z tej paczki są już w bibliotece i mają aktualne podgrupy i mięśnie – nic nie trzeba robić.</div>' : ''}`;
     const go = $('packGo'); if(go) go.onclick = async () => {
       go.disabled = true; go.textContent = 'Zapisuję…';
       const freshLib = (await safeGet('exercise_library')) || [], freshGroups = (await safeGet('library_groups')) || [];
