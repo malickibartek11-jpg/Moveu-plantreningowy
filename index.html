@@ -8661,22 +8661,53 @@ function renderLibraryView(){
   };
   packBind();
 }
+/* #31 podgrupy */
+const LIB_SUBS = [["Mobilność", "Mobilizacja – biodro"], ["Mobilność", "Mobilizacja – staw skokowy i stopa"], ["Mobilność", "Mobilizacja – kręgosłup"], ["Mobilność", "Mobilizacja – bark i łopatka"], ["Mobilność", "Mobilizacja – tył uda"], ["Mobilność", "Mobilizacja – całe ciało"], ["Prehab/rehab", "Rehab – kolano"], ["Prehab/rehab", "Rehab – bark i łopatka"], ["Prehab/rehab", "Rehab – przywodziciele i pachwina"], ["Prehab/rehab", "Rehab – pośladek średni"], ["Prehab/rehab", "Rehab – zginacz biodra"], ["Prehab/rehab", "Rehab – stopa i staw skokowy"], ["Prehab/rehab", "Propriocepcja i równowaga"], ["Mięśnie karku", "Kark"], ["Dół Squat", "Przysiad obunóż"], ["Dół Squat", "Jednonóż (wykroki, bułgarski, wejścia)"], ["Dół Hip Hinge", "Zawias (RDL, martwy ciąg, dzień dobry)"], ["Dół Hip Hinge", "Mostki i hip thrust"], ["Nogi Uginanie/Prostowanie", "Tył uda (uginanie, nordic)"], ["Nogi Uginanie/Prostowanie", "Prostowanie kolana"], ["Nogi Uginanie/Prostowanie", "Łydka"], ["Góra Push", "Pchanie poziome"], ["Góra Push", "Pchanie pionowe"], ["Góra Pull", "Ciągnięcie pionowe"], ["Góra Pull", "Ciągnięcie poziome"], ["Ramiona", "Biceps"], ["Ramiona", "Triceps"], ["Ramiona", "Barki – izolowane"], ["Tułów", "Core – antyprzeprost"], ["Tułów", "Core – antyrotacja"], ["Tułów", "Core – boczny"], ["Tułów", "Core – zgięcie i rotacja"], ["Tułów", "Core – prostowniki grzbietu"], ["Plyometria", "Plyo – ekstensywna (pogo, skakanka, trampolina)"], ["Plyometria", "Plyo – skrzynia i zeskoki"], ["Plyometria", "Plyo – skoki w dal, w miejscu, jednonóż"], ["Dynamic", "Rzuty piłką"], ["Dynamic", "Olimpijskie, podrzuty, reaktywne"], ["Kondycja", "Sanki i noszenie"], ["Kondycja", "Cardio i complexy"]];
+let libSubFilter = '';
+function libSubOptions(cur){
+  const by = {}; LIB_SUBS.forEach(([g, sn]) => (by[g] = by[g] || []).push(sn));
+  const extra = cur && !LIB_SUBS.some(x => x[1] === cur) ? '<option selected>' + escapeHtml(cur) + '</option>' : '';
+  return extra + Object.keys(by).map(g => '<optgroup label="' + escapeHtml(g) + '">' + by[g].map(sn => '<option ' + (sn === cur ? 'selected' : '') + '>' + escapeHtml(sn) + '</option>').join('') + '</optgroup>').join('');
+}
+function libSubFilterBar(){
+  const bar = document.querySelector('.lib-search-bar'); if(!bar) return;
+  let sel = document.getElementById('libSubFilter');
+  if(!sel){ sel = document.createElement('select'); sel.id = 'libSubFilter'; sel.style.cssText = 'max-width:260px;'; bar.insertBefore(sel, document.getElementById('libSearchCount'));
+    sel.onchange = () => { libSubFilter = sel.value; renderLibFullTable(); }; }
+  const cnt = {}; let none = 0; library.forEach(l => { if(l.sub) cnt[l.sub] = (cnt[l.sub] || 0) + 1; else none++; });
+  const by = {}; LIB_SUBS.forEach(([g, sn]) => (by[g] = by[g] || []).push(sn));
+  sel.innerHTML = '<option value="">Wszystkie podgrupy</option><option value="__none" ' + (libSubFilter === '__none' ? 'selected' : '') + '>Bez podgrupy (' + none + ')</option>'
+    + Object.keys(by).map(g => '<optgroup label="' + escapeHtml(g) + '">' + by[g].map(sn => '<option value="' + escapeHtml(sn) + '" ' + (sn === libSubFilter ? 'selected' : '') + '>' + escapeHtml(sn) + ' (' + (cnt[sn] || 0) + ')</option>').join('') + '</optgroup>').join('');
+}
 /* #29 paczka ćwiczeń */
 function packYtId(u){ const m = String(u || '').match(/(?:v=|youtu\.be\/|embed\/|shorts\/)([\w-]{11})/); return m ? m[1] : ''; }
 function packPlan(pack, lib, groups){
   const byName = new Set(lib.map(e => normalizeExName(e.name)));
   const byVid = new Set(lib.map(e => packYtId(e.videoUrl)).filter(Boolean));
-  const add = [], skip = [], newGroups = [];
+  const add = [], skip = [], newGroups = [], upd = [];
+  const libByName = new Map(); lib.forEach(e => { const kk = normalizeExName(e.name); if(!libByName.has(kk)) libByName.set(kk, []); libByName.get(kk).push(e); }); const libByVid = new Map(lib.filter(e => packYtId(e.videoUrl)).map(e => [packYtId(e.videoUrl), e]));
   const gid = name => { let g = groups.find(x => x.name === name) || newGroups.find(x => x.name === name);
     if(!g){ g = {id: 'lg_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6), name}; newGroups.push(g); } return g.id; };
   (pack.items || []).forEach((it, i) => {
     const nm = String(it.name || '').trim(); if(!nm) return;
     const v = packYtId(it.videoUrl), k = normalizeExName(nm);
-    if(byName.has(k) || (v && byVid.has(v))){ skip.push(nm); return; }
+    if(byName.has(k) || (v && byVid.has(v))){
+      const exs = (v && libByVid.get(v)) ? [libByVid.get(v)] : (libByName.get(k) || []);
+      let any = false;
+      if(pack.update) exs.forEach(ex => {
+        const ch = {};
+        if(it.sub && ex.sub !== it.sub) ch.sub = it.sub;
+        if(it.muscles && typeof it.muscles === 'object' && JSON.stringify(ex.muscles || null) !== JSON.stringify(it.muscles)) ch.muscles = it.muscles;
+        if(it.group && (!ex.groupId || ex.src === pack.source)){ const g = gid(it.group); if(g !== ex.groupId) ch.groupId = g; }
+        if(Object.keys(ch).length && !upd.some(u => u.id === ex.id)){ upd.push({id: ex.id, name: ex.name, ch}); any = true; }
+      });
+      if(!any && !it.onlyUpdate) skip.push(nm); return;
+    }
+    if(it.onlyUpdate) return;
     byName.add(k); if(v) byVid.add(v);
     add.push(Object.assign({id: 'l_' + Date.now() + '_' + i, name: nm, videoUrl: it.videoUrl || '', groupId: it.group ? gid(it.group) : null}, it.note ? {note: it.note} : {}, {src: pack.source || 'pack'}, it.sub ? {sub: it.sub} : {}));
   });
-  return {add, skip, newGroups};
+  return {add, skip, newGroups, upd};
 }
 function packBind(){
   const f = $('packFile'); if(!f) return;
@@ -8688,21 +8719,22 @@ function packBind(){
     const lib = (await safeGet('exercise_library')) || [], groups = (await safeGet('library_groups')) || [];
     const P = packPlan(pack, lib, groups); setStatus('');
     const byG = {}; P.add.forEach(e => { const g = (groups.concat(P.newGroups).find(x => x.id === e.groupId) || {}).name || 'bez grupy'; byG[g] = (byG[g] || 0) + 1; });
-    $('packOut').innerHTML = `<div>Do dodania: <b>${P.add.length}</b> · pominięte (już są): <b>${P.skip.length}</b>${P.newGroups.length ? ' · nowe grupy: <b>' + P.newGroups.map(g => escapeHtml(g.name)).join(', ') + '</b>' : ''}</div>
+    $('packOut').innerHTML = `<div>Do dodania: <b>${P.add.length}</b>${P.upd.length ? ' · do aktualizacji (podgrupa / mięśnie / grupa): <b>' + P.upd.length + '</b>' : ''} · pominięte (już są): <b>${P.skip.length}</b>${P.newGroups.length ? ' · nowe grupy: <b>' + P.newGroups.map(g => escapeHtml(g.name)).join(', ') + '</b>' : ''}</div>
       <div class="cv-small" style="margin:6px 0;">${Object.keys(byG).map(g => escapeHtml(g) + ': ' + byG[g]).join(' · ')}</div>
       ${P.skip.length ? `<details><summary class="cv-small">Pominięte (${P.skip.length})</summary><div class="cv-small">${P.skip.map(escapeHtml).join(' · ')}</div></details>` : ''}
-      <button class="btn" id="packGo" style="margin-top:8px;" ${P.add.length ? '' : 'disabled'}>Dodaj ${P.add.length} ćwiczeń do biblioteki</button>`;
+      <button class="btn" id="packGo" style="margin-top:8px;" ${P.add.length || P.upd.length ? '' : 'disabled'}>${P.add.length ? 'Dodaj ' + P.add.length + ' ćwiczeń' : ''}${P.add.length && P.upd.length ? ' i ' : ''}${P.upd.length ? 'zaktualizuj ' + P.upd.length : ''}${!P.add.length && !P.upd.length ? 'Nic do zrobienia' : ''}</button>`;
     const go = $('packGo'); if(go) go.onclick = async () => {
       go.disabled = true; go.textContent = 'Zapisuję…';
       const freshLib = (await safeGet('exercise_library')) || [], freshGroups = (await safeGet('library_groups')) || [];
       const P2 = packPlan(pack, freshLib, freshGroups);
-      await persistWithFeedback('exercise_library_prev', {at: new Date().toISOString(), lib: freshLib, groups: freshGroups, added: P2.add.length});
-      const G2 = freshGroups.concat(P2.newGroups), L2 = freshLib.concat(P2.add);
+      await persistWithFeedback('exercise_library_prev', {at: new Date().toISOString(), lib: freshLib, groups: freshGroups, added: P2.add.length + P2.upd.length});
+      const UP = new Map(P2.upd.map(u => [u.id, u.ch]));
+      const G2 = freshGroups.concat(P2.newGroups), L2 = freshLib.map(e => UP.has(e.id) ? Object.assign({}, e, UP.get(e.id)) : e).concat(P2.add);
       if(P2.newGroups.length && !(await persistWithFeedback('library_groups', G2))){ go.disabled = false; return; }
       if(!(await persistWithFeedback('exercise_library', L2))){ go.disabled = false; return; }
       library = L2; libraryGroups = G2;
       renderLibGroupChips(); renderLibGroupSelect(); renderLibFullTable();
-      $('packOut').innerHTML = `<b style="color:var(--ok,#2E7D5B);">✅ Dodano ${P2.add.length} ćwiczeń.</b> Tagi i grupy mięśniowe nadadzą się same z nazwy – sprawdź je w tabeli.`;
+      $('packOut').innerHTML = `<b style="color:var(--ok,#2E7D5B);">✅ Dodano ${P2.add.length} ćwiczeń${P2.upd.length ? ', zaktualizowano ' + P2.upd.length : ''}.</b> Tagi i grupy mięśniowe nadadzą się same z nazwy – sprawdź je w tabeli.`;
       f.value = ''; toast('Dodano ' + P2.add.length + ' ćwiczeń');
     };
   };
@@ -8745,11 +8777,13 @@ function renderLibFullTable(){
   const groupFiltered = (libFilterGroupId && libFilterGroupId !== 'all');
   let rows = groupFiltered ? library.filter(l => l.groupId === libFilterGroupId) : library;
   if(window.genLibFilter){ genLibFilterBar(); rows = genLibFilter(rows); }
+  libSubFilterBar();
+  if(libSubFilter) rows = rows.filter(l => (l.sub || '') === (libSubFilter === '__none' ? '' : libSubFilter));
   const tokens = plSearchKey(libSearchQuery).split(/\s+/).filter(Boolean);
   if(tokens.length){
     rows = rows.filter(l => {
       const grp = libraryGroups.find(g => g.id === l.groupId);
-      const hay = plSearchKey(l.name + ' ' + (grp ? grp.name : ''));
+      const hay = plSearchKey(l.name + ' ' + (grp ? grp.name : '') + ' ' + (l.sub || ''));
       return tokens.every(t => hay.includes(t));   // wszystkie wpisane slowa musza pasowac (w dowolnej kolejnosci)
     });
   }
@@ -8813,7 +8847,13 @@ function renderLibFullTable(){
       await persistWithFeedback('exercise_library', library);
       renderLibFullTable();
     };
-    tr.children[4].appendChild(groupSel);
+    tr.children[5].appendChild(groupSel);
+    const subSel = document.createElement('select'); subSel.className = 'lib-sub-sel';
+    subSel.title = 'Podgrupa (dokładniejszy podział – filtr nad tabelą)';
+    subSel.style.cssText = 'display:block;margin-top:4px;max-width:220px;font-size:12px;';
+    subSel.innerHTML = '<option value="">– podgrupa –</option>' + libSubOptions(ex.sub);
+    subSel.onchange = async () => { if(subSel.value) ex.sub = subSel.value; else delete ex.sub; await persistWithFeedback('exercise_library', library); renderLibFullTable(); };
+    tr.children[5].appendChild(subSel);
     gtBindCell(tr.querySelector('.gt-cell'), ex);
     if(window.genMgCell) genMgCell(tr.querySelector('.mg-cell'), ex);
     {
@@ -13651,7 +13691,7 @@ function pick(list, key, why, opts){
 }
 const SIM_CACHE = new Map();
 /* #30: ćwiczenia z biblioteki (np. z paczki e-booków) – tylko te, które pasują do serii głównych */
-const LIB_NOT_MAIN_SUB = /Mobilizacja|Propriocepcja|Plyometria|Moc|Kondycja|Izometria – rodzaje|Stopa/;
+const LIB_NOT_MAIN_SUB = /Mobilizacja|Propriocepcja|Plyometria|Plyo –|Moc|Rzuty|Olimpijskie|Kondycja|Sanki|Cardio|Izometria – rodzaje|Stopa|stopa i staw|zginacz biodra/;
 const LIB_NOT_MAIN = /mobiliz|rolowan|kij(ek|ka|kiem)|slider|slajder|przetocz|zejście do przysiadu|kraba|płotkarsk|perturbac|\bsled\b|sanki|complex|skok|wskok|zeskok|pogo|balans|gąbce|nad głową|eldoa|rozciąg/i;
 const LIB_ADV = /2\/1|overcoming|yielding|\biso\b|myotatic|akcentowana ekscentryka|ekscentryka akcentowana|szybka ekscentryka|ekscentryczne przeciążenie|łańcuch|drop catch/i;
 const LIB_NOVICE_NO = /trap bar|landmine|safety bar|nordyck|kółka gimnast|futbolow|garhammer|zwis|l sit|\bghd\b|\bghr\b|ławka ujemna|hatfield|bułgarsk/i;
