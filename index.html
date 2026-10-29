@@ -8598,6 +8598,12 @@ function renderLibraryView(){
       </div>
     </div>
 
+      <div class="tools-panel" id="packPanel">
+        <h4>📦 Wgraj paczkę ćwiczeń (plik .json od Claude)</h4>
+        <div class="section-desc" style="margin:0 0 10px;">Doda wiele ćwiczeń naraz – z nazwą, filmem i grupą. Pomija te, które już są (ten sam film albo ta sama nazwa). Przed zapisem robi kopię biblioteki, więc można cofnąć.</div>
+        <div class="lib-row" style="align-items:center;"><input type="file" id="packFile" accept=".json,application/json"><button class="btn ghost" id="packUndo">↩ Cofnij ostatnią paczkę</button></div>
+        <div id="packOut" style="margin-top:10px;font-size:12.5px;"></div>
+      </div>
       </div>
     </details>
 
@@ -8652,6 +8658,64 @@ function renderLibraryView(){
     renderLibraryList();
     renderLibFullTable();
     toast('Dodano ćwiczenie');
+  };
+  packBind();
+}
+/* #29 paczka ćwiczeń */
+function packYtId(u){ const m = String(u || '').match(/(?:v=|youtu\.be\/|embed\/|shorts\/)([\w-]{11})/); return m ? m[1] : ''; }
+function packPlan(pack, lib, groups){
+  const byName = new Set(lib.map(e => normalizeExName(e.name)));
+  const byVid = new Set(lib.map(e => packYtId(e.videoUrl)).filter(Boolean));
+  const add = [], skip = [], newGroups = [];
+  const gid = name => { let g = groups.find(x => x.name === name) || newGroups.find(x => x.name === name);
+    if(!g){ g = {id: 'lg_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6), name}; newGroups.push(g); } return g.id; };
+  (pack.items || []).forEach((it, i) => {
+    const nm = String(it.name || '').trim(); if(!nm) return;
+    const v = packYtId(it.videoUrl), k = normalizeExName(nm);
+    if(byName.has(k) || (v && byVid.has(v))){ skip.push(nm); return; }
+    byName.add(k); if(v) byVid.add(v);
+    add.push(Object.assign({id: 'l_' + Date.now() + '_' + i, name: nm, videoUrl: it.videoUrl || '', groupId: it.group ? gid(it.group) : null}, it.note ? {note: it.note} : {}, {src: pack.source || 'pack'}, it.sub ? {sub: it.sub} : {}));
+  });
+  return {add, skip, newGroups};
+}
+function packBind(){
+  const f = $('packFile'); if(!f) return;
+  f.onchange = async () => {
+    const file = f.files && f.files[0]; if(!file) return;
+    let pack; try { pack = JSON.parse(await file.text()); } catch(e){ $('packOut').innerHTML = '<span style="color:var(--warn);">To nie jest poprawny plik .json</span>'; return; }
+    if(pack.format !== 'moveu-ex-pack'){ $('packOut').innerHTML = '<span style="color:var(--warn);">To nie jest paczka ćwiczeń MoveU.</span>'; return; }
+    setStatus('Sprawdzam paczkę…');
+    const lib = (await safeGet('exercise_library')) || [], groups = (await safeGet('library_groups')) || [];
+    const P = packPlan(pack, lib, groups); setStatus('');
+    const byG = {}; P.add.forEach(e => { const g = (groups.concat(P.newGroups).find(x => x.id === e.groupId) || {}).name || 'bez grupy'; byG[g] = (byG[g] || 0) + 1; });
+    $('packOut').innerHTML = `<div>Do dodania: <b>${P.add.length}</b> · pominięte (już są): <b>${P.skip.length}</b>${P.newGroups.length ? ' · nowe grupy: <b>' + P.newGroups.map(g => escapeHtml(g.name)).join(', ') + '</b>' : ''}</div>
+      <div class="cv-small" style="margin:6px 0;">${Object.keys(byG).map(g => escapeHtml(g) + ': ' + byG[g]).join(' · ')}</div>
+      ${P.skip.length ? `<details><summary class="cv-small">Pominięte (${P.skip.length})</summary><div class="cv-small">${P.skip.map(escapeHtml).join(' · ')}</div></details>` : ''}
+      <button class="btn" id="packGo" style="margin-top:8px;" ${P.add.length ? '' : 'disabled'}>Dodaj ${P.add.length} ćwiczeń do biblioteki</button>`;
+    const go = $('packGo'); if(go) go.onclick = async () => {
+      go.disabled = true; go.textContent = 'Zapisuję…';
+      const freshLib = (await safeGet('exercise_library')) || [], freshGroups = (await safeGet('library_groups')) || [];
+      const P2 = packPlan(pack, freshLib, freshGroups);
+      await persistWithFeedback('exercise_library_prev', {at: new Date().toISOString(), lib: freshLib, groups: freshGroups, added: P2.add.length});
+      const G2 = freshGroups.concat(P2.newGroups), L2 = freshLib.concat(P2.add);
+      if(P2.newGroups.length && !(await persistWithFeedback('library_groups', G2))){ go.disabled = false; return; }
+      if(!(await persistWithFeedback('exercise_library', L2))){ go.disabled = false; return; }
+      library = L2; libraryGroups = G2;
+      renderLibGroupChips(); renderLibGroupSelect(); renderLibFullTable();
+      $('packOut').innerHTML = `<b style="color:var(--ok,#2E7D5B);">✅ Dodano ${P2.add.length} ćwiczeń.</b> Tagi i grupy mięśniowe nadadzą się same z nazwy – sprawdź je w tabeli.`;
+      f.value = ''; toast('Dodano ' + P2.add.length + ' ćwiczeń');
+    };
+  };
+  $('packUndo').onclick = async () => {
+    const prev = await safeGet('exercise_library_prev');
+    if(!prev || !prev.lib){ toast('Brak kopii do cofnięcia'); return; }
+    if(!confirm('Przywrócić bibliotekę sprzed ostatniej paczki (' + (prev.added || '?') + ' ćwiczeń zniknie)? Zmiany zrobione w bibliotece po wgraniu paczki też zostaną cofnięte.')) return;
+    if(!(await persistWithFeedback('library_groups', prev.groups || []))) return;
+    if(!(await persistWithFeedback('exercise_library', prev.lib))) return;
+    await persistWithFeedback('exercise_library_prev', {cleared: true});
+    library = prev.lib; libraryGroups = prev.groups || [];
+    renderLibGroupChips(); renderLibGroupSelect(); renderLibFullTable();
+    $('packOut').innerHTML = '↩ Przywrócono poprzednią bibliotekę.'; toast('Cofnięto paczkę');
   };
 }
 
@@ -13440,7 +13504,7 @@ const P={
  sqBack:['Przysiad - ze sztanga na plecach','Przysiad - Safety bar'],
  sqFront:['Przysiad ze sztangą - z przodu','Przysiad - Safety bar'],
  sqBox:['Przysiad - ze sztangą na plecach - do skrzyni','Przysiad - Safety bar'],
- sqNovice:['Przysiad goblet','Przysiad - ze sztangą na plecach - do skrzyni','Przysiad - Safety bar'],
+ sqNovice:['Przysiad goblet','Przysiad - Safety bar','Przysiad - ze sztanga na plecach'],   // #28: bez skróconych zakresów u początkujących
  hinge:['Trap bar - martwy ciąg','Martwy ciąg w trap barze - z podwyższenia'],
  sqB:['Hack przysiad - na maszynie','Przysiad - Safety bar'],
  lunge:['Przysiad bułgarski - hantle','Przysiad wykroczny- przednia noga/pięta na podwyższeniu','Przysiad wykroczny - ze sztangą na plecach','Zakrok- hantle','Przysiad do boku- z hantlem','Przysiad wykroczny do boku','Box step up- ze sztanga na plecach - 50cm','Przysiad bułgarski - ze sztangą na plecach','Przysiad wykroczny - z hantlem z przodu - goblet - na klinie','Przysiad do boku- landmine'],
@@ -13548,8 +13612,19 @@ function blockNo(){ if(!G.prev) return 0; if(G.method && G.method !== 'sila') re
 function rnd(key){ let h = (2166136261 ^ (G.seed || 1)) >>> 0; for(let i = 0; i < key.length; i++) h = Math.imul(h ^ key.charCodeAt(i), 16777619);
   h ^= h >>> 13; h = Math.imul(h, 0x5bd1e995); h ^= h >>> 15; return (h >>> 0) / 4294967296; }
 function shuffled(arr, key){ return arr.map((x, i) => [rnd(key + '#' + x), x]).sort((a, b) => a[0] - b[0]).map(x => x[1]); }
+/* #28 (28.10, Bartosz): skrócone zakresy (do skrzyni, z podwyższenia, z pinów, z bloków, połowiczne…) tylko u sportowców
+   w intensyfikacji / tranzycji (metody: etap 2–3), nigdy u początkujących; wyjątek: ból kolana → przysiad do skrzyni (notatki) */
+const SHORT_ROM = /do skrzyni|z podwyższenia|z pinów|z bloków|z kolan\b|połowiczn|półprzysiad|half|ćwierć|niepełn|skrócon/i;
+function shortOk(){ if(G.knee) return true; if(G.staz === 'p' || !(GC && GC.sport)) return false; return G.method === 'sila' ? /^Int/.test(G.phase) : (G.stage || 1) >= 2; }
+/* rodzina ruchu – w jednym dniu tylko jedno ćwiczenie z rodziny (np. przysiad ze sztangą na plecach i safety bar – nie razem) */
+function famOf(n){ n = String(n || '');
+  if(/^przysiad/i.test(n) && !/wykrocz|bułgar|do boku|bokiem|kolarsk|hack|jednon|pistolet|flywheel|sumo|skok/i.test(n)) return 'sq2';
+  if(/trap ?bar|martwy ciąg/i.test(n) && !/jednon|rdl|rumuńsk/i.test(n)) return 'dl';
+  if(/^hip thrust|hip trust/i.test(n) && !/jednon/i.test(n)) return 'ht';
+  return null; }
 function pick(list, key, why, opts){
   opts = opts || {};
+  if(!shortOk()){ const l2 = list.filter(n => !SHORT_ROM.test(n)); if(l2.length) list = l2; }
   if(G.repl[key]){ const nm = G.repl[key]; USED.add(nm); POOLS[key] = list.concat(similarFor(list)); return meta({ name: nm, why: 'Wybrane ręcznie', key, alts: 2, grip: opts.grip || null, manual: true }); }
   const kn = KEEP[key];
   if(kn && !G.swaps[key] && (usable(kn) || G.addMissing) && !USED.has(kn)){ USED.add(kn); return meta({ name: kn, why, key, alts: 2, grip: opts.grip || null }); }
@@ -13558,6 +13633,7 @@ function pick(list, key, why, opts){
   if(!opts.noExt) c = c.concat(similarFor(list).filter(n => !c.some(x => gKey(x) === gKey(n))));
   POOLS[key] = c;
   if(!G.addMissing){ const f = c.filter(usable); if(f.length < c.length) PLAN_SKIPPED.push(...c.filter(n => !usable(n))); c = f; }
+  if(!shortOk()){ const f = c.filter(n => !SHORT_ROM.test(n)); if(f.length) c = f; }
   const ex = new Set(opts.allow || []);
   let free = c.filter(n => !USED.has(n));
   const fa = free.filter(n => ex.has(n) || !AVOID.has(n)); if(fa.length) free = fa;
@@ -13574,13 +13650,24 @@ function pick(list, key, why, opts){
   return meta({ name, why: why + note, key, alts: free.length, grip: opts.grip || null });
 }
 const SIM_CACHE = new Map();
+/* #30: ćwiczenia z biblioteki (np. z paczki e-booków) – tylko te, które pasują do serii głównych */
+const LIB_NOT_MAIN_SUB = /Mobilizacja|Propriocepcja|Plyometria|Moc|Kondycja|Izometria – rodzaje|Stopa/;
+const LIB_NOT_MAIN = /mobiliz|rolowan|kij(ek|ka|kiem)|slider|slajder|przetocz|zejście do przysiadu|kraba|płotkarsk|perturbac|\bsled\b|sanki|complex|skok|wskok|zeskok|pogo|balans|gąbce|nad głową|eldoa|rozciąg/i;
+const LIB_ADV = /2\/1|overcoming|yielding|\biso\b|myotatic|akcentowana ekscentryka|ekscentryka akcentowana|szybka ekscentryka|ekscentryczne przeciążenie|łańcuch|drop catch/i;
+const LIB_NOVICE_NO = /trap bar|landmine|safety bar|nordyck|kółka gimnast|futbolow|garhammer|zwis|l sit|\bghd\b|\bghr\b|ławka ujemna|hatfield|bułgarsk/i;
+function libFit(n){
+  const L = genLib(n); if(L && LIB_NOT_MAIN_SUB.test(L.sub || '')) return false;
+  if(LIB_NOT_MAIN.test(n) || LIB_ADV.test(n)) return false;
+  if(G.staz === 'p' && LIB_NOVICE_NO.test(n)) return false;
+  return true;
+}
 function primSig(n){ const m = genMuscles(n); return Object.keys(m).filter(g => m[g] >= 1).sort().join(','); }
 function similarFor(list){
   const base = list.find(n => primSig(n)) || list[0]; if(!base) return [];
   const sig = primSig(base); if(!sig) return [];
-  const ck = sig + '|' + library.length; if(SIM_CACHE.has(ck)) return SIM_CACHE.get(ck);
+  const ck = sig + '|' + library.length + '|' + G.staz; if(SIM_CACHE.has(ck)) return SIM_CACHE.get(ck);
   const dup = new Set(DUPS.map(d => gKey(d[1])));
-  const out = library.map(l => l.name).filter(n => primSig(n) === sig && !METHOD.test(n) && !dup.has(gKey(n)));
+  const out = library.map(l => l.name).filter(n => primSig(n) === sig && !METHOD.test(n) && !dup.has(gKey(n)) && libFit(n));
   SIM_CACHE.set(ck, out); return out;
 }
 function meta(o){ const L = genLib(o.name); if(L) o.name = L.name; o.lib = L; o.isNew = !L; o.video = !!(L && String(L.videoUrl || '').trim()); o.nm = !!(L && L.notMoveU); return o; }
@@ -13591,7 +13678,7 @@ function par(role, legs, name){
   const cy = Math.min(4, G.prev ? cycleNo() : 1);
   if(cy >= 2) s = Math.min(s + 1, MAXS[role][st] + 1);
   if(cy >= 3 && hi - lo >= 1){ lo = Math.max(3, lo - (cy - 2)); hi = Math.max(lo + 1, hi - (cy - 2)); }
-  if(/z przodu|martwy ciąg klasyczny/i.test(name) && hi > 6){ hi = 6; lo = 4; }
+  if(/przysiad\s*(ze sztangą|-)?\s*-?\s*z przodu|front squat|martwy ciąg klasyczny/i.test(name) && !/hantl|kettl|goblet|wykrocz/i.test(name) && hi > 6){ hi = 6; lo = 4; }   // #27c: tylko przysiad przedni ze sztangą (nie „z hantlem z przodu”)
   let tempo = role === 'A' ? (st === 'p' ? '4010' : (/martwy ciąg/i.test(name) ? '41X0' : '40X0')) : role === 'B' ? '3010' : '2010';
   if(/izometr/i.test(name)) tempo = 'izo';
   const fem = GC.sex === 'K', uni = UNI.test(name);
@@ -13623,7 +13710,7 @@ const LEG_A = ['Przysiad - ze sztanga na plecach','Przysiad ze sztangą - z przo
 const LEG_A_KNEE = ['Przysiad - ze sztangą na plecach - do skrzyni','Trap bar - martwy ciąg','Hip thrust - ze sztangą - obunóż','Martwy ciąg w trap barze - z podwyższenia','Przysiad - Safety bar'];
 function legA(i, key){
   const order = G.knee ? [['sqBox','Ból kolana → przysiad do skrzyni'],['hinge','Martwy ciąg w trap barze – mniej zgięcia kolana'],['hip','Biodro zamiast kolana']]
-    : G.staz === 'p' ? [['sqNovice','Początkujący: goblet – technika przed ciężarem'],['hinge','Trap bar – najprostszy zawias'],['sqBox','Przysiad do skrzyni – kontrola głębokości']]
+    : G.staz === 'p' ? [['sqNovice','Początkujący: goblet – technika przed ciężarem'],['hinge','Trap bar – najprostszy zawias'],['sqNovice','Początkujący: przysiad w pełnym zakresie']]
     : [['sqBack','Przysiad tył – główne ćwiczenie nóg'],['hinge','Martwy ciąg w trap barze'],['sqFront','Przysiad przedni (≤6 powt.)']];
   const [pool, w] = order[(i + (G.legOff || 0)) % order.length];
   const ex = pick([...new Set([...P[pool], ...(G.knee ? LEG_A_KNEE : LEG_A)])], key, w, { top: P[pool].length, noExt: true });
@@ -13672,7 +13759,7 @@ function prioPool(g){
     chest:['Wyciskanie hantli - na ławce - poziomej','Rozpiętki z hantlami - leżąc na ławce - poziomej','Wyciskanie hantli - leżąc na ławce skośnej - dodatniej','Dipy'],back:[...P.rowAny,'Ściąganie drążka wyciągu górnego- do klatki - nachwytem'],
     shS:[...P.delt],shF:['Wyciskanie hantli - nad głowę - stojąc - oburącz','Wyciskanie hantli- nad głowę siedząc - z oparciem','Wyciskanie nad głowę - jednorącz - landmine - klęcząc'],shR:['Odwrotne rozpiętki- z gumą','Odwrotny aniołek','Face pull','Odwrotne rozpiętki z hantlami w opadzie'],biceps:P.biceps,triceps:P.triceps,calf:P.calf,add:P.add}[g] || [];
   const dup = new Set(DUPS.map(d => gKey(d[1])));
-  const rest = library.map(l => l.name).filter(n => (genMuscles(n)[g] || 0) >= 1 && !METHOD.test(n) && !cur.includes(n));
+  const rest = library.map(l => l.name).filter(n => (genMuscles(n)[g] || 0) >= 1 && !METHOD.test(n) && !cur.includes(n) && libFit(n));
   return [...cur, ...rest].filter(n => !dup.has(gKey(n)) || gKey(n) === gKey(DUPS[0][0]));
 }
 function wuList(i){ return G.wu[i] !== undefined ? G.wu[i] : (G.warmup && genLib('Rozgrzewka - całość') ? [genLib('Rozgrzewka - całość').name] : []).concat((G.pogoWu && G.pogoWu[i]) || []); }
@@ -13777,6 +13864,7 @@ function finishBuild(days, why, label, cyN, pr, sila){
   if(!G.pogoWu) G.pogoWu = {};
   applyTests(days, why, sila);
   days.forEach(d => { d.rows = d.rows.filter(r => !G.removed[r.key]); });
+  famFix(days, why);
   if(sila) applySetTypes(days, why);
   days.forEach((d, di) => seriesLabels(d, G.order[di], G.groups[di]));
   eccCap(days, why);
@@ -13790,6 +13878,22 @@ function finishBuild(days, why, label, cyN, pr, sila){
   if(sila && G.shoulderWeak && !G.shFromDyn) why.push('Słaby bark → wiosło zamiast podciągania, bark w każdym treningu góry');
   const missing = []; days.forEach(d => d.rows.forEach(r => { if(r.isNew) missing.push(r.name); r.prev = sila && G.prev ? PREV[r.key] || null : undefined; }));
   return { days, why, label, cycle: cyN, missing: [...new Set(missing)], skipped: [...new Set(PLAN_SKIPPED)], tally: tally(days), pr };
+}
+
+function famFix(days, why){
+  let n = 0;
+  days.forEach(d => { const seen = new Map(), names = new Set(d.rows.map(r => r.name));
+    d.rows.forEach(r => { const f = famOf(r.name); if(!f) return;
+      if(!seen.has(f)){ seen.set(f, r.name); return; }
+      if(G.repl[r.key]) return;   // ręczny wybór trenera zostaje
+      const pool = (POOLS[r.key] || []).filter(x => usable(x) && !names.has(x) && (!famOf(x) || !seen.has(famOf(x))) && (shortOk() || !SHORT_ROM.test(x)));
+      const alt = shuffled(pool, r.key + '~fam')[0];
+      if(!alt){ return; }
+      const m = meta({ name: alt, why: r.why, key: r.key, alts: pool.length, grip: r.grip || null });
+      names.delete(r.name); names.add(m.name); USED.add(m.name);
+      Object.assign(r, { name: m.name, lib: m.lib, isNew: m.isNew, video: m.video, nm: m.nm }); n++;
+      const f2 = famOf(m.name); if(f2) seen.set(f2, m.name); }); });
+  if(n) why.push(`Jedno ćwiczenie z danej rodziny w dniu (np. przysiad ze sztangą ≠ safety bar w tym samym dniu): zamienione ${n}`);
 }
 
 /* ---------- RODZAJE SERII (#26, 28.10) – tylko trening siłowy ----------
@@ -14040,8 +14144,9 @@ function eccCap(days, why){
     if(n < ECC_LONG_MAX){ n++; return; }
     if(r.tempoWk){ r.tempoWk = r.tempoWk.map(capEcc); r.tempo = r.tempoWk.join('/'); } else r.tempo = capEcc(r.tempo);
     capped++; }); });
+  if(G.method === 'sila' && !capped) return;   // #27c: w treningu siłowym te zasady nie dotyczą (A = jedno ćwiczenie na dół)
   why.push(`Ekscentryka: progresja tempa 6 → 8 → 10 s tylko w serii A (max ${ECC_LONG_MAX} ćwiczenia w dniu), pozostałe stałe, max 5 s${capped ? ` (skrócono ${capped})` : ''}`);
-  why.push('Seria A zawsze: główne ćwiczenie na dół + główne ćwiczenie na górę');
+  if(G.method !== 'sila') why.push('Seria A zawsze: główne ćwiczenie na dół + główne ćwiczenie na górę');
 }
 function shiftLetters(rows, n){ rows.forEach(r => { r.lab = String.fromCharCode(r.lab.charCodeAt(0) + n) + r.lab.slice(1); }); return rows; }
 function methodDays(why){
@@ -14545,7 +14650,7 @@ window.genMgCell = function(td, ex){
   if(td.querySelector('[data-auto]')) td.querySelector('[data-auto]').onclick = () => save(null);
 };
 window.genOpen = genOpen;
-window.GEN_TEST = { genBlocks, genProfile, build: () => build(), get G(){ return G; } };
+window.GEN_TEST = { genBlocks, genProfile, build: () => build(), get G(){ return G; }, get GC(){ return GC; } };
 })();
 </script>
 <script>
