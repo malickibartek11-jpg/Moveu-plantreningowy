@@ -8599,7 +8599,7 @@ function renderLibraryView(){
     </div>
 
       <div class="tools-panel" id="packPanel">
-        <h4>📦 Wgraj paczkę ćwiczeń (plik .json od Claude) <span style="font-weight:400;font-size:11px;color:var(--muted);">· wersja aplikacji #31</span></h4>
+        <h4>📦 Wgraj paczkę ćwiczeń (plik .json od Claude) <span style="font-weight:400;font-size:11px;color:var(--muted);">· wersja aplikacji #32</span></h4>
         <div class="section-desc" style="margin:0 0 10px;">Doda wiele ćwiczeń naraz – z nazwą, filmem i grupą. Pomija te, które już są (ten sam film albo ta sama nazwa). Przed zapisem robi kopię biblioteki, więc można cofnąć.</div>
         <div class="lib-row" style="align-items:center;"><input type="file" id="packFile" accept=".json,application/json"><button class="btn ghost" id="packUndo">↩ Cofnij ostatnią paczkę</button></div>
         <div id="packOut" style="margin-top:10px;font-size:12.5px;"></div>
@@ -14718,7 +14718,7 @@ const st = document.createElement('style'); st.textContent = `
 
 (function(){
 const DYN_METRICS = { 'Max Force': 'maxF', 'Average Force': 'avgF', 'Impulse': 'imp', 'Average Impulse': 'avgImp', 'Max RFD': 'maxRfd', 'Average RFD': 'avgRfd', 'Min time to peak force': 'minTtp', 'Average time to peak force': 'avgTtp' };
-const DYN_MLAB = { maxF: 'Siła maks. [N]', avgF: 'Siła średnia [N]', imp: 'Impuls [N·s]', avgImp: 'Impuls średni [N·s]', maxRfd: 'RFD maks. [N/s]', avgRfd: 'RFD średni [N/s]', minTtp: 'Czas do szczytu min. [s]', avgTtp: 'Czas do szczytu śr. [s]' };
+const DYN_MLAB = { maxF: 'Siła maks. [N]', avgF: 'Siła średnia [N]', imp: 'Impuls [N·s]', avgImp: 'Impuls średni [N·s]', maxRfd: 'RFD maks. [N/s]', avgRfd: 'RFD średni [N/s]', minTtp: 'Czas do szczytu min. [s]', avgTtp: 'Czas do szczytu śr. [s]', rom: 'Zakres ruchu [°]' };
 /* rola testu po słowach kluczowych (angielskie nazwy z VALD Hub) */
 const DYN_ROLES = [
   ['kneeExt', /knee.*exten/i, 'Wyprost kolana'], ['kneeFlex', /knee.*flex/i, 'Zgięcie kolana'],
@@ -14734,12 +14734,50 @@ function dynRole(test){ const t = String(test || ''); // biodro: rotacje przed w
 const dynRoleLabel = (role, test) => (DYN_ROLES.find(r => r[0] === role) || [0, 0, test])[2];
 const DYN_POS = { Seated: 'siedząc', Prone: 'na brzuchu', Supine: 'na plecach', Standing: 'stojąc', 'Side lying': 'na boku', Kneeling: 'klęcząc' };
 
+
+/* #32: raport „dashboard” z VALD Hub (kafelki: Max Force / Max ROM – Left and Right, kilka testów w jednym PDF) */
+function dynParseDashboard(pages){
+  const MON = { Jan: '01', Feb: '02', Mar: '03', Apr: '04', May: '05', Jun: '06', Jul: '07', Aug: '08', Sep: '09', Oct: '10', Nov: '11', Dec: '12' };
+  const all = pages.flat(), metricRe = /^Max (Force|ROM)\s*-\s*Left and Right$/i;
+  if(!all.some(it => metricRe.test(it.s))) return null;
+  let date = null; const rd = all.find(it => /^Report Date/i.test(it.s));
+  if(rd){ const d = all.filter(it => Math.abs(it.y - rd.y) < 2 && it.x0 > rd.x0).map(it => it.s.match(/^(\d{1,2}) ([A-Z][a-z]{2}) (\d{4})$/)).find(Boolean);
+    if(d) date = `${d[3]}-${MON[d[2]] || '01'}-${String(d[1]).padStart(2, '0')}`; }
+  if(!date){ const d2 = all.map(it => it.s.match(/^(\d{1,2}) ([A-Z][a-z]{2}) (\d{4})$/)).find(Boolean); if(d2) date = `${d2[3]}-${MON[d2[2]] || '01'}-${String(d2[1]).padStart(2, '0')}`; }
+  if(!date) return null;
+  let profile = null; const pr = all.find(it => /^Profile$/i.test(it.s) || /^Profile:$/i.test(it.s));
+  if(pr){ const n = all.filter(it => Math.abs(it.y - pr.y) < 2 && it.x0 > pr.x0 + 5 && /[A-Za-zŁŚŻ]{2}/.test(it.s) && it.s !== ':').sort((a, b) => a.x0 - b.x0)[0]; if(n) profile = n.s; }
+  const tests = {}, order = [];
+  pages.forEach(items => {
+    items.filter(it => metricRe.test(it.s)).forEach(h => {
+      const kind = /ROM/i.test(h.s) ? 'rom' : 'maxF';
+      const title = items.filter(it => Math.abs(it.x0 - h.x0) < 3 && it.y > h.y && it.y - h.y < 25 && !metricRe.test(it.s)).sort((a, b) => a.y - b.y)[0];
+      if(!title) return;
+      const test = title.s.replace(/\s*(\.\.\.|…)$/, '').trim();
+      // obszar kafelka: ok. 290 pt szeroki (od ~50 pt na lewo od nagłówka), do 175 pt w dół
+      const inTile = it => it.x0 > h.x0 - 60 && it.x0 < h.x0 + 235 && it.y < h.y && it.y > h.y - 175;
+      const lab = items.filter(it => inTile(it) && /^(Left|Right)$/i.test(it.s));
+      const nums = items.filter(it => inTile(it) && /^-?\d+(\.\d+)?$/.test(it.s));
+      const val = { };
+      lab.forEach(l => { const v = nums.filter(n => Math.abs(n.x0 - l.x0) < 4 && l.y - n.y > 5 && l.y - n.y < 35).sort((a, b) => (l.y - a.y) - (l.y - b.y))[0];
+        if(v) val[/^L/i.test(l.s) ? 'L' : 'R'] = parseFloat(v.s); });
+      if(val.L == null && val.R == null) return;
+      if(!tests[test]){ tests[test] = { m: {} }; order.push(test); }
+      tests[test].m[kind] = val;
+    });
+  });
+  if(!order.length) return null;
+  const posOf = t => { const m = t.match(/\b(Seated|Supine|Prone|Standing|Side ?lying|Kneeling|Semi-Prone|Hook ?lying)\b/i); return m ? m[1].replace(/^./, c => c.toUpperCase()) : null; };
+  return { dashboard: true, profile, date, list: order.map(t => ({ test: t, position: posOf(t), profile, sessions: [{ date, time: null, position: posOf(t), reps: '', m: tests[t].m }], metrics: [], warnings: [] })) };
+}
+window.dynParseDashboard = dynParseDashboard;
 async function dynParsePdf(pdf){
   const pages = [];
   for(let i = 1; i <= pdf.numPages; i++){
     const pg = await pdf.getPage(i), tc = await pg.getTextContent();
     pages.push(tc.items.filter(it => it.str && it.str.trim()).map(it => ({ s: it.str.trim(), x: it.transform[4] + (it.width || 0) / 2, y: it.transform[5], x0: it.transform[4] })));
   }
+  const dash = dynParseDashboard(pages); if(dash) return dash;
   const dmy = s => { const m = s.match(/^(\d{2})\/(\d{2})\/(\d{4})$/); return m ? `${m[3]}-${m[2]}-${m[1]}` : null; };
   const out = { test: null, position: null, profile: null, sessions: {}, warnings: [] };
   const p1 = pages[0] || [];
@@ -14809,8 +14847,9 @@ function dynTestHtml(t, bm){
   const one = (t.sessions || []).filter(s => /(^|\s)1[LR]/.test(s.reps || '')).map(s => `${dynDay(s.date)}: ${s.reps.match(/1[LR]/g).map(x => x.replace('R', 'P')).join(', ')} – 1 powtórzenie`);
   const keys = Object.keys(DYN_MLAB).filter(k => (t.sessions || []).some(s => s.m[k]));
   return `<div class="dyn-t"><div class="dyn-th"><b>${escapeHtml(dynRoleLabel(t.role, t.test))}</b><span class="cv-small">${escapeHtml(t.test)} · ${escapeHtml(DYN_POS[t.position] || t.position || '')}</span>${t.role === 'other' ? '<span class="dyn-pill dyn-i">nowy test – zapisany, bez wpływu na plan</span>' : ''}<span class="cv-small s">${escapeHtml(t.file || '')}</span></div>
-    <div class="cv-small"><span style="color:#3E86C6">■</span> lewa <span style="color:#E8904A">■</span> prawa · siła maks. [N] · asymetria &lt;10% OK · 10–15% obserwacja · ≥15% priorytet</div>
-    <div class="dyn-chart">${bars}</div>
+    ${S.length ? `<div class="cv-small"><span style="color:#3E86C6">■</span> lewa <span style="color:#E8904A">■</span> prawa · siła maks. [N] · asymetria &lt;10% OK · 10–15% obserwacja · ≥15% priorytet</div>` : ''}
+    ${bars ? `<div class="dyn-chart">${bars}</div>` : ''}${(() => { const R = (t.sessions || []).filter(x => x.m && x.m.rom); if(!R.length) return ''; const r = R[R.length - 1].m.rom, ar = dynAsym(r.L, r.R);
+      return `<div class="cv-small" style="font-size:13px;"><b>Zakres ruchu</b> (${dynDay(R[R.length - 1].date)}): lewa <b>${dynF(r.L)}°</b> · prawa <b>${dynF(r.R)}°</b>${ar != null ? ` <span class="dyn-pill ${dynLvl(ar)}">różnica ${ar}%</span>` : ''} <span class="dyn-pill dyn-i">do wglądu – nie wpływa na plan</span></div>`; })()}
     ${trend ? `<div class="cv-small">Zmiana od ${dynDay(b.date)}: ${trend}</div>` : ''}${one.length ? `<div class="cv-small"><span class="dyn-pill dyn-w">uwaga</span> ${escapeHtml(one.join(' · '))}</div>` : ''}
     <details><summary class="cv-small" style="cursor:pointer">Wszystkie metryki (L / P)</summary><div style="overflow-x:auto"><table class="dyn-tab"><tr><th>Metryka</th>${(t.sessions || []).map(s => `<th>${dynDay(s.date)}</th>`).join('')}</tr>
       ${keys.map(k => `<tr><td>${escapeHtml(DYN_MLAB[k])}${/Rfd|Ttp/.test(k) ? ' <span class="dyn-pill dyn-i">do wglądu</span>' : ''}</td>${(t.sessions || []).map(s => s.m[k] ? `<td>${dynF(s.m[k].L, /Ttp/.test(k) ? 2 : 0)} / ${dynF(s.m[k].R, /Ttp/.test(k) ? 2 : 0)}</td>` : '<td>—</td>').join('')}</tr>`).join('')}</table></div></details></div>`;
@@ -14836,6 +14875,7 @@ window.dynReadFiles = async function(files){
     try{
       const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(await f.arrayBuffer()) }).promise;
       const r = await dynParsePdf(pdf);
+      if(r.dashboard){ r.list.forEach(x => items.push({ file: f.name, r: x, label: dynRoleLabel(dynRole(x.test), x.test) + (x.sessions[0].m.maxF ? '' : ' (zakres ruchu)') })); continue; }
       if(!r.test || !r.sessions.some(s => s.m.maxF)){ bad.push(f.name); continue; }
       items.push({ file: f.name, r, label: dynRoleLabel(dynRole(r.test), r.test) });
     }catch(e){ console.warn(e); bad.push(f.name); }
@@ -14881,6 +14921,7 @@ window.dynBind = function(c, d){
     msg.textContent = 'Czytam pliki…';
     const R = await dynReadFiles(files), bad = R.bad.concat(skip), other = [];
     R.items.forEach(it => { const r = it.r; if(r.profile && c.name && !String(c.name).toLowerCase().includes(r.profile.split(' ').pop().toLowerCase()) && !String(c.name).toLowerCase().includes(r.profile.split(' ')[0].toLowerCase())) other.push(`${it.file}: w pliku „${r.profile}”`); dynMerge(d, r, it.file); });
+    other.splice(0, other.length, ...new Set(other));
     if(R.items.length && await saveClientNotes(c.id)) toast(`Wczytano DynaMo: ${R.items.map(x => x.label).join(', ')}`);
     renderClientInfo();
     const m2 = document.getElementById('dynMsg');
