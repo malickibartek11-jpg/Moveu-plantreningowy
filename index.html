@@ -3021,11 +3021,63 @@ async function ensureAkademiaSubgroups(){
   }
 }
 
+/* #36 CORE (osobna zakładka na brzuch) + alfabetyczna kolejność ćwiczeń */
+const CORE36_OLD = {'Core – antyprzeprost': 1, 'Core – antyrotacja': 1, 'Core – boczny': 1, 'Core – zgięcie i rotacja': 1, 'Core – prostowniki grzbietu': 1};
+function core36Key(s){ return String(s || '').toLowerCase().replace(/ł/g, 'l').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[–—]/g, '-'); }
+function core36Sub(name, sub){
+  const n = core36Key(name);
+  if(sub === 'Core – prostowniki grzbietu' || sub === 'Tułów – prostowniki grzbietu' || /wyprost\w* tulowia|wznosy tulowia|superman|odwrocony plank|reverse hyper|prostownik/.test(n)) return 'Tułów – prostowniki grzbietu';
+  if(/plank\w* bokiem|side plank|deska bokiem|podporze bokiem|deska boczna|copenhagen/.test(n)) return 'Core – planki bokiem';
+  if(/zgieci\w* (bokiem|do boku)|sklon\w* (w bok|bokiem|do boku)|suitcase/.test(n)) return 'Core – zgięcia boczne';
+  if(/chop|lifting|pallof|antyrotac/.test(n)) return 'Core – lifting / chopping i antyrotacja';
+  if(/hollow\W+v\b|v-up|lokcie do kolan/.test(n)) return 'Core – zgięcia';
+  if(/plank|deska|hollow|martwy robak|dead bug|roll ?outs?|l- ?sit|l sit|stir the pot|kolko/.test(n)) return 'Core – planki i antyprzeprost';
+  if(/rotac|skret|wade|landmine|flywheel|rosyjsk|russian|wiatrak/.test(n)) return 'Core – rotacje tułowia';
+  if(/sklon|brzusz|siady|sit ?up|garham|unoszenie nog|wznosy nog|t2b|toes|voyager|podpepk|wznosy bioder|crunch|scyzoryk|brzuch/.test(n)) return 'Core – zgięcia';
+  const M = {'Core – antyprzeprost': 'Core – planki i antyprzeprost', 'Core – antyrotacja': 'Core – lifting / chopping i antyrotacja', 'Core – boczny': 'Core – planki bokiem', 'Core – zgięcie i rotacja': 'Core – zgięcia'};
+  return M[sub] || null;
+}
+/* przenosi brzuch z „Tułów” do nowej zakładki „Core” – jednorazowo (dopóki są stare podgrupy albo brak grupy Core) */
+function core36Plan(lib, groups){
+  const tul = groups.find(g => core36Key(g.name).trim() === 'tulow');
+  let core = groups.find(g => core36Key(g.name).trim() === 'core');
+  const need = lib.some(l => CORE36_OLD[l.sub]) || (!core && tul && lib.some(l => l.groupId === tul.id && /^Core/.test(core36Sub(l.name, l.sub) || '')));
+  if(!need) return null;
+  const G2 = groups.slice();
+  if(!core){ core = {id: 'lg_core_' + Date.now(), name: 'Core'}; const i = tul ? G2.findIndex(g => g.id === tul.id) : -1; G2.splice(i > -1 ? i + 1 : G2.length, 0, core); }
+  let moved = 0;
+  const L2 = lib.map(e => {
+    const inTul = tul && e.groupId === tul.id;
+    if(!inTul && !CORE36_OLD[e.sub]) return e;
+    const ns = core36Sub(e.name, e.sub);
+    if(!ns) return e;
+    const o = Object.assign({}, e, {sub: ns});
+    if(/^Core/.test(ns)){ if(o.groupId !== core.id){ o.groupId = core.id; moved++; } }
+    else if(!o.groupId && tul) o.groupId = tul.id;
+    return o;
+  });
+  return {lib: L2, groups: G2, moved};
+}
+async function core36Migrate(){
+  try{
+    if(!core36Plan(library, libraryGroups)) return;
+    const freshLib = (await safeGet('exercise_library')) || [], freshGroups = (await safeGet('library_groups')) || [];
+    const P = core36Plan(freshLib, freshGroups); if(!P) return;
+    await persistWithFeedback('exercise_library_prev', {at: new Date().toISOString(), lib: freshLib, groups: freshGroups, added: P.moved});
+    if(!(await persistWithFeedback('library_groups', P.groups))) return;
+    if(!(await persistWithFeedback('exercise_library', P.lib))) return;
+    library = P.lib; libraryGroups = P.groups;
+    if(typeof toast === 'function') toast('Biblioteka: utworzono zakładkę CORE (' + P.moved + ' ćw. na brzuch)');
+  }catch(e){ console.warn('#36 core', e); }
+}
+function libAlpha(a, b){ return String(a.name || a).localeCompare(String(b.name || b), 'pl', {sensitivity: 'base', numeric: true}); }
+
 async function init(){
   setStatus('Ładowanie danych…');
   clients = await loadClientsFromDB();
   library = (await safeGet('exercise_library')) || [];
   libraryGroups = (await safeGet('library_groups')) || [];
+  if(window.core36Migrate) await core36Migrate();
   const loadedClientGroups = await safeGet('client_groups');
   if(loadedClientGroups === null){
     // pierwsze uruchomienie - seedujemy domyslne podgrupy
@@ -5936,7 +5988,7 @@ function renderDayPanel(){
         chipsHolder.querySelectorAll('.group-chip').forEach(c => c.classList.remove('active'));
         chip.classList.add('active');
         const exListEl = $('exList-' + cat);
-        const exs = library.filter(l => l.groupId === chip.dataset.gid);
+        const exs = library.filter(l => l.groupId === chip.dataset.gid).sort(libAlpha);
         if(exs.length === 0){
           exListEl.innerHTML = '<div class="empty-hint">Brak ćwiczeń w tej grupie.</div>';
           return;
@@ -8436,12 +8488,14 @@ const GROUP_ORG_MAP = {
     'Rotacja przedramienia - z użyciem wyciągu - stojąc'
   ],
   'Tułów': [
+    'Wyprosty tułowia - ławka rzymska',
+    'Wyprosty tułowia -GHD'
+  ],
+  'Core': [
     'Flywheel rotacja tułowia',
     'Skłony tułowia - z krążkiem nad głową',
     'Rotacja tułowia - wyciąg - stojąc',
     'Siady z leżenia',
-    'Wyprosty tułowia - ławka rzymska',
-    'Wyprosty tułowia -GHD',
     'T2B (Toes to bar)',
     'Brzuch - skręty z uniesieniem bioder',
     'Brzuszki - Voyager',
@@ -8547,7 +8601,7 @@ async function applyGroupOrganization(){
   renderLibFullTable();
 
   const resultEl = $('groupOrgResult');
-  let html = `<div style="color:var(--muted);">Dopasowano <b style="color:var(--text);">${matched.length}</b> ćwiczeń do 13 grup.</div>`;
+  let html = `<div style="color:var(--muted);">Dopasowano <b style="color:var(--text);">${matched.length}</b> ćwiczeń do 14 grup.</div>`;
   if(notFound.length > 0){
     html += `<div style="margin-top:8px;color:var(--warn);"><b>Nie znaleziono w bibliotece (${notFound.length}) — sprawdź nazwy:</b><ul style="margin:6px 0 0;padding-left:18px;">${notFound.map(n=>`<li>${escapeHtml(n)}</li>`).join('')}</ul></div>`;
   }
@@ -8580,7 +8634,7 @@ function renderLibraryView(){
 
     <div class="tools-panel">
       <h4>🗂️ Uporządkuj bibliotekę na 13 grup</h4>
-      <div class="section-desc" style="margin:0 0 10px;">Utworzy grupy (Góra Push, Góra Pull, Dół Squat, Dół Hip Hinge, Dynamic, Ramiona, Tułów, Nogi Uginanie/Prostowanie, Prehab/rehab, Plyometria, Mobilność, Kondycja, Mięśnie karku) i przypisze do nich ćwiczenia po nazwie. Bezpieczne — jeśli grupa już istnieje, użyje jej zamiast tworzyć drugą.</div>
+      <div class="section-desc" style="margin:0 0 10px;">Utworzy grupy (Góra Push, Góra Pull, Dół Squat, Dół Hip Hinge, Dynamic, Ramiona, Tułów, Core, Nogi Uginanie/Prostowanie, Prehab/rehab, Plyometria, Mobilność, Kondycja, Mięśnie karku) i przypisze do nich ćwiczenia po nazwie. Bezpieczne — jeśli grupa już istnieje, użyje jej zamiast tworzyć drugą.</div>
       <button class="btn" id="applyGroupOrgBtn">Zastosuj podział na 13 grup</button>
       <div id="groupOrgResult" style="margin-top:10px;font-size:12.5px;"></div>
     </div>
@@ -8599,7 +8653,7 @@ function renderLibraryView(){
     </div>
 
       <div class="tools-panel" id="packPanel">
-        <h4>📦 Wgraj paczkę ćwiczeń (plik .json od Claude) <span style="font-weight:400;font-size:11px;color:var(--muted);">· wersja aplikacji #35</span></h4>
+        <h4>📦 Wgraj paczkę ćwiczeń (plik .json od Claude) <span style="font-weight:400;font-size:11px;color:var(--muted);">· wersja aplikacji #38</span></h4>
         <div class="section-desc" style="margin:0 0 10px;">Doda wiele ćwiczeń naraz – z nazwą, filmem i grupą. Pomija te, które już są (ten sam film albo ta sama nazwa). Przed zapisem robi kopię biblioteki, więc można cofnąć.</div>
         <div class="lib-row" style="align-items:center;"><input type="file" id="packFile" accept=".json,application/json"><button class="btn ghost" id="packUndo">↩ Cofnij ostatnią paczkę</button></div>
         <div id="packOut" style="margin-top:10px;font-size:12.5px;"></div>
@@ -8662,7 +8716,7 @@ function renderLibraryView(){
   packBind();
 }
 /* #31 podgrupy */
-const LIB_SUBS = [["Mobilność", "Mobilizacja – biodro"], ["Mobilność", "Mobilizacja – staw skokowy i stopa"], ["Mobilność", "Mobilizacja – kręgosłup"], ["Mobilność", "Mobilizacja – bark i łopatka"], ["Mobilność", "Mobilizacja – tył uda"], ["Mobilność", "Mobilizacja – całe ciało"], ["Prehab/rehab", "Rehab – kolano"], ["Prehab/rehab", "Rehab – bark i łopatka"], ["Prehab/rehab", "Rehab – przywodziciele i pachwina"], ["Prehab/rehab", "Rehab – pośladek średni"], ["Prehab/rehab", "Rehab – zginacz biodra"], ["Prehab/rehab", "Rehab – stopa i staw skokowy"], ["Prehab/rehab", "Propriocepcja i równowaga"], ["Mięśnie karku", "Kark"], ["Dół Squat", "Przysiad obunóż"], ["Dół Squat", "Jednonóż (wykroki, bułgarski, wejścia)"], ["Dół Hip Hinge", "Zawias (RDL, martwy ciąg, dzień dobry)"], ["Dół Hip Hinge", "Mostki i hip thrust"], ["Nogi Uginanie/Prostowanie", "Tył uda (uginanie, nordic)"], ["Nogi Uginanie/Prostowanie", "Prostowanie kolana"], ["Nogi Uginanie/Prostowanie", "Łydka"], ["Góra Push", "Pchanie poziome"], ["Góra Push", "Pchanie pionowe"], ["Góra Pull", "Ciągnięcie pionowe"], ["Góra Pull", "Ciągnięcie poziome"], ["Ramiona", "Biceps"], ["Ramiona", "Triceps"], ["Ramiona", "Barki – izolowane"], ["Tułów", "Core – antyprzeprost"], ["Tułów", "Core – antyrotacja"], ["Tułów", "Core – boczny"], ["Tułów", "Core – zgięcie i rotacja"], ["Tułów", "Core – prostowniki grzbietu"], ["Plyometria", "Plyo – ekstensywna (pogo, skakanka, trampolina)"], ["Plyometria", "Plyo – skrzynia i zeskoki"], ["Plyometria", "Plyo – skoki w dal, w miejscu, jednonóż"], ["Dynamic", "Rzuty piłką"], ["Dynamic", "Olimpijskie, podrzuty, reaktywne"], ["Kondycja", "Sanki i noszenie"], ["Kondycja", "Cardio i complexy"]];
+const LIB_SUBS = [["Mobilność", "Mobilizacja – biodro"], ["Mobilność", "Mobilizacja – staw skokowy i stopa"], ["Mobilność", "Mobilizacja – kręgosłup"], ["Mobilność", "Mobilizacja – bark i łopatka"], ["Mobilność", "Mobilizacja – tył uda"], ["Mobilność", "Mobilizacja – całe ciało"], ["Prehab/rehab", "Rehab – kolano"], ["Prehab/rehab", "Rehab – bark i łopatka"], ["Prehab/rehab", "Rehab – przywodziciele i pachwina"], ["Prehab/rehab", "Rehab – pośladek średni"], ["Prehab/rehab", "Rehab – zginacz biodra"], ["Prehab/rehab", "Rehab – stopa i staw skokowy"], ["Prehab/rehab", "Propriocepcja i równowaga"], ["Mięśnie karku", "Kark"], ["Dół Squat", "Przysiad obunóż"], ["Dół Squat", "Jednonóż (wykroki, bułgarski, wejścia)"], ["Dół Hip Hinge", "Zawias (RDL, martwy ciąg, dzień dobry)"], ["Dół Hip Hinge", "Mostki i hip thrust"], ["Nogi Uginanie/Prostowanie", "Tył uda (uginanie, nordic)"], ["Nogi Uginanie/Prostowanie", "Prostowanie kolana"], ["Nogi Uginanie/Prostowanie", "Łydka"], ["Góra Push", "Pchanie poziome"], ["Góra Push", "Pchanie pionowe"], ["Góra Pull", "Ciągnięcie pionowe"], ["Góra Pull", "Ciągnięcie poziome"], ["Ramiona", "Biceps"], ["Ramiona", "Triceps"], ["Ramiona", "Barki – izolowane"], ["Tułów", "Tułów – prostowniki grzbietu"], ["Core", "Core – zgięcia"], ["Core", "Core – zgięcia boczne"], ["Core", "Core – rotacje tułowia"], ["Core", "Core – planki i antyprzeprost"], ["Core", "Core – planki bokiem"], ["Core", "Core – lifting / chopping i antyrotacja"], ["Plyometria", "Plyo – ekstensywna (pogo, skakanka, trampolina)"], ["Plyometria", "Plyo – skrzynia i zeskoki"], ["Plyometria", "Plyo – skoki w dal, w miejscu, jednonóż"], ["Dynamic", "Rzuty piłką"], ["Dynamic", "Olimpijskie, podrzuty, reaktywne"], ["Kondycja", "Sanki i noszenie"], ["Kondycja", "Cardio i complexy"]];
 let libSubFilter = '';
 function libSubOptions(cur){
   const by = {}; LIB_SUBS.forEach(([g, sn]) => (by[g] = by[g] || []).push(sn));
@@ -8781,6 +8835,7 @@ function renderLibFullTable(){
   if(window.genLibFilter){ genLibFilterBar(); rows = genLibFilter(rows); }
   libSubFilterBar();
   if(libSubFilter) rows = rows.filter(l => (l.sub || '') === (libSubFilter === '__none' ? '' : libSubFilter));
+  rows = rows.slice().sort(libAlpha);
   const tokens = plSearchKey(libSearchQuery).split(/\s+/).filter(Boolean);
   if(tokens.length){
     rows = rows.filter(l => {
@@ -9403,7 +9458,7 @@ async function assignYtToExercise(exId, videoId){
 
 function renderLibraryList(){
   const dl = $('libNamesList');
-  if(dl){ dl.innerHTML = library.map(l => `<option value="${escapeHtml(l.name)}">`).join(''); }
+  if(dl){ dl.innerHTML = library.slice().sort(libAlpha).map(l => `<option value="${escapeHtml(l.name)}">`).join(''); }
 }
 
 /* ============ SPORTOWIEC: KAFELKOWY WYBÓR ============ */
@@ -13637,7 +13692,7 @@ function genProfile(c, d){
     if(m){ const y = m[2] === 'pol' ? 0.5 : +m[2]; lv = y < 1.5 ? 'p' : y < 4 ? 's' : 'z'; }
   }
   return { name: c.name, sex: R.sex || null, staz: lv, stazKnown: !!lv, days: R.days ? Math.max(2, Math.min(4, R.days)) : null, physique, knee, shoulderWeak: shoulder,
-    prio: Array.isArray(cx.prio) ? cx.prio.slice(0, 2) : [], hasCtx: !!(cx.text && cx.text.trim()), ctxTxt: txt, season: R.season || null, goals: R.goals, age: R.age, sport: R.sport || null,
+    prio: Array.isArray(cx.prio) ? cx.prio.slice(0, 2) : [], prioMode: cx.prioMode === 'cost' ? 'cost' : 'auto', prioCost: Array.isArray(cx.prioCost) ? cx.prioCost.slice() : null, hasCtx: !!(cx.text && cx.text.trim()), ctxTxt: txt, season: R.season || null, goals: R.goals, age: R.age, sport: R.sport || null,
     tests: (typeof ctxTestsFor === 'function' && c.id) ? (ctxTestsFor(c.id) || {}).tests || null : null,
     dyn: (typeof window.dynSummary === 'function' && d) ? window.dynSummary(d) : null };
 }
@@ -13676,6 +13731,7 @@ function pick(list, key, why, opts){
   let c = list.slice();
   // ⇄ zawsze działa: za pulą dokładam ćwiczenia z biblioteki na te same główne grupy mięśniowe
   if(!opts.noExt) c = c.concat(similarFor(list).filter(n => !c.some(x => gKey(x) === gKey(n))));
+  { const nr = c.filter(n => !REGRESS.test(n)); if(nr.length) c = nr; }
   POOLS[key] = c;
   if(!G.addMissing){ const f = c.filter(usable); if(f.length < c.length) PLAN_SKIPPED.push(...c.filter(n => !usable(n))); c = f; }
   if(!shortOk()){ const f = c.filter(n => !SHORT_ROM.test(n)); if(f.length) c = f; }
@@ -13700,7 +13756,10 @@ const LIB_NOT_MAIN_SUB = /Mobilizacja|Propriocepcja|Plyometria|Plyo –|Moc|Rzut
 const LIB_NOT_MAIN = /mobiliz|rolowan|kij(ek|ka|kiem)|slider|slajder|przetocz|zejście do przysiadu|kraba|płotkarsk|perturbac|\bsled\b|sanki|complex|skok|wskok|zeskok|pogo|balans|gąbce|nad głową|eldoa|rozciąg/i;
 const LIB_ADV = /2\/1|overcoming|yielding|\biso\b|myotatic|akcentowana ekscentryka|ekscentryka akcentowana|szybka ekscentryka|ekscentryczne przeciążenie|łańcuch|drop catch/i;
 const LIB_NOVICE_NO = /trap bar|landmine|safety bar|nordyck|kółka gimnast|futbolow|garhammer|zwis|l sit|\bghd\b|\bghr\b|ławka ujemna|hatfield|bułgarsk/i;
+/* #37: regresje (pompki na kolanach, przy ścianie, podciąganie z gumą / z asystą) – generator nigdy sam, tylko ręcznie */
+const REGRESS = /na kolanach|pompk\w*[^,]*(przy|o) ścian|z asystą|asystowan|wspomagan|(podciąg|ściąg)\w*[^,]*z gumą/i;
 function libFit(n){
+  if(REGRESS.test(n)) return false;
   const L = genLib(n); if(L && LIB_NOT_MAIN_SUB.test(L.sub || '')) return false;
   if(LIB_NOT_MAIN.test(n) || LIB_ADV.test(n)) return false;
   if(G.staz === 'p' && LIB_NOVICE_NO.test(n)) return false;
@@ -13761,7 +13820,12 @@ const CORE = [['coreFront','Brzuch – antyprzeprost'],['coreRot','Brzuch – an
 function coreRows(base, day, key){ const n = CORE_PLAN[day] || 0, out = []; for(let k = 0; k < n; k++){ const [pool, w] = CORE[(CORE_I++ + (G.coreOff || 0)) % 3]; out.push(R(n > 1 ? base + (k + 1) : base, 'C', false, pick(P[pool], key + k, w))); } return out; }
 const LEG_A = ['Przysiad - ze sztanga na plecach','Przysiad ze sztangą - z przodu','Trap bar - martwy ciąg','Przysiad - Safety bar','Przysiad - ze sztangą na plecach - do skrzyni','Martwy ciąg w trap barze - z podwyższenia','Martwy ciąg klasyczny','Hip thrust - ze sztangą - obunóż'];
 const LEG_A_KNEE = ['Przysiad - ze sztangą na plecach - do skrzyni','Trap bar - martwy ciąg','Hip thrust - ze sztangą - obunóż','Martwy ciąg w trap barze - z podwyższenia','Przysiad - Safety bar'];
-function legA(i, key){
+function legA(i, key, focus){
+  const FOCP = { glute: [['Hip thrust - ze sztangą - obunóż', 'RDL - sztanga', 'Trap bar - martwy ciąg'], 'Priorytet pośladki → hip thrust / zawias w serii A'],
+    ham: [['RDL - sztanga', 'RDL - jednonóż - półsztanga'], 'Priorytet tył uda → RDL w serii A'], quad: [G.staz === 'p' ? [...P.sqNovice, 'Trap bar - martwy ciąg'] : [...P.sqBack, 'Przysiad ze sztangą - z przodu'], 'Priorytet czworogłowe → przysiad w serii A'] };
+  if(focus && FOCP[focus] && !G.knee){ const [l, w] = FOCP[focus], lp = LEG_A.filter(n => G.staz !== 'p' || !/z przodu|klasyczny/i.test(n));
+    const ex = pick([...new Set([...l, ...lp])], key, w, { top: focus === 'glute' ? 2 : l.length, noExt: true });
+    return { row: R('A', 'A', true, ex), isHinge: /martwy|trap bar|hip thrust|rdl|rumuńsk/i.test(ex.name) }; }
   const order = G.knee ? [['sqBox','Ból kolana → przysiad do skrzyni'],['hinge','Martwy ciąg w trap barze – mniej zgięcia kolana'],['hip','Biodro zamiast kolana']]
     : G.staz === 'p' ? [['sqNovice','Początkujący: przysiad ze sztangą – pełny zakres, nauka techniki na lekkim ciężarze'],['hinge','Trap bar – najprostszy zawias'],['sqNovice','Początkujący: przysiad ze sztangą – pełny zakres'],['hingeNov','Początkujący: zawias ze sztangą (RDL / hip thrust)']]
     : [['sqBack','Przysiad tył – główne ćwiczenie nóg'],['hinge','Martwy ciąg w trap barze'],['sqFront','Przysiad przedni (≤6 powt.)']];
@@ -13771,18 +13835,44 @@ function legA(i, key){
   if(!P[pool].includes(ex.name)) ex.why = 'Nowy blok – inne ćwiczenie z serii A dla nóg';
   return { row: R('A', 'A', true, ex), isHinge: /martwy|trap bar|hip thrust|rdl|rumuńsk/i.test(ex.name) };
 }
+/* #37: FBW – co jest w serii A. Priorytet → A na priorytet (2×: dzień 1, 3×: dni 1 i 3), drugi dzień druga połowa ciała.
+   Bez priorytetu: rotacja nogi / góra, w kolejnym bloku odwrotnie. */
+const UP_PULL = new Set(['back', 'shR', 'biceps']);
+function fbwA(i){
+  const pr = (G.prio || []).filter(g => MG_PRIO.includes(g));
+  if(pr.length){
+    const seq = pr.length === 2 && LEGG.has(pr[0]) !== LEGG.has(pr[1]) ? [pr[0], pr[1]] : [pr[0], LEGG.has(pr[0]) ? 'up' : 'leg'];
+    const f = seq[i % 2], up = f === 'up' || (f !== 'leg' && !LEGG.has(f));
+    return { up, focus: f === 'up' || f === 'leg' ? null : f, prio: f !== 'up' && f !== 'leg' };
+  }
+  return { up: (i + (G.legOff || 0) + blockNo()) % 2 === 1, focus: null, prio: false };
+}
 function fbwDay(i){
-  const pk = pkList()[i % 3], rows = [];
-  const a = legA(i, 'fA' + i); rows.push(a.row);
+  let pk = pkList()[i % 3]; const rows = [], A = fbwA(i);
+  if(A.up){
+    if(A.focus === 'shF' || A.focus === 'shS') pk = 'OHP'; else if(A.focus === 'chest' && pk === 'OHP') pk = 'BP';
+    const pullFirst = UP_PULL.has(A.focus), why = A.prio ? `Priorytet ${MG[A.focus]} → seria A na górę` : 'Rotacja: dziś seria A na górę';
+    const pr = pressRow(pullFirst ? 'A2' : 'A1', 'A', pk, 'fB1' + i), pl = pullRow(pullFirst ? 'A1' : 'A2', 'A', pk, 'fB2' + i);
+    (pullFirst ? pl : pr).why = why + ' · ' + (pullFirst ? pl : pr).why;
+    rows.push(...(pullFirst ? [pl, pr] : [pr, pl]));
+    const a = legA(i, 'fA' + i); Object.assign(a.row, par('B', true, a.row.name), { lab: 'B', role: 'B', legMain: true, why: 'Nogi w serii B (A dziś na górę) · ' + a.row.why });
+    rows.push(a.row);
+    return fbwRest(i, pk, a, rows, `A: góra · wyciskanie: ${PNAME[pk]}`);
+  }
+  const a = legA(i, 'fA' + i, A.focus); rows.push(a.row);
+  if(A.prio) a.row.why = `Priorytet ${MG[A.focus]} → seria A · ` + a.row.why;
   rows.push(pressRow('B1', 'B', pk, 'fB1' + i));
   rows.push(pullRow('B2', 'B', pk, 'fB2' + i));
+  return fbwRest(i, pk, a, rows, `A: nogi · wyciskanie: ${PNAME[pk]}`);
+}
+function fbwRest(i, pk, a, rows, sub){
   rows.push(R('C1', 'C', true, pick(G.knee ? P.lungeKnee : P.lunge, 'fC1' + i, G.knee ? 'Jednonóż z małym zgięciem kolana' : 'Jednonóż – słabsza noga zaczyna')));
   if(a.isHinge) rows.push(R('C2', 'C', true, pick(G.knee ? P.kneePain : G.staz === 'p' ? P.kneeNov : P.knee, 'fC2' + i, G.knee ? 'Kolano: TKE/VMO w krótkim zakresie, bez bólu' : 'Wyprost kolana / VMO – w dzień zawiasu')));
   else rows.push(R('C2', 'C', true, pick(P.ham, 'fC2' + i, 'Tył uda jako zginacz kolana – co trening inne ustawienie stóp')));
   rows.push(R('D1', 'C', false, pick(pk === 'BP' || G.shoulderWeak ? P.shoulder : (pk === 'OHP' ? P.biceps : P.triceps), 'fD1' + i, pk === 'BP' || G.shoulderWeak ? 'Po ławce – naprawczo bark (rotatory / trap 3)' : 'Ramiona po wyciskaniu')));
   rows.push(R('D2', 'C', true, pick(i % 2 === 0 ? P.add : P.calf, 'fD2' + i, i % 2 === 0 ? 'Przywodziciele – zwykle zaniedbane' : 'Łydki')));
   rows.push(...coreRows('E', i, 'fE' + i));
-  return { name: `FBW ${i + 1}`, sub: `wyciskanie: ${PNAME[pk]}`, rows };
+  return { name: `FBW ${i + 1}`, sub, rows };
 }
 function upperDay(pk, tag, coreI){
   const rows = [];
@@ -13885,6 +13975,115 @@ function applyPriority(days, why){
   });
   return out;
 }
+/* #38: priorytet KOSZTEM wybranych partii – ile serii dostaje priorytet, tyle oddają zaznaczone partie (trening nie dłuższy).
+   Zostaje też tryb „Automatycznie” (#37). Lista partii: wybrana ręcznie albo podpowiedź (najwięcej serii, nie pracują przy priorytecie). */
+const pPrim = n => { const m = genMuscles(n); return Object.keys(m).filter(g => m[g] >= 1); };
+function prioCutOk(r, groups){
+  if(r.role === 'A' || r.fin || r.giant || r.setType || r.isPrioNew || G.ov[r.key] || r.sets <= (r.legMain ? 3 : 2)) return false;
+  const m = genMuscles(r.name), pp = pPrim(r.name); if(!pp.some(g => groups.includes(g))) return false;
+  const mx = Math.max(...pp.map(g => m[g])); return !G.prio.some(g => (m[g] || 0) >= mx);
+}
+function prioMark(days){
+  days.forEach(d => d.rows.forEach(r => { G.prio.forEach(g => { if((genMuscles(r.name)[g] || 0) >= 1) r.prio = g; }); }));
+  const [lo, hi] = TGT[G.staz]; return G.prio.map(g => ({ g, before: tally(days)[g] || 0, after: 0, lo, hi }));
+}
+function prioCostSuggest(days){
+  const t = tally(days), pv = Math.min(...G.prio.map(g => t[g] || 0)), ov = Math.max(...MG_PRIO.filter(g => !G.prio.includes(g)).map(g => t[g] || 0));
+  const need = Math.max(2, Math.ceil(ov * PRIO_MARGIN - pv) + 2);
+  const cand = MG_PRIO.filter(g => !G.prio.includes(g)).map(g => ({ g, t: t[g] || 0, cap: days.reduce((a, d) => a + d.rows.filter(r => prioCutOk(r, [g])).reduce((x, r) => x + r.sets - (r.legMain ? 3 : 2), 0)
+      + d.rows.filter(r => r.role === 'C' && !r.prio && !r.giant && !r.fin && isIsol(r.name) && pPrim(r.name).includes(g) && !G.prio.some(p => (genMuscles(r.name)[p] || 0) > 0)).reduce((x, r) => x + r.sets, 0), 0) })).filter(x => x.cap > 0).sort((a, b) => b.t - a.t);
+  const out = []; let cap = 0; for(const c of cand){ out.push(c.g); cap += c.cap; if(cap >= need * 1.5 || out.length >= 4) break; }
+  return out;
+}
+function prioCostBalance(days, why, pr){
+  const others = MG_PRIO.filter(g => !G.prio.includes(g)), [, hi] = TGT[G.staz], cap = hi + 4;
+  const sug = prioCostSuggest(days), cost = (G.prioCost || sug).filter(g => !G.prio.includes(g));
+  const st = () => { const t = tally(days), o = others.map(g => [g, t[g] || 0]).sort((a, b) => b[1] - a[1])[0], p = G.prio.map(g => [g, t[g] || 0]).sort((a, b) => a[1] - b[1])[0]; return { t, og: o[0], ov: o[1], pg: p[0], pv: p[1] }; };
+  const s0 = st(), cutBy = {}; let credit = 0, cut = 0, add = 0, ok = false, stuck = false, swapped = 0;
+    const trySwap = s => {
+    /* brak miejsca w dniach → ćwiczenie izolowane z partii „kosztem” zamieniam na ćwiczenie na priorytet (te same serie – trening nie dłuższy) */
+      const vic = days.flatMap(d => d.rows.filter(r => r.role === 'C' && !r.prio && !r.giant && !r.fin && !r.isPrioNew && !G.ov[r.key] && !G.repl[r.key] && isIsol(r.name) && pPrim(r.name).some(g => cost.includes(g)) && !G.prio.some(g => (genMuscles(r.name)[g] || 0) > 0)).map(r => ({ d, r })))
+        .sort((x, y) => gSets(x.d, s.pg) - gSets(y.d, s.pg))[0];
+      if(vic && swapped < days.length){ const { d: day, r: vr } = vic, ex = pick(prioPool(s.pg), 'PKS' + s.pg + days.indexOf(day) + '_' + swapped, `Priorytet: ${MG[s.pg]} – zamiast ${vr.name} (kosztem: ${MG[pPrim(vr.name)[0]]})`);
+        if(!ex.why.includes('powtórka')){ const row = R(vr.lab, 'C', LEGG.has(s.pg), ex, { prio: s.pg, prioAdd: s.pg, isPrioNew: true }); row.sets = vr.sets; row.lab = vr.lab;
+          const g0 = pPrim(vr.name).find(g => cost.includes(g)); cutBy[g0] = (cutBy[g0] || 0) + vr.sets; day.rows.splice(day.rows.indexOf(vr), 1, row); relabel(day); swapped++; add += row.sets; cut += row.sets; return true; } }
+      return false; };
+  for(let guard = 0; guard < 120; guard++){
+    const s = st(); if(s.ov * PRIO_MARGIN <= s.pv){ ok = true; break; }
+    if(s.pv >= cap){ stuck = true; break; }
+    let aRow = null;
+    days.forEach(d => d.rows.forEach(r => { if(r.role === 'A' || r.fin || r.giant || r.setType || G.ov[r.key] || r.sets >= 5) return; if((genMuscles(r.name)[s.pg] || 0) < 1) return; if(!aRow || r.sets < aRow.sets) aRow = r; }));
+    if(aRow && credit >= 1){ aRow.sets++; aRow.boost = (aRow.boost || 0) + 1; credit--; add++; continue; }
+    if(!aRow && credit >= 2){
+      const day = days.filter(d => d.rows.filter(r => !r.fin).length < 8 && d.rows.filter(r => r.prioAdd === s.pg).length < 2).sort((a, b) => gSets(a, s.pg) - gSets(b, s.pg))[0];
+      if(day){ const ex = pick(prioPool(s.pg), 'PK' + s.pg + days.indexOf(day) + '_' + add, `Priorytet: ${MG[s.pg]} – kosztem: ${cost.map(g => MG[g]).join(', ')}`);
+        if(!ex.why.includes('powtórka')){ const row = R('C', 'C', LEGG.has(s.pg), ex, { prio: s.pg, prioAdd: s.pg, isPrioNew: true }); row.sets = 2;
+          const ai = day.rows.findIndex(x => x.lab[0] === 'C'); day.rows.splice(ai < 0 ? day.rows.length : ai, 0, row); relabel(day); credit -= 2; add += 2; continue; } }
+      if(!day && trySwap(s)) continue;
+    }
+    let cRow = null;
+    days.forEach(d => d.rows.forEach(r => { if(!prioCutOk(r, cost)) return; const g = pPrim(r.name).filter(x => cost.includes(x)).sort((a, b) => (s.t[b] || 0) - (s.t[a] || 0))[0];
+      const sc = (s.t[g] || 0) * 10 + r.sets; if(!cRow || sc > cRow.sc){ cRow = r; cRow.sc = sc; cRow.cg = g; } }));
+    if(!cRow){ if(trySwap(s)) continue; break; }
+    cRow.sets--; cRow.trim = (cRow.trim || 0) + 1; cRow.why = (cRow.why ? cRow.why + ' · ' : '') + `−1 seria (priorytet ${MG[s.pg]})`; cutBy[cRow.cg] = (cutBy[cRow.cg] || 0) + 1; credit++; cut++;
+  }
+  const s1 = st(); pr.forEach(x => { x.after = s1.t[x.g] || 0; });
+  const more = prioCostSuggest(days).find(g => !cost.includes(g)) || others.filter(g => !cost.includes(g)).sort((a, b) => (s1.t[b] || 0) - (s1.t[a] || 0))[0];
+  G.prioRes = { ok, stuck, cost, auto: !G.prioCost, sug, more, pg: s1.pg, pv: s1.pv, og: s1.og, ov: s1.ov, cut, add };
+  why.push(`Priorytet kosztem: ${cost.map(g => MG[g]).join(', ') || '—'}${G.prioCost ? '' : ' (podpowiedź)'} · ${MG[s0.pg]} ${fmtS(s0.pv)} → ${fmtS(s1.pv)} serii/tydz.${Object.keys(cutBy).length ? ' · oddały: ' + Object.keys(cutBy).map(g => `${MG[g]} −${cutBy[g]}`).join(', ') : ''} · długość treningu bez zmian`);
+  if(!ok) why.push(stuck ? `⚠ Priorytet (${MG[s1.pg]}) doszedł do górnej granicy (${cap} serii/tydz.)` : `⚠ Za mało: ${MG[s1.og]} dalej ${fmtS(s1.ov)} vs ${MG[s1.pg]} ${fmtS(s1.pv)} – dodaj partię w „Kosztem czego”${more ? ' (np. ' + MG[more] + ')' : ''}`);
+}
+function prioCostHtml(){
+  if(!G.prio.length) return '';
+  const R0 = G.prioRes, cur = G.prioCost || (R0 && R0.sug) || [], segB = (k, l) => `<button type="button" class="${G.prioMode === k ? 'on' : ''}" data-pm="${k}">${l}</button>`;
+  let res = '';
+  if(G.prioMode === 'cost' && R0){
+    res = R0.ok ? `<span class="gen-chip ok">✓ Priorytet (${MG[R0.pg]}) ma teraz najwięcej serii (${fmtS(R0.pv)} vs ${MG[R0.og]} ${fmtS(R0.ov)}) · trening nie dłuższy</span>`
+      : `<span class="gen-chip warn">${R0.stuck ? `Priorytet (${MG[R0.pg]}) doszedł do górnej granicy serii dla stażu` : `Za mało – ${MG[R0.og]} dalej ma więcej (${fmtS(R0.ov)} vs ${fmtS(R0.pv)})`}</span>${!R0.stuck && R0.more ? ` <button type="button" class="btn" data-pcadd="${R0.more}" style="padding:4px 10px;font-size:12px">Dodaj „${MG[R0.more]}”</button>` : ''}`;
+  }
+  return `<div class="gen-fld wide"><span class="gen-lbl">Kosztem czego?</span><div class="gen-seg" id="genPrioMode">${segB('auto', 'Automatycznie (trening może się wydłużyć)')}${segB('cost', 'Kosztem wybranych partii (trening nie dłuższy)')}</div>
+    ${G.prioMode === 'cost' ? `<span class="gen-hint">Te partie oddadzą serie priorytetowi (tylko z serii B/C, seria A zostaje):</span><div class="gen-seg" id="genPrioCost">${MG_PRIO.filter(g => !G.prio.includes(g)).map(g => `<button type="button" class="${cur.includes(g) ? 'on' : ''}" data-g="${g}">${MG[g]}</button>`).join('')}</div>
+    <span class="gen-hint">${G.prioCost ? 'Wybrane ręcznie.' : 'Zaznaczone automatycznie: partie z największą liczbą serii, które nie pracują przy priorytecie. Możesz zmienić.'}</span><div class="gen-chips">${res}</div>` : '<span class="gen-hint">Generator sam zabiera innym partiom i dokłada priorytetowi (+20% ponad resztę).</span>'}</div>`;
+}
+/* #37: priorytet musi mieć najwięcej serii – min. +20% ponad każdą inną dużą grupę.
+   Na zmianę: −1 seria innej grupie (B/C, nie A, nie na priorytet, min. 2) i +1 seria priorytetowi (do górnej granicy stażu +2). */
+const PRIO_MARGIN = 1.2;
+function prioBalance(days, why, pr){
+  const others = MG_PRIO.filter(g => !G.prio.includes(g)), [, hi] = TGT[G.staz], cap = hi + 4;
+  const st = () => { const t = tally(days), o = others.map(g => [g, t[g] || 0]).sort((a, b) => b[1] - a[1])[0], p = G.prio.map(g => [g, t[g] || 0]).sort((a, b) => a[1] - b[1])[0]; return { og: o[0], ov: o[1], pg: p[0], pv: p[1] }; };
+  const s0 = st(); let cut = 0, add = 0, guard = 0, turn = 0, swapped = 0;
+  while(guard++ < 80){
+    const s = st(); if(s.ov * PRIO_MARGIN <= s.pv) break;
+    let cRow = null, aRow = null;
+    days.forEach(d => d.rows.forEach(r => { if(r.role === 'A' || r.fin || r.giant || r.setType || G.ov[r.key] || r.sets <= (r.legMain ? 3 : 2)) return; const m = genMuscles(r.name);
+      if( (m[s.og] || 0) < 1 || G.prio.some(g => (m[g] || 0) >= m[s.og])) return; if(!cRow || r.sets > cRow.sets) cRow = r; }));
+    if(s.pv < cap) days.forEach(d => d.rows.forEach(r => { if(r.role === 'A' || r.fin || r.giant || r.setType || G.ov[r.key] || r.sets >= 5) return; const m = genMuscles(r.name); if((m[s.pg] || 0) < 1) return;
+      const sc = (m[s.og] || 0) * 10 + r.sets; if(!aRow || sc < aRow.sc){ aRow = r; aRow.sc = sc; } }));
+    const doCut = cRow && (turn % 2 === 0 || !aRow);
+    if(doCut){ cRow.sets--; cRow.trim = (cRow.trim || 0) + 1; cut++; }
+    else if(aRow){ aRow.sets++; aRow.boost = (aRow.boost || 0) + 1; add++; }
+    else if(s.pv < cap){   // brak ćwiczenia do dołożenia serii → nowe ćwiczenie na priorytet (max 1 na dzień na grupę)
+      const room = d => d.rows.filter(r => !r.fin).length < 8 && d.rows.filter(r => r.prioAdd === s.pg).length < 2;
+      const VICT = ['biceps', 'triceps', 'calf', 'shR', 'scap', 'shS', 'add'].filter(g => !G.prio.includes(g));
+      const victim = d => d.rows.filter(r => r.role === 'C' && !r.prio && !r.giant && !r.fin && !G.ov[r.key] && !G.repl[r.key] && isIsol(r.name) && Object.keys(genMuscles(r.name)).some(g => VICT.includes(g)) && !G.prio.some(g => (genMuscles(r.name)[g] || 0) > 0))
+        .sort((x, y) => VICT.indexOf(Object.keys(genMuscles(x.name))[0]) - VICT.indexOf(Object.keys(genMuscles(y.name))[0]))[0];
+      let day = days.filter(room).sort((a, b) => gSets(a, s.pg) - gSets(b, s.pg))[0], vic = null;
+      if(!day && swapped < days.length){ day = days.filter(d => d.rows.filter(r => r.prioAdd === s.pg).length < 2 && victim(d)).sort((a, b) => gSets(a, s.pg) - gSets(b, s.pg))[0]; vic = day && victim(day); }
+      if(!day) break;
+      const ex = pick(prioPool(s.pg), 'PB' + s.pg + days.indexOf(day) + '_' + add, vic ? `Priorytet: ${MG[s.pg]} – zamiast ${vic.name} (akcesorium), żeby priorytet miał najwięcej serii` : `Priorytet: ${MG[s.pg]} – dołożone, żeby priorytet miał najwięcej serii`);
+      if(ex.why.includes('powtórka')) break;
+      const row = R('C', 'C', LEGG.has(s.pg), ex, { prio: s.pg, prioAdd: s.pg }); row.sets = 3;
+      if(vic){ row.lab = vic.lab; day.rows.splice(day.rows.indexOf(vic), 1, row); swapped++; }
+      else { const ai = day.rows.findIndex(x => x.lab[0] === 'C'); day.rows.splice(ai < 0 ? day.rows.length : ai, 0, row); }
+      relabel(day); add += 3;
+    }
+    else break;
+    turn++;
+  }
+  const s1 = st(); pr.forEach(x => { x.after = tally(days)[x.g] || 0; });
+  if(cut || add) why.push(`Priorytet ma mieć najwięcej serii (+20%): ${MG[s0.og]} ${fmtS(s0.ov)} → ${fmtS(tally(days)[s0.og] || 0)}, ${MG[s0.pg]} ${fmtS(s0.pv)} → ${fmtS(tally(days)[s0.pg] || 0)} (−${cut} / +${add} ${plPlural(cut + add, 'seria', 'serie', 'serii')})`);
+  if(s1.ov * PRIO_MARGIN > s1.pv) why.push(`⚠ ${MG[s1.og]} nadal ${fmtS(s1.ov)} serii vs priorytet ${MG[s1.pg]} ${fmtS(s1.pv)} – głównie z serii A; zmień ręcznie lub dodaj ćwiczenie na priorytet`);
+}
 function build(){
   const why = []; POOLS = {}; USED = new Set(); if(G.method === 'sila') G.pogoWu = {}; PLAN_SKIPPED = []; CORE_I = 0; KEEP = {}; AVOID = new Set(); PREV = {};
   const tt = G.method === 'sila' ? transType() : (G.prev && G.prev.stage === G.stage && G.repeatM ? 'repeat' : 'rotate');
@@ -13920,7 +14119,7 @@ function build(){
   applyEdits(days);
   why.push(G.phase.startsWith('Ak') ? 'Akumulacja: więcej powtórzeń, krótsze przerwy' : 'Intensyfikacja: mniej powtórzeń, więcej serii, dłuższe przerwy');
   why.push('Powtórzenia rosną tydz. 1 → 3 w zakresie; ciężar liczy silnik RPE 9');
-  const pr = GC.physique ? applyPriority(days, why) : null;
+  const pr = GC.physique ? (G.prioMode === 'cost' ? prioMark(days) : applyPriority(days, why)) : null;
   if(G.w && G.w.kto === 'amator' && G.w.cel === 'spr') krFinisher(days, why);
   return finishBuild(days, why, label, cyN, pr, true);
 }
@@ -13933,6 +14132,8 @@ function finishBuild(days, why, label, cyN, pr, sila){
   if(sila){ giantSeries(days, why); pairFix(days, why); capCount(days, why); orderSeries(days); tempoRest(days, why); }
   autoWarmup(days, why);
   if(sila) applySetTypes(days, why);
+  G.prioRes = null;
+  if(sila && pr) (G.prioMode === 'cost' ? prioCostBalance : prioBalance)(days, why, pr);
   days.forEach((d, di) => seriesLabels(d, G.order[di], G.groups[di]));
   eccCap(days, why);
   days.forEach(d => d.rows.forEach(r => { const o = G.ov[r.key]; if(!o) return;
@@ -13993,6 +14194,7 @@ function capCount(days, why){
 /* giant seria: tylko staż > 3 lata i akumulacja; 1 dzień, 3 ćwiczenia na tę samą partię, 3 serie, 0″ między, 120″ po */
 function giantSeries(days, why){
   if(G.staz !== 'z' || !G.phase.startsWith('Ak') || G.knee) return;
+  if(GC.physique && G.prio.length && !G.prio.includes('quad')) return;   // #37: priorytet na inną partię → bez giant serii na czwórki
   const di = days.findIndex(d => /^Dół/.test(d.name || '')) >= 0 ? days.findIndex(d => /^Dół/.test(d.name || '')) : 0;
   const d = days[di]; if(!d) return;
   const used = new Set(d.rows.map(r => r.name));
@@ -14040,7 +14242,7 @@ function autoWarmup(days, why){
     if(/bark|ramion/.test(t)) force.push('Mobilizacja – bark i łopatka');
     if(/kregoslup|plec|piersiow|ledzw/.test(t)) force.push('Mobilizacja – kręgosłup');
   }
-  const pre = /siatk/.test(sp) ? ['Rehab – bark i łopatka'] : /pilk/.test(sp) ? ['Łydka', 'Rehab – przywodziciele i pachwina', 'Rehab – pośladek średni'] : ['Core – antyprzeprost', 'Kark', 'Rehab – bark i łopatka'];
+  const pre = /siatk/.test(sp) ? ['Rehab – bark i łopatka'] : /pilk/.test(sp) ? ['Łydka', 'Rehab – przywodziciele i pachwina', 'Rehab – pośladek średni'] : ['Core – planki i antyprzeprost', 'Kark', 'Rehab – bark i łopatka'];
   let done = 0;
   days.forEach((d, di) => {
     const m = tally([d]), leg = ['quad', 'glute', 'ham', 'add', 'calf'].reduce((a, g) => a + (m[g] || 0), 0), up = ['chest', 'back', 'shF', 'shS', 'shR', 'biceps', 'triceps'].reduce((a, g) => a + (m[g] || 0), 0);
@@ -14230,7 +14432,7 @@ function krBody(plan){
   const w = G.w, Q = krQs(), miss = krMissing(), pv = G.prev;
   const qHtml = Q.map((q, i) => {
     const from = G.wFrom && G.wFrom[q.k] && w[q.k] != null ? '<span class="gen-hint" style="margin-left:6px">z kontekstu</span>' : '';
-    if(q.prio) return `<div class="gen-fld wide"><span class="gen-lbl">${i + 1}. ${q.t}</span><div class="gen-seg" id="genPrio">${MG_PRIO.map(k => `<button type="button" class="${G.prio.includes(k) ? 'on' : ''}" data-g="${k}">${MG[k]}</button>`).join('')}</div><span class="gen-hint">Dokładam serie na wybrane grupy (cel ${TGT[G.staz].join('–')} serii/tydz.).</span></div>`;
+    if(q.prio) return `<div class="gen-fld wide"><span class="gen-lbl">${i + 1}. ${q.t}</span><div class="gen-seg" id="genPrio">${MG_PRIO.map(k => `<button type="button" class="${G.prio.includes(k) ? 'on' : ''}" data-g="${k}">${MG[k]}</button>`).join('')}</div><span class="gen-hint">Dokładam serie na wybrane grupy (cel ${TGT[G.staz].join('–')} serii/tydz.).</span></div>${prioCostHtml()}`;
     const need = w[q.k] == null || w[q.k] === '';
     return `<div class="gen-fld ${q.k === 'mecz' ? 'wide' : ''}"><span class="gen-lbl" ${need ? 'style="color:#B4472E"' : ''}>${i + 1}. ${q.t}${from}</span><div class="gen-seg">${q.o.map(o => `<button type="button" class="${String(w[q.k]) === String(o[0]) ? 'on' : ''}" data-w="${q.k}" data-v="${o[0]}">${o[1]}</button>`).join('')}</div>${q.k === 'bol' && w.bol && w.bol !== 'nie' ? '<span class="gen-hint" style="color:#9A6400">Tylko uwaga – plan bez automatycznych zmian, popraw ręcznie w podglądzie.</span>' : ''}${q.k === 'testy' ? `<span class="gen-hint">${testsInfo()}</span>` : ''}${q.k === 'mecz' ? '<span class="gen-hint">Dzień ciężki MD-4, moc MD-2, 3. dzień MD+2; nic dzień przed meczem.</span>' : ''}</div>`;
   }).join('');
@@ -14661,7 +14863,7 @@ async function genOpen(clientId){
   GC = genProfile(c, d); GC.clientId = clientId; GC.d = d;
   const bl = genBlocks(clientId), prev = bl[bl.length - 1] || null;
   G = { step: 1, phase: 'Ak1', days: GC.days || 3, staz: GC.staz || 's', grip: 'auto', addMissing: true, swaps: {}, ov: {}, wuP: {}, order: {}, groups: {}, repl: {}, removed: {}, extra: {}, wu: {}, xn: 0, pick: null, prev: null, prio: GC.physique ? GC.prio.slice() : [],
-    knee: GC.knee, shoulderWeak: GC.shoulderWeak, warmup: true, attend: null };
+    knee: GC.knee, shoulderWeak: GC.shoulderWeak, warmup: true, attend: null, prioMode: GC.prioMode || 'auto', prioCost: GC.prioCost ? GC.prioCost.slice() : null };
   G.seed = (Math.random() * 4294967296) >>> 0;
   G.pkOff = prev && prev.pkOff != null ? prev.pkOff : Math.floor(rnd('pkOff') * 4);
   G.legOff = prev && prev.legOff != null ? prev.legOff : Math.floor(rnd('legOff') * 3);
@@ -14806,7 +15008,10 @@ function genRender(){
   root.querySelectorAll('[data-w]').forEach(b => b.onclick = () => { const k = b.dataset.w; G.w[k] = b.dataset.v; if(G.wFrom) G.wFrom[k] = false;
     Object.assign(G, { swaps: {}, repl: {}, removed: {}, extra: {}, ov: {}, order: {}, groups: {}, wu: {}, wuP: {} }); krApply(); genRender(); });
   root.querySelectorAll('[data-seg="dows"] button').forEach(b => b.classList.toggle('on', G.dows.includes(+b.dataset.v)));
-  root.querySelectorAll('#genPrio button').forEach(b => b.onclick = () => { const g = b.dataset.g; G.prio = G.prio.includes(g) ? G.prio.filter(x => x !== g) : [...G.prio, g].slice(-2); G.swaps = {}; genRender(); });
+  root.querySelectorAll('#genPrio button').forEach(b => b.onclick = () => { const g = b.dataset.g; G.prio = G.prio.includes(g) ? G.prio.filter(x => x !== g) : [...G.prio, g].slice(-2); G.prioCost = null; G.swaps = {}; genRender(); });
+  root.querySelectorAll('#genPrioMode button').forEach(b => b.onclick = () => { G.prioMode = b.dataset.pm; genRender(); });
+  root.querySelectorAll('#genPrioCost button').forEach(b => b.onclick = () => { const g = b.dataset.g, cur = (G.prioCost || (G.prioRes && G.prioRes.cost) || []).slice(); G.prioCost = cur.includes(g) ? cur.filter(x => x !== g) : [...cur, g]; genRender(); });
+  root.querySelectorAll('[data-pcadd]').forEach(b => b.onclick = () => { const cur = (G.prioCost || (G.prioRes && G.prioRes.cost) || []).slice(); G.prioCost = [...new Set([...cur, b.dataset.pcadd])]; genRender(); });
   const q = id => document.getElementById(id);
   if(q('genStart')) q('genStart').onchange = e => { if(e.target.value){ G.start = e.target.value; genRender(); } };
   if(q('genKnee')) q('genKnee').onchange = e => { G.knee = e.target.checked; G.swaps = {}; genRender(); };
@@ -14975,6 +15180,7 @@ async function genInsert(plan){
   if(d){ d.context = d.context || { text: '', over: {} }; d.context.over = d.context.over || {};
     if(G.stazChanged){ d.context.over.level = STAZ_CTX[G.staz]; ctxCh = true; }
     if(GC.physique && JSON.stringify(d.context.prio || []) !== JSON.stringify(G.prio)){ d.context.prio = G.prio.slice(); ctxCh = true; }
+    if(GC.physique && G.prio.length && (d.context.prioMode !== G.prioMode || JSON.stringify(d.context.prioCost || null) !== JSON.stringify(G.prioMode === 'cost' ? G.prioCost : null))){ d.context.prioMode = G.prioMode; d.context.prioCost = G.prioMode === 'cost' && G.prioCost ? G.prioCost.slice() : null; ctxCh = true; }
     if(ctxCh) await saveClientNotes(clientId); }
   const first = G.start;
   genClose();
