@@ -5743,6 +5743,61 @@ function renderCalendar(){
   }
 }
 
+
+/* #40: dzień klienta → szablon */
+let toTplSel = { tid: '', di: 'new' };
+function toTplRender(){
+  const p = $('toTplPanel'); if(!p) return;
+  if(toTplSel.tid && toTplSel.tid !== '__new' && !templates.some(t => t.id === toTplSel.tid)) toTplSel.tid = '';
+  if(!toTplSel.tid) toTplSel.tid = templates.length ? templates[0].id : '__new';
+  const tpl = templates.find(t => t.id === toTplSel.tid);
+  const days = tpl ? tpl.days : [];
+  if(toTplSel.di !== 'new' && !(toTplSel.di < days.length)) toTplSel.di = 'new';
+  const day = getDay(selectedClientId, selectedDateStr, false) || {};
+  const nEx = (day.exercises || []).length;
+  p.innerHTML = `<h4>Dodaj ten dzień do szablonu</h4>
+    <div style="display:grid;grid-template-columns:auto 1fr;gap:8px 10px;align-items:center;font-size:13px;max-width:560px;">
+      <label for="toTplT"><b>Szablon</b></label>
+      <select id="toTplT" class="pill-input">${templates.map(t => `<option value="${t.id}" ${t.id === toTplSel.tid ? 'selected' : ''}>${escapeHtml(t.name)} (${t.days.length} ${t.days.length === 1 ? 'dzień' : 'dni'})</option>`).join('')}<option value="__new" ${toTplSel.tid === '__new' ? 'selected' : ''}>＋ Nowy szablon…</option></select>
+      ${toTplSel.tid === '__new' ? `<label for="toTplName"><b>Nazwa</b></label><input id="toTplName" class="pill-input" placeholder="np. Blok siłowy – 3 dni" value="${escapeHtml(toTplSel.name || '')}">` : ''}
+      <label for="toTplD"><b>Który dzień</b></label>
+      <select id="toTplD" class="pill-input">${days.map((d, i) => `<option value="${i}" ${String(toTplSel.di) === String(i) ? 'selected' : ''}>${escapeHtml(d.label || ('Dzień ' + (i + 1)))}${d.title ? ' · ' + escapeHtml(d.title) : ''}${(d.exercises || []).length ? ' – zastąp (' + d.exercises.length + ' ćw.)' : ' – pusty'}</option>`).join('')}<option value="new" ${toTplSel.di === 'new' ? 'selected' : ''}>＋ Nowy dzień – Dzień ${days.length + 1}</option></select>
+    </div>
+    <div class="cv-small" style="margin-top:6px;">Skopiuję ${nEx} ${nEx === 1 ? 'ćwiczenie' : 'ćwiczeń'}, tytuł i podtytuł – bez sugerowanego ciężaru, wyników, notatek i komentarzy klienta.</div>
+    <div class="tools-row"><button class="btn" id="toTplGo" ${nEx ? '' : 'disabled'}>Dodaj do szablonu</button><button class="btn ghost" id="toTplCancel">Anuluj</button></div>`;
+  $('toTplT').onchange = () => { toTplSel.tid = $('toTplT').value; toTplSel.di = 'new'; toTplRender(); };
+  $('toTplD').onchange = () => { const v = $('toTplD').value; toTplSel.di = v === 'new' ? 'new' : parseInt(v); };
+  if($('toTplName')) $('toTplName').oninput = () => { toTplSel.name = $('toTplName').value; };
+  $('toTplCancel').onclick = () => { p.style.display = 'none'; };
+  $('toTplGo').onclick = () => toTplSave();
+}
+function toTplCloneEx(ex){
+  const c = JSON.parse(JSON.stringify(ex));
+  ['log', 'logRight', 'logLeft', 'rpe', 'clientNote', 'clientNoteAt', 'coachReply', 'coachReplyAt', 'coachReplyRead', 'clientReact', 'noteSeen', 'completedNotified', 'done', 'doneAt', 'skipped', 'weekOverrides', 'suggestedWeight', 'suggestedManual'].forEach(k => delete c[k]);
+  c.id = 'e_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+  return c;
+}
+async function toTplSave(){
+  const day = getDay(selectedClientId, selectedDateStr, false);
+  if(!day || !(day.exercises || []).length){ toast('Ten dzień jest pusty'); return; }
+  let tpl;
+  if(toTplSel.tid === '__new'){
+    const name = (($('toTplName') && $('toTplName').value) || '').trim();
+    if(!name){ toast('Wpisz nazwę nowego szablonu'); if($('toTplName')) $('toTplName').focus(); return; }
+    tpl = { id: 'tpl_' + Date.now(), name, weeks: 3, days: [] }; templates.push(tpl);
+  } else tpl = templates.find(t => t.id === toTplSel.tid);
+  if(!tpl){ toast('Wybierz szablon'); return; }
+  const di = toTplSel.di === 'new' ? tpl.days.length : toTplSel.di;
+  const old = tpl.days[di];
+  if(old && (old.exercises || []).length && !confirm(`Zastąpić „${old.label || ('Dzień ' + (di + 1))}” w szablonie „${tpl.name}”? Obecne ćwiczenia tego dnia w szablonie znikną.`)) return;
+  const nd = { id: old ? old.id : 'd_' + Date.now(), label: old ? (old.label || ('Dzień ' + (di + 1))) : ('Dzień ' + (di + 1)), title: day.title || '', subtitle: day.subtitle || '', exercises: day.exercises.map(toTplCloneEx) };
+  if(old) tpl.days[di] = nd; else tpl.days.push(nd);
+  if(!(await persistWithFeedback('plan_templates', templates))) return;
+  toTplSel = { tid: tpl.id, di: 'new' };
+  $('toTplPanel').style.display = 'none';
+  toast(`Dodano do szablonu „${tpl.name}” jako ${nd.label}`);
+}
+
 function getDay(clientId, dateStr, createIfMissing){
   const plan = plansCache[clientId];
   if(!plan[dateStr] && createIfMissing){ plan[dateStr] = {exercises:[]}; }
@@ -5776,7 +5831,7 @@ function renderDayPanel(){
       <div class="day-panel-head">
         <h3>${headTitle}</h3>
         <div class="day-panel-actions">
-          ${editingTemplateMode ? '' : '<button class="btn ghost" id="dupDayBtn">📋 Duplikuj dzień</button><button class="btn ghost" id="moveDayBtn">Przenieś dzień</button><button class="btn ghost" id="delDayBtn" style="color:#B4472E;">Usuń dzień</button>'}
+          ${editingTemplateMode ? '' : '<button class="btn ghost" id="toTplBtn" title="Skopiuj ten dzień do szablonu planu">🗂️ Dodaj do szablonu</button><button class="btn ghost" id="dupDayBtn">📋 Duplikuj dzień</button><button class="btn ghost" id="moveDayBtn">Przenieś dzień</button><button class="btn ghost" id="delDayBtn" style="color:#B4472E;">Usuń dzień</button>'}
           <button class="btn" id="saveDayBtn">💾 Zapisz</button>
         </div>
       </div>
@@ -5785,6 +5840,7 @@ function renderDayPanel(){
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:13px;"><b>Przenieś ten trening na:</b><input type="date" id="moveDate" class="pill-input" style="width:auto;"><button class="btn" id="moveGo">Przenieś</button><button class="btn ghost" id="moveCancel">Anuluj</button></div>
         <div class="cv-small" style="margin-top:6px;">Trening zniknie z obecnego dnia i pojawi się w wybranym (razem z wpisanymi wynikami, jeśli są).</div>
       </div>
+      <div id="toTplPanel" style="display:none;" class="tools-panel"></div>
       <div id="dupPanel" style="display:none;" class="tools-panel">
         <h4>Skopiuj ten dzień na inne daty</h4>
         <div id="dupDatesHolder"></div>
@@ -5859,8 +5915,8 @@ function renderDayPanel(){
       toast('Oznaczono jako pominięte przez klienta');
     };
   }
-  $('dayTitleInput').onchange = async () => { day.title = $('dayTitleInput').value; await persistCurrentDayFn(); };
-  $('daySubtitleInput').onchange = async () => { day.subtitle = $('daySubtitleInput').value; await persistCurrentDayFn(); };
+  $('dayTitleInput').onchange = async () => { const v = $('dayTitleInput').value; day.title = v; sdOffer({ sig: daySig(day), what: 'tytuł dnia → ' + (v || '—'), run: (exs, d) => { d.title = v; } }); await persistCurrentDayFn(); };
+  $('daySubtitleInput').onchange = async () => { const v = $('daySubtitleInput').value; day.subtitle = v; sdOffer({ sig: daySig(day), what: 'podtytuł → ' + (v || '—'), run: (exs, d) => { d.subtitle = v; } }); await persistCurrentDayFn(); };
 
   if(!editingTemplateMode){
   if($('delDayBtn')) $('delDayBtn').onclick = async () => {
@@ -5872,6 +5928,7 @@ function renderDayPanel(){
     delete plan[ds]; markDayDeleted(cid, ds);
     if(await persistPlan(cid)){ toast('Usunięto trening z dnia ' + ds); renderCalendar(); renderDayPanel(); }
   };
+  if($('toTplBtn')) $('toTplBtn').onclick = () => { const p = $('toTplPanel'); const show = p.style.display === 'none'; ['movePanel', 'dupPanel'].forEach(id => { if($(id)) $(id).style.display = 'none'; }); p.style.display = show ? '' : 'none'; if(show) toTplRender(); };
   if($('moveDayBtn')) $('moveDayBtn').onclick = () => { const p = $('movePanel'); p.style.display = p.style.display === 'none' ? '' : 'none'; $('dupPanel').style.display = 'none'; };
   if($('moveCancel')) $('moveCancel').onclick = () => { $('movePanel').style.display = 'none'; };
   if($('moveGo')) $('moveGo').onclick = async () => {
@@ -5958,6 +6015,7 @@ function renderDayPanel(){
       const defaults = cat === 'warmup'
         ? {sets:'1', reps:'10', tempo:'3010', rest:'30"'}
         : {sets:'3', reps:'10', tempo:'2010', rest:'60"'};
+      const sigA = daySig(day);
       day.exercises.push({
         id: 'e_'+Date.now(), name: libEx.name, videoUrl: libEx.videoUrl, libraryId: libEx.id,
         category: cat, sets:defaults.sets, reps:defaults.reps, tempo:defaults.tempo, rest:defaults.rest,
@@ -5968,6 +6026,8 @@ function renderDayPanel(){
       relabelExercises(day);
       // domyslna przerwa wg litery serii (tylko nowo dodane cwiczenia glowne): A 120 s, B 90 s, C 60 s, D i dalej 30 s
       if(cat !== 'warmup'){ const added = day.exercises[day.exercises.length - 1]; added.rest = restForLabel(added.label); }
+      { const nw = day.exercises[day.exercises.length - 1];
+        sdOffer({ sig: sigA, what: `dodane: ${nw.label ? nw.label + ' ' : ''}${nw.name}`, run: exs => { const c = JSON.parse(JSON.stringify(nw)); c.id = 'e_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7); c.log = []; exs.push(c); } }); }
       sel.value = '';
       $('exHint-' + cat).textContent = '';
       await persistCurrentDayFn();
@@ -6083,17 +6143,17 @@ function renderExRows(day, category){
       <td><button class="rm-btn" title="Usuń">✕</button></td>
     `;
     tr.querySelector('.noweight-check').onchange = async (e) => {
-      ex.noWeight = e.target.checked;
+      ex.noWeight = e.target.checked; { const v = ex.noWeight; sdOne(day, ex, 'bez ciężaru ' + (v ? '✓' : '✗'), t => { t.noWeight = v; }); }
       await persistCurrentDayFn();
       renderDayPanel();
     };
     tr.querySelector('.interval-check').onchange = async (e) => {
-      ex.isInterval = e.target.checked;
+      ex.isInterval = e.target.checked; { const v = ex.isInterval; sdOne(day, ex, 'interwał ' + (v ? '✓' : '✗'), t => { t.isInterval = v; }); }
       await persistCurrentDayFn();
       renderDayPanel();
     };
     tr.querySelector('.splitlr-check').onchange = async (e) => {
-      ex.splitLR = e.target.checked;
+      ex.splitLR = e.target.checked; { const v = ex.splitLR; sdOne(day, ex, 'podział P/L ' + (v ? '✓' : '✗'), t => { t.splitLR = v; if(v) ensureLog(t); }); }
       if(ex.splitLR){
         ensureLog(ex);
       }
@@ -6101,19 +6161,19 @@ function renderExRows(day, category){
       renderDayPanel();
     };
     tr.querySelector('.rpeprog-check').onchange = async (e) => {
-      ex.progOff = !e.target.checked;
+      ex.progOff = !e.target.checked; { const v = ex.progOff; sdOne(day, ex, 'progresja RPE ' + (v ? '✗' : '✓'), t => { t.progOff = v; }); }
       await persistCurrentDayFn();
       renderDayPanel();
     };
     if(category === 'main'){
-      const serOpen = () => serOpenPicker(ex, async v => { if(serApply(ex, v)){ await persistCurrentDayFn(); } renderDayPanel(); });
+      const serOpen = () => serOpenPicker(ex, async v => { if(serApply(ex, v)){ sdOne(day, ex, 'rodzaj serii', t => serApply(t, v)); await persistCurrentDayFn(); } renderDayPanel(); });
       tr.querySelector('.settype-check').onchange = async (e) => {
         if(e.target.checked){ e.target.checked = !!ex.setType; serOpen(); }
-        else { serApply(ex, null); await persistCurrentDayFn(); renderDayPanel(); }
+        else { serApply(ex, null); sdOne(day, ex, 'bez rodzaju serii', t => serApply(t, null)); await persistCurrentDayFn(); renderDayPanel(); }
       };
       const chipEl = tr.querySelector('.ser-chip'); if(chipEl) chipEl.onclick = serOpen;
       tr.querySelector('.test-ex-check').onchange = async (e) => {
-        ex.isTest = e.target.checked;
+        ex.isTest = e.target.checked; { const v = ex.isTest; sdOne(day, ex, 'test ' + (v ? '✓' : '✗'), t => { t.isTest = v; }); }
         await persistCurrentDayFn();
         renderDayPanel();
         renderCalendar();
@@ -6163,7 +6223,9 @@ function renderExRows(day, category){
       };
     });
     tr.querySelector('.rm-btn').onclick = async () => {
-      day.exercises.splice(day.exercises.indexOf(ex),1);
+      { const sig0 = daySig(day), i0 = day.exercises.indexOf(ex), k0 = plSearchKey(resolveExName(ex)), nm0 = `${ex.label ? ex.label + ' ' : ''}${resolveExName(ex)}`;
+      day.exercises.splice(i0, 1);
+      sdOffer({ sig: sig0, what: `usunięte: ${nm0}`, run: exs => { const t = exs[i0]; if(t && plSearchKey(resolveExName(t)) === k0) exs.splice(i0, 1); } }); }
       relabelExercises(day);
       await persistCurrentDayFn();
       renderDayPanel();
@@ -6199,7 +6261,7 @@ function renderExRows(day, category){
       input.select();
       const commit = async () => {
         const val = input.value.trim().toUpperCase();
-        if(val){ ex.label = val; ex.labelManual = true; }
+        if(val){ ex.label = val; ex.labelManual = true; sdOne(day, ex, 'litera → ' + val, t => { t.label = val; t.labelManual = true; }); }
         await persistCurrentDayFn();
         renderDayPanel();
       };
@@ -6216,8 +6278,11 @@ function renderExRows(day, category){
       if(dragFromIdx === null || dragFromIdx === toIdx) return;
       const fromEx = day.exercises[dragFromIdx];
       if(!fromEx || fromEx.category !== category) { dragFromIdx = null; return; }
+      const sigD = daySig(day), fI = dragFromIdx;
       const [moved] = day.exercises.splice(dragFromIdx, 1);
-      day.exercises.splice(day.exercises.indexOf(ex), 0, moved);
+      const insI = day.exercises.indexOf(ex);
+      day.exercises.splice(insI, 0, moved);
+      sdOffer({ sig: sigD, what: `kolejność: ${resolveExName(moved)} przesunięte`, run: exs => { const m = exs[fI]; if(!m || m.category !== moved.category) return; exs.splice(fI, 1); exs.splice(insI, 0, m); } });
       relabelExercises(day);
       dragFromIdx = null;
       await persistCurrentDayFn();
@@ -6242,6 +6307,7 @@ function renderExRows(day, category){
       `;
       trI.querySelectorAll('input[data-if]').forEach(inp => {
         inp.onchange = async () => {
+          { const f = inp.dataset.if, v = inp.value; if(String(ex[f] ?? '') !== String(v)) sdOne(day, ex, f + ' → ' + (v || '—'), t => { t[f] = v; }); }
           ex[inp.dataset.if] = inp.value;
           await persistCurrentDayFn();
         };
@@ -6263,6 +6329,7 @@ function renderExRows(day, category){
       `;
       trS.querySelectorAll('input[data-sf]').forEach(inp => {
         inp.onchange = async () => {
+          { const f = inp.dataset.sf, v = inp.value; if(String(ex[f] ?? '') !== String(v)) sdOne(day, ex, (f === 'setsRight' ? 'serie P' : 'serie L') + ' → ' + (v || '—'), t => { t[f] = v; ensureLog(t); }); }
           ex[inp.dataset.sf] = inp.value;
           ensureLog(ex);
           await persistCurrentDayFn();
@@ -8653,7 +8720,7 @@ function renderLibraryView(){
     </div>
 
       <div class="tools-panel" id="packPanel">
-        <h4>📦 Wgraj paczkę ćwiczeń (plik .json od Claude) <span style="font-weight:400;font-size:11px;color:var(--muted);">· wersja aplikacji #38</span></h4>
+        <h4>📦 Wgraj paczkę ćwiczeń (plik .json od Claude) <span style="font-weight:400;font-size:11px;color:var(--muted);">· wersja aplikacji #41</span></h4>
         <div class="section-desc" style="margin:0 0 10px;">Doda wiele ćwiczeń naraz – z nazwą, filmem i grupą. Pomija te, które już są (ten sam film albo ta sama nazwa). Przed zapisem robi kopię biblioteki, więc można cofnąć.</div>
         <div class="lib-row" style="align-items:center;"><input type="file" id="packFile" accept=".json,application/json"><button class="btn ghost" id="packUndo">↩ Cofnij ostatnią paczkę</button></div>
         <div id="packOut" style="margin-top:10px;font-size:12.5px;"></div>
@@ -8716,7 +8783,7 @@ function renderLibraryView(){
   packBind();
 }
 /* #31 podgrupy */
-const LIB_SUBS = [["Mobilność", "Mobilizacja – biodro"], ["Mobilność", "Mobilizacja – staw skokowy i stopa"], ["Mobilność", "Mobilizacja – kręgosłup"], ["Mobilność", "Mobilizacja – bark i łopatka"], ["Mobilność", "Mobilizacja – tył uda"], ["Mobilność", "Mobilizacja – całe ciało"], ["Prehab/rehab", "Rehab – kolano"], ["Prehab/rehab", "Rehab – bark i łopatka"], ["Prehab/rehab", "Rehab – przywodziciele i pachwina"], ["Prehab/rehab", "Rehab – pośladek średni"], ["Prehab/rehab", "Rehab – zginacz biodra"], ["Prehab/rehab", "Rehab – stopa i staw skokowy"], ["Prehab/rehab", "Propriocepcja i równowaga"], ["Mięśnie karku", "Kark"], ["Dół Squat", "Przysiad obunóż"], ["Dół Squat", "Jednonóż (wykroki, bułgarski, wejścia)"], ["Dół Hip Hinge", "Zawias (RDL, martwy ciąg, dzień dobry)"], ["Dół Hip Hinge", "Mostki i hip thrust"], ["Nogi Uginanie/Prostowanie", "Tył uda (uginanie, nordic)"], ["Nogi Uginanie/Prostowanie", "Prostowanie kolana"], ["Nogi Uginanie/Prostowanie", "Łydka"], ["Góra Push", "Pchanie poziome"], ["Góra Push", "Pchanie pionowe"], ["Góra Pull", "Ciągnięcie pionowe"], ["Góra Pull", "Ciągnięcie poziome"], ["Ramiona", "Biceps"], ["Ramiona", "Triceps"], ["Ramiona", "Barki – izolowane"], ["Tułów", "Tułów – prostowniki grzbietu"], ["Core", "Core – zgięcia"], ["Core", "Core – zgięcia boczne"], ["Core", "Core – rotacje tułowia"], ["Core", "Core – planki i antyprzeprost"], ["Core", "Core – planki bokiem"], ["Core", "Core – lifting / chopping i antyrotacja"], ["Plyometria", "Plyo – ekstensywna (pogo, skakanka, trampolina)"], ["Plyometria", "Plyo – skrzynia i zeskoki"], ["Plyometria", "Plyo – skoki w dal, w miejscu, jednonóż"], ["Dynamic", "Rzuty piłką"], ["Dynamic", "Olimpijskie, podrzuty, reaktywne"], ["Kondycja", "Sanki i noszenie"], ["Kondycja", "Cardio i complexy"]];
+const LIB_SUBS = [["Rozgrzewka", "Mobilizacja – biodro"], ["Rozgrzewka", "Mobilizacja – staw skokowy i stopa"], ["Rozgrzewka", "Mobilizacja – kręgosłup"], ["Rozgrzewka", "Mobilizacja – bark i łopatka"], ["Rozgrzewka", "Mobilizacja – tył uda"], ["Rozgrzewka", "Mobilizacja – całe ciało"], ["Prehab/rehab", "Rehab – kolano"], ["Prehab/rehab", "Rehab – bark i łopatka"], ["Prehab/rehab", "Rehab – przywodziciele i pachwina"], ["Prehab/rehab", "Rehab – pośladek średni"], ["Prehab/rehab", "Rehab – zginacz biodra"], ["Prehab/rehab", "Rehab – stopa i staw skokowy"], ["Rozgrzewka", "Propriocepcja i równowaga"], ["Rozgrzewka", "Aktywacja – nogi i pośladki"], ["Mięśnie karku", "Kark"], ["Dół Squat", "Przysiad obunóż"], ["Dół Squat", "Jednonóż (wykroki, bułgarski, wejścia)"], ["Dół Hip Hinge", "Zawias (RDL, martwy ciąg, dzień dobry)"], ["Dół Hip Hinge", "Mostki i hip thrust"], ["Nogi Uginanie/Prostowanie", "Tył uda (uginanie, nordic)"], ["Nogi Uginanie/Prostowanie", "Prostowanie kolana"], ["Nogi Uginanie/Prostowanie", "Łydka"], ["Góra Push", "Pchanie poziome"], ["Góra Push", "Pchanie pionowe"], ["Góra Pull", "Ciągnięcie pionowe"], ["Góra Pull", "Ciągnięcie poziome"], ["Ramiona", "Biceps"], ["Ramiona", "Triceps"], ["Ramiona", "Barki – izolowane"], ["Tułów", "Tułów – prostowniki grzbietu"], ["Core", "Core – zgięcia"], ["Core", "Core – zgięcia boczne"], ["Core", "Core – rotacje tułowia"], ["Core", "Core – planki i antyprzeprost"], ["Core", "Core – planki bokiem"], ["Core", "Core – lifting / chopping i antyrotacja"], ["Plyometria", "Plyo – ekstensywna (pogo, skakanka, trampolina)"], ["Plyometria", "Plyo – skrzynia i zeskoki"], ["Plyometria", "Plyo – skoki w dal, w miejscu, jednonóż"], ["Dynamic", "Rzuty piłką"], ["Dynamic", "Olimpijskie, podrzuty, reaktywne"], ["Kondycja", "Sanki i noszenie"], ["Kondycja", "Cardio i complexy"]];
 let libSubFilter = '';
 function libSubOptions(cur){
   const by = {}; LIB_SUBS.forEach(([g, sn]) => (by[g] = by[g] || []).push(sn));
@@ -8738,13 +8805,14 @@ function packYtId(u){ const m = String(u || '').match(/(?:v=|youtu\.be\/|embed\/
 function packPlan(pack, lib, groups){
   const byName = new Set(lib.map(e => normalizeExName(e.name)));
   const byVid = new Set(lib.map(e => packYtId(e.videoUrl)).filter(Boolean));
-  const add = [], skip = [], newGroups = [], upd = [];
+  const add = [], skip = [], newGroups = [], upd = [], del = [];
   const libByName = new Map(); lib.forEach(e => { const kk = normalizeExName(e.name); if(!libByName.has(kk)) libByName.set(kk, []); libByName.get(kk).push(e); }); const libByVid = new Map(lib.filter(e => packYtId(e.videoUrl)).map(e => [packYtId(e.videoUrl), e]));
   const gid = name => { let g = groups.find(x => x.name === name) || newGroups.find(x => x.name === name);
     if(!g){ g = {id: 'lg_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6), name}; newGroups.push(g); } return g.id; };
   (pack.items || []).forEach((it, i) => {
     const nm = String(it.name || '').trim(); if(!nm) return;
     const v = packYtId(it.videoUrl), k = normalizeExName(nm);
+    if(it.remove){ (libByName.get(k) || []).forEach(ex => { if(!del.some(d => d.id === ex.id)) del.push({id: ex.id, name: ex.name}); }); return; }
     if(byName.has(k) || (v && byVid.has(v))){
       const exs = (v && libByVid.get(v)) ? [libByVid.get(v)] : (libByName.get(k) || []);
       let any = false;
@@ -8752,16 +8820,16 @@ function packPlan(pack, lib, groups){
         const ch = {};
         if(it.sub && ex.sub !== it.sub) ch.sub = it.sub;
         if(it.muscles && typeof it.muscles === 'object' && JSON.stringify(ex.muscles || null) !== JSON.stringify(it.muscles)) ch.muscles = it.muscles;
-        if(it.group && (!ex.groupId || ex.src === pack.source)){ const g = gid(it.group); if(g !== ex.groupId) ch.groupId = g; }
+        if(it.group && (pack.forceGroup || !ex.groupId || ex.src === pack.source)){ const g = gid(it.group); if(g !== ex.groupId) ch.groupId = g; }
         if(Object.keys(ch).length && !upd.some(u => u.id === ex.id)){ upd.push({id: ex.id, name: ex.name, ch}); any = true; }
       });
       if(!any && !it.onlyUpdate) skip.push(nm); return;
     }
     if(it.onlyUpdate) return;
     byName.add(k); if(v) byVid.add(v);
-    add.push(Object.assign({id: 'l_' + Date.now() + '_' + i, name: nm, videoUrl: it.videoUrl || '', groupId: it.group ? gid(it.group) : null}, it.note ? {note: it.note} : {}, {src: pack.source || 'pack'}, it.sub ? {sub: it.sub} : {}));
+    add.push(Object.assign({id: 'l_' + Date.now() + '_' + i, name: nm, videoUrl: it.videoUrl || '', groupId: it.group ? gid(it.group) : null}, it.note ? {note: it.note} : {}, {src: pack.source || 'pack'}, it.sub ? {sub: it.sub} : {}, it.muscles && typeof it.muscles === 'object' ? {muscles: it.muscles} : {}));
   });
-  return {add, skip, newGroups, upd};
+  return {add, skip, newGroups, upd, del};
 }
 function packBind(){
   const f = $('packFile'); if(!f) return;
@@ -8774,23 +8842,24 @@ function packBind(){
     const lib = (await safeGet('exercise_library')) || [], groups = (await safeGet('library_groups')) || [];
     const P = packPlan(pack, lib, groups); setStatus('');
     const byG = {}; P.add.forEach(e => { const g = (groups.concat(P.newGroups).find(x => x.id === e.groupId) || {}).name || 'bez grupy'; byG[g] = (byG[g] || 0) + 1; });
-    $('packOut').innerHTML = `<div>Do dodania: <b>${P.add.length}</b>${P.upd.length ? ' · do aktualizacji (podgrupa / mięśnie / grupa): <b>' + P.upd.length + '</b>' : ''} · pominięte (już są): <b>${P.skip.length}</b>${P.newGroups.length ? ' · nowe grupy: <b>' + P.newGroups.map(g => escapeHtml(g.name)).join(', ') + '</b>' : ''}</div>
+    $('packOut').innerHTML = `${P.del.length ? `<div style="margin-bottom:6px;color:var(--warn);">Do usunięcia z biblioteki: <b>${P.del.length}</b> – ${P.del.map(d => escapeHtml(d.name)).join(', ')}</div>` : ''}<div>Do dodania: <b>${P.add.length}</b>${P.upd.length ? ' · do aktualizacji (podgrupa / mięśnie / grupa): <b>' + P.upd.length + '</b>' : ''} · pominięte (już są): <b>${P.skip.length}</b>${P.newGroups.length ? ' · nowe grupy: <b>' + P.newGroups.map(g => escapeHtml(g.name)).join(', ') + '</b>' : ''}</div>
       <div class="cv-small" style="margin:6px 0;">${Object.keys(byG).map(g => escapeHtml(g) + ': ' + byG[g]).join(' · ')}</div>
       ${P.skip.length ? `<details><summary class="cv-small">Pominięte (${P.skip.length})</summary><div class="cv-small">${P.skip.map(escapeHtml).join(' · ')}</div></details>` : ''}
-      <button class="btn" id="packGo" style="margin-top:8px;" ${P.add.length || P.upd.length ? '' : 'disabled'}>${P.add.length ? 'Dodaj ' + P.add.length + ' ćwiczeń' : ''}${P.add.length && P.upd.length ? ' i ' : ''}${P.upd.length ? 'zaktualizuj ' + P.upd.length : ''}${!P.add.length && !P.upd.length ? 'Nic do zrobienia' : ''}</button>
-      ${!P.add.length && !P.upd.length ? '<div style="margin-top:8px;padding:8px 10px;border-radius:8px;background:#E3F1EA;color:#2E7D5B;">✅ Wszystkie ćwiczenia z tej paczki są już w bibliotece i mają aktualne podgrupy i mięśnie – nic nie trzeba robić.</div>' : ''}`;
+      <button class="btn" id="packGo" style="margin-top:8px;" ${P.add.length || P.upd.length || P.del.length ? '' : 'disabled'}>${P.del.length ? 'Usuń ' + P.del.length + (P.add.length || P.upd.length ? ', ' : '') : ''}${P.add.length ? 'Dodaj ' + P.add.length + ' ćwiczeń' : ''}${P.add.length && P.upd.length ? ' i ' : ''}${P.upd.length ? 'zaktualizuj ' + P.upd.length : ''}${!P.add.length && !P.upd.length && !P.del.length ? 'Nic do zrobienia' : ''}</button>
+      ${!P.add.length && !P.upd.length && !P.del.length ? '<div style="margin-top:8px;padding:8px 10px;border-radius:8px;background:#E3F1EA;color:#2E7D5B;">✅ Wszystkie ćwiczenia z tej paczki są już w bibliotece i mają aktualne podgrupy i mięśnie – nic nie trzeba robić.</div>' : ''}`;
     const go = $('packGo'); if(go) go.onclick = async () => {
       go.disabled = true; go.textContent = 'Zapisuję…';
       const freshLib = (await safeGet('exercise_library')) || [], freshGroups = (await safeGet('library_groups')) || [];
       const P2 = packPlan(pack, freshLib, freshGroups);
-      await persistWithFeedback('exercise_library_prev', {at: new Date().toISOString(), lib: freshLib, groups: freshGroups, added: P2.add.length + P2.upd.length});
+      await persistWithFeedback('exercise_library_prev', {at: new Date().toISOString(), lib: freshLib, groups: freshGroups, added: P2.add.length + P2.upd.length + P2.del.length});
       const UP = new Map(P2.upd.map(u => [u.id, u.ch]));
-      const G2 = freshGroups.concat(P2.newGroups), L2 = freshLib.map(e => UP.has(e.id) ? Object.assign({}, e, UP.get(e.id)) : e).concat(P2.add);
+      const DEL = new Set(P2.del.map(d => d.id));
+      const G2 = freshGroups.concat(P2.newGroups), L2 = freshLib.filter(e => !DEL.has(e.id)).map(e => UP.has(e.id) ? Object.assign({}, e, UP.get(e.id)) : e).concat(P2.add);
       if(P2.newGroups.length && !(await persistWithFeedback('library_groups', G2))){ go.disabled = false; return; }
       if(!(await persistWithFeedback('exercise_library', L2))){ go.disabled = false; return; }
       library = L2; libraryGroups = G2;
       renderLibGroupChips(); renderLibGroupSelect(); renderLibFullTable();
-      $('packOut').innerHTML = `<b style="color:var(--ok,#2E7D5B);">✅ Dodano ${P2.add.length} ćwiczeń${P2.upd.length ? ', zaktualizowano ' + P2.upd.length : ''}.</b> Tagi i grupy mięśniowe nadadzą się same z nazwy – sprawdź je w tabeli.`;
+      $('packOut').innerHTML = `<b style="color:var(--ok,#2E7D5B);">✅ Dodano ${P2.add.length} ćwiczeń${P2.upd.length ? ', zaktualizowano ' + P2.upd.length : ''}${P2.del.length ? ', usunięto ' + P2.del.length : ''}.</b> Tagi i grupy mięśniowe nadadzą się same z nazwy – sprawdź je w tabeli.`;
       f.value = ''; toast('Dodano ' + P2.add.length + ' ćwiczeń');
     };
   };
@@ -13446,6 +13515,9 @@ let sameDayOffer = null;
  .sd-btns{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
 `; document.head.appendChild(st); })();
 function sdDayPl(ds){ const d = new Date(ds + 'T12:00:00'); return ['nd','pon','wt','śr','czw','pt','sob'][d.getDay()] + ' ' + ds.slice(8, 10) + '.' + ds.slice(5, 7); }
+/* #41: skróty do propozycji zmian w takich samych dniach (kolejne tygodnie bloku) */
+function sdOffer(o){ if(editingTemplateMode || !selectedClientId || !selectedDateStr) return; const ds = selectedDateStr, cid = selectedClientId; setTimeout(() => offerSameDays(Object.assign({ clientId: cid, dateStr: ds }, o)), 0); }
+function sdOne(day, ex, what, apply){ sdOffer({ sig: daySig(day), idx: day.exercises.indexOf(ex), what: `${ex.label ? ex.label + ' ' : ''}${resolveExName(ex)}: ${what}`, apply }); }
 function offerSameDays(o){
   if(sameDayOffer && (sameDayOffer.clientId !== o.clientId || sameDayOffer.dateStr !== o.dateStr)) closeSameDays();
   if(!sameDayOffer){
@@ -13453,7 +13525,7 @@ function offerSameDays(o){
     if(!dates.length) return;
     sameDayOffer = { clientId: o.clientId, dateStr: o.dateStr, dates, checked: new Set(dates), changes: [] };
   }
-  sameDayOffer.changes.push({ what: o.what, idx: o.idx, apply: o.apply });
+  sameDayOffer.changes.push({ what: o.what, idx: o.idx, apply: o.apply, run: o.run });
   renderSameDays();
 }
 function closeSameDays(){ sameDayOffer = null; const b = document.getElementById('sdBox'); if(b) b.remove(); }
@@ -13473,7 +13545,7 @@ function renderSameDays(){
     const plan = plansCache[S.clientId]; const targets = [...S.checked].filter(ds => plan && plan[ds]);
     if(!targets.length){ closeSameDays(); return; }
     let n = 0;
-    targets.forEach(ds => { const exs = plan[ds].exercises || []; S.changes.forEach(c => { const t = exs[c.idx]; if(t){ c.apply(t); n++; } }); if(typeof relabelExercises === 'function') relabelExercises(plan[ds]); });
+    targets.forEach(ds => { const exs = plan[ds].exercises || []; S.changes.forEach(c => { if(c.run){ c.run(exs, plan[ds]); n++; return; } const t = exs[c.idx]; if(t){ c.apply(t); n++; } }); if(typeof relabelExercises === 'function') relabelExercises(plan[ds]); });
     closeSameDays();
     const ok = await persistPlan(S.clientId);
     if(ok !== false){ toast(`Zmieniono w ${targets.length} ${plPlural(targets.length, 'dniu', 'dniach', 'dniach')}`); if(typeof renderCalendar === 'function') renderCalendar(); }
@@ -13731,7 +13803,7 @@ function pick(list, key, why, opts){
   let c = list.slice();
   // ⇄ zawsze działa: za pulą dokładam ćwiczenia z biblioteki na te same główne grupy mięśniowe
   if(!opts.noExt) c = c.concat(similarFor(list).filter(n => !c.some(x => gKey(x) === gKey(n))));
-  { const nr = c.filter(n => !REGRESS.test(n)); if(nr.length) c = nr; }
+  { const nr = c.filter(n => !REGRESS.test(n) && !warmOnly(n)); if(nr.length) c = nr; }
   POOLS[key] = c;
   if(!G.addMissing){ const f = c.filter(usable); if(f.length < c.length) PLAN_SKIPPED.push(...c.filter(n => !usable(n))); c = f; }
   if(!shortOk()){ const f = c.filter(n => !SHORT_ROM.test(n)); if(f.length) c = f; }
@@ -13752,15 +13824,18 @@ function pick(list, key, why, opts){
 }
 const SIM_CACHE = new Map();
 /* #30: ćwiczenia z biblioteki (np. z paczki e-booków) – tylko te, które pasują do serii głównych */
-const LIB_NOT_MAIN_SUB = /Mobilizacja|Propriocepcja|Plyometria|Plyo –|Moc|Rzuty|Olimpijskie|Kondycja|Sanki|Cardio|Izometria – rodzaje|Stopa|stopa i staw|zginacz biodra/;
+const LIB_NOT_MAIN_SUB = /Aktywacja|Mobilizacja|Propriocepcja|Plyometria|Plyo –|Moc|Rzuty|Olimpijskie|Kondycja|Sanki|Cardio|Izometria – rodzaje|Stopa|stopa i staw|zginacz biodra/;
 const LIB_NOT_MAIN = /mobiliz|rolowan|kij(ek|ka|kiem)|slider|slajder|przetocz|zejście do przysiadu|kraba|płotkarsk|perturbac|\bsled\b|sanki|complex|skok|wskok|zeskok|pogo|balans|gąbce|nad głową|eldoa|rozciąg/i;
 const LIB_ADV = /2\/1|overcoming|yielding|\biso\b|myotatic|akcentowana ekscentryka|ekscentryka akcentowana|szybka ekscentryka|ekscentryczne przeciążenie|łańcuch|drop catch/i;
 const LIB_NOVICE_NO = /trap bar|landmine|safety bar|nordyck|kółka gimnast|futbolow|garhammer|zwis|l sit|\bghd\b|\bghr\b|ławka ujemna|hatfield|bułgarsk/i;
+/* #39: grupa „Rozgrzewka” – generator bierze te ćwiczenia tylko do rozgrzewki */
+function warmOnly(n){ const L = genLib(n); if(!L || !L.groupId || typeof libraryGroups === 'undefined') return false; const g = libraryGroups.find(x => x.id === L.groupId); return !!(g && g.name === 'Rozgrzewka'); }
 /* #37: regresje (pompki na kolanach, przy ścianie, podciąganie z gumą / z asystą) – generator nigdy sam, tylko ręcznie */
 const REGRESS = /na kolanach|pompk\w*[^,]*(przy|o) ścian|z asystą|asystowan|wspomagan|(podciąg|ściąg)\w*[^,]*z gumą/i;
 function libFit(n){
   if(REGRESS.test(n)) return false;
   const L = genLib(n); if(L && LIB_NOT_MAIN_SUB.test(L.sub || '')) return false;
+  if(warmOnly(n)) return false;
   if(LIB_NOT_MAIN.test(n) || LIB_ADV.test(n)) return false;
   if(G.staz === 'p' && LIB_NOVICE_NO.test(n)) return false;
   return true;
@@ -13954,7 +14029,7 @@ function applyPriority(days, why){
     const before = tally(days)[g] || 0; let t = before, added = 0, boosted = 0, guard = 0;
     while(t < lo && guard++ < 30){
       let cand = null;
-      days.forEach(d => d.rows.forEach(r => { const w = genMuscles(r.name)[g] || 0; if(w >= 1 && r.role !== 'A' && r.sets < 5 && (!cand || r.sets < cand.sets)) cand = r; }));
+      days.forEach(d => d.rows.forEach(r => { const w = genMuscles(r.name)[g] || 0; if(w >= 1 && r.role !== 'A' && r.sets < SETCAP(r) && (!cand || r.sets < cand.sets)) cand = r; }));
       if(cand && boosted < days.length){ cand.sets++; cand.boost = (cand.boost || 0) + 1; boosted++; }
       else {
         const reg = days.filter(d => d.rows.length < 10 && (!/^(Góra|Dół)/.test(d.name) || d.name.startsWith(LEGG.has(g) ? 'Dół' : 'Góra')));
@@ -13983,6 +14058,10 @@ function prioCutOk(r, groups){
   const m = genMuscles(r.name), pp = pPrim(r.name); if(!pp.some(g => groups.includes(g))) return false;
   const mx = Math.max(...pp.map(g => m[g])); return !G.prio.some(g => (m[g] || 0) >= mx);
 }
+/* #39: do porównania „priorytet vs inne” nie liczę serii innych partii z ćwiczeń, które i tak głównie pracują na priorytet
+   (np. przy priorytecie pośladki – wykroki / bułgarskie liczą się jako ćwiczenia na pośladki, nie „kosztem” czwórek) */
+function tallyCmp(days){ const t = {}; days.forEach(d => d.rows.forEach(r => { const m = genMuscles(r.name);
+  for(const g in m){ if(!G.prio.includes(g) && G.prio.some(p => (m[p] || 0) > m[g])) continue; t[g] = (t[g] || 0) + r.sets * m[g]; } })); return t; }
 function prioMark(days){
   days.forEach(d => d.rows.forEach(r => { G.prio.forEach(g => { if((genMuscles(r.name)[g] || 0) >= 1) r.prio = g; }); }));
   const [lo, hi] = TGT[G.staz]; return G.prio.map(g => ({ g, before: tally(days)[g] || 0, after: 0, lo, hi }));
@@ -13998,7 +14077,7 @@ function prioCostSuggest(days){
 function prioCostBalance(days, why, pr){
   const others = MG_PRIO.filter(g => !G.prio.includes(g)), [, hi] = TGT[G.staz], cap = hi + 4;
   const sug = prioCostSuggest(days), cost = (G.prioCost || sug).filter(g => !G.prio.includes(g));
-  const st = () => { const t = tally(days), o = others.map(g => [g, t[g] || 0]).sort((a, b) => b[1] - a[1])[0], p = G.prio.map(g => [g, t[g] || 0]).sort((a, b) => a[1] - b[1])[0]; return { t, og: o[0], ov: o[1], pg: p[0], pv: p[1] }; };
+  const st = () => { const t = tally(days), tc = tallyCmp(days), o = others.map(g => [g, tc[g] || 0]).sort((a, b) => b[1] - a[1])[0], p = G.prio.map(g => [g, t[g] || 0]).sort((a, b) => a[1] - b[1])[0]; return { t, og: o[0], ov: o[1], pg: p[0], pv: p[1] }; };
   const s0 = st(), cutBy = {}; let credit = 0, cut = 0, add = 0, ok = false, stuck = false, swapped = 0;
     const trySwap = s => {
     /* brak miejsca w dniach → ćwiczenie izolowane z partii „kosztem” zamieniam na ćwiczenie na priorytet (te same serie – trening nie dłuższy) */
@@ -14012,7 +14091,7 @@ function prioCostBalance(days, why, pr){
     const s = st(); if(s.ov * PRIO_MARGIN <= s.pv){ ok = true; break; }
     if(s.pv >= cap){ stuck = true; break; }
     let aRow = null;
-    days.forEach(d => d.rows.forEach(r => { if(r.role === 'A' || r.fin || r.giant || r.setType || G.ov[r.key] || r.sets >= 5) return; if((genMuscles(r.name)[s.pg] || 0) < 1) return; if(!aRow || r.sets < aRow.sets) aRow = r; }));
+    days.forEach(d => d.rows.forEach(r => { if(r.role === 'A' || r.fin || r.giant || r.setType || G.ov[r.key] || r.sets >= SETCAP(r)) return; if((genMuscles(r.name)[s.pg] || 0) < 1) return; if(!aRow || r.sets < aRow.sets) aRow = r; }));
     if(aRow && credit >= 1){ aRow.sets++; aRow.boost = (aRow.boost || 0) + 1; credit--; add++; continue; }
     if(!aRow && credit >= 2){
       const day = days.filter(d => d.rows.filter(r => !r.fin).length < 8 && d.rows.filter(r => r.prioAdd === s.pg).length < 2).sort((a, b) => gSets(a, s.pg) - gSets(b, s.pg))[0];
@@ -14050,14 +14129,14 @@ function prioCostHtml(){
 const PRIO_MARGIN = 1.2;
 function prioBalance(days, why, pr){
   const others = MG_PRIO.filter(g => !G.prio.includes(g)), [, hi] = TGT[G.staz], cap = hi + 4;
-  const st = () => { const t = tally(days), o = others.map(g => [g, t[g] || 0]).sort((a, b) => b[1] - a[1])[0], p = G.prio.map(g => [g, t[g] || 0]).sort((a, b) => a[1] - b[1])[0]; return { og: o[0], ov: o[1], pg: p[0], pv: p[1] }; };
+  const st = () => { const t = tally(days), tc = tallyCmp(days), o = others.map(g => [g, tc[g] || 0]).sort((a, b) => b[1] - a[1])[0], p = G.prio.map(g => [g, t[g] || 0]).sort((a, b) => a[1] - b[1])[0]; return { og: o[0], ov: o[1], pg: p[0], pv: p[1] }; };
   const s0 = st(); let cut = 0, add = 0, guard = 0, turn = 0, swapped = 0;
   while(guard++ < 80){
     const s = st(); if(s.ov * PRIO_MARGIN <= s.pv) break;
     let cRow = null, aRow = null;
     days.forEach(d => d.rows.forEach(r => { if(r.role === 'A' || r.fin || r.giant || r.setType || G.ov[r.key] || r.sets <= (r.legMain ? 3 : 2)) return; const m = genMuscles(r.name);
       if( (m[s.og] || 0) < 1 || G.prio.some(g => (m[g] || 0) >= m[s.og])) return; if(!cRow || r.sets > cRow.sets) cRow = r; }));
-    if(s.pv < cap) days.forEach(d => d.rows.forEach(r => { if(r.role === 'A' || r.fin || r.giant || r.setType || G.ov[r.key] || r.sets >= 5) return; const m = genMuscles(r.name); if((m[s.pg] || 0) < 1) return;
+    if(s.pv < cap) days.forEach(d => d.rows.forEach(r => { if(r.role === 'A' || r.fin || r.giant || r.setType || G.ov[r.key] || r.sets >= SETCAP(r)) return; const m = genMuscles(r.name); if((m[s.pg] || 0) < 1) return;
       const sc = (m[s.og] || 0) * 10 + r.sets; if(!aRow || sc < aRow.sc){ aRow = r; aRow.sc = sc; } }));
     const doCut = cRow && (turn % 2 === 0 || !aRow);
     if(doCut){ cRow.sets--; cRow.trim = (cRow.trim || 0) + 1; cut++; }
@@ -14123,6 +14202,21 @@ function build(){
   if(G.w && G.w.kto === 'amator' && G.w.cel === 'spr') krFinisher(days, why);
   return finishBuild(days, why, label, cyN, pr, true);
 }
+/* #41 (05.11): objętość – seria A max 5 serii, B max 4, C i dalej max 3 i najczęściej 2 (65%).
+   Nie ruszam: ręcznie wpisanych serii, giant serii, rodzajów serii w A; ćwiczenia na priorytet – tylko limit, bez losowania 2. */
+function SETCAP(r){ const L = String(r.lab || r.role || '')[0]; if(L === 'A') return 5; return r.prio || (G.prio || []).some(g => (genMuscles(r.name)[g] || 0) >= 1) ? 4 : 3; }   // ćwiczenie na priorytet w C/D: max 4
+function capVolume(days, why){
+  let n = 0;
+  days.forEach(d => d.rows.forEach(r => {
+    if(r.fin || r.giant || (G.ov[r.key] && (G.ov[r.key].sets != null))) return;
+    const L = String(r.lab || r.role || '')[0]; if(r.setType && L === 'A') return;
+    const cap = SETCAP(r), keep = r.prio || r.boost, two = L >= 'C' && !keep && rnd('c2|' + r.key + '|' + r.name) < 0.65;
+    const fix = v => { let x = Math.min(v, cap); if(two && x > 2) x = 2; return x; };
+    const b = r.sets; r.sets = fix(r.sets); if(r.setsWk) r.setsWk = r.setsWk.map(fix);
+    n += Math.max(0, b - r.sets);
+  }));
+  if(n) why.push(`Objętość: seria A max 5 serii, B max 3, C i dalej max 3 (najczęściej 2); ćwiczenie na priorytet w B/C max 4 – w sumie mniej o ${n} ${plPlural(n, 'serię', 'serie', 'serii')}`);
+}
 function finishBuild(days, why, label, cyN, pr, sila){
   if(!sila) applyEdits(days);
   if(!G.pogoWu) G.pogoWu = {};
@@ -14132,6 +14226,7 @@ function finishBuild(days, why, label, cyN, pr, sila){
   if(sila){ giantSeries(days, why); pairFix(days, why); capCount(days, why); orderSeries(days); tempoRest(days, why); }
   autoWarmup(days, why);
   if(sila) applySetTypes(days, why);
+  capVolume(days, why);
   G.prioRes = null;
   if(sila && pr) (G.prioMode === 'cost' ? prioCostBalance : prioBalance)(days, why, pr);
   days.forEach((d, di) => seriesLabels(d, G.order[di], G.groups[di]));
@@ -14531,7 +14626,7 @@ function applySetTypes(days, why){
     const types = shuffled(top.map((t, i) => i), 'stT' + di).map(i => top[i]);
     for(const t of types){
       const fit = cands.filter(r => t.roles.includes(r.role) && (t.ph === 'Int' || (r.lo + r.hi) / 2 >= 8)), rows = shuffled(fit.map((r, i) => i), 'stR' + di + t.id).map(i => fit[i]).sort((a, b) => (a.role === 'A' ? 0 : 1) - (b.role === 'A' ? 0 : 1));
-      const r = rows[0]; if(!r) continue;
+      const r = rows.find(x => x.role === 'A' || t.f(x).sets <= 3); if(!r) continue;   // #41: rodzaj serii w B max 3 serie
       const m = t.f(r);
       const sw = stWeeks(t, m);
       r.sets = m.sets; r.setsWk = null; r.wk = sw.wk; r.mnote = [m.note, r.mnote].filter(Boolean).join(' · '); r.setType = t.id; r.setPr = sw.pr; if(m.rest) r.rest = m.rest;
