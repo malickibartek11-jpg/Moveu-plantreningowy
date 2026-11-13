@@ -2316,6 +2316,9 @@ async function removeFromSharedList(key, localArray, predicate){
   const ok = await persistWithFeedback(key, filtered);
   return {ok, data: filtered};
 }
+/* #48b: masa ciała / obwody z bazy zawsze jako lista (u części klientów zapisały się jako tekst JSON albo obiekt) */
+function asLogArr(x){ if(Array.isArray(x)) return x.filter(Boolean); if(typeof x === 'string'){ try{ return asLogArr(JSON.parse(x)); }catch(e){ return []; } } if(x && typeof x === 'object') return Object.values(x).filter(v => v && typeof v === 'object'); return []; }
+const wlKg = w => { const v = w ? (w.value != null ? w.value : w.weight) : null; const n = parseFloat(String(v == null ? '' : v).replace(',', '.')); return isFinite(n) ? n : null; };
 function escapeHtml(s){
   return (s == null ? '' : String(s)).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 }
@@ -2326,7 +2329,7 @@ function clientRowToJs(row){
     id: row.id, name: row.name, email: row.email,
     groupId: row.group_id, subgroupId: row.subgroup_id,
     dob: row.dob, height: row.height,
-    weightLog: row.weight_log || [], measurementsLog: row.measurements_log || [],
+    weightLog: asLogArr(row.weight_log), measurementsLog: asLogArr(row.measurements_log),
     pendingCompletions: row.pending_completions || [],
     onlineActive: row.online_active || false, onlineTotal: row.online_total || 0
   };
@@ -3707,10 +3710,10 @@ function renderClientInfo(){
   }
   if(infoTab === 'ctx') body = ctxTabHtml(c, d);
   if(infoTab === 'pom'){
-    const wl = (c.weightLog || []).slice().sort((a, b) => (a.date||'').localeCompare(b.date||''));
+    const wl = asLogArr(c.weightLog).slice().sort((a, b) => String(a.date || '').localeCompare(String(b.date || '')));
     const lastW = wl.length ? wl[wl.length - 1] : null;
-    body = `<div class="cv-grid2"><div class="cv-card"><h4>Masa ciała</h4><div class="cv-stat">${lastW ? escapeHtml(String(lastW.weight)) + ' kg' : '—'}</div><div class="cv-small">${lastW ? 'ostatni pomiar: ' + escapeHtml(lastW.date || '') : 'brak pomiarów'}</div></div>
-      <div class="cv-card"><h4>Dane podstawowe</h4><div class="cv-kv"><span>Data urodzenia</span>${escapeHtml(c.dob || '—')}<span>Wzrost</span>${c.height ? escapeHtml(String(c.height)) + ' cm' : '—'}<span>Pomiary obwodów</span>${(c.measurementsLog || []).length}</div></div></div>
+    body = `<div class="cv-grid2"><div class="cv-card"><h4>Masa ciała</h4><div class="cv-stat">${lastW && wlKg(lastW) != null ? escapeHtml(String(wlKg(lastW))) + ' kg' : '—'}</div><div class="cv-small">${lastW ? 'ostatni pomiar: ' + escapeHtml(lastW.date || '') : 'brak pomiarów'}</div></div>
+      <div class="cv-card"><h4>Dane podstawowe</h4><div class="cv-kv"><span>Data urodzenia</span>${escapeHtml(c.dob || '—')}<span>Wzrost</span>${c.height ? escapeHtml(String(c.height)) + ' cm' : '—'}<span>Pomiary obwodów</span>${asLogArr(c.measurementsLog).length}</div></div></div>
       <button class="btn" id="cvOpenProfile" style="margin-top:14px;">📏 Otwórz pomiary, dane i raport PDF</button>
       <div class="cv-small" style="margin-top:6px;">Masa ciała, 13 obwodów z wykresami, edycja danych podstawowych i raport obecności PDF — jak dotąd.</div>`;
   }
@@ -4628,8 +4631,8 @@ function renderClientDiet(){
   document.querySelectorAll('[data-cwk]').forEach(b => b.onclick = () => { dietWeekStart = addDaysToDateStr(dietWeekStart, +b.dataset.cwk); rer(); });
   $('dGoMeals').onclick = () => { mealTab = 'tpl'; if(d.planId) planEditId = d.planId; $('showMealsBtn').click(); };
   $('dCalc').onclick = async () => {
-    const wl = (c.weightLog || []).slice().sort((a, b) => (a.date || '').localeCompare(b.date || ''));
-    const w = wl.length ? numv(wl[wl.length - 1].weight) : 0, h = numv(c.height), a = clientAge(c);
+    const wl = asLogArr(c.weightLog).slice().sort((a, b) => String(a.date || '').localeCompare(String(b.date || '')));
+    const w = wl.length ? (wlKg(wl[wl.length - 1]) || 0) : 0, h = numv(c.height), a = clientAge(c);
     if(!w || !h || a === null){ alert('Do wyliczenia potrzebne są: masa ciała, wzrost i data urodzenia.\nUzupełnij je w Informacje → Pomiary.'); return; }
     const sex = $('dSex').value, pal = $('dPal').value, goal = $('dGoal').value;
     const bmr = 10 * w + 6.25 * h - 5 * a + (sex === 'M' ? 5 : -161);
@@ -7696,8 +7699,8 @@ async function generateAttendancePdf(c){
 function renderClientProfile(clientId){
   const c = clients.find(cl => cl.id === clientId);
   if(!c) return;
-  if(!c.weightLog) c.weightLog = [];
-  if(!c.measurementsLog) c.measurementsLog = [];
+  c.weightLog = asLogArr(c.weightLog);
+  c.measurementsLog = asLogArr(c.measurementsLog);
   profileClientId = clientId;
 
   const main = $('main');
@@ -8883,7 +8886,7 @@ function renderLibraryView(){
     </div>
 
       <div class="tools-panel" id="packPanel">
-        <h4>📦 Wgraj paczkę ćwiczeń (plik .json od Claude) <span style="font-weight:400;font-size:11px;color:var(--muted);">· wersja aplikacji #48</span></h4>
+        <h4>📦 Wgraj paczkę ćwiczeń (plik .json od Claude) <span style="font-weight:400;font-size:11px;color:var(--muted);">· wersja aplikacji #49</span></h4>
         <div class="section-desc" style="margin:0 0 10px;">Doda wiele ćwiczeń naraz – z nazwą, filmem i grupą. Pomija te, które już są (ten sam film albo ta sama nazwa). Przed zapisem robi kopię biblioteki, więc można cofnąć.</div>
         <div class="lib-row" style="align-items:center;"><input type="file" id="packFile" accept=".json,application/json"><button class="btn ghost" id="packUndo">↩ Cofnij ostatnią paczkę</button></div>
         <div id="packOut" style="margin-top:10px;font-size:12.5px;"></div>
@@ -16269,7 +16272,7 @@ function dynTestHtml(t, bm){
 }
 window.dynCardHtml = function(c, d){
   const T = Object.values((d && d.dynamo) || {}).sort((a, b) => a.role.localeCompare(b.role));
-  const wl = (c.weightLog || []).slice().sort((a, b) => String(a.date).localeCompare(String(b.date))), bm = wl.length ? parseFloat(String(wl[wl.length - 1].value).replace(',', '.')) || null : null;
+  const wl = asLogArr(c.weightLog).slice().sort((a, b) => String(a.date).localeCompare(String(b.date))), bm = wl.length ? parseFloat(String(wl[wl.length - 1].value).replace(',', '.')) || null : null;
   const S = dynSummary(d), R = S ? S.ratios : {};
   const rat = [];
   if(R.hq != null) rat.push(`<span class="dyn-ratio">H:Q (zgięcie / wyprost kolana) <b>${dynF(R.hq, 2)}</b> <span class="dyn-pill ${R.hq < 0.45 ? 'dyn-w' : 'dyn-ok'}">${R.hq < 0.45 ? 'niskie' : 'OK'}</span></span>`);
