@@ -8,7 +8,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="theme-color" content="#1A1A1A">
 <title>MoveU — Twój plan treningowy</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&family=Big+Shoulders+Display:wght@600;800;900&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg:#F5F4F1; --surface:#FFFFFF; --surface-2:#EFEDE9; --line:#E1DFDA;
@@ -1352,6 +1352,102 @@
   .tt-ok{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;}
   .tt-ok svg{width:120px;height:120px;padding:32px;border-radius:50%;background:#2E9E5B;color:#fff;box-sizing:border-box;}
   @media (prefers-reduced-motion:reduce){ .tp-tap.go{animation:none;} }
+/* #46 WIDOK TESTU (tablica wyników) – wszystko pod .tv, żeby nie ruszać reszty aplikacji */
+.tv{--bg:#E9EDF3;--card:#FFFFFF;--ink:#0F1B33;--mut:#5A6478;--line:#D5DBE6;--band:#0F1B33;--band-fg:#F3F6FB;--acc:#2B59FF;--orange:#F2672E;
+  --up:#0FA37F;--up-bg:#DDF4EC;--mid:#C99A10;--mid-bg:#FBF1D6;--down:#E0482A;--down-bg:#FCE3DC;--na:#8A93A6;--na-bg:#EEF1F6;
+  --s1:#2B59FF;--s2:#F2672E;--s3:#0FA37F;--s4:#8A3FFC;--s5:#D12E7A;--s6:#0E8DB8;
+  --f-score:"Big Shoulders Display",Impact,"Arial Narrow",sans-serif;--f-body:"Instrument Sans","IBM Plex Sans",system-ui,sans-serif;
+  font-family:var(--f-body);color:var(--ink);background:var(--bg);font-size:14.5px;line-height:1.45;border-radius:10px;overflow:hidden;margin-top:8px}
+.tv *{box-sizing:border-box}
+.tv button,.tv select{font:inherit;cursor:pointer;border-radius:6px;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:7px 12px}
+.tv h2{font-family:var(--f-score);font-weight:800;font-size:25px;letter-spacing:.5px;text-transform:uppercase;margin:0;line-height:1;color:var(--ink)}
+.tv .hint{color:var(--mut);font-size:12.5px}
+.tv-band{background:var(--band);color:var(--band-fg);padding:18px 20px 20px;display:grid;grid-template-columns:minmax(0,1fr);gap:14px}
+.tv-tag{display:inline-block;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;background:var(--orange);color:#fff;padding:3px 8px;border-radius:3px}
+.tv-name{font-family:var(--f-score);font-weight:900;font-size:clamp(34px,5vw,54px);line-height:.95;margin:8px 0 4px;text-transform:uppercase;letter-spacing:.5px}
+.tv-meta{opacity:.75;font-size:13px}
+.tv-ctl{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:14px}
+.tv-ctl select,.tv-ctl .ghost{background:transparent;color:var(--band-fg);border-color:rgba(255,255,255,.28)}
+.tv-ctl select option{color:#000}
+.tv-ctl .cl{background:var(--orange);border-color:var(--orange);color:#fff;font-weight:700}
+.tv-ctl label.ghost{display:inline-flex;align-items:center;cursor:pointer;border:1px solid rgba(255,255,255,.28);border-radius:6px;padding:7px 12px;font-size:14px}
+.tv-seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.tv-seg button{border:0;border-radius:0;padding:5px 10px;font-size:12.5px;background:transparent}
+.tv-seg button[aria-pressed="true"]{background:var(--ink);color:var(--card)}
+.tv-band .tv-seg{border-color:rgba(255,255,255,.3)} .tv-band .tv-seg button{color:var(--band-fg)} .tv-band .tv-seg button[aria-pressed="true"]{background:var(--band-fg);color:var(--band)}
+.tv-board{display:flex;gap:4px;flex-wrap:wrap}
+.tv-cell{background:rgba(255,255,255,.07);padding:10px 16px 8px;min-width:118px;border-radius:4px}
+.tv-cell .l{font-size:10.5px;letter-spacing:1.4px;text-transform:uppercase;opacity:.7}
+.tv-cell .n{font-family:var(--f-score);font-weight:900;font-size:48px;line-height:.95;font-variant-numeric:tabular-nums}
+.tv-cell .n small{font-size:17px;font-weight:600;opacity:.7;margin-left:3px}
+.tv-cell .c{font-weight:700;font-size:12.5px}
+.tv-cell .c.up{color:#5BE3B6}.tv-cell .c.down{color:#FF8E77}.tv-cell .c.mid{color:#F5CF63}.tv-cell .c.na{color:#C9D2E3}
+.tv-body{padding:16px;display:grid;gap:16px}
+.tv-warn{background:var(--mid-bg);color:#6B4E00;border-radius:8px;padding:10px 14px;font-size:13.5px}
+.tv-panel{background:var(--card);border-radius:8px;padding:16px 18px;display:grid;gap:12px;min-width:0}
+.tv-ph{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.tv-cols{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:1000px){.tv-cols{grid-template-columns:minmax(0,1fr)}}
+.tv-read{font-size:14px;background:var(--na-bg);border-radius:6px;padding:9px 12px}
+.tv-dv{display:grid;gap:2px}
+.tv-dv .grp{font-size:10.5px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--mut);margin:8px 0 2px}
+.tv-dv .grp small{font-weight:400;letter-spacing:0;text-transform:none}
+.tv-row{display:grid;grid-template-columns:22px minmax(110px,1.1fr) minmax(0,1.6fr) 66px;align-items:center;gap:8px;padding:3px 4px;border-radius:5px;cursor:pointer;margin:0}
+.tv-row:hover{background:rgba(43,89,255,.06)} .tv-row.on{background:rgba(43,89,255,.1)}
+.tv-row .nm{font-size:13.5px;font-weight:500;line-height:1.2}
+.tv-row .nm small{display:block;color:var(--mut);font-size:11px;font-weight:400}
+.tv-track{position:relative;height:20px}
+.tv-track::before{content:"";position:absolute;left:50%;top:-3px;bottom:-3px;width:1px;background:var(--line)}
+.tv-track i{position:absolute;top:3px;height:14px;border-radius:2px}
+.tv-track em{position:absolute;top:1px;white-space:nowrap;font-style:normal;font-size:11.5px;font-weight:700;font-variant-numeric:tabular-nums}
+.tv-row .now{text-align:right;font-family:var(--f-score);font-weight:800;font-size:20px;font-variant-numeric:tabular-nums}
+.tv-sw{width:12px;height:12px;border-radius:3px;border:2px solid var(--line);display:block}
+.tv-row.on .tv-sw{border-color:transparent}
+.tv input.hid{position:absolute;opacity:0;width:1px;height:1px}
+.tv-legend{display:flex;flex-wrap:wrap;gap:6px}
+.tv-legend span{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;padding:3px 9px;border-radius:999px;background:var(--bg)}
+.tv-legend span i{width:10px;height:10px;border-radius:50%}
+.tv svg{display:block;width:100%;height:auto}
+.tv svg text{font-family:var(--f-body);font-size:11px;fill:var(--mut)}
+.tv-bf{display:grid;gap:8px}
+.tv-bfh,.tv-bfr{display:grid;grid-template-columns:minmax(0,1fr) 124px minmax(0,1fr);align-items:center;gap:10px}
+.tv-bfh{font-family:var(--f-score);font-weight:800;font-size:22px} .tv-bfh div:last-child{text-align:right}
+.tv-bfr .mid{text-align:center;font-size:12.5px;font-weight:600;line-height:1.15}
+.tv-bfr .mid b{display:block;font-family:var(--f-score);font-size:28px;line-height:1}
+.tv-bfr .mid small{display:block;color:var(--mut);font-weight:400;font-size:11px}
+.tv-half{height:26px;background:var(--bg);border-radius:4px;position:relative;overflow:hidden}
+.tv-half i{position:absolute;top:0;bottom:0;border-radius:4px;background:var(--acc)}
+.tv-half i.str{background:#C3CAD7}
+.tv-half.l i{right:0}.tv-half.r i{left:0}
+.tv-half b{position:absolute;top:4px;font-size:12.5px;font-weight:700;color:#fff}
+.tv-half b.dk{color:var(--ink)}
+.tv-half.l b{right:8px}.tv-half.r b{left:8px}
+.tv-hist{display:flex;gap:3px;justify-content:center;margin-top:3px}
+.tv-hist s{width:8px;height:8px;border-radius:50%;display:block;text-decoration:none}
+.z-up{background:var(--up)}.z-mid{background:var(--mid)}.z-down{background:var(--down)}
+.tv-todo{display:grid;gap:10px;margin:0;padding:0;list-style:none}
+.tv-todo li{display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:start}
+.tv-todo .k{font-family:var(--f-score);font-weight:900;font-size:28px;line-height:.9;color:var(--orange)}
+.tv-say{font-size:16px} .tv-say ul{margin:0;padding-left:20px;display:grid;gap:5px}
+.tv-chips{display:flex;flex-wrap:wrap;gap:6px}
+.tv-chip{display:inline-block;font-size:12px;font-weight:600;padding:3px 9px;border-radius:4px;white-space:nowrap}
+.c-up{background:var(--up-bg);color:var(--up)}.c-up1{background:var(--up-bg);color:#3c8a74}.c-mid{background:var(--mid-bg);color:#8a6a00}
+.c-down{background:var(--down-bg);color:var(--down)}.c-down1{background:var(--down-bg);color:#b8664f}.c-na{background:var(--na-bg);color:var(--mut)}
+.tv details{background:var(--card);border-radius:8px;padding:12px 18px}
+.tv summary{cursor:pointer;font-family:var(--f-score);font-weight:800;font-size:19px;text-transform:uppercase;letter-spacing:.5px}
+.tv-tw{overflow-x:auto;margin-top:10px}
+.tv table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.tv th,.tv td{padding:7px 8px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+.tv th{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--mut);background:transparent}
+.tv th:first-child,.tv td:first-child{text-align:left;white-space:normal}
+.tv td small{display:block;color:var(--mut);font-size:11px}
+.tv .lsi{display:inline-block;font-weight:700;font-size:12px;padding:2px 7px;border-radius:4px}
+.tv .tv-sgt td:nth-child(2),.tv .tv-sgt th:nth-child(2){text-align:left;white-space:normal}
+.tv .tv-sgt td:first-child{width:28px}
+.tv .tv-empty{background:var(--card);border-radius:8px;padding:28px;text-align:center;color:var(--mut)}
+.tv.client .tv-tr{display:none!important}
+.tv.client .tv-say{font-size:20px}
+
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"></script>
@@ -6721,6 +6817,12 @@ function computeSuggestedWeightInfo(clientId, exerciseName, plannedReps, beforeD
   const reps = parseInt(plannedReps);
   const eqi = equipmentInfo(exerciseName), eq = eqi.eq;
   const all = progSessionsBefore(clientId, exerciseName, beforeDate);
+  /* #43: test 1RM tego ćwiczenia wygrywa z historią, jeśli jest nowszy niż ostatni trening (potem znów silnik RPE) */
+  const test0 = getLatestTest1RM(clientId, exerciseName);
+  if(test0 && (!beforeDate || test0.date < beforeDate) && (!all.length || test0.date >= all[all.length - 1].date)){
+    const pct0 = pctForReps(reps || 1);
+    return { value: eqSnap(test0.oneRM * pct0 / 100 * (opts.slowPct || 1), eq), source: 'test', date: test0.date, eq, eqAuto: eqi.auto, eqKnown: eqi.known };
+  }
   if(all.length){
     const sameAll = !isNaN(reps) ? all.filter(s => s.reps === reps) : [];
     const prev = sameAll.length ? sameAll[sameAll.length - 1] : all[all.length - 1];
@@ -6754,12 +6856,64 @@ function computeSuggestedWeightInfo(clientId, exerciseName, plannedReps, beforeD
     return Object.assign(base, { value, rule: d.rule + slowRule, flag: d.flag, raw: d.raw, f: d.f, conv,
       rpe: isNaN(actual) ? null : { actual, target } });
   }
-  const test = getLatestTest1RM(clientId, exerciseName);
-  if(test){
-    const pct = pctForReps(reps || 1);
-    return { value: eqSnap(test.oneRM * pct / 100 * (opts.slowPct || 1), eq), source: 'test', date: test.date, eq, eqAuto: eqi.auto, eqKnown: eqi.known };
-  }
+  const bal = balanceSuggest(clientId, exerciseName, reps, beforeDate, eq);
+  if(bal) return Object.assign(bal, { eqAuto: eqi.auto, eqKnown: eqi.known });
   return null;
+}
+/* #43 BALANS STRUKTURALNY (notatki Bartosza): start ciężaru w nowym ćwiczeniu, gdy klient nie ma historii ani testu tego ćwiczenia.
+   Odniesienie: góra = wyciskanie sztangi na ławce poziomej (100%), dół = przysiad ze sztangą na plecach (100%).
+   1RM odniesienia: test 1RM albo szacunek z treningu (tylko serie 1–6 powt.). Hantle: % = jedna hantla. Ostrożnie: −10%.
+   Pominięte (decyzja 06.11): dipy, podciąganie, wysokopodrzut. */
+const BAL_SAFE = 0.9;
+const BAL_SKIP = /izometr|pauz|tempo|ekscentr|perturb|gum|lancuch|landmine|waterbag|work|klin|kij|piet|skrzyn|podwyzsz|b-stance|2:1|futbol|swiss/;
+const BAL_REF = { bp: { re: /wyciskanie sztangi.*(lawk\w* poziom|poziom\w* lawk)/, nm: 'wyciskanie sztangi na ławce poziomej' },
+                  sq: { re: /przysiad.*sztang\w* na plecach/, no: /bulgar|wykrok|wykrocz|zakrok|split/, nm: 'przysiad ze sztangą na plecach' } };
+const BAL_RULES = [
+  { re: /wyciskanie sztangi.*(skos|dodatni)/, ref: 'bp', pct: 91, nm: 'wyciskanie na ławce dodatniej' },
+  { re: /wyciskanie sztangi.*nad glowe.*stojac/, ref: 'bp', pct: 72, nm: 'wyciskanie sztangi nad głowę stojąc' },
+  { re: /wyciskanie sztangi.*zza glowy/, ref: 'bp', pct: 66, nm: 'wyciskanie zza głowy' },
+  { re: /uginanie przedramion.*sztang.*podchwyt|uginanie przedramion.*podchwyt.*sztang/, ref: 'bp', pct: 46, nm: 'uginanie przedramion podchwytem' },
+  { re: /uginanie przedramion.*sztang.*nachwyt|uginanie przedramion.*nachwyt.*sztang/, ref: 'bp', pct: 30, nm: 'uginanie przedramion nachwytem' },
+  { re: /wyciskanie hantli.*nad glowe.*siedz/, no: /arnold/, ref: 'bp', pct: 37, nm: 'wyciskanie hantli nad głowę siedząc (1 hantla)', db: true },
+  { re: /francusk.*(sztang|lamana).*(lezac|do czola)|francusk.*(lezac|do czola).*(sztang|lamana)/, ref: 'bp', pct: 40, nm: 'francuskie leżąc do czoła' },
+  { re: /francusk.*(sztang|lamana).*zza glowy.*siedz|francusk.*zza glowy.*siedz.*(sztang|lamana)/, ref: 'bp', pct: 32, nm: 'francuskie zza głowy siedząc' },
+  { re: /trap 3/, no: /superman/, ref: 'bp', pct: 10.6, at: 8, nm: 'Trap 3 (1 hantla, na 8 powt.)', db: true },
+  { re: /rotacj\w* (zewnetrzn\w* )?przedramieni\w*.*kolan/, ref: 'bp', pct: 10, at: 8, nm: 'rotacja hantli na kolanie (na 8 powt.)', db: true },
+  { re: /przysiad\w*.*sztang\w*.*z przodu/, ref: 'sq', pct: 85, nm: 'przysiad ze sztangą z przodu' },
+  { re: /martwy ciag.*rwaniow/, ref: 'sq', pct: 90, nm: 'martwy ciąg chwytem rwaniowym' },
+  { re: /martwy ciag klasyczny/, ref: 'sq', pct: 122.5, nm: 'martwy ciąg klasyczny' },
+  { re: /(\brdl\b|rumunsk).*sztang|sztang.*(\brdl\b|rumunsk)/, no: /jednonoz/, ref: 'sq', pct: 105, nm: 'rumuński martwy ciąg' },
+  { re: /przysiad bulgarski.*hantl/, ref: 'sq', pct: 38, nm: 'przysiad bułgarski (1 hantla)', db: true },
+  { re: /peterson/, ref: 'sq', pct: 46, nm: 'wstępowanie Petersona' }
+];
+function balRule(name){
+  const k = plSearchKey(name); if(BAL_SKIP.test(k)) return null;
+  return BAL_RULES.find(r => r.re.test(k) && !(r.no && r.no.test(k))) || null;
+}
+/* 1RM odniesienia: najnowszy z (test 1RM, szacunek z serii 1–6 powt.) we wszystkich ćwiczeniach pasujących do odniesienia */
+function balRef1RM(clientId, refKey, beforeDate){
+  const R = BAL_REF[refKey], plan = plansCache[clientId] || {}, names = new Set();
+  Object.keys(plan).forEach(ds => { const d = plan[ds]; (d && d.exercises || []).forEach(e => { const n = resolveExName(e), k = plSearchKey(n); if(R.re.test(k) && !(R.no && R.no.test(k)) && !BAL_SKIP.test(k)) names.add(n); }); });
+  let best = null;
+  names.forEach(n => {
+    const t = getLatestTest1RM(clientId, n);
+    if(t && (!beforeDate || t.date < beforeDate) && (!best || t.date > best.date || (t.date === best.date && t.oneRM > best.oneRM))) best = { oneRM: t.oneRM, date: t.date, src: 'test 1RM', name: n };
+    const ss = progSessionsBefore(clientId, n, beforeDate), last = ss[ss.length - 1];
+    if(last) last.st.sets.forEach(x => { if(x.r >= 1 && x.r <= 6 && x.w > 0){ const e = x.w / (pctForReps(x.r) / 100);
+      if(!best || last.date > best.date || (last.date === best.date && best.src !== 'test 1RM' && e > best.oneRM)) best = { oneRM: e, date: last.date, src: 'trening', w: x.w, r: x.r, name: n }; } });
+  });
+  return best;
+}
+function balanceSuggest(clientId, exerciseName, reps, beforeDate, eq){
+  const rule = balRule(exerciseName); if(!rule) return null;
+  const b = balRef1RM(clientId, rule.ref, beforeDate); if(!b) return null;
+  const rr = reps >= 1 ? reps : (rule.at || 1);
+  const base = b.oneRM * rule.pct / 100;
+  const raw = rule.at ? base * pctForReps(rr) / pctForReps(rule.at) : base * pctForReps(rr) / 100;
+  if(rule.db) eq = 'db';
+  const value = eqSnap(raw * BAL_SAFE, eq);
+  return { value, source: 'balance', date: b.date, eq, refName: b.name, refSrc: b.src, ref1RM: b.oneRM, refW: b.w, refR: b.r, pct: rule.pct, at: rule.at || null, ruleNm: rule.nm, refNm: BAL_REF[rule.ref].nm,
+    rule: `balans strukturalny: ${rule.nm} = ${String(rule.pct).replace('.', ',')}% ${rule.at ? 'ciężaru na ' + rule.at + ' powt.' : '1RM'} z „${BAL_REF[rule.ref].nm}” (1RM ≈ ${fmtKg(Math.round(b.oneRM * 2) / 2)} kg, ${b.src}${b.w ? ` ${fmtKg(b.w)} kg × ${b.r}` : ''}, ${b.date}) · ostrożnie −10%` };
 }
 function computeSuggestedWeight(clientId, exerciseName, plannedReps, beforeDate, targetRpe, opts){
   const info = computeSuggestedWeightInfo(clientId, exerciseName, plannedReps, beforeDate, targetRpe, opts);
@@ -6847,7 +7001,8 @@ const fmtKg = v => String(v).replace('.', ',');
 function rpeNoteText(r){ if(!r) return ''; return `RPE ${fmtKg(r.actual)} / cel ${fmtKg(r.target)}`; }
 function suggestedSourceText(info){
   if(!info) return '';
-  if(info.source === 'test') return `Wyliczone z testu 1RM (${info.date}) — tego ćwiczenia jeszcze nie było`;
+  if(info.source === 'test') return `Wyliczone z testu 1RM tego ćwiczenia (${info.date})`;
+  if(info.source === 'balance') return `Pierwszy raz to ćwiczenie – start z balansu strukturalnego: ${info.rule}`;
   if(info.source === 'fixed') return `Rzut piłką — automatycznie ${fmtKg(info.value)} kg (wpisz inny ciężar, jeśli chcesz zmienić)`;
   if(info.source === 'band') return info.rule.charAt(0).toUpperCase() + info.rule.slice(1);
   return `Z poprzedniego treningu (${info.date}: ${fmtKg(info.fromWeight)} kg, ${info.done.join('/')}) · ${info.rule}`;
@@ -6855,6 +7010,7 @@ function suggestedSourceText(info){
 function suggestedClientLabel(info){
   if(!info) return '';
   if(info.source === 'test') return 'z testu 1RM';
+  if(info.source === 'balance') return 'ciężar startowy';
   if(info.source === 'fixed') return 'piłka';
   if(info.source === 'band') return `${BAND_PCT_1RM}% maksymalnego ciężaru`;
   return 'z poprzedniego treningu';
@@ -6864,6 +7020,7 @@ function progBadgeHtml(info, manual, exId){
   if(manual) return `<div class="pg-badge pg-man" title="Twój ciężar wygrywa z algorytmem">✎ ręcznie</div>`;
   if(!info) return '';
   if(info.source === 'test') return `<div class="pg-badge pg-new" data-pgwhy="${exId}">z testu 1RM</div>${progWhyHtml(info, exId)}`;
+  if(info.source === 'balance') return `<div class="pg-badge pg-new" data-pgwhy="${exId}" title="Kliknij: skąd ten ciężar?">⚖ balans</div>${progWhyHtml(info, exId)}`;
   if(info.source === 'fixed') return `<div class="pg-badge pg-eq" title="Rzut piłką — stały ciężar ${fmtKg(info.value)} kg">⚽ ${fmtKg(info.value)} kg</div>`;
   if(info.source === 'band') return `<div class="pg-badge pg-new" title="${escapeHtml(info.rule)}">⚡ ${BAND_PCT_1RM}% 1RM</div>`;
   const diff = Math.round((info.value - info.fromWeight) * 100) / 100;
@@ -6874,6 +7031,9 @@ function progBadgeHtml(info, manual, exId){
 function progWhyHtml(info, exId){
   let rows;
   if(info.source === 'test') rows = `<tr><td>Test 1RM</td><td>${escapeHtml(info.date)}</td></tr>`;
+  else if(info.source === 'balance') rows = `<tr><td>Odniesienie</td><td>${escapeHtml(info.refNm)}: 1RM ≈ ${fmtKg(Math.round(info.ref1RM * 2) / 2)} kg (${escapeHtml(info.refSrc)}${info.refW ? ` ${fmtKg(info.refW)} kg × ${info.refR}` : ''}, ${escapeHtml(info.date)})</td></tr>
+    <tr><td>Balans</td><td>${escapeHtml(info.ruleNm)} = ${fmtKg(info.pct)}% ${info.at ? 'ciężaru na ' + info.at + ' powt.' : '1RM'}</td></tr>
+    <tr><td>Ostrożnie</td><td>−10% (pierwszy raz to ćwiczenie)</td></tr>`;
   else rows = `<tr><td>Poprzedni trening</td><td>${escapeHtml(info.date)} · ${fmtKg(info.fromWeight)} kg × ${info.fromReps}</td></tr>
     <tr><td>Zrobione${info.side ? ` (słabsza: ${info.side})` : ''}</td><td>${info.done.join('/')} = ${info.P}%</td></tr>
     <tr><td>RPE klienta / cel</td><td>${info.rpe ? `${fmtKg(info.rpe.actual)} / ${fmtKg(info.rpe.target)}` : 'brak'}</td></tr>
@@ -8720,7 +8880,7 @@ function renderLibraryView(){
     </div>
 
       <div class="tools-panel" id="packPanel">
-        <h4>📦 Wgraj paczkę ćwiczeń (plik .json od Claude) <span style="font-weight:400;font-size:11px;color:var(--muted);">· wersja aplikacji #41</span></h4>
+        <h4>📦 Wgraj paczkę ćwiczeń (plik .json od Claude) <span style="font-weight:400;font-size:11px;color:var(--muted);">· wersja aplikacji #47</span></h4>
         <div class="section-desc" style="margin:0 0 10px;">Doda wiele ćwiczeń naraz – z nazwą, filmem i grupą. Pomija te, które już są (ten sam film albo ta sama nazwa). Przed zapisem robi kopię biblioteki, więc można cofnąć.</div>
         <div class="lib-row" style="align-items:center;"><input type="file" id="packFile" accept=".json,application/json"><button class="btn ghost" id="packUndo">↩ Cofnij ostatnią paczkę</button></div>
         <div id="packOut" style="margin-top:10px;font-size:12.5px;"></div>
@@ -11419,12 +11579,11 @@ const IMPORT_MODES = {
     selectTrials(trials) { return trials.slice(); },
   },
   performance: {
-    label: "Wydajność (szczytowa forma)",
+    label: "Wydajność (średnia z 3 najlepszych)",
     shortLabel: "Wydajność",
-    describe: "Bierze tylko najlepszą próbę dnia (wg wysokości wyskoku) — do śledzenia szczytowych możliwości, bez rozmycia przez zmęczenie.",
+    describe: "Średnia z 3 najlepszych prób dnia (wg wysokości wyskoku) — szczytowe możliwości, ale z mniejszym szumem niż jedna próba (#46, badania 2025: średnia z 3 powtarzalniejsza niż najlepsza próba).",
     selectTrials(trials) {
-      const best = trials.slice().sort((a,b) => (g(b.metrics,"jump height ni") ?? -Infinity) - (g(a.metrics,"jump height ni") ?? -Infinity))[0];
-      return best ? [best] : [];
+      return trials.slice().sort((a,b) => (g(b.metrics,"jump height ni") ?? -Infinity) - (g(a.metrics,"jump height ni") ?? -Infinity)).slice(0, 3);
     },
   },
   fatigue: {
@@ -12532,7 +12691,7 @@ const TST_PHASES = [
   ['naped', 'Odbicie (napęd)', 'Concentric Impulse'],
   ['ladowanie', 'Lądowanie', 'Peak Landing Force']
 ];
-const TST_MODE_LABEL = { rehab: 'Rehabilitacja — wszystkie próby', performance: 'Wydajność — najlepsza próba', fatigue: 'Stan zmęczeniowy — ostatnia seria' };
+const TST_MODE_LABEL = { rehab: 'Rehabilitacja — wszystkie próby', performance: 'Wydajność — średnia z 3 najlepszych', fatigue: 'Stan zmęczeniowy — ostatnia seria' };
 let testsCache = null, testsTableMissing = false, tstSettings = { names: {}, modes: {} };
 let tstPendingDyn = [], tstImportFrom = null;
 let tstPendingImport = null, tstProfileId = null, tstShowAll = false;
@@ -12777,7 +12936,508 @@ function tstWorst(res){
   return best;
 }
 
-/* ---------- PROFIL TESTÓW (czytelny widok) ---------- */
+/* ===== #46 WIDOK TESTU – tablica wyników (obunóż + jednonóż) =====
+   Dane: sesje z app_tests przeliczane silnikiem CMJ (tstSession). Ustawienia widoku per klient: tstSettings.view[clientId].
+   Progi zmian = zmienność między dniami (CV) z badań 2021–2026 (Lonergan 2025, Shaw 2026, Badby 2025; ForceDecks / Hawkin):
+   |zmiana| < 1×CV → bez zmian, 1–2×CV → prawdopodobna, ≥ 2×CV → pewna. RFD hamowania i lądowanie obunóż – tylko informacyjnie. */
+const TV = (function(){
+  const f = (x, d) => { if(x == null || Number.isNaN(x)) return '—'; const r = Number(Number(x).toFixed(d)); return (Object.is(r, -0) ? 0 : r).toLocaleString('pl-PL', { minimumFractionDigits: d, maximumFractionDigits: d }); };
+  const ok = x => x != null && !Number.isNaN(x);
+  const esc = s => escapeHtml(String(s == null ? '' : s));
+  const SER = ['--s1', '--s2', '--s3', '--s4', '--s5', '--s6'];
+  const dd = day => day.slice(8, 10) + '.' + day.slice(5, 7);
+  /* g: grupa · cv: zmienność między dniami w % (próg „prawdopodobnej” zmiany; „pewna” = 2×) · info: bez oceny */
+  const DEF = [
+    { k: 'jh', g: 'w', lab: 'Wysokość skoku', src: 'Jump Height (Imp-Mom)', key: 'Jump Height (Imp-Mom) [cm]', unit: 'cm', up: 1, d: 1, cv: 3, say: (c, b) => `Skaczesz ${f(c,1)} cm – ${c >= b ? 'o ' + f(c - b, 1) + ' cm wyżej' : 'o ' + f(b - c, 1) + ' cm niżej'}.` },
+    { k: 'rsi', g: 'w', lab: 'Reaktywność', src: 'RSI-mod · m/s', key: 'RSI-modified (Imp-Mom) [m/s]', unit: '', up: 1, d: 2, cv: 5, say: (c, b) => c > b ? 'Odbijasz się szybciej i wyżej.' : 'Odbicie wolniejsze niż ostatnio.' },
+    { k: 'sj', g: 'w', lab: 'Wysokość SJ', src: 'Squat Jump · cm', unit: 'cm', up: 1, d: 1, cv: 3, say: c => `Bez zamachu ${f(c,1)} cm – czysta siła.` },
+    { k: 'eur', g: 'w', lab: 'Sprężystość', src: 'CMJ ÷ SJ · próg 1,10', unit: '', up: 1, d: 2, cv: 4, say: c => `Zamach daje Ci +${f((c - 1) * 100, 0)}% wysokości.` },
+    { k: 'ct', g: 's', lab: 'Czas skoku', src: 'Contraction Time · ms · krócej = szybciej', key: 'Contraction Time [ms]', unit: 'ms', up: 0, d: 0, cv: 5, say: (c, b) => c < b ? 'Odbicie trwa krócej.' : 'Odbicie trwa dłużej.' },
+    { k: 'dep', g: 's', lab: 'Głębokość zejścia', src: 'Countermovement Depth · cm', key: 'Countermovement Depth [cm]', unit: 'cm', up: null, d: 0, cv: 5, say: c => `Schodzisz na ${f(c,0)} cm.` },
+    { k: 'pp', g: 'm', lab: 'Moc / masa', src: 'Peak Power / BM · W/kg', key: 'Peak Power / BM [W/kg]', unit: 'W/kg', up: 1, d: 1, cv: 3, say: (c, b) => c > b ? 'Więcej mocy na kg.' : 'Moc bez poprawy.' },
+    { k: 'cpf', g: 'm', lab: 'Siła napędu / masa', src: 'Concentric Peak Force / BM', key: 'Concentric Peak Force / BM [N/kg]', unit: 'N/kg', up: 1, d: 1, cv: 3, say: (c, b) => c > b ? 'Mocniej się odpychasz.' : 'Siła odbicia bez zmian.' },
+    { k: 'sjp', g: 'm', lab: 'Moc SJ / masa', src: 'Squat Jump · Peak Power / BM', unit: 'W/kg', up: 1, d: 1, cv: 3, say: (c, b) => c > b ? 'Więcej mocy bez zamachu.' : 'Moc SJ bez zmian.' },
+    { k: 'ecc', g: 'm', lab: 'Hamowanie (RFD)', src: 'Ecc Decel RFD / BM · informacyjnie', key: 'Eccentric Deceleration RFD / BM [N/s/kg]', unit: 'N/s/kg', up: 1, d: 0, cv: 10, info: 1, say: (c, b) => c > b ? 'Szybciej wyhamowujesz.' : 'Hamowanie bez poprawy.' },
+    { k: 'lnd', g: 'i', lab: 'Lądowanie / masa', src: 'Peak Landing Force / BM · informacyjnie', key: 'Peak Landing Force / BM [N/kg]', unit: 'N/kg', up: 0, d: 0, cv: 12, info: 1, say: (c, b) => c < b ? 'Miękciej lądujesz.' : 'Lądujesz twardziej.' },
+    { k: 'bm', g: 'i', lab: 'Masa ciała', src: 'Body Mass · kg', key: 'Body Mass [kg]', unit: 'kg', up: null, d: 1, cv: 1, info: 1, say: c => `Masa ${f(c,1)} kg.` },
+  ];
+  const GRP = { w: ['Wynik', 'to, co widać'], s: ['Strategia', 'jak skacze'], m: ['Mechanizm', 'skąd wynik'], i: ['Lądowanie i masa', 'informacyjnie'], a: ['Lewa / prawa', 'różnica %, niżej = lepiej'] };
+  const LRDEF = [
+    { k: 'aHam', lab: 'Hamowanie', pair: 'Eccentric Deceleration Impulse' }, { k: 'aSil', lab: 'Siła w hamowaniu', pair: 'Eccentric Peak Force' },
+    { k: 'aNap', lab: 'Odbicie', pair: 'Concentric Impulse' }, { k: 'aSJ', lab: 'Odbicie SJ', pair: 'Concentric Impulse', sj: 1 }, { k: 'aLad', lab: 'Lądowanie', pair: 'Peak Landing Force', info: 1 },
+  ];
+  const SGDEF = [
+    { k: 'jh', lab: 'Wysokość skoku', key: 'Jump Height (Imp-Mom) [cm]', unit: 'cm', d: 1, up: 1 },
+    { k: 'rsi', lab: 'Reaktywność (RSI-mod)', key: 'RSI-modified (Imp-Mom) [m/s]', unit: '', d: 2, up: 1 },
+    { k: 'pp', lab: 'Moc / masa', key: 'Peak Power / BM [W/kg]', unit: 'W/kg', d: 1, up: 1 },
+    { k: 'cpf', lab: 'Siła napędu / masa', key: 'Concentric Peak Force / BM [N/kg]', unit: 'N/kg', d: 1, up: 1 },
+    { k: 'ecc', lab: 'Hamowanie (RFD / masa)', key: 'Eccentric Deceleration RFD / BM [N/s/kg]', unit: 'N/s/kg', d: 0, up: 1 },
+    { k: 'ct', lab: 'Czas skoku', key: 'Contraction Time [ms]', unit: 'ms', d: 0, up: 0 },
+    { k: 'lnd', lab: 'Lądowanie / masa', key: 'Peak Landing Force / BM [N/kg]', unit: 'N/kg', d: 0, up: null },
+    { k: 'sjh', lab: 'SJ jednonóż – wysokość', key: 'Jump Height (Imp-Mom) [cm]', unit: 'cm', d: 1, up: 1, sj: 1 },
+  ];
+  const LR_CV = 4, LSI_CV = 4;   // pp – asymetria i LSI są mniej powtarzalne niż wyniki
+  let ST = null;   // stan bieżącego widoku
+
+  /* ---------- dane ---------- */
+  function trialsJh(s){ const sk = new Set((s.row.skipped || []).map(x => x.f));
+    return (s.row.trials || []).filter(t => !sk.has(t.f)).map(t => CMJ.g(t.metrics || {}, 'jump height ni')).filter(ok); }
+  function build(clientId){
+    const modeSet = tstSettings.modes[clientId] || null;
+    const S = tstRowsFor(clientId).map(r => tstSession(r, modeSet || undefined)).filter(s => s.result && s.result.values);
+    const near = (a, b) => Math.abs((new Date(a) - new Date(b)) / 864e5) <= 7;
+    const cmj = S.filter(s => s.type === 'cmj' && s.leg === 'dual'), sjs = S.filter(s => s.type === 'sj' && s.leg === 'dual');
+    const base = cmj.length ? cmj : sjs;
+    const v = {}, lr = {}, sess = [];
+    DEF.forEach(d => v[d.k] = []); LRDEF.forEach(d => lr[d.k] = []);
+    base.forEach((s, i) => {
+      const C = s.type === 'cmj' ? s : null, SJ = C ? sjs.filter(x => near(x.day, C.day)).pop() || null : s, V = C ? C.result.values : {}, sv = SJ ? SJ.result.values : {};
+      DEF.forEach(d => { if(d.key) v[d.k][i] = ok(V[d.key]) ? V[d.key] : null; });
+      v.sj[i] = ok(sv['Jump Height (Imp-Mom) [cm]']) ? sv['Jump Height (Imp-Mom) [cm]'] : null;
+      v.sjp[i] = ok(sv['Peak Power / BM [W/kg]']) ? sv['Peak Power / BM [W/kg]'] : null;
+      v.eur[i] = ok(v.jh[i]) && ok(v.sj[i]) ? v.jh[i] / v.sj[i] : null;
+      LRDEF.forEach(d => { const src = d.sj ? SJ : C, p = src ? tstPair(src.result, d.pair) : null; lr[d.k][i] = p && ok(p.pct) ? [p.pct, p.weak || '–'] : null; });
+      sess.push({ C, SJ, day: s.day });
+    });
+    /* jednonóż */
+    const sgS = S.filter(s => s.leg === 'left' || s.leg === 'right');
+    const sgDays = [...new Set(sgS.map(s => s.day))].sort();
+    const single = { D: sgDays.map(dd), days: sgDays, m: {}, sess: sgS };
+    SGDEF.forEach(d => { single.m[d.k] = { L: [], P: [] };
+      sgDays.forEach((day, i) => ['left', 'right'].forEach(leg => { const x = sgS.filter(z => z.day === day && z.leg === leg && z.type === (d.sj ? 'sj' : 'cmj')).pop();
+        const V = x ? x.result.values : {}; single.m[d.k][leg === 'left' ? 'L' : 'P'][i] = ok(V[d.key]) ? V[d.key] : null; })); });
+    return { D: base.map(s => dd(s.day)), days: base.map(s => s.day), v, lr, sess, single: sgDays.length ? single : null, all: S };
+  }
+  function viewSet(clientId){ tstSettings.view = tstSettings.view || {}; const v = tstSettings.view[clientId] || (tstSettings.view[clientId] = {});
+    v.sel = v.sel || ['jh', 'rsi', 'eur', 'aHam']; v.sgSel = v.sgSel || ['jh']; v.op = v.op || ''; return v; }
+  let saveT = null; const saveLater = () => { clearTimeout(saveT); const id = ST.id, v = ST.vs; saveT = setTimeout(() => { tstSettings.view = tstSettings.view || {}; tstSettings.view[id] = v; saveTestSettings(); }, 800); };
+
+  /* ---------- porównania ---------- */
+  function model(){
+    const X = ST.data;
+    ST.M = DEF.map(d => Object.assign({}, d, { v: X.v[d.k] || [] })).filter(m => m.v.some(ok));
+    ST.LR = LRDEF.map(d => { const a = X.lr[d.k] || []; return Object.assign({}, d, { asym: 1, g: 'a', src: d.info ? 'informacyjnie' : '', unit: '%', d: 0, up: 0, cv: LR_CV,
+      v: a.map(x => x ? x[0] : null), w: a.map(x => x ? x[1] : ''),
+      say: (c, b) => c < 10 ? `${d.lab}: nogi prawie równe (${f(c,0)}%${ok(b) ? ', było ' + f(b,0) + '%' : ''}).` : `${d.lab}: ${a[a.length - 1] && a[a.length - 1][1] === 'L' ? 'lewa' : 'prawa'} słabsza o ${f(c,0)}%.` }); }).filter(m => m.v.some(ok));
+    ST.ALL = [...ST.M, ...ST.LR];
+  }
+  const lastI = m => { for(let i = m.v.length - 1; i >= 0; i--) if(ok(m.v[i])) return i; return -1; };
+  function cmpBase(m, li){ const c = ST.cmp; if(c === 'none') return null;
+    if(c === 'avg'){ const p = m.v.slice(0, li).filter(ok); return p.length ? p.reduce((a, x) => a + x, 0) / p.length : null; }
+    const i = c === 'prev' ? (() => { for(let j = li - 1; j >= 0; j--) if(ok(m.v[j])) return j; return -1; })() : 0;
+    return i >= 0 && i < li ? m.v[i] : null; }
+  const zone = (good, cv) => { const a = Math.abs(good); return a < cv ? 'mid' : a < 2 * cv ? (good > 0 ? 'up1' : 'down1') : (good > 0 ? 'up' : 'down'); };
+  function st(m){
+    const li = lastI(m), c = m.v[li], b = cmpBase(m, li);
+    if(!ok(b)) return { c, b: null, p: 0, z: 'na', txt: '—', li };
+    if(m.asym){ const ch = c - b; return { c, b, p: ch, z: m.info ? 'na' : zone(-ch, m.cv), txt: `${Math.round(ch) > 0 ? '+' : ''}${f(ch, 0)} pp`, li }; }
+    const p = (c - b) / b * 100, txt = `${Math.round(p * 10) > 0 ? '+' : ''}${f(p, Math.abs(p) < 10 ? 1 : 0)}%`;
+    if(m.up === null || m.info) return { c, b, p, z: 'na', zi: m.up === null ? 'na' : zone(m.up ? p : -p, m.cv), txt, li };
+    return { c, b, p, z: zone(m.up ? p : -p, m.cv), txt, li };
+  }
+  const ZWORD = { up: 'pewna poprawa', up1: 'prawdopodobna poprawa', mid: 'w granicach szumu', down1: 'prawdopodobny spadek', down: 'pewny spadek', na: 'informacyjnie' };
+  const zCol = z => ({ up: 'var(--up)', up1: '#5fc4a6', mid: 'var(--mid)', down1: '#ec8a74', down: 'var(--down)' })[z] || 'var(--na)';
+  const cmpLab = () => { const D = ST.data.D, n = D.length; return ST.cmp === 'none' ? '' : ST.cmp === 'avg' ? 'od średniej' : ST.cmp === 'prev' ? 'od ' + (D[n - 2] || '') : 'od ' + D[0]; };
+  const col = k => { const i = ST.vs.sel.indexOf(k); return i < 0 ? null : `var(${SER[i % SER.length]})`; };
+  /* lewa/prawa potwierdzona = ta sama słabsza noga z różnicą ≥ 10% w ≥ 2 z 3 ostatnich testów */
+  function confirmed(m){ const idx = m.v.map((a, i) => ok(a) ? i : -1).filter(i => i >= 0).slice(-3), li = idx[idx.length - 1]; if(li == null) return false;
+    return idx.filter(i => m.v[i] >= 10 && m.w[i] === m.w[li]).length >= 2; }
+
+  /* ---------- odczyt: wynik / strategia / mechanizm ---------- */
+  function reading(){
+    const g = k => { const m = ST.M.find(x => x.k === k); return m ? st(m) : null; };
+    const jh = g('jh'); if(!jh || jh.b == null) return '';
+    const pp = g('pp'), cpf = g('cpf'), ct = g('ct'), dep = g('dep'), rsi = g('rsi');
+    const isUp = s => s && (s.z === 'up' || s.z === 'up1'), isDn = s => s && (s.z === 'down' || s.z === 'down1');
+    const mechUp = isUp(pp) || isUp(cpf), mechDn = isDn(pp) || isDn(cpf);
+    const depCh = dep && dep.b != null && Math.abs(dep.p) >= 5 ? (dep.p < 0 ? 'płycej' : 'głębiej') : null, ctCh = ct && (isUp(ct) ? 'szybciej' : isDn(ct) ? 'wolniej' : null);
+    const strat = [depCh, ctCh].filter(Boolean).join(' i ');
+    if(isUp(jh)){
+      if(mechUp && !strat) return '▲ Skok wyżej dzięki większej mocy / sile odbicia – strategia skoku bez zmian. Realny progres.';
+      if(mechUp && strat) return `▲ Skok wyżej – większa moc i zmieniona strategia (${strat}).`;
+      if(strat) return `▲ Skok wyżej głównie przez zmianę strategii (${strat}), moc bez wyraźnej zmiany. Sprawdź technikę i czy komenda była ta sama.`;
+      return '▲ Skok wyżej, bez wyraźnej przyczyny w mocy ani strategii – potwierdź kolejnym testem.';
+    }
+    if(isDn(jh)){
+      if(mechDn) return '▼ Skok niżej i spadek mocy / siły odbicia – sprawdź zmęczenie, sen i obciążenie z ostatnich dni.';
+      if(strat) return `▼ Skok niżej przy zmienionej strategii (${strat}) – możliwa zmiana techniki, nie siły.`;
+      return '▼ Skok niżej bez zmian w mocy – potwierdź kolejnym testem.';
+    }
+    if(rsi && isUp(rsi) && ctCh === 'szybciej') return '● Ta sama wysokość, ale szybsze odbicie (RSI w górę) – lepsza reaktywność.';
+    if(mechUp) return '● Wysokość bez zmian, ale więcej mocy / siły – progres może pojawić się w kolejnych testach.';
+    return '● Wysokość skoku w granicach szumu pomiaru – bez istotnej zmiany.';
+  }
+
+  /* ---------- render ---------- */
+  async function render(clientId){
+    trainerViewMode = 'tests'; tstProfileId = clientId;
+    if(!testsCache) await loadAllTests(true);
+    await loadTestSettings();
+    const c = clients.find(x => x.id === clientId);
+    ST = { id: clientId, name: c ? c.name : '?', data: build(clientId), vs: viewSet(clientId), client: false };
+    ST.view = ST.vs.vw || (ST.data.D.length ? 'dual' : ST.data.single ? 'single' : 'dual');
+    if(ST.view === 'single' && !ST.data.single) ST.view = 'dual';
+    if(ST.view === 'dual' && !ST.data.D.length && ST.data.single) ST.view = 'single';
+    ST.cmp = ST.data.D.length < 2 ? 'none' : 'prev';
+    model(); paint();
+  }
+  function paint(){
+    const X = ST.data, vs = ST.vs, A = tstAnalyze(ST.id), R = tstBuildReadable(A);
+    const hasD = X.D.length > 0, hasS = !!X.single, modeSel = tstSettings.modes[ST.id] || '';
+    const n = X.D.length, lastDay = ST.view === 'single' && hasS ? X.single.days[X.single.days.length - 1] : X.days[n - 1];
+    const due = X.days.length && tstDaysSince(X.days[n - 1]) >= TST_RETEST_DAYS;
+    const cmpOpts = n < 2 ? '<option value="none">pierwszy test – brak porównania</option>' :
+      `<option value="prev">porównaj z ${X.D[n - 2]} (poprzedni)</option>` + (n > 2 ? `<option value="first">porównaj z ${X.D[0]} (pierwszy)</option><option value="avg">porównaj ze średnią wcześniejszych</option>` : '');
+    $('main').innerHTML = `<span class="back-link" id="tstBack">← Wszystkie testy</span>
+    <div class="tv ${ST.client ? 'client' : ''}" id="tvRoot">
+      <div class="tv-band">
+        <div>
+          <span class="tv-tag">${ST.view === 'single' ? 'Test jednonóż' : (ST.M.some(m => m.k === 'sj') ? 'Test CMJ + SJ' : 'Test CMJ')}${lastDay ? ' · ' + tstDayPl(lastDay) : ''}</span>
+          <div class="tv-name">${esc(ST.name)}</div>
+          <div class="tv-meta" id="tvMeta"></div>
+          <div class="tv-ctl">
+            ${hasD && hasS ? `<div class="tv-seg" role="group" aria-label="Widok"><button type="button" data-tvv="dual" aria-pressed="${ST.view === 'dual'}">Obunóż</button><button type="button" data-tvv="single" aria-pressed="${ST.view === 'single'}">Jednonóż</button></div>` : ''}
+            ${ST.view === 'single' ? `<select id="tvOp" aria-label="Noga operowana"><option value="">noga operowana: brak</option><option value="L" ${vs.op === 'L' ? 'selected' : ''}>operowana: lewa</option><option value="P" ${vs.op === 'P' ? 'selected' : ''}>operowana: prawa</option></select>` :
+              `<select id="tvCmp" aria-label="Porównaj z">${cmpOpts}</select>`}
+            <select id="tstMode" class="tv-tr" aria-label="Uśrednianie prób"><option value="">uśrednianie: jak przy wgraniu</option>${Object.keys(TST_MODE_LABEL).map(k => `<option value="${k}" ${k === modeSel ? 'selected' : ''}>${TST_MODE_LABEL[k]}</option>`).join('')}</select>
+            <label class="ghost tv-tr">⬆ Wgraj<input type="file" id="tstFile" accept=".xlsx,.pdf" multiple style="display:none;"></label>
+            ${hasD || hasS ? '<button type="button" class="ghost tv-tr" id="tstPdf">📄 PDF dla klienta</button>' : ''}
+            <button type="button" class="cl" id="tvClient">${ST.client ? '✎ Wróć' : '👁 Pokaż klientowi'}</button>
+          </div>
+        </div>
+        <div class="tv-board" id="tvBoard"></div>
+      </div>
+      <div class="tv-body" id="tvBody"></div>
+    </div>`;
+    const sel = $('tvCmp'); if(sel){ sel.value = ST.cmp; sel.onchange = e => { ST.cmp = e.target.value; paint(); }; }
+    if(!hasD && !hasS){ $('tvBody').innerHTML = '<div class="tv-empty">Brak testów CMJ / SJ dla tej osoby. Wgraj pliki .xlsx z platformy (przycisk „⬆ Wgraj”).</div>'; $('tvMeta').textContent = ''; bind(R, A); return; }
+    if(ST.view === 'single') paintSingle(due); else paintDual(due, A);
+    bind(R, A);
+  }
+
+  function paintDual(due, A){
+    const X = ST.data, D = X.D, n = D.length, vs = ST.vs, S = ST.ALL.map(m => [m, st(m)]);
+    $('tvMeta').textContent = `${n} ${n === 1 ? 'test' : n < 5 ? 'testy' : 'testów'} obunóż (${D[0]} → ${D[n - 1]}) · ${(TST_MODE_LABEL[(A.L && A.L.mode) || tstSettings.modes[ST.id] || 'rehab'] || '').toLowerCase()}`;
+    /* tablica */
+    const jhM = ST.M.find(m => m.k === 'jh'), lrMain = ST.LR.filter(m => !m.info).sort((a, b) => (b.v[lastI(b)] || 0) - (a.v[lastI(a)] || 0))[0];
+    const zc = z => (z || 'na').replace('1', '');
+    let bd = '';
+    if(jhM){ const s = st(jhM), V = { up: '▲ Progres', up1: '▲ Prawdopodobny progres', mid: '● Bez zmian', down1: '▼ Możliwy spadek', down: '▼ Spadek', na: 'pierwszy test' };
+      bd += `<div class="tv-cell"><div class="l">Skok CMJ</div><div class="n">${f(s.c, 1)}<small>cm</small></div><div class="c ${zc(s.z)}">${s.b == null ? 'pierwszy test – punkt odniesienia' : s.txt + ' ' + cmpLab()}</div></div>
+        <div class="tv-cell"><div class="l">Werdykt</div><div class="n" style="font-size:30px;line-height:1.1;padding-top:8px">${V[s.z]}</div><div class="c na">z wysokości skoku · próg ±${f(jhM.cv * (s.z === 'up' || s.z === 'down' ? 2 : 1), 0)}%</div></div>`; }
+    if(lrMain){ const s = st(lrMain), w = lrMain.w[s.li], cf = confirmed(lrMain);
+      bd += `<div class="tv-cell"><div class="l">Największa różnica L/P</div><div class="n">${f(s.c, 0)}<small>%</small></div><div class="c ${s.c >= 15 ? (cf ? 'down' : 'mid') : s.c >= 10 ? 'mid' : 'up'}">${esc(lrMain.lab.toLowerCase())} · słabsza ${w}${s.c >= 10 && !cf ? ' · do potwierdzenia' : ''}</div></div>`; }
+    $('tvBoard').innerHTML = bd;
+    /* zmiany */
+    const MAX = 20; let g = '', h = '';
+    S.forEach(([m, s]) => { if(m.g !== g){ h += `<div class="grp">${GRP[m.g][0]} <small>· ${GRP[m.g][1]}</small></div>`; g = m.g; }
+      const good = m.up === null ? s.p : (m.up ? s.p : -s.p), w = s.b == null ? 0 : Math.min(Math.abs(good), MAX) / MAX * 50, on = vs.sel.includes(m.k), cc = zCol(s.z);
+      const pos = good >= 0 ? `left:50%;width:${w}%` : `right:50%;width:${w}%`, lbl = good >= 0 ? `left:calc(50% + ${w}% + 5px)` : `right:calc(50% + ${w}% + 5px)`;
+      h += `<label class="tv-row ${on ? 'on' : ''}" title="${ZWORD[s.z]}"><input class="hid" type="checkbox" data-tvk="${m.k}" ${on ? 'checked' : ''}><span class="tv-sw" style="${on ? 'background:' + col(m.k) : ''}"></span>
+        <span class="nm">${esc(m.lab)}<small>${esc(m.src)}</small></span>
+        <span class="tv-track"><i style="${pos};background:${cc}"></i><em style="${lbl};color:${cc}">${s.txt}</em></span>
+        <span class="now">${f(s.c, m.d)}${m.asym ? '<small style="font-size:12px"> ' + m.w[s.li] + '</small>' : ''}</span></label>`; });
+    /* motylek */
+    const bf = ST.LR.length ? `<div class="tv-bfh"><div>LEWA</div><div></div><div>PRAWA</div></div>` + ST.LR.map(m => {
+      const li = lastI(m), p = m.v[li], wk = m.w[li], cf = confirmed(m), z = m.info ? 'na' : p >= 15 ? (cf ? 'down' : 'mid') : p >= 10 ? 'mid' : 'up';
+      const cz = { up: 'var(--up)', mid: 'var(--mid)', down: 'var(--down)', na: 'var(--na)' }[z], Lw = wk === 'L' ? 100 - p : 100, Pw = wk === 'P' ? 100 - p : 100;
+      return `<div class="tv-bfr"><div class="tv-half l"><i class="${wk === 'L' ? '' : 'str'}" style="width:${Lw * .9}%;${wk === 'L' ? 'background:' + cz : ''}"></i><b>${wk === 'L' ? '−' + f(p, 0) + '%' : ''}</b></div>
+        <div class="mid">${esc(m.lab)}<small>${m.info ? 'informacyjnie' : p < 10 ? 'równo' : (wk === 'L' ? 'lewa' : 'prawa') + ' słabsza' + (cf ? '' : ' · potwierdź')}</small><div class="tv-hist">${m.v.map((a, i) => ok(a) ? `<s class="z-${a >= 15 ? 'down' : a >= 10 ? 'mid' : 'up'}" title="${X.D[i]}: ${f(a, 0)}% ${m.w[i]}"></s>` : '').join('')}</div></div>
+        <div class="tv-half r"><i class="${wk === 'P' ? '' : 'str'}" style="width:${Pw * .9}%;${wk === 'P' ? 'background:' + cz : ''}"></i><b>${wk === 'P' ? '−' + f(p, 0) + '%' : ''}</b></div></div>`; }).join('') : '<div class="hint">Brak danych lewa/prawa.</div>';
+    /* co robimy */
+    const val = k => { const m = ST.ALL.find(x => x.k === k); return m ? m.v[lastI(m)] : null; }, wk = k => { const m = ST.LR.find(x => x.k === k); return m ? m.w[lastI(m)] : null; };
+    const cf = k => { const m = ST.LR.find(x => x.k === k); return m ? confirmed(m) : false; };
+    const todo = [];
+    const ecc = ['aHam', 'aSil'].map(k => [k, val(k)]).filter(x => ok(x[1]) && x[1] >= 15).sort((a, b) => b[1] - a[1])[0];
+    if(ecc) todo.push(cf(ecc[0]) ? [`Hamowanie ${wk(ecc[0]) === 'L' ? 'lewej' : 'prawej'}`, `Ekscentryka jednonóż, ${wk(ecc[0]) === 'L' ? 'lewa' : 'prawa'} +1–2 serie (różnica ${f(ecc[1], 0)}%, potwierdzona w ≥ 2 testach).`]
+      : ['Hamowanie – do potwierdzenia', `Różnica ${f(ecc[1], 0)}% (${wk(ecc[0]) === 'L' ? 'lewa' : 'prawa'} słabsza) tylko w jednym teście – asymetria często zmienia się między testami. Retest przed zmianą planu.`]);
+    if(ok(val('aSJ')) && val('aSJ') >= 10) todo.push([`Siła ${wk('aSJ') === 'L' ? 'lewej' : 'prawej'}`, `Różnica też w SJ (${f(val('aSJ'), 0)}%) → to siła, nie technika.`]);
+    else if(ok(val('aNap')) && val('aNap') >= 10) todo.push([`Odbicie ${wk('aNap') === 'L' ? 'lewej' : 'prawej'}`, `Różnica w napędzie ${f(val('aNap'), 0)}%${ST.M.some(m => m.k === 'sj') ? ', w SJ mniejsza → głównie wykorzystanie zamachu' : ' – zrób też SJ, żeby odróżnić siłę od techniki'}.`]);
+    if(ok(val('aLad')) && val('aLad') >= 15) todo.push([`Lądowanie – ${wk('aLad') === 'L' ? 'lewa' : 'prawa'} przyjmuje mniej`, `Różnica ${f(val('aLad'), 0)}% – sprawdź technikę lądowania (parametr mało powtarzalny, tylko wskazówka).`]);
+    if(ok(val('eur'))) todo.push(['Sprężystość', val('eur') < TST_EUR_GOOD ? `CMJ tylko ${f((val('eur') - 1) * 100, 0)}% wyżej niż SJ → szybkie odbicia, plyometria.` : `${f(val('eur'), 2)} – powyżej progu ${f(TST_EUR_GOOD, 2)}. Plyometria zostaje.`]);
+    const last = X.sess[X.sess.length - 1], mom = last && last.C && last.C.summary ? last.C.summary.moments || [] : [];
+    const fat = mom.length >= 2 && mom[0].jh ? (mom[mom.length - 1].jh - mom[0].jh) / mom[0].jh * 100 : null;
+    if(ok(fat) && fat <= -10) todo.push(['Zmęczenie', `Spadek w trakcie testu ${f(fat, 0)}% – uwaga na objętość i regenerację.`]);
+    if(!todo.length) todo.push(['Utrzymanie', 'Brak wyraźnych deficytów – dalej progresja siły i mocy.']);
+    todo.push(['Retest', `za 6 tygodni – ten sam protokół (5 skoków, ręce na biodrach, ta sama komenda i pora).`]);
+    /* uwagi */
+    const chips = [];
+    if(last && last.C){ const jhs = trialsJh(last.C);
+      if(jhs.length >= 3){ const mean = jhs.reduce((a, x) => a + x, 0) / jhs.length, sd = Math.sqrt(jhs.reduce((a, x) => a + (x - mean) ** 2, 0) / (jhs.length - 1)), cv = sd / mean * 100;
+        chips.push(`<span class="tv-chip c-${cv > 5 ? 'mid' : 'up'}" title="Odchylenie wysokości skoków w dniu ÷ średnia">Zmienność skoków w dniu ${f(cv, 1)}% · ${cv > 5 ? 'test mało wiarygodny – rozważ powtórkę' : 'OK'}</span>`); }
+      else chips.push(`<span class="tv-chip c-mid">Tylko ${jhs.length} ${jhs.length === 1 ? 'próba' : 'próby'} – rób 5 skoków, żeby ocenić wiarygodność</span>`);
+      if(last.C.row.comment) chips.push(`<span class="tv-chip c-na">${esc(last.C.row.comment)}</span>`);
+      (last.C.row.skipped || []).forEach(s => chips.push(`<span class="tv-chip c-mid" title="${esc(s.f)}">pominięta: ${esc(s.why)}</span>`)); }
+    if(ok(fat)) chips.push(`<span class="tv-chip c-${fat <= -10 ? 'down' : 'up'}">Zmęczenie w teście ${f(fat, 0)}%${fat <= -10 ? ' · uwaga' : ' · OK'}</span>`);
+    const ln = val('lnd'); if(ok(ln) && ln > TST_LANDING_SUSPECT) chips.push(`<span class="tv-chip c-mid">Lądowanie ${f(ln, 0)} N/kg – możliwy błąd pomiaru</span>`);
+    const bmM = ST.M.find(m => m.k === 'bm'); if(bmM){ const s = st(bmM); if(s.b != null && Math.abs(s.c - s.b) >= 1) chips.push(`<span class="tv-chip c-mid">Masa ${s.c - s.b > 0 ? '+' : ''}${f(s.c - s.b, 1)} kg ${cmpLab()} – wyniki „na kg” zmieniają się też przez masę (ok. ${f(Math.abs(s.c - s.b) / s.b * 100, 1)}%)</span>`); }
+    /* dla klienta */
+    const SL = vs.sel.map(k => ST.ALL.find(m => m.k === k)).filter(Boolean);
+    const lines = SL.map(m => { const s = st(m); return s.b == null ? `${m.lab}: ${f(s.c, m.d)} ${m.unit} – punkt odniesienia na kolejne testy.` : (s.z === 'mid' && !m.asym ? `${m.lab}: bez istotnej zmiany (${s.txt} – w granicach zmienności pomiaru).` : m.say(s.c, s.b)); });
+    ST.todoD = todo;
+    const nxt = todo.slice(0, -1).map(t => t[0].toLowerCase()).join(', ');
+    const rd = reading();
+    $('tvBody').innerHTML = `${due ? '<div class="tv-warn tv-tr">⏰ Ostatni test ponad 6 tygodni temu – czas na retest.</div>' : ''}
+      <div class="tv-cols">
+        <section class="tv-panel"><div class="tv-ph"><h2>Co się zmieniło</h2><span class="hint">${ST.cmp === 'none' ? 'pierwszy test – następny pokaże zmiany' : 'zmiana ' + cmpLab() + ' · w prawo = lepiej'}</span></div>
+          ${rd ? `<div class="tv-read">${esc(rd)}</div>` : ''}
+          <div class="hint tv-tr">Kolor: pełny = pewna zmiana (≥ 2× zmienność pomiaru), jasny = prawdopodobna, żółty = w granicach szumu, szary = informacyjnie. Kliknij wynik → wykres obok.</div>
+          <div class="tv-dv">${h}</div></section>
+        <div style="display:grid;gap:16px;min-width:0">
+          <section class="tv-panel"><div class="tv-ph"><h2>W czasie</h2><div class="tv-seg tv-tr" role="group" aria-label="Skala"><button type="button" data-tvsc="pct" aria-pressed="${(vs.scale || 'pct') === 'pct'}">% od ${D[0]}</button><button type="button" data-tvsc="raw" aria-pressed="${vs.scale === 'raw'}">wartości</button></div></div>
+            <div class="tv-legend">${SL.length ? SL.map(m => `<span><i style="background:${col(m.k)}"></i>${esc(m.lab)}${m.asym ? ' L/P' : ''}</span>`).join('') : '<span class="hint">Kliknij wynik po lewej.</span>'}</div>
+            ${n > 1 ? bigChart(SL) : '<div class="hint">Wykres pojawi się od drugiego testu.</div>'}</section>
+          <section class="tv-panel"><div class="tv-ph"><h2>Lewa · prawa</h2><span class="hint">kropki = kolejne testy · czerwony tylko gdy ≥ 15% w ≥ 2 testach</span></div><div class="tv-bf">${bf}</div></section>
+        </div>
+      </div>
+      <div class="tv-cols">
+        <section class="tv-panel"><h2>Co robimy</h2><ul class="tv-todo">${todo.map((t, i) => `<li><span class="k">${i + 1}</span><div><b>${esc(t[0])}</b><br>${esc(t[1])}</div></li>`).join('')}</ul><div class="tv-chips tv-tr">${chips.join('')}</div></section>
+        <section class="tv-panel tv-say"><h2>Dla: ${esc(ST.name.split(/\s+/)[0])}</h2><ul>${lines.map(l => `<li>${esc(l)}</li>`).join('')}</ul>
+          <p style="margin:6px 0 0"><b>Co dalej:</b> ${esc(nxt || 'dalej progresja')}. Następny test za 6 tygodni.</p>
+          <button type="button" class="tv-tr" id="tvCopy" style="justify-self:start">📋 Kopiuj na WhatsApp</button></section>
+      </div>
+      <details class="tv-tr"><summary>Tabela – wszystkie liczby ze wszystkich testów</summary><div class="tv-tw"><table>${tableAll(S)}</table></div></details>
+      <details class="tv-tr" id="tvSess"><summary>Sesje testów i usuwanie</summary>${sessionsHtml()}</details>
+      <details class="tv-tr" id="tvMore"><summary>Wszystkie pary L/P (ostatni CMJ)</summary><div id="tstDetails">${A.L ? tstDetailsHtml(A).replace(/<div class="tst-card"><h4>🗂️ Sesje[\s\S]*$/, '') : ''}</div>
+        <button type="button" id="tvClassic" style="margin-top:10px">Pokaż poprzedni widok testów</button></details>`;
+    const cp = $('tvCopy'); if(cp) cp.onclick = e => copy(e.target, `Test ${D[n - 1]} ✅\n` + lines.map(l => '• ' + l).join('\n') + `\nCo dalej: ${nxt || 'dalej progresja'}. Następny test za 6 tygodni.`);
+  }
+  function tableAll(S){
+    const D = ST.data.D;
+    let t = `<tr><th>Parametr</th>${D.map(d => `<th>${d}</th>`).join('')}<th>Zmiana ${cmpLab()}</th></tr>`;
+    S.forEach(([m, s]) => { t += `<tr><td>${esc(m.lab)}<small>${esc(m.src || GRP[m.g][1])}</small></td>${D.map((_, i) => `<td style="${i === s.li ? 'font-weight:700' : ''}">${f(m.v[i], m.d)}${m.asym && ok(m.v[i]) ? ' ' + m.w[i] : ''}</td>`).join('')}<td><span class="tv-chip c-${s.z}" title="${ZWORD[s.z]}">${s.txt}</span></td></tr>`; });
+    return t;
+  }
+  function bigChart(SL){
+    if(!SL.length) return '';
+    const D = ST.data.D, n = D.length, W = 560, H = 250, L = 44, R = 52, T = 16, B = 26, x = i => L + i * (W - L - R) / (n - 1), scale = ST.vs.scale || 'pct';
+    const firstOk = m => m.v.find(ok);
+    const ser = SL.map(m => ({ m, y: m.v.map(a => !ok(a) ? null : scale !== 'pct' ? a : m.asym ? -(a - firstOk(m)) : (a / firstOk(m) - 1) * 100 * (m.up === 0 ? -1 : 1)) }));
+    const line = (pts, c) => { let s = '', seg = []; const fl = () => { if(seg.length > 1) s += `<polyline points="${seg.join(' ')}" fill="none" stroke="${c}" stroke-width="3" stroke-linejoin="round"/>`; seg = []; }; pts.forEach(p => { if(p) seg.push(p); else fl(); }); fl(); return s; };
+    let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Wykres w czasie">`;
+    if(scale === 'pct'){
+      const all = ser.flatMap(o => o.y).filter(ok), lo = Math.min(-5, ...all) - 2, hi = Math.max(5, ...all) + 2, y = a => T + (hi - a) / (hi - lo) * (H - T - B), step = hi - lo > 30 ? 10 : 5;
+      for(let t = Math.ceil(lo / step) * step; t <= hi; t += step) s += `<line x1="${L}" x2="${W - R}" y1="${y(t)}" y2="${y(t)}" stroke="var(--line)" ${t === 0 ? 'stroke-width="2"' : ''}/><text x="${L - 6}" y="${y(t) + 4}" text-anchor="end">${t > 0 ? '+' : ''}${t}%</text>`;
+      s += `<text x="${L}" y="${T - 4}">lepiej ↑ (lewa/prawa: mniejsza różnica = w górę)</text>`;
+      ser.forEach(o => { const c = col(o.m.k); s += line(o.y.map((a, i) => ok(a) ? x(i) + ',' + y(a) : null), c);
+        o.y.forEach((a, i) => { if(ok(a)) s += `<circle cx="${x(i)}" cy="${y(a)}" r="${i === n - 1 ? 5.5 : 3.5}" fill="${i === n - 1 ? c : 'var(--card)'}" stroke="${c}" stroke-width="2.5"/>`; });
+        const li = o.y.map((a, i) => ok(a) ? i : -1).filter(i => i >= 0).pop(); if(li != null) s += `<text x="${x(li) + 9}" y="${y(o.y[li]) + 4}" style="fill:${c};font-weight:700">${o.y[li] > 0 ? '+' : ''}${f(o.y[li], 0)}${o.m.asym ? 'pp' : '%'}</text>`; });
+    } else {
+      const y = (o, a) => { const v = o.m.v.filter(ok), lo = Math.min(...v), hi = Math.max(...v), p = (hi - lo) * .15 || 1; return T + (hi + p - a) / (hi - lo + 2 * p) * (H - T - B); };
+      ser.forEach(o => { const c = col(o.m.k); s += line(o.m.v.map((a, i) => ok(a) ? x(i) + ',' + y(o, a) : null), c);
+        const idx = o.m.v.map((a, i) => ok(a) ? i : -1).filter(i => i >= 0), fi = idx[0], li = idx[idx.length - 1];
+        o.m.v.forEach((a, i) => { if(!ok(a)) return; s += `<circle cx="${x(i)}" cy="${y(o, a)}" r="${i === li ? 5.5 : 3.5}" fill="${i === li ? c : 'var(--card)'}" stroke="${c}" stroke-width="2.5"/>`;
+          if(i === fi || i === li) s += `<text x="${i === li ? x(i) + 9 : x(i) - 8}" y="${y(o, a) + 4}" text-anchor="${i === li ? 'start' : 'end'}" style="fill:${c};font-weight:700">${f(a, o.m.d)}</text>`; }); });
+      s += `<text x="${L}" y="${T - 4}">każda linia w swojej skali – patrz liczby na końcach</text>`;
+    }
+    D.forEach((d, i) => s += `<text x="${x(i)}" y="${H - 6}" text-anchor="middle">${d}</text>`);
+    return s + '</svg>';
+  }
+
+  /* ---------- jednonóż ---------- */
+  function lsiOf(d, L, P, op){
+    if(!ok(L) || !ok(P) || !L || !P) return null;
+    if(d.up === null) return { v: null, diff: Math.abs(L - P) / Math.max(L, P) * 100, weak: L < P ? 'L' : 'P' };
+    let a, b, weak;
+    if(op){ weak = op; a = op === 'L' ? L : P; b = op === 'L' ? P : L; }
+    else { weak = d.up ? (L < P ? 'L' : 'P') : (L > P ? 'L' : 'P'); a = weak === 'L' ? L : P; b = weak === 'L' ? P : L; }
+    return { v: d.up ? a / b * 100 : b / a * 100, weak };
+  }
+  const lsiZ = v => v == null ? 'na' : v >= 90 ? 'up' : v >= 80 ? 'mid' : 'down';
+  function paintSingle(due){
+    const S = ST.data.single, D = S.D, n = D.length, li = n - 1, op = ST.vs.op || '';
+    const defs = SGDEF.filter(d => S.m[d.k].L.some(ok) || S.m[d.k].P.some(ok));
+    const opTxt = op ? (op === 'L' ? 'lewa operowana' : 'prawa operowana') : 'słabsza vs mocniejsza';
+    $('tvMeta').textContent = `${n} ${n === 1 ? 'test' : n < 5 ? 'testy' : 'testów'} jednonóż (${D[0]} → ${D[n - 1]}) · ${opTxt}`;
+    const jh = S.m.jh, l = lsiOf(SGDEF[0], jh.L[li], jh.P[li], op);
+    let pj = null; for(let i = li - 1; i >= 0 && !pj; i--){ const r = lsiOf(SGDEF[0], jh.L[i], jh.P[i], op); if(r && r.v != null) pj = Object.assign(r, { i }); }
+    const lz = l && l.v != null ? lsiZ(l.v) : 'na', ch = l && pj ? l.v - pj.v : null;
+    $('tvBoard').innerHTML = `<div class="tv-cell"><div class="l">LSI skoku</div><div class="n">${f(l && l.v, 0)}<small>%</small></div><div class="c ${lz}">${ch != null ? `${ch >= 0 ? '▲ +' : '▼ '}${f(ch, 0)} pp od ${D[pj.i]}${Math.abs(ch) < LSI_CV ? ' · w granicach szumu' : ''}` : (l && l.v >= 90 ? 'cel ≥ 90% osiągnięty' : 'cel ≥ 90%')}</div></div>
+      ${!ok(jh.L[li]) || !ok(jh.P[li]) ? `<div class="tv-cell"><div class="l">Uwaga</div><div class="n" style="font-size:26px">brak ${!ok(jh.L[li]) ? 'lewej' : 'prawej'}</div><div class="c mid">wgraj obie nogi z tego dnia</div></div>` : ''}
+      <div class="tv-cell"><div class="l">Lewa</div><div class="n">${f(jh.L[li], 1)}<small>cm</small></div><div class="c mid">${op === 'L' ? 'operowana' : '&nbsp;'}</div></div>
+      <div class="tv-cell"><div class="l">Prawa</div><div class="n">${f(jh.P[li], 1)}<small>cm</small></div><div class="c mid">${op === 'P' ? 'operowana' : '&nbsp;'}</div></div>`;
+    const bars = `<div class="tv-bf"><div class="tv-bfh"><div>LEWA</div><div></div><div>PRAWA</div></div>` + defs.map(d => {
+      const L = S.m[d.k].L[li], P = S.m[d.k].P[li], x = lsiOf(d, L, P, op), mx = Math.max(L || 0, P || 0) || 1, z = x && x.v != null ? lsiZ(x.v) : 'na';
+      const cz = { up: 'var(--up)', mid: 'var(--mid)', down: 'var(--down)', na: 'var(--na)' }[z];
+      const bar = (v, side, weak) => `<div class="tv-half ${side}"><i class="${weak ? '' : 'str'}" style="width:${ok(v) ? v / mx * 95 : 0}%;${weak ? 'background:' + cz : ''}"></i><b class="${weak ? '' : 'dk'}">${f(v, d.d)}</b></div>`;
+      return `<div class="tv-bfr">${bar(L, 'l', x && x.weak === 'L')}<div class="mid">${x && x.v != null ? `<b>${f(x.v, 0)}%</b>` : x ? `<b style="font-size:20px">±${f(x.diff, 0)}%</b>` : '<b>—</b>'}${esc(d.lab)}<small>${d.unit}${d.up === 0 ? ' · krócej = lepiej' : d.up === null ? ' · informacyjnie' : ''}</small></div>${bar(P, 'r', x && x.weak === 'P')}</div>`; }).join('') + '</div>';
+    let t = `<tr><th></th><th>Parametr</th>${D.map(d => `<th>${d}</th>`).join('')}<th>Zmiana LSI</th></tr>`;
+    defs.forEach(d => { const L = S.m[d.k].L, P = S.m[d.k].P, xs = D.map((_, i) => lsiOf(d, L[i], P[i], op));
+      const val = xs.map((x, i) => x && x.v != null ? i : -1).filter(i => i >= 0), a = val[val.length - 1], b = val[val.length - 2], c = a != null && b != null ? xs[a].v - xs[b].v : null;
+      t += `<tr><td>${d.up !== null ? `<input type="checkbox" data-tvsg="${d.k}" ${ST.vs.sgSel.includes(d.k) ? 'checked' : ''} aria-label="${esc(d.lab)} na wykres">` : ''}</td><td>${esc(d.lab)}<small>${d.unit}</small></td>
+        ${D.map((_, i) => { const x = xs[i]; return `<td>${x && x.v != null ? `<span class="lsi c-${lsiZ(x.v)}">${f(x.v, 0)}%</span>` : x ? `±${f(x.diff, 0)}%` : '—'}<small>L ${f(L[i], d.d)} · P ${f(P[i], d.d)}</small></td>`; }).join('')}
+        <td>${c == null ? '—' : `<span class="tv-chip c-${Math.abs(c) < LSI_CV ? 'mid' : (xs[a].v >= 90 && xs[b].v >= 90) ? 'na' : c > 0 ? 'up' : 'down'}">${c > 0 ? '+' : ''}${f(c, 0)} pp</span>`}</td></tr>`; });
+    const SL = ST.vs.sgSel.map(k => defs.find(d => d.k === k)).filter(Boolean);
+    const todo = [], jl = l && l.v;
+    if(ok(jl)){ if(jl < 80) todo.push(['Skok jednonóż < 80%', `${l.weak === 'L' ? 'Lewa' : 'Prawa'} noga wyraźnie słabsza – priorytet: siła (DynaMo kolano / biodro) i ćwiczenia jednonóż, plyometria jednonóż ostrożnie.`]);
+      else if(jl < 90) todo.push(['Skok jednonóż 80–89%', `Blisko celu – dalej siła i moc ${l.weak === 'L' ? 'lewej' : 'prawej'} nogi, dokładamy skoki jednonóż.`]);
+      else todo.push(['Skok jednonóż ≥ 90%', 'Cel osiągnięty w wysokości – sprawdź jeszcze hamowanie i lądowanie.']); }
+    const el = lsiOf(SGDEF[4], S.m.ecc.L[li], S.m.ecc.P[li], op);
+    if(el && el.v != null && el.v < 85) todo.push(['Hamowanie', `LSI hamowania ${f(el.v, 0)}% – ekscentryka jednonóż na ${el.weak === 'L' ? 'lewą' : 'prawą'} (zejścia, lądowania z kontrolą). Po operacji ten parametr zwykle dogania najpóźniej.`]);
+    todo.push(['Retest', 'za 4–6 tygodni, ten sam protokół (3–5 skoków na nogę, ręce na biodrach).']);
+    const lines = [];
+    if(ok(jl)) lines.push(`${op ? 'Operowana noga' : (l.weak === 'L' ? 'Lewa noga' : 'Prawa noga')} skacze na ${f(jl, 0)}% drugiej${pj ? ` (było ${f(pj.v, 0)}%)` : ''}. Cel: 90%.`);
+    if(ok(jh.L[li]) && ok(jh.P[li])) lines.push(`Lewa ${f(jh.L[li], 1)} cm, prawa ${f(jh.P[li], 1)} cm.`);
+    if(el && el.v != null) lines.push(el.v >= 90 ? 'Hamowanie (lądowanie i zejście) już prawie równe.' : `Hamowanie ${op ? 'operowanej' : 'słabszej'} nogi: ${f(el.v, 0)}% drugiej – nad tym pracujemy.`);
+    ST.todoS = todo;
+    const nxt = todo.slice(0, -1).map(x => x[0].toLowerCase()).join(', ');
+    const sess = S.sess.filter(x => x.day === S.days[li]);
+    $('tvBody').innerHTML = `${due ? '<div class="tv-warn tv-tr">⏰ Ostatni test obunóż ponad 6 tygodni temu – czas na retest.</div>' : ''}
+      <div class="tv-cols">
+        <section class="tv-panel"><div class="tv-ph"><h2>Jednonóż – ostatni test</h2><span class="hint">${D[li]} · ${opTxt}</span></div>${bars}</section>
+        <section class="tv-panel"><div class="tv-ph"><h2>Indeks symetrii w czasie</h2><span class="hint">LSI = ${op ? 'operowana' : 'słabsza'} ÷ druga × 100 · cel ≥ 90% (kryterium po ACL)</span></div>
+          <div class="tv-legend">${SL.map((d, i) => `<span><i style="background:var(${SER[i]})"></i>${esc(d.lab)}</span>`).join('')}</div>
+          ${n > 1 ? lsiChart(SL, op) : '<div class="hint">Wykres pojawi się od drugiego testu jednonóż.</div>'}</section>
+      </div>
+      <section class="tv-panel"><div class="tv-ph"><h2>Lewa vs prawa – każdy test</h2><span class="hint">✓ → wykres LSI · zielony ≥ 90% · żółty 80–89% · czerwony &lt; 80% · zmiana &lt; ${LSI_CV} pp = w granicach szumu</span></div>
+        <div class="tv-tw"><table class="tv-sgt">${t}</table></div></section>
+      <div class="tv-cols">
+        <section class="tv-panel"><h2>Co robimy</h2><ul class="tv-todo">${todo.map((x, i) => `<li><span class="k">${i + 1}</span><div><b>${esc(x[0])}</b><br>${esc(x[1])}</div></li>`).join('')}</ul>
+          <div class="tv-chips tv-tr">${sess.map(x => `<span class="tv-chip c-na">${x.type.toUpperCase()} ${x.leg === 'left' ? 'lewa' : 'prawa'}: ${x.summary && x.summary.n ? x.summary.n + ' z ' + (x.row.trials || []).length + ' prób' : esc(x.row.comment || '')}</span>`).join('')}${n < 2 ? '<span class="tv-chip c-mid">1 test – brak porównania w czasie</span>' : ''}</div></section>
+        <section class="tv-panel tv-say"><h2>Dla: ${esc(ST.name.split(/\s+/)[0])}</h2><ul>${lines.map(x => `<li>${esc(x)}</li>`).join('')}</ul>
+          <p style="margin:6px 0 0"><b>Co dalej:</b> ${esc(nxt || 'dalej progresja')}. Następny test za 4–6 tygodni.</p>
+          <button type="button" class="tv-tr" id="tvCopy" style="justify-self:start">📋 Kopiuj na WhatsApp</button></section>
+      </div>
+      <details class="tv-tr" id="tvMore"><summary>Sesje testów i usuwanie</summary>${sessionsHtml()}
+        <button type="button" id="tvClassic" style="margin-top:10px">Pokaż poprzedni widok testów</button></details>`;
+    const cp = $('tvCopy'); if(cp) cp.onclick = e => copy(e.target, `Test jednonóż ${D[li]} ✅\n` + lines.map(x => '• ' + x).join('\n') + `\nCo dalej: ${nxt || 'dalej progresja'}. Następny test za 4–6 tygodni.`);
+  }
+  function lsiChart(SL, op){
+    const S = ST.data.single, D = S.D, n = D.length, W = 560, H = 230, L = 44, R = 52, T = 16, B = 26, x = i => L + i * (W - L - R) / (n - 1);
+    const ser = SL.map((d, si) => ({ c: `var(${SER[si]})`, y: D.map((_, i) => { const r = lsiOf(d, S.m[d.k].L[i], S.m[d.k].P[i], op); return r && r.v != null ? r.v : null; }) }));
+    const all = ser.flatMap(o => o.y).filter(ok), lo = Math.min(60, ...all) - 3, hi = Math.max(105, ...all) + 3, y = a => T + (hi - a) / (hi - lo) * (H - T - B);
+    let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="LSI w czasie"><rect x="${L}" y="${y(90)}" width="${W - L - R}" height="${y(80) - y(90)}" fill="var(--mid-bg)"/><rect x="${L}" y="${y(80)}" width="${W - L - R}" height="${y(lo) - y(80)}" fill="var(--down-bg)"/>`;
+    for(let t = Math.ceil(lo / 10) * 10; t <= hi; t += 10) s += `<line x1="${L}" x2="${W - R}" y1="${y(t)}" y2="${y(t)}" stroke="var(--line)" ${t === 90 ? 'stroke-width="2" stroke-dasharray="5 3"' : ''}/><text x="${L - 6}" y="${y(t) + 4}" text-anchor="end">${t}%</text>`;
+    s += `<text x="${L + 6}" y="${y(90) - 5}">cel 90%</text>`;
+    ser.forEach(o => { let seg = []; const fl = () => { if(seg.length > 1) s += `<polyline points="${seg.join(' ')}" fill="none" stroke="${o.c}" stroke-width="3" stroke-linejoin="round"/>`; seg = []; };
+      o.y.forEach((a, i) => { if(ok(a)) seg.push(x(i) + ',' + y(a)); else fl(); }); fl();
+      o.y.forEach((a, i) => { if(ok(a)) s += `<circle cx="${x(i)}" cy="${y(a)}" r="${i === n - 1 ? 5.5 : 3.5}" fill="${i === n - 1 ? o.c : 'var(--card)'}" stroke="${o.c}" stroke-width="2.5"/>`; });
+      const li = o.y.map((a, i) => ok(a) ? i : -1).filter(i => i >= 0).pop(); if(li != null) s += `<text x="${x(li) + 9}" y="${y(o.y[li]) + 4}" style="fill:${o.c};font-weight:700">${f(o.y[li], 0)}%</text>`; });
+    D.forEach((d, i) => s += `<text x="${x(i)}" y="${H - 6}" text-anchor="middle">${d}</text>`);
+    return s + '</svg>';
+  }
+
+  /* ---------- lista sesji (#47: też jednonóż) ---------- */
+  function sessionsHtml(){
+    const rows = tstRowsFor(ST.id).slice().reverse();
+    if(!rows.length) return '';
+    return `<div class="tv-tw"><table class="tv-sgt"><tr><th>Dzień</th><th>Test</th><th>Próby w wyniku</th><th>Pominięte</th><th></th></tr>${rows.map(r => { const s = tstSession(r, tstSettings.modes[ST.id] || undefined), sk = r.skipped || [];
+      return `<tr><td>${tstDayPl(r.test_day)}</td><td><b>${String(r.test_type).toUpperCase()}</b> ${r.leg === 'dual' ? 'obunóż' : r.leg === 'left' ? 'lewa noga' : 'prawa noga'}</td>
+        <td>${s.summary && s.summary.n ? s.summary.n : '—'} z ${(r.trials || []).length}<small>${esc(r.comment || '')}</small></td><td>${sk.length ? sk.map(x => esc(x.why)).join('<br>') : '—'}</td>
+        <td><button type="button" data-tdel="${esc(r.id)}" title="Usuń tę sesję">🗑 Usuń</button></td></tr>`; }).join('')}</table></div>`;
+  }
+
+  /* ---------- PDF dla klienta (#47) – to, co zaznaczone, w stylu widoku ---------- */
+  function pdf(){
+    const X = ST.data, keepView = ST.view, keepSc = ST.vs.scale, out = []; ST.vs.scale = 'pct';
+    const hasD = X.D.length > 0, hasS = !!X.single, first = esc(ST.name.split(/\s+/)[0]);
+    const lastDay = [hasD ? X.days[X.days.length - 1] : '', hasS ? X.single.days[X.single.days.length - 1] : ''].filter(Boolean).sort().pop();
+    if(hasD){
+      const jhM = ST.M.find(m => m.k === 'jh'), s = jhM ? st(jhM) : null, rd = reading();
+      const V = { up: 'Progres', up1: 'Prawdopodobny progres', mid: 'Bez istotnej zmiany', down1: 'Możliwy spadek', down: 'Spadek', na: 'Pierwszy test – punkt odniesienia' };
+      const SL = ST.vs.sel.map(k => ST.ALL.find(m => m.k === k)).filter(Boolean);
+      const tiles = SL.map(m => { const t = st(m); return `<div class="tile ${t.z}"><div class="l">${esc(m.lab)}${m.asym ? ' (różnica L/P)' : ''}</div><div class="n">${f(t.c, m.d)}<small>${m.unit}</small></div>
+        <div class="c">${t.b == null ? 'pierwszy pomiar' : t.txt + ' ' + cmpLab()}</div><div class="w">${t.b == null ? '' : ZWORD[t.z]}</div></div>`; }).join('');
+      const lrRows = ST.LR.filter(m => !m.info).map(m => { const li = lastI(m), p = m.v[li], w = m.w[li], cf = confirmed(m), z = p >= 15 ? (cf ? 'down' : 'mid') : p >= 10 ? 'mid' : 'up';
+        return `<tr><td>${esc(m.lab)}</td><td><div class="lr"><i style="width:${w === 'L' ? 100 - p : 100}%" class="${w === 'L' ? z : ''}"></i></div></td><td class="pc">${f(p, 0)}% ${p >= 10 ? (w === 'L' ? 'lewa słabsza' : 'prawa słabsza') : 'równo'}</td><td><div class="lr r"><i style="width:${w === 'P' ? 100 - p : 100}%" class="${w === 'P' ? z : ''}"></i></div></td></tr>`; }).join('');
+      const lines = SL.map(m => { const t = st(m); return t.b == null ? `${m.lab}: ${f(t.c, m.d)} ${m.unit} – punkt odniesienia.` : (t.z === 'mid' && !m.asym ? `${m.lab}: bez istotnej zmiany.` : m.say(t.c, t.b)); });
+      out.push(`<h2>Skok obunóż (CMJ${ST.M.some(m => m.k === 'sj') ? ' + SJ' : ''}) · ${X.D[X.D.length - 1]}</h2>
+        ${s ? `<div class="verdict ${s.z}"><b>${V[s.z]}</b> – skok ${f(s.c, 1)} cm${s.b != null ? ` (${s.txt} ${cmpLab()})` : ''}</div>` : ''}
+        ${rd ? `<p class="rd">${esc(rd.replace(/^[▲▼●]\s*/, ''))}</p>` : ''}
+        <div class="tiles">${tiles}</div>
+        ${X.D.length > 1 && SL.length ? `<h3>Zmiana w czasie (% od ${X.D[0]}, wyżej = lepiej)</h3><div class="chart">${bigChart(SL)}</div>` : ''}
+        ${lrRows ? `<h3>Lewa i prawa noga</h3><table class="lrt"><tr><th></th><th>Lewa</th><th></th><th>Prawa</th></tr>${lrRows}</table><div class="note">Różnica &lt; 10% – norma · 10–15% – obserwujemy · ≥ 15% w kolejnych testach – pracujemy nad słabszą nogą.</div>` : ''}
+        <h3>Co to znaczy</h3><ul>${lines.map(l => `<li>${esc(l)}</li>`).join('')}</ul>`);
+    }
+    if(hasS){
+      const S = X.single, D = S.D, li = D.length - 1, op = ST.vs.op || '';
+      const defs = SGDEF.filter(d => d.up !== null && (S.m[d.k].L.some(ok) || S.m[d.k].P.some(ok)));
+      const rows = defs.map(d => { const x = lsiOf(d, S.m[d.k].L[li], S.m[d.k].P[li], op); return `<tr><td>${esc(d.lab)}</td><td>${f(S.m[d.k].L[li], d.d)} ${d.unit}</td><td>${f(S.m[d.k].P[li], d.d)} ${d.unit}</td><td><span class="lsi ${x && x.v != null ? lsiZ(x.v) : ''}">${x && x.v != null ? f(x.v, 0) + '%' : '—'}</span></td></tr>`; }).join('');
+      const jl = lsiOf(SGDEF[0], S.m.jh.L[li], S.m.jh.P[li], op), sl = ST.vs.sgSel.map(k => defs.find(d => d.k === k)).filter(Boolean);
+      out.push(`<h2>Skoki jednonóż · ${D[li]}${op ? ' · noga operowana: ' + (op === 'L' ? 'lewa' : 'prawa') : ''}</h2>
+        ${jl && jl.v != null ? `<div class="verdict ${lsiZ(jl.v)}"><b>${op ? 'Operowana noga' : (jl.weak === 'L' ? 'Lewa noga' : 'Prawa noga')} skacze na ${f(jl.v, 0)}% drugiej</b> – cel: 90%</div>` : ''}
+        <table class="sg"><tr><th>Parametr</th><th>Lewa</th><th>Prawa</th><th>Indeks symetrii</th></tr>${rows}</table>
+        ${D.length > 1 && sl.length ? `<h3>Indeks symetrii w czasie</h3><div class="chart">${lsiChart(sl, op)}</div>` : ''}`);
+    }
+    ST.vs.scale = keepSc;
+    if(!out.length){ toast('Brak testów do PDF'); return; }
+    /* „co dalej” z bieżącego widoku */
+    /* „co dalej” z obu widoków (drugi widok liczony na chwilę w tle) */
+    const other = ST.view === 'dual' ? 'single' : 'dual', clientMode = ST.client;
+    if((other === 'single' && hasS && !ST.todoS) || (other === 'dual' && hasD && !ST.todoD)){ ST.view = other; paint(); ST.view = keepView; paint(); }
+    const seen = new Set(), todo = [...(hasD ? ST.todoD || [] : []), ...(hasS ? ST.todoS || [] : [])].filter(t => { if(seen.has(t[0])) return false; seen.add(t[0]); return true; })
+      .filter(t => t[0] !== 'Retest' && !/^Lądowanie/.test(t[0])).map(t => t[0] + ' – ' + t[1]).concat([hasS ? 'Retest – za 4–6 tygodni, ten sam protokół.' : 'Retest – za 6 tygodni, ten sam protokół.']);
+    ST.client = clientMode;
+    const w = window.open('', '_blank');
+    if(!w){ toast('Przeglądarka zablokowała okno – zezwól na wyskakujące okna dla tej strony'); return; }
+    w.document.write(`<!doctype html><html lang="pl"><head><meta charset="utf-8"><title>Wyniki testu – ${esc(ST.name)}</title>
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800;900&family=Instrument+Sans:wght@400;600;700&display=swap">
+      <style>:root{--ink:#0F1B33;--mut:#5A6478;--line:#D5DBE6;--card:#fff;--up:#0FA37F;--up-bg:#DDF4EC;--mid:#C99A10;--mid-bg:#FBF1D6;--down:#E0482A;--down-bg:#FCE3DC;--na:#8A93A6;--acc:#2B59FF;
+        --s1:#2B59FF;--s2:#F2672E;--s3:#0FA37F;--s4:#8A3FFC;--s5:#D12E7A;--s6:#0E8DB8}
+      *{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+      body{font-family:"Instrument Sans",Arial,sans-serif;color:var(--ink);margin:0;font-size:12.5px;line-height:1.45}
+      .band{background:#0F1B33;color:#F3F6FB;padding:18px 26px}.band .t{display:inline-block;background:#F2672E;color:#fff;font-size:10px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;padding:2px 7px;border-radius:3px}
+      .band h1{font-family:"Big Shoulders Display",Impact,sans-serif;font-weight:900;font-size:38px;text-transform:uppercase;margin:6px 0 2px;line-height:1}.band .m{opacity:.75;font-size:12px}
+      .wrap{padding:6px 26px 20px}
+      h2{font-family:"Big Shoulders Display",Impact,sans-serif;font-weight:800;font-size:22px;text-transform:uppercase;margin:18px 0 8px;border-bottom:2px solid var(--ink);padding-bottom:3px}
+      h3{font-size:13px;margin:14px 0 6px}
+      .verdict{padding:9px 12px;border-radius:6px;font-size:14px;margin-bottom:8px;background:#EEF1F6}.verdict.up,.verdict.up1{background:var(--up-bg)}.verdict.mid{background:var(--mid-bg)}.verdict.down,.verdict.down1{background:var(--down-bg)}
+      .rd{margin:4px 0 8px;color:var(--mut)}
+      .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+      .tile{border:1px solid var(--line);border-top:4px solid var(--na);border-radius:6px;padding:8px 10px;page-break-inside:avoid}
+      .tile.up{border-top-color:var(--up)}.tile.up1{border-top-color:#5fc4a6}.tile.mid{border-top-color:var(--mid)}.tile.down{border-top-color:var(--down)}.tile.down1{border-top-color:#ec8a74}
+      .tile .l{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--mut);font-weight:700}.tile .n{font-family:"Big Shoulders Display",Impact,sans-serif;font-weight:900;font-size:34px;line-height:1}
+      .tile .n small{font-size:13px;color:var(--mut);margin-left:3px;font-family:inherit}.tile .c{font-weight:700}.tile .w{font-size:11px;color:var(--mut)}
+      .chart{max-width:560px;page-break-inside:avoid} svg{width:100%;height:auto} svg text{font-size:11px;fill:var(--mut);font-family:inherit}
+      table{border-collapse:collapse;width:100%;page-break-inside:avoid}td,th{padding:5px 6px;border-bottom:1px solid var(--line);text-align:left}th{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--mut)}
+      .lrt td:nth-child(2),.lrt td:nth-child(4){width:30%}.lrt .pc{text-align:center;font-weight:700;white-space:nowrap}
+      .lr{height:12px;background:#EEF1F6;border-radius:3px;position:relative}.lr i{position:absolute;top:0;bottom:0;right:0;background:#C3CAD7;border-radius:3px}.lr.r i{left:0;right:auto}
+      .lr i.up{background:var(--up)}.lr i.mid{background:var(--mid)}.lr i.down{background:var(--down)}
+      .lsi{font-weight:700;padding:1px 6px;border-radius:3px}.lsi.up{background:var(--up-bg);color:var(--up)}.lsi.mid{background:var(--mid-bg);color:#8a6a00}.lsi.down{background:var(--down-bg);color:var(--down)}
+      .note,.foot{color:var(--mut);font-size:10.5px;margin-top:4px}.foot{margin-top:18px;border-top:1px solid var(--line);padding-top:6px}
+      ul{margin:4px 0;padding-left:18px}</style></head><body>
+      <div class="band"><span class="t">Wyniki testu · ${tstDayPl(lastDay)}</span><h1>${esc(ST.name)}</h1><div class="m">MoveU Studio · przygotowano ${new Date().toLocaleDateString('pl-PL')}</div></div>
+      <div class="wrap">${out.join('')}
+        ${todo.length ? `<h2>Co dalej</h2><ul>${todo.map(t => `<li>${esc(t)}</li>`).join('')}</ul>` : ''}
+        <div class="foot">Zmiany oceniane względem typowej zmienności pomiaru na platformach siłowych (badania 2025–2026): mniejsza zmiana = w granicach szumu. Indeks symetrii (jednonóż): cel ≥ 90%. Raport pomocniczy, nie stanowi diagnozy.</div></div>
+      <script>window.onload=function(){setTimeout(function(){window.print();},400);};<\/script></body></html>`);
+    w.document.close();
+    ST.view = keepView;
+  }
+
+  /* ---------- zdarzenia ---------- */
+  function copy(btn, tx){ (navigator.clipboard ? navigator.clipboard.writeText(tx) : Promise.reject()).then(() => btn.textContent = '✓ Skopiowane', () => { btn.textContent = 'Nie udało się skopiować'; }); }
+  function bind(R, A){
+    const id = ST.id, vs = ST.vs, root = $('tvRoot');
+    $('tstBack').onclick = () => navigateTo(renderTestsHome);
+    const inp = $('tstFile'); if(inp) inp.onchange = e => tstHandleFiles(e.target.files);
+    $('tstMode').onchange = async e => {
+      if(e.target.value) tstSettings.modes[id] = e.target.value; else delete tstSettings.modes[id];
+      await saveTestSettings();
+      if(e.target.value){ for(const r of tstRowsFor(id)){ const s = tstSession(r, e.target.value); if(s.summary && s.rec){ r.mode = s.mode; r.result = s.result; r.summary = s.summary; r.comment = s.rec.comment || r.comment; await sbClient.from('app_tests').upsert(r); } } }
+      render(id);
+    };
+    const pb = $('tstPdf'); if(pb) pb.onclick = () => pdf();
+    $('tvClient').onclick = () => { ST.client = !ST.client; paint(); };
+    root.querySelectorAll('[data-tvv]').forEach(b => b.onclick = () => { ST.view = vs.vw = b.dataset.tvv; saveLater(); paint(); });
+    root.querySelectorAll('[data-tvsc]').forEach(b => b.onclick = () => { vs.scale = b.dataset.tvsc; saveLater(); paint(); });
+    const op = $('tvOp'); if(op) op.onchange = e => { vs.op = e.target.value; saveLater(); paint(); };
+    root.querySelectorAll('[data-tvk]').forEach(cb => cb.onchange = e => { const k = e.target.dataset.tvk, i = vs.sel.indexOf(k);
+      if(e.target.checked && i < 0){ if(vs.sel.length >= 6) vs.sel.shift(); vs.sel.push(k); } else if(!e.target.checked && i >= 0) vs.sel.splice(i, 1); saveLater(); paint(); });
+    root.querySelectorAll('[data-tvsg]').forEach(cb => cb.onchange = e => { const k = e.target.dataset.tvsg, i = vs.sgSel.indexOf(k);
+      if(e.target.checked && i < 0) vs.sgSel.push(k); else if(!e.target.checked && i >= 0) vs.sgSel.splice(i, 1); saveLater(); paint(); });
+    root.querySelectorAll('[data-tdel]').forEach(x => x.onclick = async () => {
+      if(!confirm('Usunąć tę sesję testów? Nie da się tego cofnąć.')) return;
+      const { error } = await sbClient.from('app_tests').delete().eq('id', x.dataset.tdel);
+      if(error){ alert('Nie udało się usunąć: ' + (error.message || error)); return; }
+      await loadAllTests(true); updateTestsBadge(); render(id);
+    });
+    const cl = $('tvClassic'); if(cl) cl.onclick = () => { tstShowAll = true; renderTestProfileClassic(id); };
+  }
+  return { render, _build: build };
+})();
+
+/* ---------- PROFIL TESTÓW (czytelny widok, do #45) ---------- */
 function tstAnalyze(clientId){
   const mode = tstSettings.modes[clientId] || null;
   const rows = tstRowsFor(clientId);
@@ -12832,7 +13492,8 @@ function tstBuildReadable(A){
   if(!todo.length) todo.push({ t: 'Utrzymanie', d: 'Brak wyraźnych deficytów — dalej progresja siły i mocy.' });
   return { legs, worst, jh, jhP, jhCh, eur, v1, v2, tone, changes, todo, landSuspect };
 }
-async function renderTestProfile(clientId){
+async function renderTestProfile(clientId){ return TV.render(clientId); }
+async function renderTestProfileClassic(clientId){
   trainerViewMode = 'tests';
   tstProfileId = clientId;
   if(!testsCache) await loadAllTests(true);
@@ -12895,7 +13556,7 @@ function tstBindProfile(clientId, R, A){
     if(e.target.value){ for(const r of tstRowsFor(clientId)){ const s = tstSession(r, e.target.value); if(s.summary && s.rec){ r.mode = s.mode; r.result = s.result; r.summary = s.summary; r.comment = s.rec.comment || r.comment; await sbClient.from('app_tests').upsert(r); } } }
     renderTestProfile(clientId);
   };
-  const more = $('tstMore'); if(more) more.onclick = () => { tstShowAll = !tstShowAll; renderTestProfile(clientId); };
+  const more = $('tstMore'); if(more) more.onclick = () => { tstShowAll = !tstShowAll; renderTestProfileClassic(clientId); };
   document.querySelectorAll('[data-tdel]').forEach(x => x.onclick = async () => {
     if(!confirm('Usunąć tę sesję testów? Nie da się tego cofnąć.')) return;
     const { error } = await sbClient.from('app_tests').delete().eq('id', x.dataset.tdel);
@@ -13773,6 +14434,13 @@ function genProfile(c, d){
 let POOLS = {}, LASTPLAN = null;
 let G = null, USED = null, PLAN_SKIPPED = [], KEEP = {}, AVOID = new Set(), PREV = {}, CORE_PLAN = [], CORE_I = 0, GC = null;
 const usable = n => !!genLib(n);
+/* #45 (12.11, Bartosz): dodatki tylko z kontekstu – TKE / VMO tylko przy kolanie, Kopenhaskie / przysiad do boku tylko przy pachwinie,
+   przywodzicielach (też DynaMo ADD:ABD < 0,8) albo u sportowców */
+const CTX_KNEE = /\btke\b|vmo/i, CTX_ADD = /kopenhask|przysiad do boku/i;
+function ctxFlags(){ const t = String((GC && GC.ctxTxt) || '').toLowerCase(), D = GC && GC.dyn;
+  return { knee: !!(G.knee || (G.w && G.w.bol === 'kolano') || (GC && GC.knee) || /kolan|rzepk|vmo|chondromal/.test(t)),
+    add: !!((G.prio || []).includes('add') || (G.w && G.w.kto === 'sport') || (GC && GC.sport) || /pachwin|przywodz|kopenhask|spojeni/.test(t) || (D && D.ratios && D.ratios.addAbd != null && D.ratios.addAbd < 0.8)) }; }
+function ctxOk(n){ if(!G) return true; const f = ctxFlags(); return !(CTX_KNEE.test(n) && !f.knee) && !(CTX_ADD.test(n) && !f.add); }
 const meso = p => p.endsWith('1') ? 1 : 2;
 function suggestPhase(){ return G.attend != null && G.attend < 66 ? G.prev.phase : NEXT[G.prev.phase]; }
 function transType(){ if(!G || !G.prev) return null; const a = G.prev.phase, b = G.phase; if(a === b) return 'repeat'; if(meso(a) === meso(b) && !(a === 'Int2' && b === 'Ak1')) return 'same'; return 'rotate'; }
@@ -13799,16 +14467,17 @@ function pick(list, key, why, opts){
   if(!shortOk()){ const l2 = list.filter(n => !SHORT_ROM.test(n)); if(l2.length) list = l2; }
   if(G.repl[key]){ const nm = G.repl[key]; USED.add(nm); POOLS[key] = list.concat(similarFor(list)); return meta({ name: nm, why: 'Wybrane ręcznie', key, alts: 2, grip: opts.grip || null, manual: true }); }
   const kn = KEEP[key];
-  if(kn && !G.swaps[key] && (usable(kn) || G.addMissing) && !USED.has(kn)){ USED.add(kn); return meta({ name: kn, why, key, alts: 2, grip: opts.grip || null }); }
+  if(kn && !G.swaps[key] && (usable(kn) || G.addMissing) && !USED.has(kn) && ctxOk(kn)){ USED.add(kn); return meta({ name: kn, why, key, alts: 2, grip: opts.grip || null }); }
   let c = list.slice();
   // ⇄ zawsze działa: za pulą dokładam ćwiczenia z biblioteki na te same główne grupy mięśniowe
   if(!opts.noExt) c = c.concat(similarFor(list).filter(n => !c.some(x => gKey(x) === gKey(n))));
-  { const nr = c.filter(n => !REGRESS.test(n) && !warmOnly(n)); if(nr.length) c = nr; }
+  { const nr = c.filter(n => !REGRESS.test(n) && !warmOnly(n) && ctxOk(n)); if(nr.length) c = nr; }
   POOLS[key] = c;
   if(!G.addMissing){ const f = c.filter(usable); if(f.length < c.length) PLAN_SKIPPED.push(...c.filter(n => !usable(n))); c = f; }
   if(!shortOk()){ const f = c.filter(n => !SHORT_ROM.test(n)); if(f.length) c = f; }
   const ex = new Set(opts.allow || []);
-  let free = c.filter(n => !USED.has(n));
+  const usedK = new Set([...USED].map(gKey));   // #44: „RDL - sztanga” = „RDL – sztanga” (myślnik / półpauza)
+  let free = c.filter(n => !USED.has(n) && !usedK.has(gKey(n)));
   const fa = free.filter(n => ex.has(n) || !AVOID.has(n)); if(fa.length) free = fa;
   let note = '';
   if(!free.length){ free = c.length ? c : list; note = ' (powtórka – brak innej opcji w bibliotece)'; }
@@ -13942,10 +14611,11 @@ function fbwDay(i){
 }
 function fbwRest(i, pk, a, rows, sub){
   rows.push(R('C1', 'C', true, pick(G.knee ? P.lungeKnee : P.lunge, 'fC1' + i, G.knee ? 'Jednonóż z małym zgięciem kolana' : 'Jednonóż – słabsza noga zaczyna')));
-  if(a.isHinge) rows.push(R('C2', 'C', true, pick(G.knee ? P.kneePain : G.staz === 'p' ? P.kneeNov : P.knee, 'fC2' + i, G.knee ? 'Kolano: TKE/VMO w krótkim zakresie, bez bólu' : 'Wyprost kolana / VMO – w dzień zawiasu')));
+  const cf = ctxFlags();
+  if(a.isHinge){ if(cf.knee) rows.push(R('C2', 'C', true, pick(G.knee ? P.kneePain : G.staz === 'p' ? P.kneeNov : P.knee, 'fC2' + i, G.knee ? 'Kolano: TKE/VMO w krótkim zakresie, bez bólu' : 'Wyprost kolana / VMO – w dzień zawiasu'))); }
   else rows.push(R('C2', 'C', true, pick(P.ham, 'fC2' + i, 'Tył uda jako zginacz kolana – co trening inne ustawienie stóp')));
   rows.push(R('D1', 'C', false, pick(pk === 'BP' || G.shoulderWeak ? P.shoulder : (pk === 'OHP' ? P.biceps : P.triceps), 'fD1' + i, pk === 'BP' || G.shoulderWeak ? 'Po ławce – naprawczo bark (rotatory / trap 3)' : 'Ramiona po wyciskaniu')));
-  rows.push(R('D2', 'C', true, pick(i % 2 === 0 ? P.add : P.calf, 'fD2' + i, i % 2 === 0 ? 'Przywodziciele – zwykle zaniedbane' : 'Łydki')));
+  if(i % 2 === 1 || cf.add) rows.push(R('D2', 'C', true, pick(i % 2 === 0 ? P.add : P.calf, 'fD2' + i, i % 2 === 0 ? 'Przywodziciele – z kontekstu (pachwina / sport / DynaMo)' : 'Łydki')));
   rows.push(...coreRows('E', i, 'fE' + i));
   return { name: `FBW ${i + 1}`, sub, rows };
 }
@@ -13968,7 +14638,7 @@ function lowerDay(v, tag, coreI){
   const a = legA(v, tag + 'A'); rows.push(a.row);
   rows.push(R('B1', 'B', true, pick(G.knee ? P.lungeKnee : P.lunge, tag + 'B1', 'Jednonóż – słabsza noga zaczyna')));
   rows.push(R('B2', 'B', true, pick(v === 0 ? P.ham : P.hip, tag + 'B2', v === 0 ? 'Tył uda jako zginacz kolana' : 'Wyprost biodra')));
-  rows.push(R('C1', 'C', true, pick(v === 0 ? (G.knee ? P.kneePain : G.staz === 'p' && a.isHinge ? P.kneeNov : P.knee) : P.add, tag + 'C1', v === 0 ? 'Wyprost kolana / VMO' : 'Przywodziciele')));
+  if(v === 0 || ctxFlags().add) rows.push(R('C1', 'C', true, pick(v === 0 ? (G.knee ? P.kneePain : G.staz === 'p' && a.isHinge ? P.kneeNov : P.knee) : P.add, tag + 'C1', v === 0 ? 'Wyprost kolana' : 'Przywodziciele – z kontekstu')));
   rows.push(R('C2', 'C', true, pick(v === 0 ? P.calf : P.gmed, tag + 'C2', v === 0 ? 'Łydki' : 'Pośladek średni')));
   rows.push(...coreRows('D', coreI, tag + 'D'));
   return rows;
@@ -13982,7 +14652,7 @@ function prioPool(g){
     shS:[...P.delt],shF:['Wyciskanie hantli - nad głowę - stojąc - oburącz','Wyciskanie hantli- nad głowę siedząc - z oparciem','Wyciskanie nad głowę - jednorącz - landmine - klęcząc'],shR:['Odwrotne rozpiętki- z gumą','Odwrotny aniołek','Face pull','Odwrotne rozpiętki z hantlami w opadzie'],biceps:P.biceps,triceps:P.triceps,calf:P.calf,add:P.add}[g] || [];
   const dup = new Set(DUPS.map(d => gKey(d[1])));
   const rest = library.map(l => l.name).filter(n => (genMuscles(n)[g] || 0) >= 1 && !METHOD.test(n) && !cur.includes(n) && libFit(n));
-  return [...cur, ...rest].filter(n => !dup.has(gKey(n)) || gKey(n) === gKey(DUPS[0][0]));
+  return [...cur, ...rest].filter(n => (!dup.has(gKey(n)) || gKey(n) === gKey(DUPS[0][0])) && ctxOk(n));
 }
 function wuList(i){ return G.wu[i] !== undefined ? G.wu[i] : (G.warmup && genLib('Rozgrzewka - całość') ? [genLib('Rozgrzewka - całość').name] : []).concat(G.ctxWu !== false && G.wuAuto && G.wuAuto[i] ? G.wuAuto[i] : []).concat((G.pogoWu && G.pogoWu[i]) || []); }
 function wuPar(di, n){ const kind = G.wuKind && G.wuKind[n]; if(kind && !(G.wuP[di] || {})[n]) return kind === 'mob' ? { sets: '1', reps: '10', tempo: '', rest: '' } : { sets: '2', reps: '12', tempo: '3011', rest: '30' };
@@ -14054,7 +14724,7 @@ function applyPriority(days, why){
    Zostaje też tryb „Automatycznie” (#37). Lista partii: wybrana ręcznie albo podpowiedź (najwięcej serii, nie pracują przy priorytecie). */
 const pPrim = n => { const m = genMuscles(n); return Object.keys(m).filter(g => m[g] >= 1); };
 function prioCutOk(r, groups){
-  if(r.role === 'A' || r.fin || r.giant || r.setType || r.isPrioNew || G.ov[r.key] || r.sets <= (r.legMain ? 3 : 2)) return false;
+  if(r.role === 'A' || r.fin || r.giant || r.setType || r.isPrioNew || G.ov[r.key] || r.sets <= 2) return false;
   const m = genMuscles(r.name), pp = pPrim(r.name); if(!pp.some(g => groups.includes(g))) return false;
   const mx = Math.max(...pp.map(g => m[g])); return !G.prio.some(g => (m[g] || 0) >= mx);
 }
@@ -14062,6 +14732,40 @@ function prioCutOk(r, groups){
    (np. przy priorytecie pośladki – wykroki / bułgarskie liczą się jako ćwiczenia na pośladki, nie „kosztem” czwórek) */
 function tallyCmp(days){ const t = {}; days.forEach(d => d.rows.forEach(r => { const m = genMuscles(r.name);
   for(const g in m){ if(!G.prio.includes(g) && G.prio.some(p => (m[p] || 0) > m[g])) continue; t[g] = (t[g] || 0) + r.sets * m[g]; } })); return t; }
+/* #42: gdy nie ma już skąd zabrać serii (B/C na minimum 2) – „cięższe” ruchy na partię, która wygrywa z priorytetem:
+   1) wykroki / bułgarskie → ćwiczenie bez czwórek, 2) seria A −1 seria (min. 3), 3) przysiad w A → zawias (max 1 dzień w tygodniu) */
+const ESC_LUNGE = /wykrok|wykrocz|bułgar|bulgar|split|zakrok|wypad|step|wejści|pistolet/i;
+function prioEscalate(days, s, groups, log){
+  const og = s.og; if(!groups.includes(og)) return null;
+  const m0 = r => genMuscles(r.name), prim = r => (m0(r)[og] || 0) >= 1, hitsPrio = r => G.prio.some(g => (m0(r)[g] || 0) >= (m0(r)[og] || 0));
+  const noPrio = n => !G.prio.some(g => (genMuscles(n)[g] || 0) >= 1) && (genMuscles(n)[og] || 0) < 1;
+  if(og === 'quad') for(const d of days){
+    const r = d.rows.find(x => x.role !== 'A' && !x.esc && !x.fin && !x.giant && !G.ov[x.key] && !G.repl[x.key] && prim(x) && !hitsPrio(x) && ESC_LUNGE.test(x.name));
+    if(!r) continue;
+    const wk = new Set(days.flatMap(dd => dd.rows.map(x => gKey(x.name))));   // #44: bez powtórek w tygodniu (porównanie bez myślników / wielkości liter)
+    const L = ['RDL - jednonóż - półsztanga', 'Hip thrust - jednonóż', ...P.ham].filter(noPrio).filter(n => !wk.has(gKey(n)));
+    if(!L.length) continue;
+    const old = r.name, ex = pick(L, 'ESC' + r.key, `Priorytet ${MG[s.pg]}: zamiast ${old} – mniej czwórek w tygodniu`, { top: 3 });
+    const keep = { lab: r.lab, sets: r.sets, setsWk: r.setsWk }; Object.assign(r, R(r.lab, r.role, true, ex), keep, { esc: true });
+    log.push(`${old} → ${r.name}`); return { credit: 0 };
+  }
+  for(const d of days){
+    const r = d.rows.find(x => x.role === 'A' && !x.setType && !x.fin && !G.ov[x.key] && x.sets > 3 && prim(x) && !hitsPrio(x));
+    if(!r) continue;
+    r.sets--; if(r.setsWk) r.setsWk = r.setsWk.map(v => Math.max(3, v - 1)); r.trim = (r.trim || 0) + 1;
+    log.push(`${r.name} (A) −1 seria`); return { credit: 1 };
+  }
+  if(og === 'quad' && !days.some(d => d.rows.some(x => x.escA))) for(const d of days){
+    const r = d.rows.find(x => x.role === 'A' && !x.fin && !G.ov[x.key] && !G.repl[x.key] && /przysiad|squat/i.test(x.name) && prim(x) && !hitsPrio(x));
+    if(!r) continue;
+    const L = ['RDL - sztanga', 'Hip thrust - ze sztangą - obunóż'].filter(noPrio).filter(n => !days.some(dd => dd.rows.some(x => gKey(x.name) === gKey(n))));
+    if(!L.length) continue;
+    const old = r.name, ex = pick(L, 'ESCA' + r.key, `Priorytet ${MG[s.pg]}: w tym dniu zawias zamiast przysiadu – mniej czwórek w tygodniu`, { top: 2 });
+    const keep = { lab: r.lab, sets: r.sets, setsWk: r.setsWk }; Object.assign(r, R(r.lab, 'A', true, ex), keep, { escA: true, esc: true });
+    log.push(`${old} (A) → ${r.name}`); return { credit: 0 };
+  }
+  return null;
+}
 function prioMark(days){
   days.forEach(d => d.rows.forEach(r => { G.prio.forEach(g => { if((genMuscles(r.name)[g] || 0) >= 1) r.prio = g; }); }));
   const [lo, hi] = TGT[G.staz]; return G.prio.map(g => ({ g, before: tally(days)[g] || 0, after: 0, lo, hi }));
@@ -14069,7 +14773,7 @@ function prioMark(days){
 function prioCostSuggest(days){
   const t = tally(days), pv = Math.min(...G.prio.map(g => t[g] || 0)), ov = Math.max(...MG_PRIO.filter(g => !G.prio.includes(g)).map(g => t[g] || 0));
   const need = Math.max(2, Math.ceil(ov * PRIO_MARGIN - pv) + 2);
-  const cand = MG_PRIO.filter(g => !G.prio.includes(g)).map(g => ({ g, t: t[g] || 0, cap: days.reduce((a, d) => a + d.rows.filter(r => prioCutOk(r, [g])).reduce((x, r) => x + r.sets - (r.legMain ? 3 : 2), 0)
+  const cand = MG_PRIO.filter(g => !G.prio.includes(g)).map(g => ({ g, t: t[g] || 0, cap: days.reduce((a, d) => a + d.rows.filter(r => prioCutOk(r, [g])).reduce((x, r) => x + r.sets - 2, 0)
       + d.rows.filter(r => r.role === 'C' && !r.prio && !r.giant && !r.fin && isIsol(r.name) && pPrim(r.name).includes(g) && !G.prio.some(p => (genMuscles(r.name)[p] || 0) > 0)).reduce((x, r) => x + r.sets, 0), 0) })).filter(x => x.cap > 0).sort((a, b) => b.t - a.t);
   const out = []; let cap = 0; for(const c of cand){ out.push(c.g); cap += c.cap; if(cap >= need * 1.5 || out.length >= 4) break; }
   return out;
@@ -14078,7 +14782,7 @@ function prioCostBalance(days, why, pr){
   const others = MG_PRIO.filter(g => !G.prio.includes(g)), [, hi] = TGT[G.staz], cap = hi + 4;
   const sug = prioCostSuggest(days), cost = (G.prioCost || sug).filter(g => !G.prio.includes(g));
   const st = () => { const t = tally(days), tc = tallyCmp(days), o = others.map(g => [g, tc[g] || 0]).sort((a, b) => b[1] - a[1])[0], p = G.prio.map(g => [g, t[g] || 0]).sort((a, b) => a[1] - b[1])[0]; return { t, og: o[0], ov: o[1], pg: p[0], pv: p[1] }; };
-  const s0 = st(), cutBy = {}; let credit = 0, cut = 0, add = 0, ok = false, stuck = false, swapped = 0;
+  const s0 = st(), cutBy = {}, escLog = []; let credit = 0, cut = 0, add = 0, ok = false, stuck = false, swapped = 0;
     const trySwap = s => {
     /* brak miejsca w dniach → ćwiczenie izolowane z partii „kosztem” zamieniam na ćwiczenie na priorytet (te same serie – trening nie dłuższy) */
       const vic = days.flatMap(d => d.rows.filter(r => r.role === 'C' && !r.prio && !r.giant && !r.fin && !r.isPrioNew && !G.ov[r.key] && !G.repl[r.key] && isIsol(r.name) && pPrim(r.name).some(g => cost.includes(g)) && !G.prio.some(g => (genMuscles(r.name)[g] || 0) > 0)).map(r => ({ d, r })))
@@ -14103,13 +14807,14 @@ function prioCostBalance(days, why, pr){
     let cRow = null;
     days.forEach(d => d.rows.forEach(r => { if(!prioCutOk(r, cost)) return; const g = pPrim(r.name).filter(x => cost.includes(x)).sort((a, b) => (s.t[b] || 0) - (s.t[a] || 0))[0];
       const sc = (s.t[g] || 0) * 10 + r.sets; if(!cRow || sc > cRow.sc){ cRow = r; cRow.sc = sc; cRow.cg = g; } }));
-    if(!cRow){ if(trySwap(s)) continue; break; }
+    if(!cRow){ const e = prioEscalate(days, s, cost, escLog); if(e){ if(e.credit){ credit += e.credit; cut += e.credit; cutBy[s.og] = (cutBy[s.og] || 0) + e.credit; } continue; } if(trySwap(s)) continue; break; }
     cRow.sets--; cRow.trim = (cRow.trim || 0) + 1; cRow.why = (cRow.why ? cRow.why + ' · ' : '') + `−1 seria (priorytet ${MG[s.pg]})`; cutBy[cRow.cg] = (cutBy[cRow.cg] || 0) + 1; credit++; cut++;
   }
   const s1 = st(); pr.forEach(x => { x.after = s1.t[x.g] || 0; });
   const more = prioCostSuggest(days).find(g => !cost.includes(g)) || others.filter(g => !cost.includes(g)).sort((a, b) => (s1.t[b] || 0) - (s1.t[a] || 0))[0];
   G.prioRes = { ok, stuck, cost, auto: !G.prioCost, sug, more, pg: s1.pg, pv: s1.pv, og: s1.og, ov: s1.ov, cut, add };
   why.push(`Priorytet kosztem: ${cost.map(g => MG[g]).join(', ') || '—'}${G.prioCost ? '' : ' (podpowiedź)'} · ${MG[s0.pg]} ${fmtS(s0.pv)} → ${fmtS(s1.pv)} serii/tydz.${Object.keys(cutBy).length ? ' · oddały: ' + Object.keys(cutBy).map(g => `${MG[g]} −${cutBy[g]}`).join(', ') : ''} · długość treningu bez zmian`);
+  if(escLog.length) why.push(`Priorytet – dodatkowo: ${escLog.join('; ')}`);
   if(!ok) why.push(stuck ? `⚠ Priorytet (${MG[s1.pg]}) doszedł do górnej granicy (${cap} serii/tydz.)` : `⚠ Za mało: ${MG[s1.og]} dalej ${fmtS(s1.ov)} vs ${MG[s1.pg]} ${fmtS(s1.pv)} – dodaj partię w „Kosztem czego”${more ? ' (np. ' + MG[more] + ')' : ''}`);
 }
 function prioCostHtml(){
@@ -14122,22 +14827,23 @@ function prioCostHtml(){
   }
   return `<div class="gen-fld wide"><span class="gen-lbl">Kosztem czego?</span><div class="gen-seg" id="genPrioMode">${segB('auto', 'Automatycznie (trening może się wydłużyć)')}${segB('cost', 'Kosztem wybranych partii (trening nie dłuższy)')}</div>
     ${G.prioMode === 'cost' ? `<span class="gen-hint">Te partie oddadzą serie priorytetowi (tylko z serii B/C, seria A zostaje):</span><div class="gen-seg" id="genPrioCost">${MG_PRIO.filter(g => !G.prio.includes(g)).map(g => `<button type="button" class="${cur.includes(g) ? 'on' : ''}" data-g="${g}">${MG[g]}</button>`).join('')}</div>
-    <span class="gen-hint">${G.prioCost ? 'Wybrane ręcznie.' : 'Zaznaczone automatycznie: partie z największą liczbą serii, które nie pracują przy priorytecie. Możesz zmienić.'}</span><div class="gen-chips">${res}</div>` : '<span class="gen-hint">Generator sam zabiera innym partiom i dokłada priorytetowi (+20% ponad resztę).</span>'}</div>`;
+    <span class="gen-hint">${G.prioCost ? 'Wybrane ręcznie.' : 'Zaznaczone automatycznie: partie z największą liczbą serii, które nie pracują przy priorytecie. Możesz zmienić.'}</span><div class="gen-chips">${res}</div>` : '<span class="gen-hint">Generator sam zabiera innym partiom i dokłada priorytetowi (+10% ponad resztę).</span>'}</div>`;
 }
 /* #37: priorytet musi mieć najwięcej serii – min. +20% ponad każdą inną dużą grupę.
    Na zmianę: −1 seria innej grupie (B/C, nie A, nie na priorytet, min. 2) i +1 seria priorytetowi (do górnej granicy stażu +2). */
-const PRIO_MARGIN = 1.2;
+const PRIO_MARGIN = 1.1;   // #42 (05.11): priorytet min. ~10% ponad każdą inną partię (Bartosz: 10–15%)
 function prioBalance(days, why, pr){
   const others = MG_PRIO.filter(g => !G.prio.includes(g)), [, hi] = TGT[G.staz], cap = hi + 4;
   const st = () => { const t = tally(days), tc = tallyCmp(days), o = others.map(g => [g, tc[g] || 0]).sort((a, b) => b[1] - a[1])[0], p = G.prio.map(g => [g, t[g] || 0]).sort((a, b) => a[1] - b[1])[0]; return { og: o[0], ov: o[1], pg: p[0], pv: p[1] }; };
-  const s0 = st(); let cut = 0, add = 0, guard = 0, turn = 0, swapped = 0;
+  const s0 = st(), escLog = []; let cut = 0, add = 0, guard = 0, turn = 0, swapped = 0;
   while(guard++ < 80){
     const s = st(); if(s.ov * PRIO_MARGIN <= s.pv) break;
     let cRow = null, aRow = null;
-    days.forEach(d => d.rows.forEach(r => { if(r.role === 'A' || r.fin || r.giant || r.setType || G.ov[r.key] || r.sets <= (r.legMain ? 3 : 2)) return; const m = genMuscles(r.name);
+    days.forEach(d => d.rows.forEach(r => { if(r.role === 'A' || r.fin || r.giant || r.setType || G.ov[r.key] || r.sets <= 2) return; const m = genMuscles(r.name);
       if( (m[s.og] || 0) < 1 || G.prio.some(g => (m[g] || 0) >= m[s.og])) return; if(!cRow || r.sets > cRow.sets) cRow = r; }));
     if(s.pv < cap) days.forEach(d => d.rows.forEach(r => { if(r.role === 'A' || r.fin || r.giant || r.setType || G.ov[r.key] || r.sets >= SETCAP(r)) return; const m = genMuscles(r.name); if((m[s.pg] || 0) < 1) return;
       const sc = (m[s.og] || 0) * 10 + r.sets; if(!aRow || sc < aRow.sc){ aRow = r; aRow.sc = sc; } }));
+    if(!cRow){ const e = prioEscalate(days, s, others, escLog); if(e){ cut += e.credit; turn++; continue; } }
     const doCut = cRow && (turn % 2 === 0 || !aRow);
     if(doCut){ cRow.sets--; cRow.trim = (cRow.trim || 0) + 1; cut++; }
     else if(aRow){ aRow.sets++; aRow.boost = (aRow.boost || 0) + 1; add++; }
@@ -14160,7 +14866,8 @@ function prioBalance(days, why, pr){
     turn++;
   }
   const s1 = st(); pr.forEach(x => { x.after = tally(days)[x.g] || 0; });
-  if(cut || add) why.push(`Priorytet ma mieć najwięcej serii (+20%): ${MG[s0.og]} ${fmtS(s0.ov)} → ${fmtS(tally(days)[s0.og] || 0)}, ${MG[s0.pg]} ${fmtS(s0.pv)} → ${fmtS(tally(days)[s0.pg] || 0)} (−${cut} / +${add} ${plPlural(cut + add, 'seria', 'serie', 'serii')})`);
+  if(cut || add) why.push(`Priorytet ma mieć najwięcej serii (+10%): ${MG[s0.og]} ${fmtS(s0.ov)} → ${fmtS(tally(days)[s0.og] || 0)}, ${MG[s0.pg]} ${fmtS(s0.pv)} → ${fmtS(tally(days)[s0.pg] || 0)} (−${cut} / +${add} ${plPlural(cut + add, 'seria', 'serie', 'serii')})`);
+  if(escLog.length) why.push(`Priorytet – żeby ${MG[s0.pg]} miały najwięcej serii w tygodniu: ${escLog.join('; ')}`);
   if(s1.ov * PRIO_MARGIN > s1.pv) why.push(`⚠ ${MG[s1.og]} nadal ${fmtS(s1.ov)} serii vs priorytet ${MG[s1.pg]} ${fmtS(s1.pv)} – głównie z serii A; zmień ręcznie lub dodaj ćwiczenie na priorytet`);
 }
 function build(){
@@ -14205,6 +14912,67 @@ function build(){
 /* #41 (05.11): objętość – seria A max 5 serii, B max 4, C i dalej max 3 i najczęściej 2 (65%).
    Nie ruszam: ręcznie wpisanych serii, giant serii, rodzajów serii w A; ćwiczenia na priorytet – tylko limit, bez losowania 2. */
 function SETCAP(r){ const L = String(r.lab || r.role || '')[0]; if(L === 'A') return 5; return r.prio || (G.prio || []).some(g => (genMuscles(r.name)[g] || 0) >= 1) ? 4 : 3; }   // ćwiczenie na priorytet w C/D: max 4
+/* #45 (12.11, Bartosz): plan nie może być przeładowany
+   – ćwiczeń w treningu: początkujący 6, średni / zaawansowany 7 (bez rozgrzewki)
+   – serii w treningu: 15 / 17 / 18
+   – serii w tygodniu na partię: max 10 (½ za mięśnie pomocnicze), priorytet max 16
+   – ćwiczeń w tygodniu na partię (mięsień główny): max 3, priorytet max 4
+   Wypadają / tracą serie najpierw ostatnie litery i izolacje; seria A, ćwiczenia na priorytet i zmiany ręczne zostają. */
+const SLIM = { ex: { p: 6, s: 7, z: 7 }, sets: { p: 15, s: 17, z: 18 }, wk: 10, wkP: 16, exG: 3, exGP: 4, min: 2 };
+function slimPlan(days, why){
+  const prio = new Set(G.prio || []), st = G.staz || 's';
+  const lockedR = r => r.fin || r.giant || r.manual || G.repl[r.key] || (G.ov[r.key] && G.ov[r.key].sets != null);
+  const isA = r => String(r.lab || r.role || '')[0] === 'A' || r.role === 'A';
+  const prim = r => { const m = genMuscles(r.name); return Object.keys(m).filter(g => m[g] >= 1); };
+  const forPrio = r => prim(r).some(g => prio.has(g));
+  const rank = r => (String(r.lab || 'Z').charCodeAt(0) * 10) + (isIsol(r.name) ? 5 : 0) + (r.legMain ? -50 : 0);
+  const coreR = r => /brzu|plank|deska|pallof|martwy robak|hollow|garham|rotacja tułowia|zgięcia bokiem|t2b|voyager|lifting|wood chop|stir/i.test(r.name) || coreLib(r.name);
+  const setS = (r, v) => { const d = r.sets - v; r.sets = v; if(r.setsWk) r.setsWk = r.setsWk.map(x => Math.max(SLIM.min, x - d)); };
+  const all = () => days.flatMap((d, di) => d.rows.map(r => ({ r, d, di })));
+  const drop = x => { x.d.rows = x.d.rows.filter(r => r !== x.r); };
+  const lastCore = x => coreR(x.r) && x.d.rows.filter(coreR).length <= 1;
+  let nEx = 0, nSet = 0;
+  // 1) ćwiczeń na partię w tygodniu
+  const MGS = Object.keys(MG);
+  MGS.forEach(g => { if(g === 'core') return; const cap = prio.has(g) ? SLIM.exGP : SLIM.exG;
+    for(let guard = 0; guard < 20; guard++){
+      const rows = all().filter(x => (genMuscles(x.r.name)[g] || 0) >= 1); if(rows.filter(x => !x.r.giant).length + (rows.some(x => x.r.giant) ? 1 : 0) <= cap) break;   // giant seria = 1 miejsce
+      const v = rows.filter(x => !isA(x.r) && !lockedR(x.r) && !x.r.legMain && !(forPrio(x.r) && !prio.has(g)) && !lastCore(x))
+        .sort((a, b) => (b.d.rows.length - a.d.rows.length) || (rank(b.r) - rank(a.r)))[0];
+      if(!v) break; drop(v); nEx++; } });
+  // 2) serie w tygodniu na partię; przy priorytecie reszta max ~priorytet/1,1 (żeby priorytet dalej wygrywał), ale nie niżej niż 6
+  const t0 = tally(days), pvMin = prio.size ? Math.min(...[...prio].map(g => Math.min(t0[g] || 0, SLIM.wkP))) : 0;
+  const capOf = g => prio.has(g) ? SLIM.wkP : prio.size ? Math.min(SLIM.wk, Math.max(6, Math.floor(pvMin / 1.1 * 2) / 2)) : SLIM.wk;
+  MGS.forEach(g => { const cap = capOf(g);
+    for(let guard = 0; guard < 60; guard++){
+      if((tally(days)[g] || 0) <= cap + 0.01) break;
+      const rows = all().filter(x => (genMuscles(x.r.name)[g] || 0) >= 1 && !lockedR(x.r) && !(forPrio(x.r) && !prio.has(g)));
+      const cut = rows.filter(x => x.r.sets > (isA(x.r) ? 3 : SLIM.min)).sort((a, b) => (isA(a.r) - isA(b.r)) || (rank(b.r) - rank(a.r)) || (b.r.sets - a.r.sets))[0];
+      if(cut){ setS(cut.r, cut.r.sets - 1); nSet++; continue; }
+      const v = rows.filter(x => !isA(x.r) && !x.r.legMain && !lastCore(x)).sort((a, b) => rank(b.r) - rank(a.r))[0];
+      if(!v) break; nSet += v.r.sets; drop(v); nEx++; } });
+  // 3) ćwiczeń w treningu
+  const exMax = SLIM.ex[st] || 7, setMax = SLIM.sets[st] || 17;
+  days.forEach(d => { for(let guard = 0; guard < 10 && d.rows.filter(r => !r.fin).length > exMax; guard++){
+      const v = d.rows.filter(r => !isA(r) && !lockedR(r) && !r.legMain && !(coreR(r) && d.rows.filter(coreR).length <= 1))
+        .sort((a, b) => (forPrio(a) - forPrio(b)) || (rank(b) - rank(a)))[0];
+      if(!v) break; d.rows = d.rows.filter(r => r !== v); nEx++; } });
+  // 4) serii w treningu
+  days.forEach(d => { for(let guard = 0; guard < 40; guard++){
+      if(d.rows.reduce((a, r) => a + (+r.sets || 0), 0) <= setMax) break;
+      const c = d.rows.filter(r => !lockedR(r) && r.sets > (isA(r) ? 3 : SLIM.min)).sort((a, b) => (isA(a) - isA(b)) || (forPrio(a) - forPrio(b)) || (rank(b) - rank(a)) || (b.sets - a.sets))[0];
+      if(!c) break; setS(c, c.sets - 1); nSet++; } });
+  // 5) duże partie min. 6 serii w tygodniu – dokładam serię tam, gdzie trening ma jeszcze miejsce
+  let nUp = 0;
+  ['quad', 'ham', 'glute', 'chest', 'back'].forEach(g => { for(let guard = 0; guard < 8 && (tally(days)[g] || 0) < 6; guard++){
+      const c = all().filter(x => (genMuscles(x.r.name)[g] || 0) >= 1 && !lockedR(x.r) && !x.r.setType && x.r.sets < SETCAP(x.r)
+          && x.d.rows.reduce((a, r) => a + (+r.sets || 0), 0) < setMax + 1   // na brakującą dużą partię wolno +1 serię ponad limit dnia (górna granica 15–18)
+          && Object.entries(genMuscles(x.r.name)).every(([h, w]) => h === g || (tally(days)[h] || 0) + w <= capOf(h)))
+        .sort((a, b) => a.r.sets - b.r.sets)[0];
+      if(!c) break; setS(c.r, c.r.sets + 1); if(c.r.setsWk) c.r.setsWk = c.r.setsWk.map(x => x + 1); nUp++; } });
+  if(nUp) why.push(`Duże partie min. 6 serii w tygodniu: +${nUp} ${plPlural(nUp, 'seria', 'serie', 'serii')}`);
+  if(nEx || nSet) why.push(`Bez przeładowania: max ${exMax} ćwiczeń i ${setMax} serii w treningu, partia max ${SLIM.exG} ćwiczenia i ${SLIM.wk} serii w tygodniu (priorytet ${SLIM.exGP} / ${SLIM.wkP}) – usunięte ${nEx} ${plPlural(nEx, 'ćwiczenie', 'ćwiczenia', 'ćwiczeń')}, mniej o ${nSet} ${plPlural(nSet, 'serię', 'serie', 'serii')}`);
+}
 function capVolume(days, why){
   let n = 0;
   days.forEach(d => d.rows.forEach(r => {
@@ -14229,6 +14997,7 @@ function finishBuild(days, why, label, cyN, pr, sila){
   capVolume(days, why);
   G.prioRes = null;
   if(sila && pr) (G.prioMode === 'cost' ? prioCostBalance : prioBalance)(days, why, pr);
+  if(sila) slimPlan(days, why);
   days.forEach((d, di) => seriesLabels(d, G.order[di], G.groups[di]));
   eccCap(days, why);
   days.forEach(d => d.rows.forEach(r => { const o = G.ov[r.key]; if(!o) return;
@@ -14260,7 +15029,7 @@ function pairFix(days, why){
       grp.forEach((r, j) => { if(isIsol(r.name) || G.repl[r.key]) return;
         const bad = grp.slice(0, j).some(o => !isIsol(o.name) && clash(o.name, r.name)); if(!bad) return;
         const others = grp.filter(o => o !== r);
-        const ok = x => usable(x) && !names.has(x) && (isIsol(x) || !others.some(o => !isIsol(o.name) && clash(o.name, x))) && (shortOk() || !SHORT_ROM.test(x)) && libFit(x);
+        const ok = x => usable(x) && ctxOk(x) && !names.has(x) && (isIsol(x) || !others.some(o => !isIsol(o.name) && clash(o.name, x))) && (shortOk() || !SHORT_ROM.test(x)) && libFit(x);
         const pool = (POOLS[r.key] || []).filter(ok), fresh = pool.filter(x => !USED.has(x));
         const alt = shuffled(fresh.length ? fresh : pool, r.key + '~pair')[0];
         if(!alt){ left.push(`dzień ${di + 1} ${r.lab}`); return; }
@@ -14278,11 +15047,14 @@ function orderSeries(days){
     d.rows = out; });
 }
 /* 6–8 ćwiczeń w treningu (bez rozgrzewki): nadmiar – najpierw drugi brzuch, potem ostatnie akcesoria (nigdy A/B ani priorytet) */
+function coreLib(n){ const L = genLib(n); if(!L || !L.groupId || typeof libraryGroups === 'undefined') return false; const g = libraryGroups.find(x => x.id === L.groupId); return !!(g && g.name === 'Core'); }
 function capCount(days, why){
   let cut = 0;
   days.forEach(d => { while(d.rows.filter(r => !r.fin).length > 8){
-      const core = d.rows.filter(r => r.role === 'C' && !/^P/.test(r.key || '') && /brzu|plank|deska|pallof|martwy robak|hollow|garham|rotacja tułowia|zgięcia bokiem|t2b|voyager|lifting|wood chop|stir/i.test(r.name));
-      const victim = (core.length >= 2 ? core[core.length - 1] : null) || d.rows.slice().reverse().find(r => r.role === 'C' && !/^P/.test(r.key || '') && !r.giant);
+      const isCoreR = r => r.role === 'C' && !/^P/.test(r.key || '') && (/brzu|plank|deska|pallof|martwy robak|hollow|garham|rotacja tułowia|zgięcia bokiem|t2b|voyager|lifting|wood chop|stir/i.test(r.name) || coreLib(r.name));
+      const core = d.rows.filter(isCoreR);
+      // #44: brzuch zostaje (min. 1 ćwiczenie w dniu z brzuchem) – najpierw wypada drugie ćwiczenie na brzuch, potem inne akcesoria
+      const victim = (core.length >= 2 ? core[core.length - 1] : null) || d.rows.slice().reverse().find(r => r.role === 'C' && !/^P/.test(r.key || '') && !r.giant && !isCoreR(r));
       if(!victim) break; d.rows = d.rows.filter(r => r !== victim); cut++; } });
   if(cut) why.push(`Max 8 ćwiczeń w treningu (bez rozgrzewki): usunięte ${cut} ostatnie akcesoria`);
 }
@@ -14293,7 +15065,7 @@ function giantSeries(days, why){
   const di = days.findIndex(d => /^Dół/.test(d.name || '')) >= 0 ? days.findIndex(d => /^Dół/.test(d.name || '')) : 0;
   const d = days[di]; if(!d) return;
   const used = new Set(d.rows.map(r => r.name));
-  const take = (list, key) => { const f = shuffled(list.filter(n => usable(n) && !used.has(n) && !USED.has(n) && !METHOD.test(n) && !LIB_ADV.test(n)), key)[0]; if(f){ used.add(f); USED.add(f); } return f; };
+  const take = (list, key) => { const f = shuffled(list.filter(n => usable(n) && ctxOk(n) && !used.has(n) && !USED.has(n) && !METHOD.test(n) && !LIB_ADV.test(n)), key)[0]; if(f){ used.add(f); USED.add(f); } return f; };
   const lunges = P.lunge.filter(n => !/do boku|bokiem/i.test(n)), lateral = [...P.lunge, ...(P.lungeKnee || [])].filter(n => /do boku|bokiem/i.test(n));
   const a = take(lunges, 'gi1'), b = take(lateral.length ? lateral : lunges, 'gi2'), c = take(P.knee.filter(n => /wyprost/i.test(n)), 'gi3') || take(P.knee, 'gi3b');
   if(!a || !b || !c) return;
@@ -15330,7 +16102,7 @@ window.genMgCell = function(td, ex){
   if(td.querySelector('[data-auto]')) td.querySelector('[data-auto]').onclick = () => save(null);
 };
 window.genOpen = genOpen;
-window.GEN_TEST = { genBlocks, genProfile, build: () => build(), get G(){ return G; }, get GC(){ return GC; }, isIsol, clash, wuList };
+window.GEN_TEST = { genBlocks, genProfile, build: () => build(), get G(){ return G; }, get GC(){ return GC; }, isIsol, clash, wuList, krApply, tallyCmp, genMuscles, warmOnly, REGRESS, MG_PRIO, ctxOk, SLIM };   // tylko dla testów automatycznych
 })();
 </script>
 <script>
