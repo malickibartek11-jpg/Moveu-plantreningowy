@@ -2317,7 +2317,7 @@ async function removeFromSharedList(key, localArray, predicate){
   return {ok, data: filtered};
 }
 function escapeHtml(s){
-  return (s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  return (s == null ? '' : String(s)).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 }
 
 /* ============ BEZPIECZNE TABELE: app_clients / app_plans (chronione RLS w Supabase) ============ */
@@ -3637,6 +3637,9 @@ function noteRowHtml(n, withActions){
     ${withActions ? `<span class="cv-note-act"><span data-pin="${n.id}" title="${n.pin ? 'Odepnij' : 'Przypnij'}">📌</span><span data-del="${n.id}" title="Usuń notatkę">✕</span></span>` : ''}</div>
     <div class="cv-note-txt">${escapeHtml(n.text || '').replace(/\n/g, '<br>')}</div></div>`;
 }
+/* #48: gdy zakładka się wywali – pokaż powód zamiast „nic się nie dzieje” */
+function cvTabError(e){ const m = $('main'); if(!m) return; const box = document.createElement('div'); box.className = 'tst-warn'; box.style.margin = '12px 0';
+  box.textContent = 'Ta zakładka nie dała się otworzyć (błąd: ' + (e && e.message ? e.message : e) + '). Zrób zrzut tego komunikatu i wyślij Claude.'; m.appendChild(box); box.scrollIntoView({ block: 'nearest' }); }
 function renderClientInfo(){
   const c = clients.find(cl => cl.id === selectedClientId);
   if(!c) return;
@@ -3737,7 +3740,7 @@ function renderClientInfo(){
     + (d.alert && infoTab !== 'zdr' ? `<div class="cv-alert">⚠️ <div><b>Uwaga:</b> ${escapeHtml(d.alert)}</div></div>` : '')
     + `<div class="cv-tabs">${tabs.map(([k, l, n]) => `<div class="cv-tab ${infoTab === k ? 'on' : ''}" data-t="${k}">${l}${n ? `<span class="cv-n">${n}</span>` : ''}</div>`).join('')}</div>` + body;
   bindClientViewTop();
-  document.querySelectorAll('.cv-tab').forEach(t => t.onclick = () => { infoTab = t.dataset.t; renderClientInfo(); });
+  document.querySelectorAll('.cv-tab').forEach(t => t.onclick = () => { infoTab = t.dataset.t; try{ renderClientInfo(); }catch(e){ console.error('Zakładka ' + infoTab + ':', e); cvTabError(e); } });
   if(infoTab === 'post') bindClientProgress();
   if(infoTab === 'ank') bindClientSurveyTab(id);
   if(infoTab === 'tes'){ tstBindClientCard(id); if(window.dynBind) dynBind(c, d); }
@@ -8880,7 +8883,7 @@ function renderLibraryView(){
     </div>
 
       <div class="tools-panel" id="packPanel">
-        <h4>📦 Wgraj paczkę ćwiczeń (plik .json od Claude) <span style="font-weight:400;font-size:11px;color:var(--muted);">· wersja aplikacji #47</span></h4>
+        <h4>📦 Wgraj paczkę ćwiczeń (plik .json od Claude) <span style="font-weight:400;font-size:11px;color:var(--muted);">· wersja aplikacji #48</span></h4>
         <div class="section-desc" style="margin:0 0 10px;">Doda wiele ćwiczeń naraz – z nazwą, filmem i grupą. Pomija te, które już są (ten sam film albo ta sama nazwa). Przed zapisem robi kopię biblioteki, więc można cofnąć.</div>
         <div class="lib-row" style="align-items:center;"><input type="file" id="packFile" accept=".json,application/json"><button class="btn ghost" id="packUndo">↩ Cofnij ostatnią paczkę</button></div>
         <div id="packOut" style="margin-top:10px;font-size:12.5px;"></div>
