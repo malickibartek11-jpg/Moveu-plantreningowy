@@ -397,6 +397,25 @@
   .ol-rpe{display:inline-flex;width:26px;height:22px;border-radius:6px;color:#fff;font-weight:700;align-items:center;justify-content:center;font-size:11.5px;}
   .ol-st{font-size:11px;font-weight:700;border-radius:9px;padding:2px 8px;white-space:nowrap;}
   .ol-st.ok{background:#E3F4E9;color:#2E9E5B;} .ol-st.end{background:#FFF4E5;color:#B9781F;} .ol-st.miss{background:#FDF1EE;color:#B4472E;} .ol-st.zz{background:#EFEDE9;color:#767268;}
+  .pe-btn{font-weight:700;}
+  .pe-legend{display:flex;flex-wrap:wrap;gap:12px;font-size:12.5px;margin:-4px 0 12px;align-items:center;}
+  .pe-legend i{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-1px;margin-right:4px;}
+  .pe-tiles{display:grid;gap:8px;max-width:820px;}
+  .pe-tile{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:14px;align-items:center;border-radius:12px;padding:13px 18px;cursor:pointer;}
+  .pe-tile.r{background:#E0482A;color:#fff;} .pe-tile.y{background:#F2C230;color:#3A2C00;} .pe-tile.g{background:#22A06B;color:#fff;}
+  .pe-tile .nm{font-size:17px;font-weight:700;} .pe-tile .sub{font-size:12.5px;opacity:.88;}
+  .pe-tile .num{font-size:32px;font-weight:800;line-height:1;text-align:right;font-variant-numeric:tabular-nums;}
+  .pe-tile .num small{display:block;font-size:11.5px;font-weight:600;opacity:.85;}
+  .pe-tile button{font:inherit;font-size:12px;font-weight:600;cursor:pointer;border-radius:8px;padding:6px 10px;border:1px solid currentColor;background:transparent;color:inherit;}
+  .pe-tile button:hover{background:rgba(255,255,255,.2);}
+  .pe-off{margin-top:12px;font-size:13px;color:var(--muted);border:1px dashed var(--line);border-radius:10px;padding:10px 14px;max-width:820px;}
+  .pe-offn{cursor:pointer;text-decoration:underline;}
+  .pe-strip{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:#FFF6F3;border:1px solid #F3C9BD;border-radius:10px;padding:9px 12px;margin:0 0 14px;cursor:pointer;font-size:14px;}
+  .pe-cb{width:15px;height:15px;margin:0 7px 0 0;accent-color:#22A06B;cursor:pointer;vertical-align:-2px;flex:0 0 auto;}
+  .client-item.pe-inact .cname{color:var(--muted);text-decoration:line-through;}
+  .pe-switch{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:10px;border:2px solid var(--line);cursor:pointer;margin-bottom:14px;background:var(--surface,#fff);}
+  .pe-switch.on{border-color:#22A06B;} .pe-switch input{width:20px;height:20px;accent-color:#22A06B;cursor:pointer;}
+  .pe-switch small{display:block;color:var(--muted);font-size:12.5px;}
   .ol-badge{display:inline-block;background:#E8604A;color:#fff;border-radius:9px;padding:0 7px;font-size:11px;margin-left:4px;font-weight:700;}
   .ol-scroll{overflow-x:auto;}
   .oc-nm{font-weight:700;font-family:'Space Grotesk',sans-serif;font-size:14.5px;}
@@ -1513,6 +1532,7 @@
 <div id="trenerView">
   <div class="wrap">
     <div class="sidebar">
+      <button class="add-client-btn pe-btn" id="showPlanEndBtn" style="margin:0 0 12px;">📊 Status planów <span class="ol-badge" id="planEndBadge" style="display:none;"></span><span class="ol-badge" id="planEndBadgeY" style="display:none;background:#C99A10;"></span></button>
       <h3>Klienci</h3>
       <div id="clientOrgFilterChips" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;"></div>
       <input type="text" id="clientSearchInput" placeholder="🔍 Szukaj klienta…" style="width:100%;background:var(--surface-2);border:1px solid var(--line);border-radius:7px;padding:8px 10px;font-size:12.5px;margin-bottom:10px;">
@@ -2805,10 +2825,12 @@ async function checkAndMarkCompletion(clientId, dateStr, day){
   if(btn) renderCompletedTrainingsButton();
 }
 
+/* #51: Akademia nie pokazuje się w Ukończonych treningach (za dużo szumu) */
+function isAkademiaClient(c){ const g = clientGroups.find(x => x.id === c.groupId); return !!(g && /akademi/i.test(g.name)); }
 function renderCompletedTrainingsButton(){
   const btn = document.getElementById('completedTrainingsBtn');
   if(!btn) return;
-  const pendingCount = clients.reduce((sum, c) => sum + (c.pendingCompletions||[]).length, 0);
+  const pendingCount = clients.filter(c => !isAkademiaClient(c)).reduce((sum, c) => sum + (c.pendingCompletions||[]).length, 0);
   const count = lastCompletionBuckets ? lastCompletionBuckets.done.length : pendingCount;
   const miss = lastCompletionBuckets ? lastCompletionBuckets.miss.length : 0;
   if(count > 0 || miss > 0){
@@ -2866,12 +2888,13 @@ function dayAvgRpe(day){
 async function computeCompletionBuckets(periodDays, refetch){
   const today = todayKey();
   const from = addDaysToDateStr(today, -(periodDays || 30));
-  await Promise.all(clients.map(async c => {
+  const compClients = clients.filter(c => !isAkademiaClient(c));   // #51
+  await Promise.all(compClients.map(async c => {
     if(refetch && !getOfflineQueue().some(q => q.clientId === c.id)) delete plansCache[c.id];
     await ensurePlanLoaded(c.id);
   }));
   const out = { done: [], part: [], miss: [] };
-  clients.forEach(c => {
+  compClients.forEach(c => {
     const plan = plansCache[c.id] || {};
     Object.keys(plan).forEach(ds => {
       if(ds < from || ds > today) return;
@@ -2891,6 +2914,7 @@ async function computeCompletionBuckets(periodDays, refetch){
   renderCompletedTrainingsButton();
   updateVideoBadge();
   updateOnlineBadge();
+  loadPlanInactive().then(() => { updatePlanEndBadge(); renderClientListInner(); }).catch(e => console.warn(e));
   return out;
 }
 /* Po odswiezeniu klientow: jesli przyszlo nowe powiadomienie, dociagamy plan tej osoby i liczymy na nowo */
@@ -2955,7 +2979,7 @@ async function openClientPlanDay(clientId, dateStr){
 function filteredCompRows(kind){
   const b = lastCompletionBucketsView || { done: [], part: [], miss: [] };
   if(compGroup === 'online'){ const on = new Set(clients.filter(c => c.onlineActive).map(c => c.id)); return (b[kind] || []).filter(r => on.has(r.clientId)); }
-  if(compGroup !== 'all' && !clientGroups.some(g => g.id === compGroup)) setCompGroup('all');
+  if(compGroup !== 'all' && !clientGroups.some(g => g.id === compGroup && !/akademi/i.test(g.name))) setCompGroup('all');
   return (b[kind] || []).filter(r => compGroup === 'all' || r.orgId === compGroup);
 }
 let lastCompletionBucketsView = null;
@@ -2983,7 +3007,7 @@ async function renderCompletedTrainingsList(refetch){
   main.innerHTML = `<h2 style="font-family:'Space Grotesk';margin-bottom:10px;">Ukończone treningi</h2>
     <div class="comp-filters">
       <span class="client-org-chip ${compGroup === 'all' ? 'active' : ''}" data-g="all">Wszyscy</span>
-      ${clientGroups.map(g => `<span class="client-org-chip ${compGroup === g.id ? 'active' : ''}" data-g="${g.id}">${escapeHtml(g.name)}</span>`).join('')}
+      ${clientGroups.filter(g => !/akademi/i.test(g.name)).map(g => `<span class="client-org-chip ${compGroup === g.id ? 'active' : ''}" data-g="${g.id}">${escapeHtml(g.name)}</span>`).join('')}
       <span class="client-org-chip ${compGroup === 'online' ? 'active' : ''}" data-g="online">💻 Online</span>
       <span class="comp-per-l">Okres:</span>${[7, 14, 30].map(p => `<span class="client-org-chip ${compPeriod === p ? 'active' : ''}" data-p="${p}">${p} dni</span>`).join('')}
     </div>
@@ -3267,8 +3291,12 @@ function renderClientOrgFilterChips(){
 
 function clientListItem(c, labelText){
   const div = document.createElement('div');
-  div.className = 'client-item' + (c.id === selectedClientId ? ' active' : '');
+  const peM = isTrainerUser && peIsMoveU(c) && planInactive;   // #50: aktywny / nieaktywny (Status planów)
+  div.className = 'client-item' + (c.id === selectedClientId ? ' active' : '') + (peM && !peActive(c.id) ? ' pe-inact' : '');
   div.innerHTML = `<span class="cname">${escapeHtml(c.name)}${labelText ? ` <small style="color:var(--muted);font-weight:400;">· ${escapeHtml(labelText)}</small>` : ''}</span><span class="del" data-id="${c.id}">✕</span>`;
+  if(peM){ const cb = document.createElement('input'); cb.type = 'checkbox'; cb.className = 'pe-cb'; cb.checked = peActive(c.id); cb.title = 'Aktywny (Status planów)';
+    cb.onclick = e => e.stopPropagation(); cb.onchange = async () => { await setPlanActive(c.id, cb.checked); div.classList.toggle('pe-inact', !cb.checked); if(trainerViewMode === 'clients' && !selectedClientId) renderPlanEndView(true); if(selectedClientId === c.id && typeof renderClientInfo === 'function' && clientView === 'info') renderClientInfo(); };
+    div.insertBefore(cb, div.firstChild); }
   div.querySelector('.cname').onclick = () => navigateTo(() => selectClient(c.id));
   div.querySelector('.del').onclick = (e) => { e.stopPropagation(); deleteClient(c.id); };
   return div;
@@ -3390,6 +3418,7 @@ $('showTemplatesBtn').onclick = () => navigateTo(async () => {
   renderTemplatesListView();
 });
 
+$('showPlanEndBtn').onclick = () => navigateTo(() => renderPlanEndView(false));
 $('showOnlineBtn').onclick = () => navigateTo(async () => {
   trainerViewMode = 'online';
   selectedClientId = null;
@@ -3653,9 +3682,10 @@ function renderClientInfo(){
   let body = '';
   if(infoTab === 'prz'){
     const st = clientPlanStats(id);
+    const peSw = peIsMoveU(c) && planInactive ? `<label class="pe-switch ${peActive(id) ? 'on' : ''}"><input type="checkbox" id="peActSw" ${peActive(id) ? 'checked' : ''}><span><b>${peActive(id) ? 'Aktywny klient' : 'Nieaktywny klient'}</b><small>${peActive(id) ? 'Pokazuje się w „📊 Status planów”.' : 'Nie pokazuje się w „📊 Status planów”.'}</small></span></label>` : '';
     const painNotes = d.notes.filter(n => n.pain !== null && n.pain !== undefined && n.pain !== '').sort((a, b) => (b.date||'').localeCompare(a.date||''));
     const sorted = d.notes.slice().sort((a, b) => (b.date||'').localeCompare(a.date||''));
-    body = `<div class="cv-grid3">
+    body = peSw + `<div class="cv-grid3">
         <div class="cv-card"><div class="cv-stat-l">Frekwencja 30 dni</div><div class="cv-stat">${st.done}/${st.total}</div><div class="cv-bar"><i style="width:${st.total ? Math.round(st.done/st.total*100) : 0}%"></i></div></div>
         <div class="cv-card"><div class="cv-stat-l">Ostatni trening</div><div class="cv-stat" style="font-size:20px;">${st.last ? escapeHtml(st.last.date) : '—'}</div><div class="cv-small">${st.last ? escapeHtml(st.last.day.title || 'bez tytułu') + (st.rpe !== null ? ' · RPE ' + st.rpe : '') : 'brak wykonanych treningów'}</div></div>
         <div class="cv-card"><div class="cv-stat-l">Ból (ostatnie zgłoszenie)</div><div class="cv-stat" style="color:${painNotes.length ? '#B4472E' : 'inherit'};">${painNotes.length ? escapeHtml(String(painNotes[0].pain)) + '/10' : '—'}</div><div class="cv-small">${painNotes.length ? escapeHtml(painNotes[0].date || '') : 'brak notatek z bólem'}</div></div>
@@ -3744,6 +3774,7 @@ function renderClientInfo(){
     + `<div class="cv-tabs">${tabs.map(([k, l, n]) => `<div class="cv-tab ${infoTab === k ? 'on' : ''}" data-t="${k}">${l}${n ? `<span class="cv-n">${n}</span>` : ''}</div>`).join('')}</div>` + body;
   bindClientViewTop();
   document.querySelectorAll('.cv-tab').forEach(t => t.onclick = () => { infoTab = t.dataset.t; try{ renderClientInfo(); }catch(e){ console.error('Zakładka ' + infoTab + ':', e); cvTabError(e); } });
+  if(infoTab === 'prz' && $('peActSw')) $('peActSw').onchange = async e => { await setPlanActive(id, e.target.checked); renderClientListInner(); renderClientInfo(); };
   if(infoTab === 'post') bindClientProgress();
   if(infoTab === 'ank') bindClientSurveyTab(id);
   if(infoTab === 'tes'){ tstBindClientCard(id); if(window.dynBind) dynBind(c, d); }
@@ -7946,10 +7977,68 @@ function onlineBadgeInfo(done, total){
   return {cls:'ok', txt:`Zostało ${left} treningów`};
 }
 
+/* ===== #50 STATUS PLANÓW – tylko klienci MoveU (Akademia pomijana) =====
+   Zostało = zaplanowane dni z ćwiczeniami od dziś, jeszcze niezrobione (ta sama logika co Treningi online).
+   Kafelek: 0–3 czerwony · 4–6 żółty · 7+ zielony. Aktywny/nieaktywny: domyślnie wszyscy aktywni; nieaktywni w kv plan_status_inactive
+   (przełącznik w profilu → Przegląd, checkbox przy nazwisku na liście, przycisk „Nieaktywny” na kafelku). */
+const PE_RED = 3, PE_YEL = 6;
+let planInactive = null;
+async function loadPlanInactive(){ if(planInactive) return planInactive; try{ planInactive = (await safeGet('plan_status_inactive')) || {}; }catch(e){ planInactive = {}; } return planInactive; }
+function peIsMoveU(c){ const g = clientGroups.find(x => x.id === c.groupId); return !!(g && /move\s*u/i.test(g.name)); }
+function peActive(id){ return !(planInactive && planInactive[id]); }
+async function setPlanActive(id, on){
+  await loadPlanInactive();
+  if(on) delete planInactive[id]; else planInactive[id] = todayKey();
+  await safeSet('plan_status_inactive', planInactive);
+  updatePlanEndBadge();
+}
+function planEndList(){
+  return clients.filter(peIsMoveU).filter(c => c.id in plansCache).map(c => { const s = onlineClientStats(c), plan = plansCache[c.id] || {};
+    const any = Object.keys(plan).some(ds => plan[ds] && plan[ds].exercises && plan[ds].exercises.length);
+    return { c, left: s.left, planTo: s.planTo, lastDone: s.lastDone, noPlan: !any, z: s.left <= PE_RED ? 'red' : s.left <= PE_YEL ? 'yel' : 'grn' }; })
+    .sort((a, b) => a.left - b.left || a.c.name.localeCompare(b.c.name, 'pl'));
+}
+function updatePlanEndBadge(){
+  const b = $('planEndBadge'), y = $('planEndBadgeY'); if(!b || !isTrainerUser) return;
+  const L = planEndList().filter(x => peActive(x.c.id));
+  const r = L.filter(x => x.z === 'red').length, w = L.filter(x => x.z === 'yel').length;
+  b.textContent = r; b.style.display = r ? '' : 'none'; y.textContent = w; y.style.display = w ? '' : 'none';
+  if($('peStrip')) $('peStrip').outerHTML = planEndStripHtml();
+  const m = $('main'); if(m && m.querySelector(':scope > .empty-state') && !selectedClientId && trainerViewMode === 'clients') renderPlanEndView(true);
+}
+function planEndStripHtml(){
+  const L = planEndList().filter(x => peActive(x.c.id)), r = L.filter(x => x.z === 'red'), w = L.filter(x => x.z === 'yel');
+  if(!r.length && !w.length) return '<div id="peStrip"></div>';
+  return `<div class="pe-strip" id="peStrip" onclick="$('showPlanEndBtn').click()">📊 <b>Status planów (MoveU):</b> ${r.length ? `<span style="color:#E0482A;font-weight:700;">🔴 ${r.length} ${plPlural(r.length, 'osoba', 'osoby', 'osób')}</span>` : ''} ${w.length ? `<span style="color:#B07F00;font-weight:700;">🟡 ${w.length}</span>` : ''} <span style="color:var(--muted);">– ${escapeHtml(r.slice(0, 4).map(x => x.c.name.split(' ').slice(-1)[0] + ' ' + x.left).join(', '))}${r.length > 4 ? '…' : ''} · kliknij</span></div>`;
+}
+async function renderPlanEndView(fromHome){
+  if(!fromHome){ trainerViewMode = 'clients'; selectedClientId = null; renderClientList(); }
+  await loadPlanInactive();
+  const main = $('main');
+  if(clients.filter(peIsMoveU).some(c => !(c.id in plansCache))){
+    main.innerHTML = '<div class="empty-state">Liczę plany klientów MoveU…</div>';
+    await Promise.all(clients.filter(peIsMoveU).map(c => ensurePlanLoaded(c.id)));
+  }
+  const all = planEndList(), L = all.filter(x => peActive(x.c.id)), off = all.filter(x => !peActive(x.c.id));
+  const cls = { red: 'r', yel: 'y', grn: 'g' };
+  main.innerHTML = `<div class="section-title"><div class="bar"></div><h2>📊 Status planów</h2></div>
+    <div class="pe-legend"><span><i style="background:#E0482A"></i>0–3 treningi</span><span><i style="background:#F2C230"></i>4–6</span><span><i style="background:#22A06B"></i>7 i więcej</span><span style="color:var(--muted)">· klienci MoveU · ile zaplanowanych treningów zostało od dziś</span></div>
+    <div class="pe-tiles">${L.length ? L.map(x => `<div class="pe-tile ${cls[x.z]}" data-peopen="${x.c.id}" title="Otwórz plan">
+        <div><div class="nm">${escapeHtml(x.c.name)}</div><div class="sub">${x.noPlan ? 'brak planu w kalendarzu' : x.left === 0 ? 'plan skończył się ' + olFmtD(x.planTo) : 'plan do ' + olFmtD(x.planTo)}${x.lastDone ? ' · ostatni trening ' + olFmtD(x.lastDone) : ''}</div></div>
+        <div class="num">${x.left}<small>${x.noPlan ? 'brak planu' : plPlural(x.left, 'trening', 'treningi', 'treningów')}</small></div>
+        <button type="button" data-peoff="${x.c.id}">Nieaktywny</button></div>`).join('') : '<div class="empty-state">Brak aktywnych klientów MoveU.</div>'}</div>
+    ${off.length ? `<div class="pe-off">Nieaktywni (${off.length}): ${off.map(x => `<span class="pe-offn" data-peon="${x.c.id}" title="Kliknij, żeby przywrócić">${escapeHtml(x.c.name)} ↺</span>`).join(', ')} – przywrócisz klikiem tutaj, checkboxem przy nazwisku albo w profilu.</div>` : ''}`;
+  const openPlan = async id => { await selectClient(id); clientView = 'plan'; try{ setLastClientView('plan'); }catch(e){} await showClientView(); };
+  main.querySelectorAll('[data-peopen]').forEach(t => t.onclick = e => { if(e.target.closest('[data-peoff]')) return; navigateTo(() => openPlan(t.dataset.peopen)); });
+  main.querySelectorAll('[data-peoff]').forEach(b => b.onclick = async e => { e.stopPropagation(); await setPlanActive(b.dataset.peoff, false); renderClientList(); renderPlanEndView(fromHome); });
+  main.querySelectorAll('[data-peon]').forEach(b => b.onclick = async () => { await setPlanActive(b.dataset.peon, true); renderClientList(); renderPlanEndView(fromHome); });
+}
+
 async function renderOnlineTrainingsView(){
   const main = $('main');
   const activeClients = clients.filter(c => c.onlineActive);
   main.innerHTML = `
+    ${planEndStripHtml()}
     <div class="section-title"><div class="bar"></div><h2>Treningi online</h2></div>
     <div class="section-desc">Wszystko o osobach online w jednym miejscu. Licznik przy przycisku = ile osób wymaga Twojej reakcji. <span class="online-manage-link" id="goOnlineManage">Zarządzaj listą aktywnych →</span></div>
     <div id="onlineRows"><div class="empty-state">Ładowanie…</div></div>
@@ -8886,7 +8975,7 @@ function renderLibraryView(){
     </div>
 
       <div class="tools-panel" id="packPanel">
-        <h4>📦 Wgraj paczkę ćwiczeń (plik .json od Claude) <span style="font-weight:400;font-size:11px;color:var(--muted);">· wersja aplikacji #49</span></h4>
+        <h4>📦 Wgraj paczkę ćwiczeń (plik .json od Claude) <span style="font-weight:400;font-size:11px;color:var(--muted);">· wersja aplikacji #51</span></h4>
         <div class="section-desc" style="margin:0 0 10px;">Doda wiele ćwiczeń naraz – z nazwą, filmem i grupą. Pomija te, które już są (ten sam film albo ta sama nazwa). Przed zapisem robi kopię biblioteki, więc można cofnąć.</div>
         <div class="lib-row" style="align-items:center;"><input type="file" id="packFile" accept=".json,application/json"><button class="btn ghost" id="packUndo">↩ Cofnij ostatnią paczkę</button></div>
         <div id="packOut" style="margin-top:10px;font-size:12.5px;"></div>
