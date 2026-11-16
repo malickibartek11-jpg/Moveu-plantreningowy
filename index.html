@@ -1684,6 +1684,7 @@ async function handleAuthResult(session){
   if(await checkIsTrainer(email)){
     isTrainerUser = true;
     await loadMyTrainerScope(email);
+    if(!trainerGroupScope && ownerHideScope){ clientsAll = clients.slice(); clients = applyTrainerScope(clients); }
     if(trainerGroupScope){
       clients = applyTrainerScope(clients);
       if($('showTrainersBtn')) $('showTrainersBtn').style.display = 'none';   // trener z ograniczonym zakresem nie zarzadza trenerami
@@ -2385,13 +2386,28 @@ async function refreshClientsFromDB(){
    UWAGA: to ukrycie w aplikacji (filtr listy klientow), a nie blokada w bazie. */
 let trainerGroupScope = null;
 function clientInScope(c){ if(!trainerGroupScope) return true; return trainerGroupScope.has(c.groupId) || (!!c.subgroupId && trainerGroupScope.has(c.subgroupId)); }
-function applyTrainerScope(list){ return trainerGroupScope ? list.filter(clientInScope) : list; }
+/* #52: właściciel może ukryć u siebie osoby wybranych trenerów (np. Natalii) – w całej aplikacji. kv owner_hidden_trainers = [e-maile].
+   Ukrywane są grupy / roczniki przypisane temu trenerowi w zakładce Trenerzy. U samego trenera nic się nie zmienia. */
+let ownerHideScope = null, ownerHiddenTrainers = [], clientsAll = null;
+function ownerHides(c){ return !!(ownerHideScope && (ownerHideScope.has(c.groupId) || (!!c.subgroupId && ownerHideScope.has(c.subgroupId)))); }
+async function loadOwnerHide(){
+  ownerHideScope = null; ownerHiddenTrainers = [];
+  try{
+    const v = await safeGet('owner_hidden_trainers'); ownerHiddenTrainers = Array.isArray(v) ? v.map(normEmail).filter(Boolean) : [];
+    if(!ownerHiddenTrainers.length) return;
+    const { data } = await sbClient.from('app_trainers').select('*');
+    const ids = new Set(); (data || []).filter(r => ownerHiddenTrainers.includes(normEmail(r.email))).forEach(r => (Array.isArray(r.groups) ? r.groups : []).forEach(g => ids.add(g)));
+    if(ids.size) ownerHideScope = ids;
+  }catch(e){ console.warn(e); }
+}
+function applyTrainerScope(list){ let l = trainerGroupScope ? list.filter(clientInScope) : list; if(ownerHideScope) l = l.filter(c => !ownerHides(c)); return l; }
 let trainerReadOnly = false;   // trener „tylko podgląd”: widzi plany i Ukończone, nie edytuje (wyniki w Panelu sportowca może wpisywać)
 async function loadMyTrainerScope(email){
   trainerGroupScope = null;
   trainerReadOnly = false;
   document.body.classList.remove('tr-ro');
-  if(!email || email === TRAINER_EMAIL.toLowerCase()) return;
+  if(email === TRAINER_EMAIL.toLowerCase()){ await loadOwnerHide(); return; }
+  if(!email) return;
   try{
     const { data, error } = await sbClient.from('app_trainers').select('*').eq('email', email);
     if(error) return;
@@ -2425,7 +2441,9 @@ async function loadClientsFromDB(){
   try{
     const { data, error } = await sbClient.from('app_clients').select('*');
     if(error){ console.error('Blad wczytywania klientow:', error); return []; }
-    const list = applyTrainerScope((data || []).map(clientRowToJs));
+    const raw = (data || []).map(clientRowToJs);
+    clientsAll = trainerGroupScope ? raw.filter(clientInScope) : raw;
+    const list = applyTrainerScope(raw);
     list.forEach(c => { clientPendingBase[c.id] = deepClone(c.pendingCompletions || []); });
     return list;
   }catch(e){ console.error('Wyjatek wczytywania klientow:', e); return []; }
@@ -5699,6 +5717,25 @@ function trGroupsDropdownHtml(r){
   return `<details class="tr-groups" data-trg="${escapeHtml(r.email)}"><summary>${escapeHtml(trGroupsSummary(r.groups))}</summary><div class="tr-gpop">
     <label class="all"><input type="checkbox" data-gall="1" ${sel.size ? '' : 'checked'}> Wszystkie grupy</label>${items || '<div class="cv-small">Brak grup — dodaj je w Klientach.</div>'}</div></details>`;
 }
+function ownerHideCbHtml(r){
+  const g = Array.isArray(r.groups) ? r.groups : [], em = normEmail(r.email), on = !ownerHiddenTrainers.includes(em);
+  const pool = clientsAll || clients, n = pool.filter(c => g.includes(c.groupId) || (c.subgroupId && g.includes(c.subgroupId))).length;
+  if(!g.length) return '<div class="cv-small" style="margin-top:6px;">Brak przypisanych grup – nie ma czego ukrywać.</div>';
+  return `<label class="diet-cb" style="margin-top:8px;display:flex;gap:6px;align-items:flex-start;" title="Widoczne tylko na Twoim koncie"><input type="checkbox" data-ownhide="${escapeHtml(em)}" ${on ? 'checked' : ''}>
+    <span><b>Widzę osoby tego trenera</b><br><small class="cv-small">${n} ${plPlural(n, 'osoba', 'osoby', 'osób')} · ${escapeHtml(trGroupsSummary(g))}${on ? '' : ' · ukryte w całej aplikacji'}</small></span></label>`;
+}
+async function setOwnerHide(email, show){
+  const set = new Set(ownerHiddenTrainers); if(show) set.delete(email); else set.add(email);
+  await safeSet('owner_hidden_trainers', [...set]);
+  await loadOwnerHide();
+  const base = clientsAll || clients; clientsAll = base; clients = applyTrainerScope(base);
+  if(selectedClientId && !clients.some(c => c.id === selectedClientId)) selectedClientId = null;
+  renderClientList();
+  try{ updatePlanEndBadge(); }catch(e){}
+  try{ await computeCompletionBuckets(14, false); }catch(e){}
+  try{ updateOnlineBadge(); updateTestsBadge(); }catch(e){}
+  toast(show ? 'Osoby tego trenera znów widoczne' : 'Osoby tego trenera ukryte w całej aplikacji');
+}
 async function renderTrainersView(){
   $('main').innerHTML = `<div class="section-title"><div class="bar"></div><h2>Trenerzy</h2></div><div class="section-desc">Ładowanie…</div>`;
   let rows = [], missing = false;
@@ -5719,11 +5756,12 @@ async function renderTrainersView(){
       ${rows.map(r => `<div class="rl-row tr-grid" data-tr="${escapeHtml(r.email)}"><div><b>${escapeHtml(r.email)}</b>${normEmail(r.email) === me ? ' <span class="cv-small">(Ty)</span>' : ''}<br><small class="cv-small">${!r.full_access ? 'nie może się logować' : r.can_edit === false ? 'tylko Panel sportowca' : 'pełna edycja'}</small></div>
         <div><label class="diet-cb"><input type="checkbox" data-trfull="${escapeHtml(r.email)}" ${r.full_access ? 'checked' : ''}> może się logować</label>
           ${'can_edit' in r ? `<label class="diet-cb"><input type="checkbox" data-tredit="${escapeHtml(r.email)}" ${r.can_edit !== false ? 'checked' : ''}> może edytować</label>` : ''}</div>
-        <div>${trGroupsDropdownHtml(r)}</div>
+        <div>${trGroupsDropdownHtml(r)}${me === TRAINER_EMAIL.toLowerCase() ? ownerHideCbHtml(r) : ''}</div>
         <div><button class="btn ghost small" data-trdel="${escapeHtml(r.email)}" style="color:#B4472E;">Usuń</button></div></div>`).join('')}
     </div>
     <div class="cv-small" style="margin-top:10px;">Zmiana działa po ponownym otwarciu aplikacji przez tę osobę (albo odświeżeniu strony). „Może się logować” = wpuszcza do panelu trenera. „Może edytować” odznaczone = tylko Panel sportowca (bez panelu trenera): widzi swoje grupy i treningi, może wpisywać wyniki zawodników, nie zmienia planów. Grupy decydują, których klientów ta osoba widzi.</div>`;
   if(missing) return;
+  document.querySelectorAll('[data-ownhide]').forEach(cb => cb.onchange = async () => { cb.disabled = true; await setOwnerHide(cb.dataset.ownhide, cb.checked); renderTrainersView(); });
   document.querySelectorAll('.tr-groups').forEach(dd => {
     dd.addEventListener('toggle', () => { if(dd.open) document.querySelectorAll('.tr-groups[open]').forEach(o => { if(o !== dd) o.open = false; }); });
     const em = dd.dataset.trg;
@@ -8975,7 +9013,7 @@ function renderLibraryView(){
     </div>
 
       <div class="tools-panel" id="packPanel">
-        <h4>📦 Wgraj paczkę ćwiczeń (plik .json od Claude) <span style="font-weight:400;font-size:11px;color:var(--muted);">· wersja aplikacji #51</span></h4>
+        <h4>📦 Wgraj paczkę ćwiczeń (plik .json od Claude) <span style="font-weight:400;font-size:11px;color:var(--muted);">· wersja aplikacji #52</span></h4>
         <div class="section-desc" style="margin:0 0 10px;">Doda wiele ćwiczeń naraz – z nazwą, filmem i grupą. Pomija te, które już są (ten sam film albo ta sama nazwa). Przed zapisem robi kopię biblioteki, więc można cofnąć.</div>
         <div class="lib-row" style="align-items:center;"><input type="file" id="packFile" accept=".json,application/json"><button class="btn ghost" id="packUndo">↩ Cofnij ostatnią paczkę</button></div>
         <div id="packOut" style="margin-top:10px;font-size:12.5px;"></div>
